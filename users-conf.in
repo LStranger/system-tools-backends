@@ -61,7 +61,8 @@ $version = "0.1.0";
               "redhat-6.1",
               "redhat-6.2",
               "redhat-7.0",
-              "mandrake-7.2");
+              "mandrake-7.2",
+              "debian-2.2");
 
 $description =<<"end_of_description;";
        Manages system users.
@@ -167,7 +168,7 @@ for ($i = 0; $groups_prop_array[$i] ne ""; $i += 2)
   "UID_MAX" , "new_user_max_id",
   "GID_MIN" , "new_group_min_id",
   "GID_MAX" , "new_group_max_id",
-  "USERDEL_CMD" , "&del_user_additional_command",
+  "USERDEL_CMD" , "del_user_additional_command",
   "CREATE_HOME" , "create_home", 
 	"", "");
 

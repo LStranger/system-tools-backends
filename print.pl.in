@@ -77,7 +77,7 @@ sub xst_printcap_read
     chomp;
 
     if ($in_spool) {
-        if (/[ \t]*:([^=#]+)[#=]*(.*):/) {
+        if (/[ \t]*:([^=\#]+)[\#=]*(.*):/) {
             $spools{$spool}{$1} = $2;
         }
 

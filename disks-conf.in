@@ -44,7 +44,8 @@ require "___scriptsdir___/xml.pl";
 
 $name = "disks";
 $version = "0.1.0";
-@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0");
+@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
+              "mandrake-7.2", "debian-2.2");
 
 $description =<<"end_of_description;";
        Configures locally mounted partitioned media.
@@ -475,6 +476,7 @@ sub get_fdisk
   # Okay, so this is strictly not portable either. Patches welcome.
 
   my @check_devs = ( "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/hdd",
+                     "/dev/hde", "/dev/hdf", "/dev/hdg", "/dev/hdh",
 
                      "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd",
                      "/dev/sde", "/dev/sdf",

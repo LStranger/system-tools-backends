@@ -48,11 +48,12 @@ $DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report
 
 $name = "memory";
 $version = "0.1.0";
-@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0");
+@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
+              "debian-2.2", "mandrake-7.2");
 
 $description =<<"end_of_description;";
-       Configures main and swap memory.
-end_of_description;
+Configures main and swap memory.
+    end_of_description;
 
 $progress_max = 3;
 
@@ -86,151 +87,151 @@ $cmd_dd = &xst_file_locate_tool ("dd");
 # --- XML scanning --- #
 
 sub xml_parse
+{
+  # Scan XML to tree.
+  
+  $tree = &xst_xml_scan;
+  
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "memory" tag.
+  
+  while (@$tree)
   {
-    # Scan XML to tree.
+    if ($$tree[0] eq "memory") { &xml_parse_memory($$tree[1]); }
     
-    $tree = &xst_xml_scan;
-    
-    # Walk the tree recursively and extract configuration parameters.
-    # This is the top level - find and enter the "memory" tag.
-    
-    while (@$tree)
-      {
-	if ($$tree[0] eq "memory") { &xml_parse_memory($$tree[1]); }
-	
-	shift @$tree;
-	shift @$tree;
-      }
-    
-    return($tree);
+    shift @$tree;
+    shift @$tree;
   }
+  
+  return($tree);
+}
 
 
 # <memory>...</memory>
 
 sub xml_parse_memory
+{
+  my $tree = $_[0];
+  
+  shift @$tree;		# Skip attributes.
+  
+  while (@$tree)
   {
-    my $tree = $_[0];
-    
-    shift @$tree;		# Skip attributes.
-    
-    while (@$tree)
-      {
-	if ($$tree[0] eq "swapdev") 
+    if ($$tree[0] eq "swapdev") 
 	  { 
 	    push @cf_swapinfo, &xml_parse_swapinfo ($$tree[1]); 
 	  }
-	
-	shift @$tree;
-	shift @$tree;
-      }
+    
+    shift @$tree;
+    shift @$tree;
   }
+}
 
 
 # <swap-device>...</swap-device>
 
 sub xml_parse_swapinfo
+{
+  my $tree = $_[0];
+  my $node;
+  my $entry = {};
+  
+  shift @$tree;		# Skip attributes.
+  
+  while (@$tree)
   {
-    my $tree = $_[0];
-    my $node;
-    my $entry = {};
-    
-    shift @$tree;		# Skip attributes.
-    
-    while (@$tree)
-      {
-	if ($$tree[0] eq 'device') 
+    if ($$tree[0] eq 'device') 
 	  { 
 	    $entry->{device} = &xst_xml_get_word ($$tree[1]);
 	  }
-	elsif ($$tree[0] eq 'enabled') 
+    elsif ($$tree[0] eq 'enabled') 
 	  {
 	    $node = $$tree[1];
 	    $entry->{enabled} = &xst_read_boolean ($$node[0]->{state});
 	  }
-	elsif ($$tree[0] eq 'priority') 
+    elsif ($$tree[0] eq 'priority') 
 	  { 
 	    $entry->{priority} = &xst_xml_get_word ($$tree[1]);
 	  }
-	elsif ($$tree[0] eq 'size') 
+    elsif ($$tree[0] eq 'size') 
 	  { 
 	    $entry->{size} = &xst_xml_get_size ($$tree[1]);
 	  }
-	elsif ($$tree[0] eq 'isfile') 
+    elsif ($$tree[0] eq 'isfile') 
 	  { 
 	    $node = $$tree[1];
 	    $entry->{is_file} = &xst_read_boolean ($$node[0]->{state});
 	  }
-	elsif ($$tree[0] eq 'isnew') 
+    elsif ($$tree[0] eq 'isnew') 
 	  { 
 	    $node = $$tree[1];
 	    $entry->{is_new} = &xst_read_boolean ($$node[0]->{state});
 	  }
-	
-	shift @$tree;
-	shift @$tree;
-      }
-
-    return $entry;
+    
+    shift @$tree;
+    shift @$tree;
   }
+
+  return $entry;
+}
 
 # --- XML printing --- #
 
 
 sub xml_print
-  {
-    print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
-    print "<!DOCTYPE memory []>\n\n";
-    print "<memory>\n";
-    &xst_xml_enter ();
+{
+  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+  print "<!DOCTYPE memory []>\n\n";
+  print "<memory>\n";
+  &xst_xml_enter ();
 
-    &xst_xml_print_vspace ();
-    &xst_xml_print_line ("<!-- Configuration starts here -->\n");
-    &xst_xml_print_vspace ();
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
+  &xst_xml_print_vspace ();
 
-    foreach $entry (@cf_memory) {
-      &xst_xml_print_line ("<memsize>$entry->{MemTotal}</memsize>\n");
-      &xst_xml_print_line ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
-    }
-
-    &xst_xml_print_vspace ();
-
-    foreach $entry (@cf_partition) {
-      &xst_xml_print_line ("<partition>\n");
-			&xst_xml_enter;
-      &xst_xml_print_line ("<device>$entry->{device}</device>\n");
-      &xst_xml_print_line ("<size>$entry->{size}</size>\n");
-			&xst_xml_leave;
-      &xst_xml_print_line ("</partition>\n");
-    }
-
-    &xst_xml_print_vspace ();
-
-    foreach $entry (@cf_swapinfo) {
-      &xst_xml_print_line ("<swapdev>\n");
-			&xst_xml_enter;
-      &xst_xml_print_line ("<device>$entry->{device}</device>\n");
-      &xst_xml_print_line ("<enabled state='", 
-                            &xst_print_boolean_yesno ($entry->{enabled}), 
-                            "'/>\n");
-      &xst_xml_print_line ("<priority>$entry->{priority}</priority>\n");
-      &xst_xml_print_line ("<isfile state='",
-                            &xst_print_boolean_truefalse ($entry->{is_file}),
-                            "'/>\n");
-      &xst_xml_print_line ("<size>$entry->{size}</size>\n");
-      &xst_xml_print_line ("<isnew state='",
-                            &xst_print_boolean_truefalse ($entry->{is_new}),
-                            "'/>\n");
-			&xst_xml_leave;
-      &xst_xml_print_line ("</swapdev>\n\n");
-    }
-
-    &xst_xml_print_line ("<!-- End of configuration -->\n");
-    &xst_xml_print_vspace ();
-
-    &xst_xml_leave ();
-    print "</memory>\n";
+  foreach $entry (@cf_memory) {
+    &xst_xml_print_line ("<memsize>$entry->{MemTotal}</memsize>\n");
+    &xst_xml_print_line ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
   }
+
+  &xst_xml_print_vspace ();
+
+  foreach $entry (@cf_partition) {
+    &xst_xml_print_line ("<partition>\n");
+    &xst_xml_enter;
+    &xst_xml_print_line ("<device>$entry->{device}</device>\n");
+    &xst_xml_print_line ("<size>$entry->{size}</size>\n");
+    &xst_xml_leave;
+    &xst_xml_print_line ("</partition>\n");
+  }
+
+  &xst_xml_print_vspace ();
+
+  foreach $entry (@cf_swapinfo) {
+    &xst_xml_print_line ("<swapdev>\n");
+    &xst_xml_enter;
+    &xst_xml_print_line ("<device>$entry->{device}</device>\n");
+    &xst_xml_print_line ("<enabled state='", 
+                         &xst_print_boolean_yesno ($entry->{enabled}), 
+                         "'/>\n");
+    &xst_xml_print_line ("<priority>$entry->{priority}</priority>\n");
+    &xst_xml_print_line ("<isfile state='",
+                         &xst_print_boolean_truefalse ($entry->{is_file}),
+                         "'/>\n");
+    &xst_xml_print_line ("<size>$entry->{size}</size>\n");
+    &xst_xml_print_line ("<isnew state='",
+                         &xst_print_boolean_truefalse ($entry->{is_new}),
+                         "'/>\n");
+    &xst_xml_leave;
+    &xst_xml_print_line ("</swapdev>\n\n");
+  }
+
+  &xst_xml_print_line ("<!-- End of configuration -->\n");
+  &xst_xml_print_vspace ();
+
+  &xst_xml_leave ();
+  print "</memory>\n";
+}
 
 
 # --- Get (read) config --- #
@@ -251,21 +252,21 @@ sub get_memory
   close FILE;
 
   foreach $entry (@meminfo)
+  {
+    if ($entry =~ /^MemTotal:(\s+)(\w+)/)
     {
-      if ($entry =~ /^MemTotal:(\s+)(\w+)/)
-	{
-	  $totmem = sprintf ("%.1fMB", $2 / 1024);	# In Mb, integer
-	}
-      elsif ($entry =~ /^SwapTotal:(\s+)(\w+)/)
-	{
-	  $totswap = sprintf ("%.1fMB", $2 / 1024);
-	}
+      $totmem = sprintf ("%.1fMB", $2 / 1024);	# In Mb, integer
     }
+    elsif ($entry =~ /^SwapTotal:(\s+)(\w+)/)
+    {
+      $totswap = sprintf ("%.1fMB", $2 / 1024);
+    }
+  }
 
   push @cf_memory, {
 		"MemTotal" => $totmem,
 		"SwapTotal" => $totswap
-		};
+      };
 }
 
 
@@ -301,17 +302,17 @@ sub get_fdisk
         shift @line; shift @line;  # Start and end clusters.
 
         ($size) = ($line[0] =~ /([0-9]+)/);
-	$size = sprintf ("%.1fMB", $size / 1024);
+        $size = sprintf ("%.1fMB", $size / 1024);
         shift @line;
 
         if ($line[0] ne "82") { next; }  # Not Swap
         else
-	  {
-	    push @cf_partition, {
-				"device" => $device,
-				"size" => $size
-				};
-	  }
+        {
+          push @cf_partition, {
+            "device" => $device,
+            "size" => $size
+              };
+        }
 
 
       }
@@ -331,106 +332,106 @@ sub get_fdisk
 
 
 sub get_swap_size
+{
+  my ($device) = $_[0];
+  my ($is_file) = $_[1];
+  my ($size) = 0;
+
+  if ($is_file && -f $device)
   {
-    my ($device) = $_[0];
-    my ($is_file) = $_[1];
-    my ($size) = 0;
-
-    if ($is_file && -f $device)
-      {
-        # Is file, &get file size.
-	my (@stats) = stat($device);
-	$size = $stats[7];			# size in stat structure.
-	$size = $size /1024 / 1024;		# Size from bytes to Mb.
-	$size .= "MB";
-      }
-    elsif ($is_file == 0)
-      {
-        # Is partition, &get size.
-        open(FD, "$cmd_fdisk -s $device 2>/dev/null |");
-        while (<FD>)
-          {
-            if (/^\w+/)
-              {
-                 $size = sprintf("%.1fMB", $_ / 1024);		#size from Kb to Mb
-              }
-          }
-      }
-
-    return $size;
+    # Is file, &get file size.
+    my (@stats) = stat($device);
+    $size = $stats[7];			# size in stat structure.
+    $size = $size /1024 / 1024;		# Size from bytes to Mb.
+    $size .= "MB";
   }
+  elsif ($is_file == 0)
+  {
+    # Is partition, &get size.
+    open(FD, "$cmd_fdisk -s $device 2>/dev/null |");
+    while (<FD>)
+    {
+      if (/^\w+/)
+      {
+        $size = sprintf("%.1fMB", $_ / 1024);		#size from Kb to Mb
+      }
+    }
+  }
+
+  return $size;
+}
 
 
 sub get_swap_entries
+{
+  my $fstab_file;
+  local *FSTAB_FILE;
+
+  $fstab_file = &xst_file_open_read_from_names (@fstab_names);
+  if (!$fstab_file) { return; }
+  *FSTAB_FILE = $fstab_file;
+
+  while (<FSTAB_FILE>)
   {
-    my $fstab_file;
-    local *FSTAB_FILE;
+    my ($device, $mount_pt, $type, $options, $fs_freq, $fs_passno) = split;
+    my (@option_list) = split /\,/, $options;
+    my ($priority) = -1;
+    my ($enabled);
+    my ($size);
+    my ($is_new) = 0;
+    my ($is_file) = 1;
 
-    $fstab_file = &xst_file_open_read_from_names (@fstab_names);
-    if (!$fstab_file) { return; }
-    *FSTAB_FILE = $fstab_file;
+    next if $type ne 'swap';
 
-    while (<FSTAB_FILE>)
-      {
-	my ($device, $mount_pt, $type, $options, $fs_freq, $fs_passno) = split;
-	my (@option_list) = split /\,/, $options;
-	my ($priority) = -1;
-	my ($enabled);
-        my ($size);
-        my ($is_new) = 0;
-        my ($is_file) = 1;
+    &xst_report ("memory_swap_found", $device);
 
-	next if $type ne 'swap';
+    if ($device =~ /^\#(.*)/)
+    {
+      $device = $1;
+      $enabled = 0;
+    }
+    else 
+    {
+      $enabled = 1;
+    }
 
-	&xst_report ("memory_swap_found", $device);
+    if ($device =~ /^(\#?)\/dev\//)
+    {
+      $is_file = 0;
+    }
+    
+    $size = &get_swap_size($device, $is_file);
 
-	if ($device =~ /^#(.*)/)
-	  {
-	    $device = $1;
-	    $enabled = 0;
-	  }
-	else 
-	  {
-	    $enabled = 1;
-	  }
+    foreach $item (@option_list)
+    {
+      my ($key, $value) = split /\=/, $item;
 
-        if ($device =~ /^(#?)\/dev\//)
-          {
-            $is_file = 0;
-          }
+      $priority = $value if $key eq 'pri';
+    }
 
-        $size = &get_swap_size($device, $is_file);
-
-	foreach $item (@option_list)
-	  {
-	    my ($key, $value) = split /\=/, $item;
-
-	    $priority = $value if $key eq 'pri';
-	  }
-
-	push @cf_swapinfo, { 
-			    "device" => $device, 
-			    "enabled" => $enabled, 
-			    "priority" => $priority,
-                            "is_file" => $is_file,
-                            "size" => $size,
-                            "is_new" => $is_new
-			   };
-      }
+    push @cf_swapinfo, { 
+      "device" => $device, 
+      "enabled" => $enabled, 
+      "priority" => $priority,
+      "is_file" => $is_file,
+      "size" => $size,
+      "is_new" => $is_new
+        };
   }
+}
 
 
 sub get
 {
-    &xst_report ("memory_swap_probe");
+  &xst_report ("memory_swap_probe");
 
-    &get_memory; &xst_print_progress();
-    &get_fdisk;  &xst_print_progress();
-    &get_swap_entries; &xst_print_progress();
-    
-    &xst_end();
-    &xml_print ();
-  }
+  &get_memory; &xst_print_progress();
+  &get_fdisk;  &xst_print_progress();
+  &get_swap_entries; &xst_print_progress();
+  
+  &xst_end();
+  &xml_print ();
+}
 
 
 # --- Set (write) config --- #
@@ -441,7 +442,7 @@ sub setup_swap_files
 
   $command = "$cmd_swapoff -a";  # To make sure removed swap spaces &get removed
   &xst_file_run ($command);
-    
+  
   my $num_done = 0;
 
   foreach $entry (@cf_swapinfo)
@@ -450,16 +451,16 @@ sub setup_swap_files
     {
       if ($entry->{is_file})
       {
-         my ($size) = $entry->{size};
-         $size =~ tr/MB$//d;	# Remove Mb from the end
-         $size *= 1024;		# Make it to Kb
+        my ($size) = $entry->{size};
+        $size =~ tr/MB$//d;	# Remove Mb from the end
+        $size *= 1024;		# Make it to Kb
 
-         $command = "$cmd_dd if=/dev/null of=$entry->{device} bs=1024 count=$size";
-         &xst_file_run ($command);
-       }
+        $command = "$cmd_dd if=/dev/null of=$entry->{device} bs=1024 count=$size";
+        &xst_file_run ($command);
+      }
 
-       $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
-       &xst_file_run ($command);
+      $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
+      &xst_file_run ($command);
     }
 
     elsif ($entry->{is_file})
@@ -492,77 +493,77 @@ sub setup_swap_files
       $command = "$cmd_swapon $entry->{device} $priority >/dev/null 2>/dev/null";
       &xst_file_run ($command);
     }
-	
+    
     $num_done++;
     &xst_progress(90 / ($#cf_swapinfo - $num_done + 2));
   }
 }
 
 sub set_swap_entries
-  {
-    my ($fstab_in_file, $fstab_out_file);
-    local (*FSTAB_IN_FILE, *FSTAB_OUT_FILE);
-    my (@lines);
-    my ($priority_str);
+{
+  my ($fstab_in_file, $fstab_out_file);
+  local (*FSTAB_IN_FILE, *FSTAB_OUT_FILE);
+  my (@lines);
+  my ($priority_str);
 
-    ($fstab_in_file, $fstab_out_file) = 
+  ($fstab_in_file, $fstab_out_file) = 
       &xst_file_open_filter_write_from_names (@fstab_names);
-    if (!$fstab_out_file) { return; }
-    *FSTAB_IN_FILE = $fstab_in_file; *FSTAB_OUT_FILE = $fstab_out_file;
+  if (!$fstab_out_file) { return; }
+  *FSTAB_IN_FILE = $fstab_in_file; *FSTAB_OUT_FILE = $fstab_out_file;
 
-    while (<FSTAB_IN_FILE>)
-      {
-	my ($device, $mount_pt, $type, $options, $fs_freq, $fs_passno) = 
-	  split /\s+/;
+  while (<FSTAB_IN_FILE>)
+  {
+    my ($device, $mount_pt, $type, $options, $fs_freq, $fs_passno) = 
+        split /\s+/;
 
-	print FSTAB_OUT_FILE if $type ne 'swap';
-      }
+    print FSTAB_OUT_FILE if $type ne 'swap';
+  }
 
-    foreach $entry (@cf_swapinfo)
-      {
-	if ($entry->{priority} >= 0) 
+  foreach $entry (@cf_swapinfo)
+  {
+    if ($entry->{priority} >= 0) 
 	  {
 	    $priority_str = sprintf "pri=%-11u", $entry->{priority};
 	  }
-	else
+    else
 	  {
 	    $priority_str = "defaults       ";
 	  }
 
-	print FSTAB_OUT_FILE "#" if !$entry->{enabled};
-	printf FSTAB_OUT_FILE 
-	  "%-23s swap                    swap    %s 0 0\n",
-	  $entry->{device},
-	  $priority_str;
-      }
-
-    close FSTAB_FILE;
+    print FSTAB_OUT_FILE "#" if !$entry->{enabled};
+    printf FSTAB_OUT_FILE 
+        "%-23s swap                    swap    %s 0 0\n",
+        $entry->{device},
+        $priority_str;
   }
+
+  close FSTAB_FILE;
+}
 
 
 sub set
+{
+  &xml_parse ();
+  
+  if ($xst_do_immediate)
   {
-    &xml_parse ();
-    
-    if ($xst_do_immediate)
-      {
-	&setup_swap_files;
-      }
-
-    &set_swap_entries;
-    &xst_end();
+    &setup_swap_files;
   }
+
+  &set_swap_entries;
+  &xst_end();
+}
 
 
 # --- Filter config: XML in, XML out --- #
 
 
 sub filter
-  {
-    &xml_parse ();
-    &xst_end();
-    &xml_print ();
-  }
+{
+  &xml_parse ();
+  &xst_end();
+  &xml_print ();
+}
 
 
 # --- Main --- #
