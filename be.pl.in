@@ -49,6 +49,10 @@ my $be_usage_generic =<<"end_of_usage_generic;";
 
        Modifiers (specify any combination of these):
 
+          --platform <name-ver>  Overrides the detection of your platform\'s
+                     name and version, e.g. debian-2.3. Use with care. See the
+                     documentation for a full list of supported platforms.
+
           --disable-immediate  With --set, prevents the configurator from
                      running any commands that make immediate changes to
                      the system configuration. Use with --prefix to make a
@@ -2107,103 +2111,120 @@ sub be_end
 # --- System guessing --- #
 
 
-sub check_debian {
-    open DEBIAN, "/etc/debian_version" or return 0;
-    $be_dist = 'debian';
-    chomp ($be_dist_version = <DEBIAN>);
-    close DEBIAN;
-    return 1;
+sub check_debian
+{
+  my $ver;
+
+  open DEBIAN, "/etc/debian_version" or return 0;
+  chomp ($ver = <DEBIAN>);
+  close DEBIAN;
+  $be_dist = 'debian-$ver';
+  return 1;
 }
 
-sub check_redhat {
-    open RELEASE, "/etc/redhat-release" or return 0;
-    $be_dist = 'redhat';
-    while (<RELEASE>) {
-	chomp;
-	if (/^Red Hat Linux.*\s+([0-9.]+)\s+.*/) {
-	    $be_dist_version = $1;
-	    close RELEASE;
-	    return 1;
-	}
+sub check_redhat
+{
+  open RELEASE, "/etc/redhat-release" or return 0;
+  while (<RELEASE>)
+  {
+    chomp;
+    if (/^Red Hat Linux.*\s+([0-9.]+)\s+.*/)
+    {
+      $be_dist = "redhat-$1";
+      close RELEASE;
+      return 1;
     }
-    close RELEASE;
-    return 0;
+  }
+  close RELEASE;
+  return 0;
 }
 
-sub check_caldera {
-    open INSTALLED, "/etc/.installed" or return 0;
-    while (<INSTALLED>) {
-	chomp;
-	if (/^OpenLinux-(.*)-.*/) {
-	    $be_dist = 'caldera';
-	    $be_dist_version = $1;
-	    close INSTALLED;
-	    return 1;
-	}
+sub check_caldera
+{
+  open INSTALLED, "/etc/.installed" or return 0;
+  while (<INSTALLED>)
+  {
+    chomp;
+    if (/^OpenLinux-(.*)-.*/)
+    {
+      $be_dist = 'caldera-$1';
+      close INSTALLED;
+      return 1;
     }
-    close INSTALLED;
-    return 0;
+  }
+  close INSTALLED;
+  return 0;
 }
 
-sub check_suse {
-    open RELEASE, "/etc/SuSE-release" or return 0;
-    $be_dist = 'suse';
-    while (<RELEASE>) {
-	chomp;
-	if (/^VERSION\s*=\s*(\S+)/) {
-	    $be_dist_version = $1;
-	    close RELEASE;
-	    return 1;
-	}
+sub check_suse
+{
+  open RELEASE, "/etc/SuSE-release" or return 0;
+  while (<RELEASE>)
+  {
+    chomp;
+    if (/^VERSION\s*=\s*(\S+)/)
+    {
+      $be_dist = 'suse-$1';
+      close RELEASE;
+      return 1;
     }
-    close RELEASE;
-    return 0;
+  }
+  close RELEASE;
+  return 0;
 }
 
-sub check_mandrake {
-    open MANDRAKE, "/etc/mandrake-release" or return 0;
-    $be_dist = 'mandrake';
-    while (<MANDRAKE>) {
-	chomp;
-	if (/^Linux Mandrake release (\S+)/) {
-	    $be_dist_version = $1;
-	    close MANDRAKE;
-	    return 1;
-	}
+sub check_mandrake
+{
+  open MANDRAKE, "/etc/mandrake-release" or return 0;
+  while (<MANDRAKE>)
+  {
+    chomp;
+    if (/^Linux Mandrake release (\S+)/)
+    {
+      $be_dist = 'mandrake-$1';
+      close MANDRAKE;
+      return 1;
     }
-    close MANDRAKE;
-    return 0;
+  }
+  close MANDRAKE;
+  return 0;
 }
 
-sub check_turbolinux {
-    open RELEASE, "/etc/turbolinux-release" or return 0;
-    $be_dist = 'turbolinux';
-    while (<RELEASE>) {
-	chomp;
-	if (/release\s([0-9.]+)\s.*/) {
-	    $be_dist_version = $1;
-	    close RELEASE;
-	    return 1;
-	}
+sub check_turbolinux
+{
+  open RELEASE, "/etc/turbolinux-release" or return 0;
+  while (<RELEASE>)
+  {
+    chomp;
+    if (/release\s([0-9.]+)\s.*/)
+    {
+      $be_dist = 'turbolinux-$1';
+      close RELEASE;
+      return 1;
     }
-    close RELEASE;
-    return 0;
+  }
+  close RELEASE;
+  return 0;
 }
 
-sub check_linuxppc {
-    open RELEASE, "/etc/redhat-release" or return 0;
-    while (<RELEASE>) {
-	chomp;
-	if (/^LinuxPPC\s+(\S+)/) {
-	    $be_dist = 'linuxppc';
-	    $be_dist_version = $1;
-	    close RELEASE;
-	    return 1;
-	}
+sub check_linuxppc
+{
+  open RELEASE, "/etc/redhat-release" or return 0;
+  while (<RELEASE>)
+  {
+    chomp;
+    if (/^LinuxPPC\s+(\S+)/)
+    {
+      $be_dist = 'linuxppc-$1';
+      close RELEASE;
+      return 1;
     }
-    close RELEASE;
-    return 0;
+  }
+  close RELEASE;
+  return 0;
 }
+
+
 
 sub be_guess_system
 {
@@ -2211,7 +2232,7 @@ sub be_guess_system
   
   if (! -f "$dir/system.guess")
   {
-    system ("$dir/guess_system.sh > $dir/system.guess");
+    system ("$dir/guess_system.sh > $dir/system.guess 2>/dev/null");
 
     # FIXME: is this check for success correct? Taken from perlfunc.
     if ($? >> 8)
@@ -2221,7 +2242,12 @@ sub be_guess_system
     }
   }
 
-  open FILE, "$dir/system.guess";
+  if (-f "$dir/system.guess") { open FILE, "$dir/system.guess"; }
+  else
+  {
+    open FILE, "$dir/guess_system.sh 2>/dev/null |";
+  }
+
   chomp ($be_system = <FILE>);
   close FILE;
 
@@ -2263,13 +2289,11 @@ sub be_map_dist
 sub be_init
 {
   my @args = @_;
-  
+
   $be_name = @args[0];
   $be_version = @args[1];
   $be_description = @args[2];
   shift @args; shift @args; shift @args;
-
-  &be_guess_system ();
 
   while (@args)
   {
@@ -2296,6 +2320,7 @@ sub be_init
 
       shift @args;  # For the argument.
     }
+    elsif ($args[0] eq "--platform")                    { $be_dist = $args[1]; shift @args; }
     elsif ($args[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
     elsif ($args[0] eq "--verbose" || $args[0] eq "-v") { $be_verbose = 1; }
     elsif ($args[0] eq "--progress")                    { $be_progress = 1; }
@@ -2317,6 +2342,17 @@ sub be_init
   }
 
   &be_begin();
+  if (!$be_dist) { &be_guess_system (); }
+
+  if ($be_dist)
+  {
+    &be_report_info (95, "Configuring for platform $be_dist");
+  }
+  else
+  {
+    be_report_fatal (95, "Unknown or unsupported platform");
+    die;
+  }
 }
 
 

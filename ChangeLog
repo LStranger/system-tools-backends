@@ -1,3 +1,8 @@
+2001-02-07  Hans Petter Jansson  <hpj@ximian.com>
+
+	* be.pl.in: Redid the platform naming scheme, added switch for
+	  manual override.
+
 2001-02-06  Hans Petter Jansson  <hpj@ximian.com>
 
 	* media.pl.in: (xst_media_xml_print): Implement.
