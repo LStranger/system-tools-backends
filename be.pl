@@ -21,6 +21,80 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+
+# --- Generic part of usage text --- #
+
+my $be_usage_generic =<<"end_of_usage_generic;";
+       Major operations (specify one of these):
+
+       -g --get      Prints the current configuration to standard output, as
+                     a standalone XML document. The configuration is read from
+                     the host\'s system config files.
+
+       -s --set      Updates the current configuration from a standalone XML
+                     document read from standard input. The format is the same
+                     as for the document generated with --get.
+
+       -f --filter   Reads XML configuration from standard input, parses it,
+                     and writes the configurator\'s impression of it back to
+                     standard output. Good for debugging and parsing tests.
+
+       -h --help     Prints this page to standard error.
+
+          --version  Prints version information to standard output.
+
+       Modifiers (specify any combination of these):
+
+          --disable-immediate  With --set, prevents the configurator from
+                     running any commands that make immediate changes to
+                     the system configuration. Use with --prefix to make a
+                     dry run that won\'t affect your configuration.
+
+                     With --get, suppresses running of non-vital external
+                     programs that might take a long time to finish.
+
+       -p --prefix <location>  Specifies a directory prefix where the
+                     configuration is looked for or stored. When storing
+                     (with --set), directories and files may be created.
+
+          --progress Prints machine-readable progress information to standard
+                     output, before any XML, consisting of three-digit
+                     percentages always starting with \'0\'.
+
+          --report   Prints machine-readable diagnostic messages to standard
+                     output, before any XML. Each message has a unique
+                     three-digit ID. The report ends in a blank line.
+
+       -v --verbose  Prints human-readable diagnostic messages to standard
+                     error.
+end_of_usage_generic;
+
+
+# --- Auto-informative printing --- #
+
+sub be_print_usage
+{
+  my $i;
+
+  print STDERR "Usage: $be_name-conf <--get | --set | --filter | --help | --version>\n";
+
+  for ($i = (length $be_name); $i > 0; $i--) { print STDERR " "; }
+  print STDERR "             [--disable-immediate] [--prefix <location>]\n";
+
+  for ($i = (length $be_name); $i > 0; $i--) { print STDERR " "; }
+  print STDERR "             [--progress] [--report] [--verbose]\n\n";
+
+  print STDERR $be_description . "\n";
+
+  print STDERR $be_usage_generic . "\n";
+}
+
+sub be_print_version
+{
+  print "$be_name $be_version\n";
+}
+
+
 # --- Operation modifying variables --- #
 
 # Variables are set to their default value, which may be overridden by user. Note
@@ -28,11 +102,15 @@
 # and disables creation of directories and writing of previously non-existent
 # files.
 
+$be_name = "";       # Short name of tool.
+$be_version = "";    # Version of tool - [major.minor.revision].
+$be_operation = "";  # Major operation user wants to perform - [get | set | filter].
+
 $be_prefix = "";
 $be_verbose = 0;
 $be_do_immediate = 1;
 
-# for debugging (perl -d) purposes. set to "" for normal operation:
+# For debugging (perl -d) purposes. set to "" for normal operation:
 $be_input_file = "";
 
 
@@ -654,9 +732,6 @@ sub be_xml_get_text
 
 # --- Others --- #
 
-$be_operation = "";  # Major operation user wants to perform. [get | set | filter]
-
-
 sub be_set_operation
   {
     if ($be_operation ne "")
@@ -688,20 +763,25 @@ sub be_end
 sub be_init()
 {
   my @args = @_;
+  
+  $be_name = @args[0];
+  $be_version = @args[1];
+  $be_description = @args[2];
+  shift @args; shift @args; shift @args;
 
   while (@args)
   {
     if    ($args[0] eq "--get"    || $args[0] eq "-g") { be_set_operation("get"); }
     elsif ($args[0] eq "--set"    || $args[0] eq "-s") { be_set_operation("set"); }
     elsif ($args[0] eq "--filter" || $args[0] eq "-f") { be_set_operation("filter"); }
-    elsif ($args[0] eq "--help"   || $args[0] eq "-h") { print $Usage; exit(0); }
-    elsif ($args[0] eq "--version")                    { print "$version\n"; exit(0); }
+    elsif ($args[0] eq "--help"   || $args[0] eq "-h") { be_print_usage(); exit(0); }
+    elsif ($args[0] eq "--version")                    { be_print_version(); exit(0); }
     elsif ($args[0] eq "--prefix" || $args[0] eq "-p")
     {
       if ($be_prefix ne "")
       {
         print STDERR "Error: You may specify --prefix only once.\n\n";
-        print STDERR $Usage; exit(1);
+        be_print_usage(); exit(1);
       }
 
       $be_prefix = $args[1];
@@ -709,7 +789,7 @@ sub be_init()
       if ($be_prefix eq "")
       {
         print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
-        print STDERR $Usage; exit(1);
+        be_print_usage(); exit(1);
       }
 
       shift @args;  # For the argument.
@@ -721,10 +801,17 @@ sub be_init()
     else
     {
       print STDERR "Error: Unrecognized option '$args[0]'.\n\n";
-      print STDERR $Usage; exit(1);
+      be_print_usage(); exit(1);
     }
 
     shift @args;
+  }
+
+  if ($be_operation eq "")
+  {
+    print STDERR "Error: No operation specified.\n\n";
+    be_print_usage();
+    exit(1);
   }
 
   be_begin();

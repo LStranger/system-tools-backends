@@ -42,64 +42,20 @@
 
 require "___scriptsdir___/be.pl";
 
+$DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
 
-# --- Usage text --- #
 
-my $Usage =<<"End_of_Usage;";
-Usage: users-conf <--get | --set | --filter | --help>
-                 [--prefix <location>] [--disable-immediate]
-                 [--verbose] [--progress]
+# --- Tool information --- #
 
-       Major operations (specify one of these):
-
-       -g --get      Prints the current users configuration to standard
-                     output, as as standalone XML document. The parameters
-                     are read from the host\'s low-level configuration.
-
-       -s --set      Updates the user configuration from a standalone
-                     XML document read from standard input. The format is
-                     the same as for the document generated with --get.
-
-       -f --filter   Reads XML configuration from standard input, parses it,
-                     and writes the configurator\'s impression of it back to
-                     standard output. Good for debugging and parsing tests.
-
-       -h --help     Prints this page to standard output. That\'s all.
-
-          --version  Prints version information to standard output.
-
-       Modifiers (specify any combination of these):
-
-       -p --prefix <location>  Specifies a directory prefix where the
-                     configuration is looked for or stored. When storing
-                     (with --set), directories and files may be created.
-
-          --disable-immediate  With --set, prevents the configurator from
-                     running any commands that make immediate changes to
-                     the system configuration. Use with --prefix to make a
-                     dry run that won\'t affect your configuration.
-
-                     With --get, suppresses running of non-vital external
-                     programs that might take a long time to finish.
-
-       -v --verbose  Turns on diagnostic messages to standard error.
-
-          --progress Prints progress information suitable for interactive
-                     frontends to standard output. The progress information
-                     is printed before any XML, and consists of a decimal
-                     number saying how many dots to expect, followed by a
-                     newline, and a running line of dots as the operation
-                     progresses, followed by a newline after the last dot.
-                     The dots generated can be more or less than the
-                     number indicated on the first line.
-
-End_of_Usage;
-
+$name = "users";
 $version = "0.1.0";
+
+$description =<<"end_of_description;";
+       Manages system users.
+end_of_description;
 
 $progress_max = 3;
 
-$DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
 
 
 # --- System config file locations --- #
@@ -854,15 +810,10 @@ sub filter
 
 # --- Main --- #
 
-&be_init(@ARGV);
+&be_init($name, $version, $description, @ARGV);
 
 # Do our thing.
 
 if    ($be_operation eq "get")    { &get; }
 elsif ($be_operation eq "set")    { &set; }
 elsif ($be_operation eq "filter") { &filter; }
-else
-{
-  print STDERR "Error: No operation specified.\n\n";
-  print STDERR $Usage; exit(1);
-}

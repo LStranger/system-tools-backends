@@ -55,46 +55,14 @@ require "___scriptsdir___/be.pl";
 
 
 
-# --- Usage text --- #
+# --- Tool information --- #
 
-my $Usage =<<'End_of_Usage;';
-Usage: memory-conf <--get | --set | --filter | --help>
-                 [--prefix <location>] [--disable-immediate]
-                 [--verbose]
+$name = "hardware";
+$version = "0.1.0";
 
-       Major operations (specify one of these):
-
-       -g --get      Prints the current time configuration to standard
-                     output, as as standalone XML document. The parameters
-                     are read from the host's low-level configuration.
-
-       -s --set      Updates the system time configuration from a standalone
-                     XML document read from standard input. The format is
-                     the same as for the document generated with --get.
-
-       -f --filter   Reads XML configuration from standard input, parses it,
-                     and writes the configurator's impression of it back to
-                     standard output. Good for debugging and parsing tests.
-
-       -h --help     Prints this page to standard output. That's all.
-
-       Modifiers (specify any combination of these):
-
-       -p --prefix <location>  Specifies a directory prefix where the
-                     configuration is looked for or stored. When storing
-                     (with --set), directories and files may be created.
-
-          --disable-immediate  With --set, prevents the configurator from
-                     running any commands that make immediate changes to
-                     the system configuration. Use with --prefix to make a
-                     dry run that won't affect your configuration.
-
-                     With --get, suppresses running of non-vital external
-                     programs that might take a long time to finish.
-
-       -v --verbose  Turns on diagnostic messages to standard error.
-
-End_of_Usage;
+$description =<<"end_of_description";
+       Configures hardware.
+end_of_description;
 
 
 # --- System config file locations --- #
