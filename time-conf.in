@@ -845,7 +845,7 @@ sub conf_get_replace_table
               [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",  \&time_set_local_time ],
               [ "sync",        \&time_replace_ntp_servers, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active", \&gst_service_sysv_set_status, 23, "ntp-simple", "%sync_active%" ],
+              [ "sync_active", \&gst_service_sysv_set_status, 23, "ntp-server", "%sync_active%" ],
               ]
                 },
        
