@@ -8,6 +8,7 @@ shares-conf
 time-conf
 users-conf
 boot-conf
+internetsharing-conf
 be.pl
 parse.pl
 replace.pl

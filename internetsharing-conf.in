@@ -1,0 +1,527 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Time configurator. Designed to be architecture- and distribution independent.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected/used:
+#
+# /usr/share/zoneinfo/zone.tab
+# /etc/ntp.conf
+# /etc/ntp/step-tickers
+# /etc/localtime
+
+# Running programs affected/used:
+#
+# date
+
+
+
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/platform.pl";
+require "___scriptsdir___/util.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/xml.pl";
+require "___scriptsdir___/service.pl";
+require "___scriptsdir___/parse.pl";
+require "___scriptsdir___/replace.pl";
+
+
+# --- Tool information --- #
+
+$name = "time";
+$version = "0.1.0";
+@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2",
+              "redhat-7.0", "mandrake-7.2", "debian-2.2");
+
+$description =<<"end_of_description;";
+       Configures your system clock, timezone and time server list.
+end_of_description;
+
+$progress_max = 365;
+
+
+# --- XML parsing --- #
+
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  my ($tree, %hash);
+  
+  # Scan XML to tree.
+
+  $tree = &xst_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "networking" tag.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "time") { &xml_parse_time($$tree[1], \%hash); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return(\%hash);
+}
+
+
+# <networking>...</networking>
+
+sub xml_parse_time
+{
+  my $tree = $_[0];
+  my $hash = $_[1];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if    ($$tree[0] eq "local_time"){ $$hash{"local_time"} = &xml_parse_local_time ($$tree[1]); }
+    elsif ($$tree[0] eq "timezone") { $$hash{"timezone"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "sync")     { $$hash{"sync"} = &xml_parse_sync ($$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+sub xml_parse_sync
+{
+  my $tree = $_[0];
+  my @sync;
+
+  push (@sync, &xst_read_boolean($$tree[0]->{active}));
+  
+  shift @$tree;
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "server")  { push (@sync, &xst_xml_get_word($$tree[1])); }
+    
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return \@sync;
+}
+
+
+sub xml_parse_local_time
+{
+  my $tree = $_[0];
+  my $hash;
+
+  shift @$tree;
+
+  while (@$tree)
+  {
+    if    ($$tree[0] eq "year")     { $$hash{"year"} = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "month")    { $$hash{"month"} = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "monthday") { $$hash{"monthday"} = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "hour")     { $$hash{"hour"} = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "minute")   { $$hash{"minute"} = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "second")   { $$hash{"second"} = &xst_xml_get_word($$tree[1]); }
+    
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return \%hash;
+}
+
+# --- XML printing --- #
+
+
+sub xml_print
+{
+  my $h = $_[0];
+  my @sync;
+
+  @scalar_keys = qw (timezone ntpinstalled);
+
+  $sync = $$h{"sync"};
+
+  &xst_xml_print_begin ();
+
+  &xst_xml_print_vspace ();
+  &xst_xml_print_hash ($$h{"local_time"}, "local_time");
+  &xst_xml_print_vspace ();
+  
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<sync active='" . &xst_print_boolean_yesno ($sync_active) . "'>\n");
+  
+  &xst_xml_enter ();
+  foreach $server (@$sync)
+  {
+    &xst_xml_print_line ("<server>$server</server>\n");
+  }
+  &xst_xml_leave ();
+  
+  &xst_xml_print_line ("</sync>\n");
+  &xst_xml_print_vspace ();
+
+  &xst_xml_print_scalars ($h, @scalar_keys);
+  &xst_xml_print_vspace ();
+
+  &xst_xml_print_end ();
+}
+
+# Main operations
+
+sub get
+{
+  my $hash;
+
+  &xst_begin ();
+  
+  $hash = &conf_get ();
+
+  &xst_end();
+  &xml_print ($hash);
+}
+
+
+sub set
+{
+  my $hash;
+
+  &xst_begin ();
+  $hash = &xml_parse ();
+
+  &conf_set ($hash);
+  
+  &xst_end();
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+{
+  my $hash;
+
+  &xst_begin ();
+  $hash = &xml_parse ();
+  &xst_end();
+  &xml_print ($hash);
+}
+
+
+# --- Main --- #
+
+&xst_init($name, $version, $description, @ARGV);
+&xst_platform_ensure_supported (@platforms);
+
+# Do our thing.
+
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }
+
+# Portable code.
+
+sub time_get_local_time
+{
+  my (%h, $trash);
+
+  ($h{"second"}, $h{"minute"}, $h{"hour"}, $h{"monthday"}, $h{"month"}, $h{"year"},
+   $trash, $trash, $trash) = localtime (time);
+
+  return \%h;
+}
+
+sub time_get_rh62_zone
+{
+  my ($local_time_file, $zoneinfo_dir) = @_;
+  local *TZLIST;
+  my $zone;
+  my $size_search;
+  my $size_test;
+
+  *TZLIST = &xst_file_open_read_from_names($zoneinfo_dir . "/zone.tab");
+  if (not *TZLIST) { return; }
+
+  &xst_report ("time_timezone_scan");
+
+  # Get the filesize for /etc/localtime so that we don't have to execute
+  # a diff for every file, only for file with the correct size. This speeds
+  # up loading 
+  $size_search = (stat ($local_time_file))[7];
+
+  while (<TZLIST>)
+  {
+    if (/^\#/) { next; }                   # Skip comments.
+    ($d, $d, $zone) = split /[\t ]+/, $_;  # Get 3rd column.
+    chomp $zone;                           # Remove linefeeds.
+
+
+    # See if this zone file matches the installed one.
+    &xst_report ("time_timezone_cmp", $zone);
+    &xst_print_progress();
+    $size_test = (stat("$zoneinfo_dir/$zone"))[7];
+    if ($size_test eq $size_search)
+    {
+      if (!&xst_file_run ("diff $zoneinfo_dir/$zone $local_time_file"))
+      {
+        # Found a match.
+        last;
+      }
+    }
+    
+    $zone = "";
+  }
+  
+  return $zone;
+  close (TZLIST);
+}
+
+sub conf_get
+{
+  my %dist_attrib;
+  my $hash;
+
+  %dist_attrib = &conf_get_parse_table ();
+
+  $hash = &xst_parse_from_table ($dist_attrib{"fn"},
+                                 $dist_attrib{"table"});
+  return $hash;
+}
+
+sub time_set_local_time
+{
+  my ($time) = @_;
+
+  &xst_report_enter ();
+  &xst_report ("time_localtime_set", "%{$time}");
+  
+  $command = sprintf ("date %02d%02d%02d%02d%04d.%02d", $$time{"month"}, $$time{"monthday"},
+                      $$time{"hour"}, $$time{"minute"}, $$time{"year"}, $$time{"second"});
+  $res = &xst_file_run ($command);
+
+  &xst_report_leave ();
+  return -1 if $res;
+  return 0;
+}
+
+sub time_set_rh62_zone
+{
+  my ($localtime, $zonebase, $timezone) = @_;
+
+  &xst_report_enter ();
+  &xst_report ("time_timezone_set", $timezone);
+
+  $tz = "$zonebase/$timezone";
+
+  if (stat($tz) ne "")
+  {
+    $fd = &xst_file_open_write_from_names ($localtime);
+    &xst_report_leave ();
+    return -1 if !$fd;
+    close $fd;
+
+    unlink $localtime;  # Important, since it might be a symlink.
+    
+    &xst_report_enter ();
+    $res = &xst_file_run("cp $tz $localtime");
+    &xst_report_leave ();
+    return -1 if $res;
+    return 0;
+  }
+
+  &xst_report_leave ();
+  return -1;
+}
+
+sub conf_set
+{
+  my $values_hash = $_[0];
+  my %dist_attrib;
+
+  %dist_attrib = &conf_get_replace_table ();
+
+  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+                                  $values_hash);
+
+  return $res;
+}
+
+sub conf_get_parse_table
+{
+  my %dist_map =
+  (
+   "redhat-6.0"   => "redhat-6.2",
+   "redhat-6.1"   => "redhat-6.2",
+   "redhat-6.2"   => "redhat-6.2",
+
+   "redhat-7.0"   => "redhat-7.0",
+   "mandrake-7.2" => "redhat-7.0",
+
+   "debian-2.2"   => "debian-2.2"
+   );
+
+  my %dist_tables =
+      (
+       "redhat-6.2" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           STEP_TICKERS => "/etc/ntp/step-tickers",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_get_status, "xntpd" ],
+              [ "ntpinstalled", \&xst_service_sysv_installed, "xntpd" ],
+              ]
+                },
+       
+       "redhat-7.0" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           STEP_TICKERS => "/etc/ntp/step-tickers",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_get_status, "ntpd" ],
+              [ "ntpinstalled", \&xst_service_sysv_installed, "ntpd" ],
+              ]
+                },
+
+       "debian-2.2" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_get_status, "ntpd" ],
+              [ "ntpinstalled", \&xst_service_sysv_installed, "ntp" ],
+              ]
+                },
+       );
+
+  my $dist = $dist_map {$xst_dist};
+  return %{$dist_tables{$dist}} if $dist;
+
+  #FIXME: warn about unsupported platform.
+  return undef;
+}
+
+sub conf_get_replace_table
+{
+  my %dist_map =
+  (
+   "redhat-6.0"   => "redhat-6.2",
+   "redhat-6.1"   => "redhat-6.2",
+   "redhat-6.2"   => "redhat-6.2",
+   
+   "redhat-7.0"   => "redhat-7.0",
+   "mandrake-7.2" => "redhat-7.0",
+
+   "debian-2.2"   => "debian-2.2"
+   );
+
+  my %dist_tables =
+      (
+       "redhat-6.2" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           STEP_TICKERS => "/etc/ntp/step-tickers",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",  \&time_set_local_time ],
+              [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active", \&xst_service_sysv_set_status, 90, "xntpd" ],
+              ]
+                },
+
+       "redhat-7.0" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",   \&time_set_local_time ],
+              [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_set_status, 90, "ntpd" ],
+              ]
+                },
+
+       "debian-2.2" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",  \&time_set_local_time ],
+              [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active", \&xst_service_sysv_set_status, 23, "ntp" ],
+              ]
+                }
+       );
+
+  my $dist = $dist_map {$xst_dist};
+  return %{$dist_tables{$dist}} if $dist;
+
+  #FIXME: warn about unsupported platform.
+  return undef;
+}
+
