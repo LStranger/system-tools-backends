@@ -1,3 +1,10 @@
+2004-04-18  Carlos García Campos <elkalmail@yahoo.es>
+
+	* disks-conf.in: added get_cdrom_disc_info to get information
+	specific for each cdrom disc type (data, audio and mixed)
+
+	* disks-conf.in: avoid fdisk -l scan for cdrom devices
+
 2004-04-16  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* service-list.pl.in: more services

@@ -727,6 +727,18 @@ sub get_fdisk
   for $dev (@check_devs)
   {
     my ($disk, $device, $point, $fs, $options, $check, $size, $bootable, $fd);
+   
+    # Delete cdrom devices
+    my $cdrom_found = 0;
+    for ($i = 0; $cf_disks[$i]; $i++) {
+       if (($cf_disks[$i])->{device} eq $dev) {
+	  if (($cf_disks[$i])->{media} eq "cdrom") {
+	     $cdrom_found = 1;
+	     last;
+	  }
+       }
+    }
+    if ($cdrom_found) { next; }
     
     &gst_report ("disks_partition_probe", $dev);
 
@@ -1189,7 +1201,7 @@ sub xml_print
       if (%$disk->{media}) { &gst_xml_print_line ("<media>" . %$disk->{media} . "</media>\n"); }
       if (%$disk->{model}) { &gst_xml_print_line ("<model>" . %$disk->{model} . "</model>\n"); }
       if (%$disk->{media} =~ /cdrom/) { 
-	 &get_removable_storage_info (%$disk->{device});
+	 #&get_cdrom_disc_info (%$disk->{device});
 	 &gst_xml_print_state_tag ("play-audio",   %$disk->{"play-audio"});
 	 &gst_xml_print_state_tag ("write-cdr",    %$disk->{"write-cdr"});
 	 &gst_xml_print_state_tag ("write-cdrw",   %$disk->{"write-cdrw"});
@@ -1365,7 +1377,27 @@ sub test_xml
     system ("cat $file");
 }
 
-sub get_removable_storage_info
+sub msf2lba
+{
+   ($m, $s, $f) = @_;
+
+   return int (((($m * 60) + $s) * 75 + $f) - 150);
+}
+
+sub lba2msf
+{
+   $lba = @_;
+
+   $lba += 150;
+   $lba &= 0xffffff;
+
+   my $m = int ($lba / (60 * 75));
+   $lba %= (60 * 75);
+
+   return ($m, int ($lba / 75), int ($lba % 75));
+}
+
+sub get_cdrom_disc_info
 {
    my ($device) = @_;
 
@@ -1393,7 +1425,7 @@ sub get_removable_storage_info
    $CDROM_MSF = 0x02;
    
 
-   if (!ioctl (RD, 0x5305, $tochdr)) {
+   if (!ioctl (RD, $CDROMREADTOCHDR, $tochdr)) {
       &gst_xml_print_line ("<type-content>" . "blank"  . "</type-content>\n");
       close (RD);
       return;
@@ -1405,61 +1437,114 @@ sub get_removable_storage_info
    } else {
       ($start, $end) = unpack "CC", $tochdr;
    }
-   
+  
    for (my $i = $start; $i <= $end; $i++ ) {
       push @tracks, $i;
    }
    push @tracks, 0xAA;
 
-   $audio = 0;
-   $data = 0;
+   my $min = 0;
+   my $sec = 0;
+   my $frame = 0;
+   my $audio = 0;
+   my $data = 0;
+   my $first_data = 0;
+   my $last_audio = 0;
+   my $duration = 0;
+   
    foreach (@tracks) {
-      ioctl (RD, 0x5306, $tocentry = pack ("CCC", $_, 0, $CDROM_MSF, 0, 0, 0, 0));
+      ioctl (RD, $CDROMREADTOCENTRY, $tocentry = pack ("CCCCCCCCC", $_, 0, $CDROM_MSF, 0, 0, 0, 0));
       my @times = unpack ("CCCCCCCCC", $tocentry);
       if ($times[1] & ($CDROM_DATA_TRACK << 4)) {
 	 $data ++;
+	 if ($data eq 1) {
+	    $first_data = $_;
+	 }
       } else {
 	 $audio ++;
+	 $last_audio = $_;
       }
+      
+      my $temp2 = 0;
+      $temp2 += int ($times[6]);
+      $temp2 += int ($times[5] * 75);
+      $temp2 += int ($times[4] * 60 * 75);
+
+      my $temp1 = 0;
+      $temp1 += $frame;
+      $temp1 += $sec * 75;
+      $temp1 += $min * 60 * 75;
+
+      $temp2 -= $temp1;
+      
+      my $length_min = int ($temp2 / (60 * 75));
+      $temp2 %= (60 * 75);
+      my $length_sec = int ($temp2 / 75);
+      my $length_frame = int ($temp2 % 60);
+
+      my $dur = int (($length_min * 60) + $length_sec);
+      if ($first_data eq $_) {
+	 $dur -= 152; # Mixed CD
+      }
+      if ($_ gt 1 && ($last_audio eq $_ || $first_data eq $_)) {
+	 $duration += $dur;
+      }
+      
+      
+      $min = $times[4];
+      $sec = $times[5];
+      $frame = $times[6];
    }
 
    close (RD);
 
+   $min = int ($duration / 60);
+   $sec = int ($duration % 60);
+   
+   # Some corrections
+   if ($data gt 0 && $audio gt 0) {
+      $data --;
+   } elsif ($audio gt 0) {
+      $audio --;
+   } else {
+      $data --;
+   }
+   
    if ($data gt 0) {
       if ($audio gt 0) {
 	 &gst_xml_print_line ("<type-content>" . "mixed"  . "</type-content>\n");
+	 &gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
+         &gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
+	 &gst_xml_print_line ("<data-tracks>" . $data . "</data-tracks>\n");
       } else {
 	 &gst_xml_print_line ("<type-content>" . "data"  . "</type-content>\n");
-	 #if (`mount | grep $device`) {
-	    #   &gst_xml_print_state_tag ("mounted", 1);
-	    #my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
-	    #if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
-	    #} else {
-	       #&gst_xml_print_state_tag ("mounted", 0);
-	       #}
       }
       
       if (`mount | grep $device`) {
 	 &gst_xml_print_state_tag ("mounted", 1);
 	 my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
 	 if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+	 my ($size) = `df $device | grep $device | awk  '/\\/dev/ {print \$2}'`;
+	 if ($size) { &gst_xml_print_line ("<size>" . $size . "</size>\n"); }
       } else {
 	 &gst_xml_print_state_tag ("mounted", 0);
       }
 
    } else {
       &gst_xml_print_line ("<type-content>" . "audio"  . "</type-content>\n");
+      &gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
+      &gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
    }
 }
   
-sub removable_info
+sub cdrom_disc_info
 {
    my ($tool, $device) = @_;
    
    &gst_report_end ();
-   &gst_xml_print_begin ("removable_info");
-   &get_removable_storage_info ($device);
-   &gst_xml_print_end ("removable_info");
+   &gst_xml_print_begin ("disc_info");
+   &get_cdrom_disc_info ($device);
+   &gst_xml_print_end ("disc_info");
 }	       
 
    
@@ -1522,7 +1607,7 @@ sub dev_speed
 
 sub mount_partition
 {
-   my ($device, $typefs, $point, $mounted, $listed) = @_;
+   my ($device, $media, $typefs, $point, $mounted, $listed) = @_;
 
    if ($mounted) {
       $error = `umount $device 2>&1`;
@@ -1544,33 +1629,40 @@ sub mount_partition
       &gst_xml_print_line ("<error>" . $error  . "</error>\n"); 
    }
 
-   &gst_xml_print_line ("<partition>\n");
-   &gst_xml_enter ();
+   if ($media eq "disk") {
+      &gst_xml_print_line ("<partition>\n");
+      &gst_xml_enter ();
 
-   &gst_xml_print_state_tag ("mounted", $mounted);
+      &gst_xml_print_state_tag ("mounted", $mounted);
    
-   if ($mounted) {
-      ($point, $typefs) = `mount | grep $device` =~ /^$device on (.*) type (.*) .*$/;
-      #TODO  check block size 
-      #$free = `df --block-size=$block_size $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
-      $free = `df $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
-	 
-   }
+      if ($mounted) {
+	 ($point, $typefs) = `mount | grep $device` =~ /^$device on (.*) type (.*) .*$/;
+         #TODO  check block size 
+         #$free = `df --block-size=$block_size $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
+         $free = `df $device | grep $device | awk  '/\\/dev/ {print \$4}'`;	 
+      }
       
-   if ($typefs) { &gst_xml_print_line ("<typefs>" . $typefs . "</typefs>\n"); }
-   if ($point ) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
-   if ($free) { &gst_xml_print_line ("<free>" . $free . "</free>\n"); }
+      if ($typefs) { &gst_xml_print_line ("<typefs>" . $typefs . "</typefs>\n"); }
+      if ($point ) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+      if ($free) { &gst_xml_print_line ("<free>" . $free . "</free>\n"); }
 
-   &gst_xml_leave ();
-   &gst_xml_print_line ("</partition>\n");
+      &gst_xml_leave ();
+      &gst_xml_print_line ("</partition>\n");
+   } elsif ($media eq "cdrom") {
+      &gst_xml_print_line ("<cdrom>\n");
+      &gst_xml_enter ();
+      &get_cdrom_disc_info ($device);
+      &gst_xml_leave ();
+      &gst_xml_print_line ("</cdrom>\n");
+   }
 }
 
 sub mount_fs
 {
-   my ($tool, $device, $typefs, $point, $mounted, $listed) = @_;
+   my ($tool, $device, $media, $typefs, $point, $mounted, $listed) = @_;
    &gst_report_end ();
    &gst_xml_print_begin ("mount");
-   &mount_partition ($device, $typefs, $point, $mounted, $listed);
+   &mount_partition ($device, $media, $typefs, $point, $mounted, $listed);
    &gst_xml_print_end ("mount");
 }
 
@@ -1580,17 +1672,17 @@ sub mount_fs
 # Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
-  "get"       => [ \&get,      [], "" ],
-  "set"       => [ \&set,      [], "" ],
-  "filter"    => [ \&filter,   [], "" ],
-  "test_xml"  => [ \&test_xml, ["test_xml_file"],
-                  "Return a XML file to the frontend." ],
-  "dev_speed" => [ \&dev_speed, ["device"],
-                  "Return the speed of a device in kb/s" ],
-  "removable_info" => [ \&removable_info, ["device"],
-                       "Return info about the removable storages"],
-  "mount"     => [ \&mount_fs, ["device", "typefs", "point", "mounted", "listed"], 
-                   "Immediatly mount or umount a given partition"],
+  "get"             => [ \&get,      [], "" ],
+  "set"             => [ \&set,      [], "" ],
+  "filter"          => [ \&filter,   [], "" ],
+  "test_xml"        => [ \&test_xml, ["test_xml_file"],
+                       "Return a XML file to the frontend." ],
+  "dev_speed"       => [ \&dev_speed, ["device"],
+                       "Return the speed of a device in kb/s" ],
+  "cdrom_disc_info" => [ \&cdrom_disc_info, ["device"],
+                       "Return info about the cdrom discs"],
+  "mount"           => [ \&mount_fs, ["device", "media", "typefs", "point", "mounted", "listed"], 
+                       "Immediatly mount or umount a given partition"],
 };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);
