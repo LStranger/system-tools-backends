@@ -93,8 +93,9 @@ $sections = {
     Display => {
       KEY => Depth,
       keywords => {
-        Depth => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
-        Modes => [ \&parse_kw_list, \&xml_parse_kw_list, 1 ],
+        Depth   => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+        Modes   => [ \&parse_kw_list, \&xml_parse_display_modes, 1 ],
+        Virtual => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0],
       }
     }
   },
@@ -410,6 +411,13 @@ sub add2section
     bless $dest->{'ModeLine'}, $type;
   }
 
+  elsif ($type eq 'XstXDisplayMode') {
+    my $kw = shift @$source;
+    
+    foreach (@$source) { push @{$dest->{$kw}}, $_; }
+    bless $dest->{$kw}, $type;
+  }   
+
   elsif ($type eq "XstXServerLayoutScreen") {
     $dest->{'Screen'} = $source;
     bless $dest->{'Screen'}, $type;
@@ -610,6 +618,15 @@ sub xml_parse_kw_list
 }
 
 # Internal
+sub xml_parse_display_modes
+{
+  my $kw = shift;
+  my $val = &xst_xml_get_text (shift);
+
+  bless [ $kw, $val ], "XstXDisplayMode";
+}
+
+# Internal
 sub x_xml_parse_section
 {
   my ($config, $tree, $section_desc, $section) = @_;
@@ -688,19 +705,15 @@ sub x_delete_section
   }
 }
 
-sub x_update_keyword
+sub x_update_kw_list
 {
   my ($line, $section, $new_section, $kw, $quoted) = @_;
   my $quote = $quoted ? "\"" : "";
-  
+
   if (exists ($new_section->{$kw})) {
     my $type = ref ($new_section->{$kw});
 
-    if (!$type) {
-      $line =~ s/$section->{$kw}/$new_section->{$kw}/;
-    }
-
-    elsif ($type eq "XstXKeywordList") {
+    if ($type && $type eq "XstXKeywordList") {
       my $array = $section->{$kw};
       my $new_array = $new_section->{$kw};
       my $i = 0;
@@ -726,9 +739,91 @@ sub x_update_keyword
         }
         $i++;
       }
-      $line = $new_line . "\n";
+
+      return $new_line;
+    }
+  }
+
+  else {
+    #TODO: Give error
+    1;
+  }
+
+  return "";
+}
+
+sub x_update_display_mode
+{
+  my ($line, $section, $new_section, $kw, $quoted) = @_;
+  my $quote = $quoted ? "\"" : "";
+
+  if (exists ($new_section->{$kw})) {
+    my $type = ref ($new_section->{$kw});
+
+    if($type && $type eq "XstXDisplayMode") {
+      my $array = $section->{$kw};
+      my $new_array = $new_section->{$kw};
+      my $i = 0;
+
+      # Check if initial resolution is changed
+      if ($$array[0] ne $$new_array[0]) {
+        my ($x, $y) = ($1, $2) if ($$new_array[0] =~ /(\d+)x(\d+)/);
+        $new_section->{'Virtual'} = "$x $y";
+      }
+
+      # Take the name of keyword.
+      my $new_line = $1 if $line =~ s/^([ \t]*\S+[ \t]*)//;
+
+      while (1) {
+        my $a = $1 if $line =~ s/^(\S+[ \t]*)//;
+        
+        if ($$new_array[$i]) {
+          # If in old array replace, else add
+          if ($a) {
+            $a =~ s/$$array[$i]/$$new_array[$i]/;
+          } else {
+            $a = $quote . $$new_array[$i] . $quote;
+          }
+          # Remove spaces from the end of a and add to the end new_line. 
+          $a =~ s/[ \t]+$//;
+          $new_line .= "$a ";
+        } else {
+          last;
+        }
+        $i++;
+      }
+
+      return $new_line . "\n";
+    }
+  }
+  
+  #TODO: Give error
+
+  return "";
+}
+
+sub x_update_keyword
+{
+  my ($line, $section, $new_section, $kw, $quoted) = @_;
+  my $quote = $quoted ? "\"" : "";
+  
+  if (exists ($new_section->{$kw})) {
+    my $type = ref ($new_section->{$kw});
+
+    1;
+    
+    if (!$type) {
+      $line =~ s/$section->{$kw}/$new_section->{$kw}/;
     }
 
+    elsif ($type eq "XstXKeywordList") {
+      $line = &x_update_kw_list ($line, $section, $new_section, $kw, $quoted);
+    }
+
+    elsif ($type eq "XstXDisplayMode") {
+      $line = &x_update_display_mode ($line, $section, $new_section, $kw, $quoted);
+    }
+    
     else {
       # TODO: Implement, give warning.
       1;
@@ -783,6 +878,7 @@ sub x_add_keyword
     }
 
     if ($kw) {
+      delete $new_section->{$key};
       print $outfd $pre_space, $kw;
 
       if ($val) {
