@@ -48,6 +48,12 @@ sub xst_file_get_backup_path
 }
 
 
+sub xst_file_get_debug_path
+{
+  return (&xst_file_get_base_path (). "/debug");
+}
+
+
 sub xst_create_path
 {
   my $path;

@@ -1,5 +1,9 @@
 2001-03-05  Hans Petter Jansson  <hpj@ximian.com>
 
+	* file.pl.in (xst_file_get_debug_path): Implement.
+
+2001-03-05  Hans Petter Jansson  <hpj@ximian.com>
+
 	* disks-conf.in: Added redhat-7.0.
 
 2001-03-05  Hans Petter Jansson  <hpj@ximian.com>
