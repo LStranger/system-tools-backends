@@ -1,3 +1,8 @@
+2004-08-02  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* boot-conf.in: fixed some issues in entry name verifying function,
+	now it works with the chosen bootloader instead of the detected one
+
 2004-08-01  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* platform.pl.in: Black Panther linux has changed it's name to

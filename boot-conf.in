@@ -235,18 +235,19 @@ sub verify_print
 sub verify
 {
   my ($hash, $key, @values) = @_;
-  my ($i, $proc, $res, $loader);
+  my ($i, $proc, $res);
 
-  my %bootloader =
-      (
-       "lilo" => \&gst_boot_lilo_verify,
-       "grub" => \&gst_boot_grub_verify,
-       "yaboot" => \&gst_boot_yaboot_verify
-      );
+  my %bootloader_func =
+    (
+     "lilo" => \&gst_boot_lilo_verify,
+     "grub" => \&gst_boot_grub_verify,
+     "yaboot" => \&gst_boot_yaboot_verify
+    );
 
-  $loader = &gst_boot_bootloader_get ();
-  $proc = $bootloader{$loader};
+  $bootloader = &gst_boot_bootloader_get () if ($bootloader eq undef);
+  $proc = $bootloader_func{$bootloader};
   $res = &$proc ($key, @values);
+
   &gst_report_end ();
   &verify_print ($res);
 }
