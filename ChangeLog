@@ -1,0 +1,9 @@
+2001-01-16  Chema Celorio  <chema@celorio.com>
+
+	* time-conf.in (get_zone): when scanning for timezones
+	only do a system "diff ..." if the file size matches the
+	timezone we are looking for. This reduces loading time.
+
+	* Added ChangeLog 
+	
+

@@ -371,6 +371,8 @@ sub get_zone
   local *TZLIST;
   my $zone;
   my $diff_tool;
+  my $size_search;
+  my $size_test;
 
   *TZLIST = be_open_read_from_names(@zoneinfo_db_names);
   if (not *TZLIST) { return; }
@@ -379,21 +381,29 @@ sub get_zone
 
   be_report_info(8, "Scanning timezones");
 
+  # Get the filesize for /etc/localtime so that we don't have to execute
+  # a diff for every file, only for file with the correct size. This speeds
+  # up loading 
+  $size_search = (stat("/etc/localtime"))[7];
+  
   while (<TZLIST>)
   {
     if (/#/) { next; }                     # Skip comments.
     ($d, $d, $zone) = split /[\t ]+/, $_;  # Get 3rd column.
     chomp $zone;                           # Remove linefeeds.
-    
+
+
     # See if this zone file matches the installed one.
+    be_report_info(9, "Scanning timezones : $zone");
 
-    be_report_info(9, "Scanning timezones: $zone");
-
-    if (!system "$diff_tool /usr/share/zoneinfo/$zone /etc/localtime >/dev/null 2>/dev/null")
-    {
-      # Found a match.
-
-      last;
+   $size_test = (stat("/usr/share/zoneinfo/$zone"))[7];
+   #if ($size_test eq $size_search)
+   {
+      if (!system "$diff_tool /usr/share/zoneinfo/$zone /etc/localtime >/dev/null 2>/dev/null")
+      {
+        # Found a match.
+        last;
+      }
     }
     
     $zone = "";
