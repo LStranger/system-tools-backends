@@ -48,10 +48,10 @@ perl_libs = \
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh type1inst
 
 EXTRA_DIST = \
-	intltool-extract \
-	intltool-merge \
-	intltool-update \
-	system-tools-backends.pc \
+	intltool-extract.in \
+	intltool-merge.in \
+	intltool-update.in \
+	system-tools-backends.pc.in \
 	guess_system.sh \
 	type1inst       \
 	README \
