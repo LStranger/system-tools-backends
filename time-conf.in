@@ -266,6 +266,7 @@ sub time_get_local_time
   ($h{"second"}, $h{"minute"}, $h{"hour"}, $h{"monthday"}, $h{"month"}, $h{"year"},
    $trash, $trash, $trash) = localtime (time);
 
+  $h{"month"}++;
   $h{"year"} += 1900;
 
   return \%h;
