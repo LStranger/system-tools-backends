@@ -84,6 +84,7 @@ $PLATFORM_INFO = {
   "vine-3.1"        => "Vine Linux 3.1",
   "fedora-1"        => "Fedora Core 1 (Yarrow)",
   "fedora-2"        => "Fedora Core 2 (Tettnang)",
+  "fedora-3"        => "Fedora Core 3 (Heidelberg)",
   "specifix"        => "Specifix Linux",
 };
   
