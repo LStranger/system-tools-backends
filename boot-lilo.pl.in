@@ -228,7 +228,7 @@ sub gst_boot_lilo_parse_entries
     }
     else
     {
-      $entries[$found]{$key} .= $val;
+      $entries[$found]{$key} = $val;
     }
   }
 

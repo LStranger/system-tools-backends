@@ -39,6 +39,7 @@ require "$SCRIPTSDIR/parse.pl$DOTIN";
 require "$SCRIPTSDIR/replace.pl$DOTIN";
 require "$SCRIPTSDIR/boot-grub.pl$DOTIN";
 require "$SCRIPTSDIR/boot-lilo.pl$DOTIN";
+require "$SCRIPTSDIR/boot-yaboot.pl$DOTIN";
 
 # ----------------------------------------------------------------------------
 # Fix functions.
@@ -153,8 +154,9 @@ sub gst_boot_bootloader_get
   $tool = gst_file_locate_tool ("lilo");
   if ($tool ne "")
   {
-    $date = (stat ($tool))[8];
-    if ($date > $current_date) {
+    $date = (stat ($tool)) [8];
+    if ($date > $current_date)
+    {
       $current_date = $date;
       $current_tool = "lilo";
     }
@@ -163,10 +165,22 @@ sub gst_boot_bootloader_get
   $tool = gst_file_locate_tool ("grub-install");
   if ($tool ne "")
   {
-    $date = (stat ($tool))[8];
-    if ($date > $current_date) {
+    $date = (stat ($tool)) [8];
+    if ($date > $current_date)
+    {
       $current_date = $date;
       $current_tool = "grub";
+    }
+  }
+
+  $tool = gst_file_locate_tool ("ybin");
+  if ($tool ne "")
+  {
+    $date = (stat ($tool)) [8];
+    if ($date > $current_date)
+    {
+      $current_date = $date;
+      $current_tool = "yaboot";
     }
   }
   
@@ -261,6 +275,23 @@ sub gst_boot_conf_get
               [ "default",   \&gst_boot_grub_parse_default, GRUB_CONF ],
               [ "entry",     \&gst_boot_entries_get,        "%partitions%" ],
               ] 
+       },
+
+       "yaboot" =>
+       {
+         fn =>
+         {
+             YABOOT_CONF => "/etc/yaboot.conf",
+         },
+         table =>
+             [
+              [ "partitions", \&gst_partition_scan_info ],
+              [ "timeout",    \&gst_boot_lilo_parse_global, YABOOT_CONF, "timeout" ],
+              [ "default",    \&gst_boot_lilo_parse_global, YABOOT_CONF, "default" ],
+              [ "boot",       \&gst_boot_lilo_parse_global, YABOOT_CONF, "boot" ],
+              [ "root",       \&gst_boot_lilo_parse_global, YABOOT_CONF, "root" ],
+              [ "entry",      \&gst_boot_yaboot_parse_entries, YABOOT_CONF, "%partitions%", "%root%" ]
+             ]
        }
   );
        
@@ -391,7 +422,19 @@ sub gst_boot_conf_set
               [ "default", \&gst_boot_grub_replace_default,  GRUB_CONF , "%entry%"],
               [ "entry",   \&gst_boot_grub_entries_set, [GRUB_CONF, DEVICE_MAP, MTAB] ],
               ] 
-       }
+       },
+
+       "yaboot" =>
+       {
+         fn => { YABOOT_CONF => "/etc/yaboot.conf" },
+         table =>
+             [
+              [ "boot",    \&gst_boot_lilo_replace_global, YABOOT_CONF, "boot"    ],
+              [ "timeout", \&gst_boot_lilo_replace_global, YABOOT_CONF, "timeout" ],
+              [ "default", \&gst_boot_lilo_replace_global, YABOOT_CONF, "default" ],
+              [ "entry",   \&gst_boot_yaboot_entries_set,  YABOOT_CONF ],
+             ]
+         }
        );
 
   return &gst_replace_from_table ($ {$tool_tables{$tool}}{"fn"},

@@ -21,6 +21,7 @@ perl_libs = \
 	boot.pl      \
 	boot-grub.pl \
 	boot-lilo.pl \
+	boot-yaboot.pl \
 	dhcpd.pl     \
 	debug.pl     \
 	file.pl      \

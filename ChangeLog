@@ -1,3 +1,10 @@
+2003-12-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* Makefile.am, configure.in, boot-conf.in, boot.pl.in: added
+	  yaboot support
+	* boot-yaboot.pl.in: added
+	* boot-lilo.pl.in: fixed a little bug
+
 2003-12-28  Duarte Loreto <happyguy_pt@hotmail.com>
 
 	* configure.in: Added Portuguese (pt) to ALL_LINGUAS.

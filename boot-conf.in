@@ -65,11 +65,6 @@ $description =<<"end_of_description;";
 end_of_description;
 
 
-# Find the tools
-
-$tool_lilo = &gst_file_locate_tool ("lilo");
-
-
 # --- XML parsing ---
 
 # Scan XML from standard input to an internal tree.
@@ -177,6 +172,7 @@ sub get
 sub set
 {
   my ($hash);
+  my ($bootl);
 
   #FIXME: do mount in a more generic way, this is done because /boot may be unmounted
   gst_file_run ("mount /boot");
@@ -188,10 +184,15 @@ sub set
     &gst_boot_fix ($hash);
     &gst_boot_conf_set ($hash);
 
-    # It runs LILO if it's the default bootloader
-    if (&gst_boot_bootloader_get () eq "lilo")
+    $bootl = &gst_boot_bootloader_get ();
+
+    if ($bootl eq "lilo")
     {
-      &gst_file_run ($tool_lilo);
+      &gst_file_run (&gst_file_locate_tool ("lilo"));
+    }
+    elsif ($bootl eq "yaboot")
+    {
+      &gst_file_run (&gst_file_locate_tool ("ybin"));
     }
   }
   else
@@ -230,8 +231,9 @@ sub verify
   my %bootloader =
       (
        "lilo" => \&gst_boot_lilo_verify,
-       "grub" => \&gst_boot_grub_verify
-       );
+       "grub" => \&gst_boot_grub_verify,
+       "yaboot" => \&gst_boot_yaboot_verify
+      );
 
   $loader = &gst_boot_bootloader_get ();
   $proc = $bootloader{$loader};

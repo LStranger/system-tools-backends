@@ -55,6 +55,7 @@ time-conf
 users-conf
 boot-grub.pl
 boot-lilo.pl
+boot-yaboot.pl
 boot.pl
 debug.pl
 dhcpd.pl
