@@ -97,7 +97,6 @@ sub xst_replace_split
   my $line_key, $val;
 
   $buff = &be_buffer_load ($file);
-  return -1 if $buff eq undef;
   
   foreach $i (@$buff)
   {
@@ -134,26 +133,7 @@ sub xst_replace_split
   }
 
   &be_buffer_clean ($buff);
-  &be_buffer_save ($buff, $file);
-
-  return 0;
-}
-
-sub xst_replace_sh
-{
-  my ($file, $key, $value) = @_;
-
-  return &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);
-}
-
-sub xst_replace_sh_bool
-{
-  my ($file, $key, $value) = @_;
-  my $i;
-
-  $value = ($value == 1)? "yes": "no";
-  
-  return &xst_replace_sh ($file, $key, $value);
+  return &be_buffer_save ($buff, $file);
 }
 
 sub xst_replace_join_all
@@ -162,13 +142,6 @@ sub xst_replace_join_all
   my @a;
 
   return &xst_replace_split ($file, $key, $re, @$value);
-}
-
-sub xst_replace_join_first_array
-{
-  my ($file, $key, $re1, $re2, $value) = @_;
-
-  return &xst_replace_split ($file, $key, $re1, join (&regexp_to_separator ($re2), @$value));
 }
 
 sub xst_replace_join_first_str
@@ -188,6 +161,65 @@ sub xst_replace_join_first_bool
   return &xst_replace_split ($file, $key, $re, $value);
 }
 
+sub xst_replace_join_first_array
+{
+  my ($file, $key, $re1, $re2, $value) = @_;
+
+  return &xst_replace_split ($file, $key, $re1, join (&regexp_to_separator ($re2), @$value));
+}
+
+sub xst_replace_sh
+{
+  my ($file, $key, $value) = @_;
+
+  return &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);
+}
+
+sub xst_replace_sh_bool
+{
+  my ($file, $key, $value) = @_;
+  my $i;
+
+  $value = ($value == 1)? "yes": "no";
+  
+  return &xst_replace_sh ($file, $key, $value);
+}
+
+sub xst_replace_line_first
+{
+  my ($file, $value) = @_;
+  my $fd;
+
+  $fd = &be_open_write_from_names ($file);
+  return -1 if !$fd;
+
+  print $fd $value;
+  close $fd;
+  
+  return 0;
+}
+
+sub xst_replace_join_hash
+{
+  my ($file, $re1, $re2, $value) = @_;
+  my $i, $res, $tmp, $val;
+
+  $res = 0;
+  
+  foreach $i (keys (%$value))
+  {
+    $val = join (&regexp_to_separator ($re2), @{$$value{$i}});
+    $tmp = &xst_replace_split ($file, $i, $re1, $val);
+    $res = $tmp if !$res;
+  }
+
+  return $res;
+}
+
+sub xst_replace_chat
+{
+}
+
 sub xst_replace_ini
 {
   my ($file, $section, $var, $value) = @_;
@@ -197,7 +229,6 @@ sub xst_replace_ini
   my $line_key, $val;
 
   $buff = &be_buffer_load ($file);
-  return -1 if $buff eq undef;
 
   &be_buffer_join_lines ($buff);
   
@@ -251,24 +282,6 @@ sub xst_replace_ini
   }
 
   &be_buffer_clean ($buff);
-  &be_buffer_save ($buff, $file);
-
-  return 0;
+  return &be_buffer_save ($buff, $file);
 }
 
-sub xst_replace_join_hash
-{
-  my ($file, $re1, $re2, $value) = @_;
-  my $i, $res, $tmp, $val;
-
-  $res = 0;
-  
-  foreach $i (keys (%$value))
-  {
-    $val = join (&regexp_to_separator ($re2), @{$$value{$i}});
-    $tmp = &xst_replace_split ($file, $i, $re1, $val);
-    $res = $tmp if !$res;
-  }
-
-  return $res;
-}

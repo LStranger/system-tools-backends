@@ -202,8 +202,79 @@ sub xst_network_conf_get
   return $hash;
 }
 
+sub xst_network_interface_active_set
+{
+}
+
 sub xst_network_interfaces_set
 {
+  my $value_hash = $_[0];
+
+  my %dist_attrib =
+	 (
+	  redhat62 => {
+	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
+	    fn => {
+		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+	      CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
+		 IFACE => "#iface#"},
+	    table => [
+			    [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
+			    [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
+			    [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
+			    [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
+			    [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
+			    [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
+			    [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
+			    [ remote_address,     \&xst_replace_sh,      IFCFG, REMIP ],
+			    [ login,              \&xst_replace_sh,      IFCFG, PAPNAME ],
+			    [ disconnect_timeout, \&xst_replace_sh,      IFCFG, DISCONNECTTIMEOUT ],
+			    [ retry_timeout,      \&xst_replace_sh,      IFCFG, RETRYTIMEOUT ],
+			    [ serial_port,        \&xst_replace_sh,      IFCFG, MODEMPORT ],
+			    [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
+			    [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
+			    [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
+			    [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
+			    [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
+			    [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
+			    [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
+			    [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],
+			    [ serial_escapechars, \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+			    [ serial_defabort,    \&xst_replace_sh_bool, IFCFG, DEFABORT ],
+			    [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+			    [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
+			    [ enabled,            \&xst_network_interface_active_set, IFACE ]
+			    ]
+				 }
+	  );
+  my %dist_cmp = (
+			   "^redhat.*" => "redhat62"
+			   );
+  my (%hash, %fn, @ifaces);
+  my ($dist, $value, $file, $proc);
+  my ($i, $j);
+
+  return 0;
+  
+  $dist = &be_map_dist (%dist_cmp);
+  
+  %fn = %{$ {$dist_attrib{$dist}}{"fn"}};
+  $proc = $ {$dist_attrib{$dist}}{"ifaces_get"};
+  @ifaces = &$proc ();
+  foreach $i (@ifaces)
+  {
+    foreach $j (keys (%fn))
+    {
+	 $value = $fn{$j};
+	 $value =~ s/\#iface\#/$i/;
+	 $ {$ {$dist_attrib{$dist}}{"fn"}}{$j} = $value;
+    }
+    
+    $hash{$i} = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
+							    $ {$dist_attrib{$dist}}{"table"});
+  }
+
+  return \%hash;
 }
 
 sub xst_network_conf_set

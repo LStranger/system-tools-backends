@@ -19,6 +19,9 @@
 	* network-conf.in: bug in xml_parse_network for nameserver and 
 	  searchdomain.
 	* General bug fixes on all the new code and other parts.
+	* All general network param writing is ready. Interfaces is the only 
+	  missing.
+	
 
 2001-02-06  Arturo Espinosa  <arturo@ximian.com>
 
