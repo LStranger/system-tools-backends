@@ -1,3 +1,14 @@
+2003-08-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* boot-grub.pl.in: (gst_boot_grub_edit_entry): removed, no longer
+	  neccesary, now boot-conf only deletes and adds entries. 
+	  Added support for Hurd. 
+	  (gst_boot_grub_entry_is_valid): added.
+	  (gst_boot_grub_entries_set): made it to ignore the entries it can't
+	  understand.
+	* boot.pl.in: added support for grub, made it to ignore the entries it
+	  can't understand.
+
 2003-08-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* services.pl.in: added verbose runlevel description

@@ -204,8 +204,14 @@ sub gst_boot_entries_get
 
     $entry = &gst_parse_from_table ($dist_attrib{"fn"},
                                     $dist_attrib{"table"});
-    push @res, $entry;
-    $key ++;
+
+    # if the entry doesn't contain any of these fields, then we can't understand it, just ignore it
+    if (exists ($$entry {"image"}) || exists ($$entry {"other"}))
+    {
+      push @res, $entry;
+    }
+
+    $key++;
   }
 
   return \@res;
@@ -286,6 +292,7 @@ sub gst_boot_get_entry_parse_table
               ["other",  \&gst_boot_grub_parse_other,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
               ["append", \&gst_boot_grub_parse_append, [GRUB_CONF, KEY]],
               ["initrd", \&gst_boot_grub_parse_initrd, [GRUB_CONF, KEY]],
+              ["module", \&gst_boot_grub_parse_module, [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
               ["password", \&gst_boot_grub_parse_password, [GRUB_CONF, KEY]]
              ]
        );

@@ -133,66 +133,10 @@ sub gst_boot_grub_delete_entry
 	return $buff;
 }
 
-sub gst_boot_grub_edit_entry
-{
-  my ($entry, $buff, $lineno, $device_map) = @_;
-  my ($end, $val, $value, $image, $initrd);
-	
-  $end = &gst_boot_grub_find_entry ($buff, $lineno + 1);
-  $end = scalar @$buff if ($end < 0);
-
-  if (exists ($entry->{"image"}))
-  {
-    # It's a linux image
-    $value = $entry->{"root"};
-    $value = &gst_boot_grub_linux2grub ($device_map, $value);
-
-    $image = &gst_boot_grub_set_file_path ($entry->{"image"}, $entry->{"root"});
-    if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
-      $initrd = &gst_boot_grub_set_file_path ($entry->{"initrd"}, $entry->{"root"});
-    }
-    
-    $val = "title " . $entry->{"label"} . "\n";
-    $val .= "\troot (". $value. ")\n";
-    $val .= "\tkernel " . $image . " " . $entry->{"append"} . "\n";
-    if ($initrd ne "")
-    {
-      $val .= "\tinitrd ". $initrd . "\n";
-    }
-  }
-  else
-  {
-    # It's another boot
-    $value = $entry->{"other"};
-    $value = &gst_boot_grub_linux2grub ($device_map, $value);
-		
-    $val = "title " . $entry->{"label"} . "\n";
-    $val .= "\trootnoverify (" . $value . ")\n";
-    $val .= "\tmakeactive\n";
-    $val .= "\tchainloader +1\n";
-  }
-
-  if (exists ($entry->{"password"}))
-  {
-    $val .= "\tpassword " . $entry->{"password"} . "\n";
-  }
-
-  $val .= "\n";
-  $$buff[$lineno] = $val;
-
-  # We delete the rest of the entry lines
-  $lineno++;
-  for ($lineno; $lineno < $end; $lineno++)
-  {
-    # FIXME: do anything less destructive
-    delete $$buff[$lineno];
-  }
-}
-
 sub gst_boot_grub_add_entry
 {
-  my ($entry, $buff, $device_map) = @_;
-  my ($end, $val, $value, $image, $initrd);
+  my ($entry, $buff, $lineno, $device_map) = @_;
+  my ($end, $val, $value, $image, $initrd, $module);
 	
   if (exists ($entry->{"image"}))
   {
@@ -205,12 +149,21 @@ sub gst_boot_grub_add_entry
       $initrd = &gst_boot_grub_set_file_path ($entry->{"initrd"}, $entry->{"root"});
     }
 
+    if (exists ($entry->{"module"}) && ($entry->{"module"} ne "")) {
+	   $module = &gst_boot_grub_set_file_path  ($entry->{"module"}, $entry->{"root"});
+    }
+
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\troot (". $value. ")\n";
     $val .= "\tkernel " . $image . " " . $entry->{"append"} . "\n";
     if ($initrd ne "")
     {
       $val .= "\tinitrd ". $initrd . "\n";
+    }
+
+    if ($module ne "")
+    {
+	 $val .= "\tmodule ". $module. "\n";
     }
   }
   elsif (exists ($entry->{"other"}))
@@ -236,7 +189,34 @@ sub gst_boot_grub_add_entry
 
   $val .= "\n";
 
-  push @$buff, $val;
+  $$buff [$lineno - 1] = $$buff [$lineno - 1] . $val;
+}
+
+sub gst_boot_grub_entry_is_valid
+{
+  my ($buff, $lineno) = @_;
+  my ($end, $value, $line, $i);
+
+  $value = 0;
+  $end = &gst_boot_grub_find_entry ($buff, $lineno + 1);
+
+  if ($end < 1)
+  {
+    # no more entries left, get the size of the array
+    $end = @$buff;
+  }
+
+  for ($i = $lineno; $i < $end; $i++)
+  {
+    $line = $$buff[$i];
+      
+    if (($line =~ /[\t ]*kernel.*/) ||
+        ($line =~ /[\t ]*rootnoverify.*/)) {
+      $value = 1;
+    }
+  }
+
+  return $value;
 }
 
 sub gst_boot_grub_entries_set
@@ -250,45 +230,32 @@ sub gst_boot_grub_entries_set
   &gst_file_buffer_join_lines ($buff);
 	
   $lineno = &gst_boot_grub_find_entry ($buff, 0);
-  $entry_nr = -1;
 
+  # delete all known entries
   while ($lineno > 0)
   {
-    $entry_nr++;
-    $found = 0;
-
-    foreach $entry (@$entries)
+    if (&gst_boot_grub_entry_is_valid ($buff, $lineno))
     {
-      next unless $entry;
-      
-      if (exists $entry->{"key"})
-      {
-        $found++ if $entry->{"key"} == $entry_nr;
-
-        if ($found > 0)
-        {
-          # Found entry, change it if necessary,
-          # remove %entry from @entries and find new entry.
-          &gst_boot_grub_edit_entry ($entry, $buff, $lineno, $device_map);
-          $entry = undef;
-          last;					
-        }
-      }
+	 $buff = &gst_boot_grub_delete_entry ($buff, $lineno);
     }
-		
-    # Found entry wasn't in our @entries list: delete.
-    $buff = &gst_boot_grub_delete_entry ($buff, $lineno) if ($found <= 0);
 
-    # Search new entry line.
     $lineno = &gst_boot_grub_find_entry ($buff, $lineno + 1);
   }
-	
-  # At this point @$entries contains only new entries, let's add them.
-  foreach $entry (@$entries)
+
+  # insert all entries just before all the unknown entries (if any)
+  $lineno = &gst_boot_grub_find_entry ($buff, 0);
+
+  if ($lineno < 0)
   {
-    &gst_boot_grub_add_entry ($entry, $buff, $device_map);
+    $lineno = @$buff;
   }
 
+  foreach $entry (@$entries)
+  {
+    &gst_boot_grub_add_entry ($entry, $buff, $lineno, $device_map);
+  }
+
+  # save the buffer  
   &gst_file_buffer_clean ($buff);
   return &gst_file_buffer_save ($buff, $file);
 }
@@ -728,6 +695,16 @@ sub gst_boot_grub_parse_initrd
   $initrd = &gst_boot_grub_parse_file_cmd ($grub_conf, "initrd", $device_map, $mtab, $entry);
 
   return $initrd;
+}
+
+sub gst_boot_grub_parse_module
+{
+  my ($grub_conf, $device_map, $mtab, $entry) = @_;
+  my ($module);
+ 
+  $module = &gst_boot_grub_parse_file_cmd ($grub_conf, "module", $device_map, $mtab, $entry);
+   
+  return $module;
 }
 
 sub gst_boot_grub_parse_password
