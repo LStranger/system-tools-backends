@@ -3,6 +3,8 @@
 	* users-conf.in (write_logindefs): Old xst_report_warning
 	call that slipped.
 	Enabled command reporting.
+	Removed all global data variables in the backend. Delete
+	user no works. Style corrections. This thing is old.
 
 Sun Jul 15 07:46:23 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 

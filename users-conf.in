@@ -93,24 +93,6 @@ $cmd_groupmod = &xst_file_locate_tool ("groupmod");
 $cmd_gpasswd  = &xst_file_locate_tool ("gpasswd");	
 $cmd_chfn     = &xst_file_locate_tool ("chfn");
 
-# --- Internal configuration variables --- #
-
-# Configuration is parsed/read to, and printed/written from, these temporary global variables.
-
-%users_hash = ();
-@users = ();
-%groups_hash = ();
-@groups = ();
-%login_defs = ();
-@shells = ();
-
-$parse_tree = 0;
-
-$passwd_last_modified = 0; # For /etc/passwd, since the epoch.
-$group_last_modified = 0; # For /etc/group, since the epoch.
-
-$profiles = 0;
-
 # --- Mapping constants --- #
 
 %users_prop_map = ();
@@ -212,26 +194,48 @@ sub arr_cmp_recurse
 
 # --- Configuration manipulation --- #
 
+sub read
+{
+  my (%hash);
+
+  &xst_report ("users_getting_db");
+
+  &read_login_defs    (\%hash); &xst_print_progress ();
+  &read_group         (\%hash); &xst_print_progress ();
+  &read_passwd_shadow (\%hash); &xst_print_progress ();
+  &read_profiles      (\%hash); &xst_print_progress ();
+  &read_shells        (\%hash); &xst_print_progress ();
+  &read_skel_dir      (\%hash); &xst_print_progress ();
+
+  return \%hash;
+}
+
 sub read_skel_dir
 {
+  my ($hash) = @_;
   my (@files, $file, $name);
   my $fname = "";
+  local *DIR
 
   &xst_report_enter ();
   
-  foreach $name (@skel_dir) {
-    if (opendir (DIR, $name)) {
+  foreach $name (@skel_dir)
+  {
+    if (opendir (DIR, $name))
+    {
       $fname = $name;
       last;
     }
   }
 
-  if ($fname eq "") {
+  if ($fname eq "")
+  {
     &xst_report ("read_skel_dir_failed", "@skel_dir");
     return undef;
   }
   
-  foreach $file (readdir (DIR)) {
+  foreach $file (readdir (DIR))
+  {
     next if ($file eq "." || $file eq "..");
     push (@files, $file);
   }
@@ -240,20 +244,18 @@ sub read_skel_dir
   &xst_report ("read_skel_dir_success", $fname);
   &xst_report_leave ();
   
-  return \@files
+  $$hash{"files"} = \@files;
 }
 
 sub read_login_defs
 {
-  my $ifh;
-  local *FILE;
-  my @line;
+  my ($hash) = @_;
+  my ($ifh, @line, %login_defs);
 	
-  $ifh = &xst_file_open_read_from_names(@login_defs_names);
-  if (not $ifh) { return; }  # We didn't find it.
-  *FILE = $ifh;
+  $ifh = &xst_file_open_read_from_names (@login_defs_names);
+  return if (not $ifh); # We didn't find it.
 
-  while (<FILE>)
+  while (<$ifh>)
   {
     next if &xst_ignore_line ($_);
     chomp;
@@ -261,16 +263,15 @@ sub read_login_defs
     @line = split (/[ \t]+/, $_);
     $login_defs{$login_defs_prop_map{$line[0]}} = $line[1];
   }
+  close ($ifh);
 
-  $login_defs{"files"} = &read_skel_dir ();
-  
-  close (FILE);
+  $$hash{"login_defs"} = \%login_defs;
 }
 		
 sub read_passwd_shadow
 {
-  my $ifh;
-  local *FILE;
+  my ($hash) = @_;
+  my ($ifh, @users, %users_hash, $passwd_last_modified);
   my (@line, $copy, %tmphash);
   my $login_pos = $users_prop_map{"login"};
   my $i = 0;
@@ -279,15 +280,14 @@ sub read_passwd_shadow
 
   $ifh = &xst_file_open_read_from_names(@passwd_names);
   if (not $ifh) { return; }  # We didn't find it.
-  *FILE = $ifh;
-    $passwd_last_modified = (stat (FILE))[9]; # &get the mtime.
+  $passwd_last_modified = (stat ($ifh))[9]; # &get the mtime.
 
   # Parse the file.
 
   @users = ();
   %users_hash = ();
 
-  while (<FILE>)
+  while (<$ifh>)
   {
     chomp;
     # FreeBSD allows comments in the passwd file. */
@@ -302,17 +302,16 @@ sub read_passwd_shadow
     push (@users, $copy);
     $i ++;
   }
-
-  close (FILE);
+  close ($ifh);
 	
   # Find the shadow file.
 
-  *FILE = &xst_file_open_read_from_names(@shadow_names);
-  if (*FILE) {
+  $ifh = &xst_file_open_read_from_names(@shadow_names);
+  if ($ifh) {
     my ($login, $passwd);
     my $passwd_pos = $users_prop_map{"password"};
 
-    while (<FILE>)
+    while (<$ifh>)
     {
       chomp;
       # FreeBSD allows comments in the shadow passwd file. */
@@ -325,14 +324,18 @@ sub read_passwd_shadow
       @{$tmphash{$login}}[$passwd_pos] = $passwd;
     }
 
-    close (FILE);
-  }	
+    close ($ifh);
+  }
+
+  $$hash{"users"}      = \@users;
+  $$hash{"users_hash"} = \%users_hash;
+  $$hash{"passwd_last_modified"} = $passwd_last_modified;
 }
 
 sub read_group
 {
-  my $ifh;
-  local *FILE;
+  my ($hash) = @_;
+  my ($ifh, @groups, %groups_hash, $group_last_modified);
   my (@line, $copy, @a);
   my $i = 0;
 
@@ -340,15 +343,14 @@ sub read_group
 
   $ifh = &xst_file_open_read_from_names(@group_names);
   if (not $ifh) { return; }  # We didn't find it.
-  *FILE = $ifh;
-  $group_last_modified = (stat (FILE))[9]; # &get the mtime.
+  $group_last_modified = (stat ($ifh))[9]; # &get the mtime.
 
   # Parse the file.
 	
   @groups = ();
   %groups_hash = ();
 
-  while (<FILE>)
+  while (<$ifh>)
   {
     chomp;
     $_ = &xst_xml_unquote ($_);
@@ -361,48 +363,55 @@ sub read_group
     push (@groups, $copy);
     $i ++;
   }
+  close ($ifh);
 
-  close (FILE);
+  $$hash{"groups"}      = \@groups;
+  $$hash{"groups_hash"} = \%groups_hash;
+  $$hash{"group_last_modified"} = $group_last_modified;
 }
 
 sub read_profiles
 {
-  my $path;
+  my ($hash) = @_;
+  my ($path);
 
-  $path = &xst_file_get_data_path . "/users/profiles.xml";
-  $profiles = &xst_file_buffer_load ($path);
+  $path = &xst_file_get_data_path () . "/users/profiles.xml";
+  $$hash{"profiles"} = &xst_file_buffer_load ($path);
 }
 
 sub read_shells
 {
-  my $ifh;
-  local *FILE;
+  my ($hash) = @_;
+  my ($ifh, @shells);
 
   # Init @shells, I think every *nix has /bin/false.
   push (@shells, "/bin/false") if (stat ("/bin/false") ne "");
   
   $ifh = &xst_file_open_read_from_names(@shell_names);
   return if not $ifh;
-  *FILE = $ifh;
 
-  while (<FILE>) {
+  while (<$ifh>)
+  {
     next if &xst_ignore_line ($_);
     chomp;
     push (@shells, $_) if (stat ($_) ne "");
   }
-  
-  close (FILE);
+  close ($ifh);
+
+  $$hash{"shells"} = \@shells;
 }
 
 sub write_logindefs
 {
-  my ($key);
-  local *FILE;
+  my ($hash) = @_;
+  my ($key, $login_defs);
   my $file = "";
+
+  $login_defs = $$hash{"login_defs"};
   
   foreach $key (@login_defs_names)
   {
-    if (open (FILE, $key))
+    if (-e $key)
     {
       &xst_debug_print_line ("write_logindefs:$key");
       $file = $key;
@@ -416,52 +425,63 @@ sub write_logindefs
     return;
   }
   
-  foreach $key (keys (%login_defs))
+  foreach $key (keys (%$login_defs))
   {
-    &xst_replace_split ($file, $login_defs_prop_map{$key}, "[ \t]+", $login_defs{$key});
+    &xst_replace_split ($file, $login_defs_prop_map{$key}, "[ \t]+", $$login_defs{$key});
   }
 }
 
 sub write_group_passwd
 {
+  my ($hash) = @_;
+  my ($users, $users_hash, $groups, $groups_hash);
+  my ($passwd_last_modified, $group_last_modified);
   my ($i, $j, $k);
-  my (%users_all, %parse_users_hash, @parse_users, $parse_passwd_last_modified);
-  my (%groups_all, %parse_groups_hash, @parse_groups, $parse_group_last_modified);
+  my (%old_hash);
+  my (%users_all, $parse_users_hash, $parse_users, $parse_passwd_last_modified);
+  my (%groups_all, $parse_groups_hash, $parse_groups, $parse_group_last_modified);
 
-  %parse_users_hash = %users_hash;
-  @parse_users = @users;
-  $parse_passwd_last_modified = $passwd_last_modified;
-  &read_passwd_shadow;
+  $parse_users = $$hash{"users"};
+  $parse_users_hash = $$hash{"users_hash"};
+  $parse_passwd_last_modified = $$hash{"passwd_last_modified"};
+  $parse_groups = $$hash{"groups"};
+  $parse_groups_hash = $$hash{"groups_hash"};
+  $parse_group_last_modified = $$hash{"group_last_modified"};
+
+  &read_passwd_shadow (\%old_hash);
   &xst_progress(10);
-
-  %parse_groups_hash = %groups_hash;
-  @parse_groups = @groups;
-  $parse_group_last_modified = $group_last_modified;
-  &read_group;
+  &read_group (\%old_hash);
   &xst_progress(20);
-	
+
+  $users = $old_hash{"users"};
+  $users_hash = $old_hash{"users_hash"};
+  $passwd_last_modified = $old_hash{"passwd_last_modified"};
+  $groups = $old_hash{"groups"};
+  $groups_hash = $old_hash{"groups_hash"};
+  $group_last_modified = $old_hash{"group_last_modified"};
+
 #	if ($passwd_last_modified > $parse_passwd_last_modified) 
 #	{
 #	  print STDERR "Password file may be inconsistent! No changes made.\n";
 #		return;
 #	}
 
-  foreach $i (keys (%users_hash)) 
+  foreach $i (keys (%$users_hash)) 
 	{
 		$users_all{$i} |= 1;
 	}	
 	
-	foreach $i (keys (%parse_users_hash))
+	foreach $i (keys (%$parse_users_hash))
 	{
 	  $users_all{$i} |= 2;
 	}
 	
-  foreach $i (keys (%groups_hash)) 
+  foreach $i (keys (%$groups_hash)) 
 	{
 		$groups_all{$i} |= 1;
 	}	
 	
-	foreach $i (keys (%parse_groups_hash))
+	foreach $i (keys (%$parse_groups_hash))
 	{
 	  $groups_all{$i} |= 2;
 	}
@@ -470,37 +490,37 @@ sub write_group_passwd
 	
 	foreach $i (sort (keys (%users_all)))
 	{
-	  &del_user ($users_hash{$i}) if ($users_all{$i} == 1);
+	  &del_user ($$users_hash{$i}) if ($users_all{$i} == 1);
 	}
 	
 	&xst_progress(35);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
-	  &del_group ($groups_hash{$i}) if ($groups_all{$i} == 1);
+	  &del_group ($$groups_hash{$i}) if ($groups_all{$i} == 1);
 	}
 	
 	&xst_progress(45);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
-	  &add_group ($parse_groups_hash{$i}) if ($groups_all{$i} == 2);
+	  &add_group ($$parse_groups_hash{$i}) if ($groups_all{$i} == 2);
 	}
 	
 	&xst_progress(55);
 	
 	foreach $i (sort (keys (%users_all)))
 	{
-	  &add_user ($parse_users_hash{$i}) if ($users_all{$i} == 2);
+	  &add_user ($$parse_users_hash{$i}) if ($users_all{$i} == 2);
 	}
 
 	&xst_progress(70);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
-	  if ($groups_all{$i} == 3 && &arr_cmp_recurse ($groups_hash{$i}, $parse_groups_hash{$i}))
+	  if ($groups_all{$i} == 3 && &arr_cmp_recurse ($$groups_hash{$i}, $$parse_groups_hash{$i}))
 		{
-		  &change_group ($groups_hash{$i}, $parse_groups_hash{$i});
+		  &change_group ($$groups_hash{$i}, $$parse_groups_hash{$i});
 		}
 	}
 	
@@ -508,9 +528,9 @@ sub write_group_passwd
 	
 	foreach $i (sort (keys (%users_all)))
 	{
-	  if ($users_all{$i} == 3 && &arr_cmp_recurse ($users_hash{$i}, $parse_users_hash{$i}))
+	  if ($users_all{$i} == 3 && &arr_cmp_recurse ($$users_hash{$i}, $$parse_users_hash{$i}))
 		{
-		  &change_user ($users_hash{$i}, $parse_users_hash{$i});
+		  &change_user ($$users_hash{$i}, $$parse_users_hash{$i});
 		}
 	}
 	
@@ -519,7 +539,8 @@ sub write_group_passwd
 
 sub del_user
 {
-	my $data = $_[0];
+	my ($data) = @_;
+  my ($command);
 	
 	$command = "$cmd_userdel -r \'" . $$data[$users_prop_map{"login"}] . "\'";
 	&my_system ($command);
@@ -529,21 +550,17 @@ sub change_user_chfn
 {
   my ($comment, $username) = @_;
   my ($fname, $office, $office_phone, $home_phone);
-  my $command, @line;
+  my ($command, @line);
 
   return if !$username;
   
   @line = split /\,/, $comment;
-  
-  $fname =        shift @line;
-  $office =       shift @line;
-  $office_phone = shift @line;
-  $home_phone =   shift @line;
+  ($fname, $office, $office_phone, $home_phone) = @line;
 
   $fname = "-f \'" . $fname . "\'";  
   $home_phone = "-h \'" . $home_phone . "\'";
 
-  if ($xst_dist =~ /debian/)
+  if ($xst_dist =~ /^debian/)
   {
     $office = "-r \'" . $office . "\'";
     $office_phone = "-w \'" . $office_phone . "\'";
@@ -560,7 +577,7 @@ sub change_user_chfn
 
 sub add_user
 {
-	my $data = $_[0];
+	my ($data) = @_;
 	
   $command = "$cmd_useradd" . " -d \'" . $$data[$users_prop_map{"home"}] .
 	  "\' -g \'" . $$data[$users_prop_map{"gid"}] .
@@ -575,8 +592,7 @@ sub add_user
 
 sub change_user
 {
-	my $old_data = $_[0];
-	my $new_data = $_[1];
+	my ($old_data, $new_data) = @_;
 	
   $command = "$cmd_usermod" . " -d \'" . $$new_data[$users_prop_map{"home"}] .
 	  "\' -g \'" . $$new_data[$users_prop_map{"gid"}] .
@@ -592,7 +608,7 @@ sub change_user
 
 sub del_group
 {
-	my $data = $_[0];
+	my ($data) = @_;
 
 	$command = "$cmd_groupdel \'" . $$data[$groups_prop_map{"name"}] . "\'";
 	&my_system ($command);
@@ -600,7 +616,7 @@ sub del_group
 
 sub add_group
 {
-	my $data = $_[0];
+	my ($data) = @_;
 	
 	$command = "$cmd_groupadd -g \'" . $$data[$groups_prop_map{"gid"}] .
 	  "\' " . $$data[$groups_prop_map{"name"}];
@@ -609,8 +625,7 @@ sub add_group
 
 sub change_group
 {
-	my $old_data = $_[0];
-	my $new_data = $_[1];
+	my ($old_data, $new_data) = @_;
 	my ($n, $o, $i, $j, $max_n, $max_o, $r, @tmp); # for iterations
 
 	$command = "$cmd_groupmod -g \'" . $$new_data[$groups_prop_map{"gid"}] .
@@ -667,14 +682,20 @@ sub save_profiles
 
 sub xml_parse
 {
-  my $tree;
+  my ($tree, %hash);
 	
   # Scan XML to tree.
 
-  $parse_tree = $tree = &xst_xml_scan;
+  $tree = &xst_xml_scan ();
+
+  $hash{"users"} = [];
+  $hash{"users_hash"} = {};
+  $hash{"groups"} = [];
+  $hash{"groups_hash"} = {};
 
   # Save profiles
 
+  # this should be named write_profiles and probably called from the set sub.
   &save_profiles ();
   
   # Walk the tree recursively and extract configuration parameters.
@@ -682,28 +703,28 @@ sub xml_parse
 
   while (@$tree)
   {
-    if ($$tree[0] eq "users") { &xml_parse_users($$tree[1]); }
+    if ($$tree[0] eq "users") { &xml_parse_users($$tree[1], \%hash); }
 
     shift @$tree;
     shift @$tree;
   }
 
-  return($tree);
+  return (\%hash);
 }
 
 sub xml_parse_users
 {
-  my $tree = $_[0];
+  my ($tree, $hash) = @_;
 	
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
 	{
-	  if ($$tree[0] eq "logindefs") { &xml_parse_login_defs ($$tree[1]); }
-		elsif ($$tree[0] eq "passwd_last_modified") { &xml_parse_passwd_last_modified ($$tree[1]); }
-		elsif ($$tree[0] eq "group_last_modified") { &xml_parse_group_last_modified ($$tree[1]); }
-		elsif ($$tree[0] eq "userdb") { &xml_parse_userdb ($$tree[1]); }
-		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1]); }
+	  if ($$tree[0] eq "logindefs") { &xml_parse_login_defs ($$tree[1], $hash); }
+		elsif ($$tree[0] eq "passwd_last_modified") { &xml_parse_passwd_last_modified ($$tree[1], $hash); }
+		elsif ($$tree[0] eq "group_last_modified") { &xml_parse_group_last_modified ($$tree[1], $hash); }
+		elsif ($$tree[0] eq "userdb") { &xml_parse_userdb ($$tree[1], $hash); }
+		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1], $hash); }
 		elsif ($$tree[0] eq "shells")  { }
 		else
 		{
@@ -717,7 +738,8 @@ sub xml_parse_users
 
 sub xml_parse_login_defs
 {
-  my $tree = $_[0];
+  my ($tree, $hash) = @_;
+  my (%login_defs);
 	
   shift @$tree;  # Skip attributes.
 	
@@ -727,7 +749,7 @@ sub xml_parse_login_defs
 		{
 		  $login_defs{$$tree[0]} = $$tree[1][2];
 		}
-		elsif ($$tree[0] ne "files")
+		elsif ($$tree[0] ne "files") # files tag is ignored for parsing.
     {
 		  &xst_report ("xml_unexp_tag", $$tree[0]);
 		}
@@ -735,37 +757,39 @@ sub xml_parse_login_defs
 		shift @$tree;
 		shift @$tree;
 	}
+
+  $$hash{"login_defs"} = \%login_defs;
 }	
 
 sub xml_parse_passwd_last_modified
 {
-  my $tree = $_[0];
+  my ($tree, $hash) = @_;
 	
   shift @$tree;  # Skip attributes.
 	
 	&xst_report ("xml_unexp_arg", "", "passwd_last_modified") if ($$tree[0] ne "0");
-	$passwd_last_modified = $$tree[1];
+	$$hash{"passwd_last_modified"} = $$tree[1];
 }	
 
 sub xml_parse_group_last_modified
 {
-  my $tree = $_[0];
+  my ($tree, $hash) = @_;
 	
   shift @$tree;  # Skip attributes.
 	
 	&xst_report ("xml_unexp_arg", "", "group_last_modified") if ($$tree[0] ne "0");
-	$group_last_modified = $$tree[1];
+	$$hash{"group_last_modified"} = $$tree[1];
 }	
 
 sub xml_parse_userdb
 {
-  my $tree = $_[0];
+  my ($tree, $hash) = @_;
 	
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
 	{
-	  if ($$tree[0] eq "user") { &xml_parse_user ($$tree[1]); }
+	  if ($$tree[0] eq "user") { &xml_parse_user ($$tree[1], $hash); }
 		else
 		{
 		  &xst_report ("xml_unexp_tag", $$tree[0]);
@@ -778,8 +802,12 @@ sub xml_parse_userdb
 
 sub xml_parse_user
 {
-  my $tree = $_[0];
+  my ($tree, $hash) = @_;
+  my ($users, $users_hash);
   my @line = ();
+
+  $users = $$hash{"users"};
+  $users_hash = $$hash{"users_hash"};
 	
   shift @$tree;  # Skip attributes.
 
@@ -798,19 +826,20 @@ sub xml_parse_user
 		shift @$tree;
 	}
 
-  $users_hash{sprintf ("%06d", $line[0])} = [@line];
-  push (@users, [@line]);
+  $$users_hash{sprintf ("%06d", $line[0])} = [@line];
+  push (@$users, [@line]);
 }	
 	
 sub xml_parse_groupdb
 {
+  my ($tree, $hash) = @_;
   my $tree = $_[0];
 	
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
   {
-    if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1]); }
+    if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1], $hash); }
     else
     {
 		  &xst_report ("xml_unexp_tag", $$tree[0]);
@@ -823,8 +852,12 @@ sub xml_parse_groupdb
 
 sub xml_parse_group
 {
-  my $tree = $_[0];
+  my ($tree, $hash) = @_;
 	my (@line, $copy, $a, @u);
+  my ($groups, $users_hash);
+	
+  $groups = $$hash{"groups"};
+  $groups_hash = $$hash{"groups_hash"};
 	
   shift @$tree;  # Skip attributes.
 
@@ -861,8 +894,8 @@ sub xml_parse_group
 	
 	push @line, [@u];
 	$copy = [@line];
-	$groups_hash{sprintf ("%06d", $line[0])} = $copy;
-	push (@groups, $copy);
+	$$groups_hash{sprintf ("%06d", $line[0])} = $copy;
+	push (@$groups, $copy);
 }	
 	
   
@@ -870,7 +903,10 @@ sub xml_parse_group
 
 sub xml_print_profiles
 {
-  my $i;
+  my ($hash) = @_;
+  my ($i, $profiles);
+
+  $profiles = $$hash{"profiles"};
 
   return if (@$profiles < 1);
   
@@ -890,14 +926,17 @@ sub xml_print_profiles
 
 sub xml_print_shells
 {
-  my $i;
+  my ($hash) = @_;
+  my ($i, $shells);
 
-  return if (@shells < 1);
+  $shells = $$hash{"shells"};
+
+  return if (@$shells < 1);
 
   &xst_xml_print_line ("<shells>\n");
   &xst_xml_enter ();
 
-  foreach $i (@shells) {
+  foreach $i (@$shells) {
     &xst_xml_print_line ("<shell>$i</shell>");
   }
   
@@ -909,11 +948,16 @@ sub xml_print_shells
 
 sub xml_print_nis
 {
+  my ($hash) = @_;
   my ($key, $i, $j, $k);
+  my ($users, $groups);
+
+  $users = $$hash{"users"};
+  $groups = $$hash{"groups"};
   
   &xst_xml_print_line ("<nis_userdb>\n");
 	&xst_xml_enter ();
-	foreach $i (@users)
+	foreach $i (@$users)
 	{
     &xst_xml_print_vspace ();
 	  &xst_xml_print_line ("<user>\n");
@@ -934,7 +978,7 @@ sub xml_print_nis
 	
 	&xst_xml_print_line ("<nis_groupdb>\n");
 	&xst_xml_enter ();
-	foreach $i (@groups)
+	foreach $i (@$groups)
 	{
     &xst_xml_print_vspace ();
 	  &xst_xml_print_line ("<group>\n");
@@ -962,7 +1006,14 @@ sub xml_print_nis
 
 sub xml_print
 {
-  my ($key, $i, $j, $k);
+  my ($hash) = @_;
+  my ($key, $value, $i, $j, $k);
+  my ($passwd_last_modified, $users);
+
+  $passwd_last_modified = $$hash{"passwd_last_modified"};
+  $users = $$hash{"users"};
+  $group_last_modified = $$hash{"group_last_modified"};
+  $groups = $$hash{"groups"};
 
   &xst_xml_print_begin ();
 
@@ -972,28 +1023,32 @@ sub xml_print
 
   &xst_xml_print_line ("<logindefs>\n");
 	&xst_xml_enter ();
-	foreach $key (keys %login_defs)
+	foreach $key (keys %{$$hash{"login_defs"}})
 	{
-	  if ($key ne "") {
-      if ($key ne "files") {
-        &xst_xml_print_line ("<$key>" . $login_defs{$key} . "</$key>\n");
-      } else {
-        &xst_xml_print_line ("<files>\n");
-        &xst_xml_enter ();
-        foreach $j (@{$login_defs{$key}}) {
-          &xst_xml_print_line ("<file>" . $j . "</file>\n");
-        }
-        &xst_xml_leave ();
-        &xst_xml_print_line ("</files>");
-      }
+    $value = $ {$$hash{"login_defs"}}{$key};
+	  if ($key ne "")
+    {
+      &xst_xml_print_line ("<$key>" . $value . "</$key>\n");
     }
-	}
+  }
+
+  $value = $$hash{"files"};
+
+  &xst_xml_print_line ("<files>\n");
+  &xst_xml_enter ();
+  foreach $j (@$value)
+  {
+    &xst_xml_print_line ("<file>" . $j . "</file>\n");
+  }
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</files>");
+  
 	&xst_xml_leave ();
 	&xst_xml_print_line ("</logindefs>\n");
 	&xst_xml_print_vspace ();
 
-  &xml_print_profiles ();
-  &xml_print_shells ();
+  &xml_print_profiles ($hash);
+  &xml_print_shells ($hash);
   
   &xst_xml_print_line ("<!-- Now the users -->\n");
   &xst_xml_print_vspace ();
@@ -1005,13 +1060,16 @@ sub xml_print
 	
 	&xst_xml_print_line ("<userdb>\n");
 	&xst_xml_enter ();
-	foreach $i (@users)
+	foreach $i (@$users)
 	{
-          &xst_xml_print_vspace ();
+    &xst_xml_print_vspace ();
 	  &xst_xml_print_line ("<user>\n");
 		&xst_xml_enter ();
-		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  &xst_xml_print_line ("<" . $users_prop_map{"$j"} . ">" . xst_xml_quote ($$i[$j]) . "</" . $users_prop_map {$j} . ">\n");
+		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++)
+    {
+		  &xst_xml_print_line ("<" . $users_prop_map{"$j"} . ">" .
+                           xst_xml_quote ($$i[$j]) .
+                           "</" . $users_prop_map {$j} . ">\n");
 		}
 		&xst_xml_leave ();
 		&xst_xml_print_line ("</user>\n");
@@ -1030,13 +1088,16 @@ sub xml_print
 	
 	&xst_xml_print_line ("<groupdb>\n");
 	&xst_xml_enter ();
-	foreach $i (@groups)
+	foreach $i (@$groups)
 	{
     &xst_xml_print_vspace ();
 	  &xst_xml_print_line ("<group>\n");
 		&xst_xml_enter ();
-		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
-			&xst_xml_print_line ("<" . $groups_prop_map{$j} . ">" . xst_xml_quote ($$i[$j]) . "</" . $groups_prop_map {$j} . ">\n");
+		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++)
+    {
+			&xst_xml_print_line ("<" . $groups_prop_map{$j} . ">" .
+                           xst_xml_quote ($$i[$j]) .
+                           "</" . $groups_prop_map {$j} . ">\n");
 		}
 		&xst_xml_print_line ("<users>\n");
 		&xst_xml_enter ();
@@ -1056,7 +1117,7 @@ sub xml_print
   &xst_xml_print_line ("</groupdb>\n");
 
   # This for test purposes only
-  &xml_print_nis () if $TEST_NIS;
+  &xml_print_nis ($hash) if $TEST_NIS;
 
   &xst_xml_print_end ();
 }
@@ -1066,29 +1127,26 @@ sub xml_print
 
 sub get
 {
-  &xst_report ("users_getting_db");
-
-  &read_login_defs (); &xst_print_progress ();
-  &read_group (); &xst_print_progress ();
-  &read_passwd_shadow (); &xst_print_progress ();
-  &read_profiles (); &xst_print_progress ();
-  &read_shells (); &xst_print_progress ();
-
-  &xst_end();
-  &xml_print ();
+  my ($hash);
+  
+  $hash = &read ();
+  &xst_end ();
+  &xml_print ($hash);
 }
 
 sub set
 {
-  &xml_parse ();
+  my ($hash);
+
+  $hash = &xml_parse ();
 
   if ($xst_do_immediate)
   {
-    &write_group_passwd ();
-    &write_logindefs ();
+    &write_group_passwd ($hash);
+    &write_logindefs ($hash);
   }
 
-  &xst_end();
+  &xst_end ();
 }
 
 
@@ -1097,9 +1155,11 @@ sub set
 
 sub filter
 {
-  &xml_parse ();
+  my ($hash);
+  
+  $hash = &xml_parse ();
   &xst_end();
-  &xml_print ();
+  &xml_print ($hash);
 }
 
 
