@@ -1,3 +1,8 @@
+2001-12-18  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* platform.pl.in (check_debian): Correctly detect woody, which
+	is now officialy 3.0.
+
 2001-12-17  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network-conf.in: Added rh72 back to supported list.

@@ -39,7 +39,7 @@ require "$SCRIPTSDIR/xml.pl$DOTIN";
 
 $PLATFORM_INFO = {
   "debian-2.2"     => "Debian GNU/Linux 2.2 Potato",
-  "debian-woody"   => "Debian GNU/Linux Woody",
+  "debian-woody"   => "Debian GNU/Linux 3.0 Woody",
   "redhat-5.2"     => "Red Hat Linux 5.2 Apollo",
   "redhat-6.0"     => "Red Hat Linux 6.0 Hedwig",
   "redhat-6.1"     => "Red Hat Linux 6.1 Cartman",
@@ -68,11 +68,16 @@ sub check_lsb
 
 sub check_debian
 {
-  my $ver;
+  my ($ver, $i);
+  my %vermap =
+      ("3.0" => "woody");
 
   open DEBIAN, "$xst_prefix/etc/debian_version" or return -1;
   chomp ($ver = <DEBIAN>);
   close DEBIAN;
+
+  $ver = $vermap{$ver} if exists $vermap{$ver};
+  
   return "debian-$ver";
 }
 
