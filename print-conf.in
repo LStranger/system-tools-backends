@@ -72,7 +72,7 @@ $progress_max = 10;
 
 sub xml_parse
 {
-  my $tree, %hash;
+  my ($tree, %hash);
   # Scan XML to tree.
 
   $tree = &xst_xml_scan;
@@ -97,21 +97,19 @@ sub xml_parse_print
 {
   my $tree = $_[0];
   my $hash = $_[1];
-  my (@searchdomain, @nameserver, @order, %statichost, %printer, %dialing);
+  my %printer;
 
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
   {
-      $i = $$tree[0]{'name'};
-    print STDERR "Parse print '$$tree[0]'\n";
     if ($$tree[0] eq "printer") { &xml_parse_printer ($$tree[1], \%printer); }
 
     shift @$tree;
     shift @$tree;
   }
-
-  $$hash{"printer"} = \%printer unless scalar keys %printer == 0;
+  
+  %$hash = %printer if scalar keys %printer;
 }
 
 # <printer>...</printer>
@@ -120,18 +118,20 @@ sub xml_parse_printer
 {
   my $tree = $_[0];
   my $printer = $_[1];
-  my %hash;
+  my %hash, %section_hash;
   my $dev;
 
   shift @$tree;
 
-  print STDERR "Parse printer\n";
-
-  # FIXME: needs expansion.
   while (@$tree)
   {
-      print STDERR "tree: '$$tree[1]'\n";
     $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
+
+    # If get_pcdata returns an array instead of a scalar, we have
+    #  a subsection to process.
+    if ( ref($hash{$$tree[0]}) eq "ARRAY" ) {
+      $hash{$$tree[0]} = &xml_parse_section($$tree[1]);
+    }
 
     shift @$tree;
     shift @$tree;
@@ -141,12 +141,29 @@ sub xml_parse_printer
   $$printer{$dev} = \%hash;
 }
 
+sub xml_parse_section
+{
+  my $tree = $_[0];
+  my %hash;
+  my $dev;
+
+  while (@$tree)
+  {
+    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
+
+    shift @$tree;
+    shift @$tree;
+  }
+ 
+  return \%hash;
+}
+
 # --- XML printing --- #
 
 sub xml_print_section
 {
   my ($h, $name) = @_;
-  my $i, $val, $section;
+  my ($i, $val, $section);
 
   $section = $$h{$name};
   &xst_xml_print_line ("<$name>\n");
@@ -163,13 +180,16 @@ sub xml_print_section
 sub xml_print_printer
 {
   my ($h, $spool) = @_;
-  my $i, $val, $section;
+  my ($i, $val, $section);
 
   &xst_xml_print_vspace ();
   &xst_xml_print_line ("<printer>\n");
   &xst_xml_enter ();
 
   &xst_xml_print_line ("<name>$spool</name>\n");
+
+  $val = &xst_xml_quote ($$h{'description'});
+  &xst_xml_print_line ("<description>$val</description>\n");
 
   &xml_print_section ($h, 'lpr');
   &xml_print_section ($h, 'rhs-general');
@@ -183,7 +203,7 @@ sub xml_print_printer
 sub xml_print
 {
   my $h = $_[0];
-  my $i, $val;
+  my ($i, $val);
 
   &xst_xml_print_begin ();
 
@@ -204,7 +224,6 @@ sub get
 
   # print printer stuff
   $hash = &xst_print_conf_get ();
-
   &xst_end();
   &xml_print ($hash);
 }

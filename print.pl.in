@@ -60,11 +60,12 @@ sub xst_printcap_read
   my ($file, $spool_dir) = @_;
   my ($fd, $found, $spool, $in_spool);
   my (%spools);
+  my ($type, $description);
 
   $fd = &xst_open_read_from_names ("$file");
   return undef if !$fd;
     
-  $in_spool=0;
+  $in_spool = 0;
 
   while (<$fd>)
   {
@@ -86,6 +87,21 @@ sub xst_printcap_read
         # Get the spool name.
         $spool = $1;
         $in_spool = 1;
+
+        # Pack away the type and description for this spool.
+        $spools{$spool}{'lpr'}{'type'} = $type;
+        $spools{$spool}{'description'} = $description;
+
+        # Reset for the next pass.
+        $type = '';
+        $description = '';
+    } elsif ( s/^\#\#PRINTTOOL.*\#\#// ) {
+      # printtool creates a comment line of the form:
+      # ##PRINTTOOL3## printer_type some multi-word description
+      # for each printer entry.  Let's parse it into the consituent
+      # type and description.
+      s/^\s+//;
+      ($type, $description) = split(/\s+/, $_, 2);
     }
   }
   

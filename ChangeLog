@@ -1,3 +1,12 @@
+2001-03-28  Ryan Boren <rboren@fuzzybelly.org>
+
+	* print.pl.in (xst_printcap_read): parse the ##PRINTTOOL##
+	line to grok another description
+
+	* print-conf.in (xml_parse, xml_parse_printer): fixup
+	(xml_parse_section): impl.
+	(xml_print_printer): add description.
+
 2001-03-26  Tambet Ingo  <tambet@ximian.com>
 
 	* users-conf.in (write_logindefs): Implement.
