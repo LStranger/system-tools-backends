@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-28 04:14+0200\n"
-"PO-Revision-Date: 2004-08-28 12:03+0200\n"
+"POT-Creation-Date: 2005-01-07 20:31+0100\n"
+"PO-Revision-Date: 2005-01-07 23:05+0100\n"
 "Last-Translator: Elian Myftiu <elian@lycos.com>\n"
 "Language-Team: Albanian <gnome-albanian-perkthyesit@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -38,7 +38,8 @@ msgid "web server"
 msgstr "server web"
 
 #: service-list.pl.in:38 service-list.pl.in:70
-msgid "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+msgid ""
+"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr ""
 "Apache është një server World Wide Web.  Përdoret për të shërbyer skedarë "
 "HTML dhe CGI."
@@ -49,7 +50,8 @@ msgstr "Ekzekuto detyra që mungojnë gjatë nisjes"
 
 #: service-list.pl.in:39
 msgid "Run cron jobs that were left out due to downtime"
-msgstr "Ekzekuto detyra që ishin lënë mënjanë si pasojë e mungesës së shërbimit"
+msgstr ""
+"Ekzekuto detyra që ishin lënë mënjanë si pasojë e mungesës së shërbimit"
 
 #: service-list.pl.in:40
 msgid "Automatic power management daemon"
@@ -239,7 +241,8 @@ msgstr "vëzhgues i ndryshimit të skedarit"
 
 #: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
-msgstr "Firstboot është një program i llojit ndihmues i cili punon vetëm herën e parë"
+msgstr ""
+"Firstboot është një program i llojit ndihmues i cili punon vetëm herën e parë"
 
 #: service-list.pl.in:63
 msgid "Text-to-speech system"
@@ -348,7 +351,8 @@ msgstr "Protokolli i çelësit të ndërrimit për internetin"
 
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol openbsd implementation"
-msgstr "Përshtatja openbsd e protokollit të çelësit të ndërrimit për internetin"
+msgstr ""
+"Përshtatja openbsd e protokollit të çelësit të ndërrimit për internetin"
 
 #: service-list.pl.in:75
 msgid "start and stop ISDN services"
@@ -383,13 +387,15 @@ msgid "Kernel Log Daemon"
 msgstr "Programi Shërbyes i Regjistrimeve të Kernelit"
 
 #: service-list.pl.in:78
-msgid "klogd is a system daemon which intercepts and logs Linux kernel messages."
+msgid ""
+"klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr ""
 "klogd është një program shërbyes i sistemit i cili mbledh dhe regjistron "
 "mesazhet e kernelit Linux"
 
 #: service-list.pl.in:79
-msgid "This runs the hardware probe, and optionally configures changed hardware."
+msgid ""
+"This runs the hardware probe, and optionally configures changed hardware."
 msgstr ""
 "Ky program ekzekuton kontrollin hardware, dhe mundësisht konfiguron "
 "ndryshimet në hardware."
@@ -523,7 +529,8 @@ msgstr "Fresko orën e sistemit nëpërmjet rrjetit"
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
-msgstr "Kontrollon orën nga një server dhe me anë të tij rregullon orën e sistemit."
+msgstr ""
+"Kontrollon orën nga një server dhe me anë të tij rregullon orën e sistemit."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -602,9 +609,10 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
-"Ky script përcakton dispozitivët e pafilluar në dispozitivë në blloqe (si p.sh. particione "
-"të diskut fiks). Përdoret për programe si p.sh. Oracle. Mund të caktoni një "
-"dispozitiv të pafilluar në dispozitiv në bllok duke edituar file /etc/sysconfig/rawdevices."
+"Ky script përcakton dispozitivët e pafilluar në dispozitivë në blloqe (si p."
+"sh. particione të diskut fiks). Përdoret për programe si p.sh. Oracle. Mund "
+"të caktoni një dispozitiv të pafilluar në dispozitiv në bllok duke edituar "
+"file /etc/sysconfig/rawdevices."
 
 #: service-list.pl.in:110
 msgid ""
@@ -615,14 +623,17 @@ msgid ""
 msgstr ""
 "Ky është një daemon që administron aktivitetin e lidhjes periodike me "
 "serverët e Red Hat Network për të kontrolluar për rifreskime, njoftime dhe "
-"kryen aktivitetet e monitorimit të sistemit në përputhje me nivelin e shërbimit "
-"për të cilin ky server është abonuar."
+"kryen aktivitetet e monitorimit të sistemit në përputhje me nivelin e "
+"shërbimit për të cilin ky server është abonuar."
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
-msgstr "Serveri rsync është një plotësues i mirë i serverit ftp, sepse mundëson crc checksumming, etj. Për të shfrytëzuar këtë shërbim duhet të keni aktivuar xinetd."
+msgstr ""
+"Serveri rsync është një plotësues i mirë i serverit ftp, sepse mundëson crc "
+"checksumming, etj. Për të shfrytëzuar këtë shërbim duhet të keni aktivuar "
+"xinetd."
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
@@ -637,38 +648,40 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
-"The Samba software suite është një koleksion programesh që kompleton protokollin "
-"Server Message Block për sistemet UNIX."
+"The Samba software suite është një koleksion programesh që kompleton "
+"protokollin Server Message Block për sistemet UNIX."
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
-msgstr "saslauthd është një proçes serveri që administron kërkesat për autentifikimet në tekst të thjeshtë të përdorura nga libraria cyrus-sasl."
+msgstr ""
+"saslauthd është një proçes serveri që administron kërkesat për "
+"autentifikimet në tekst të thjeshtë të përdorura nga libraria cyrus-sasl."
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
-"Sendmail është një Mail Transport Agent, që është një program që lëviz mesazhet "
-"mail nga një tek një tjetër."
+"Sendmail është një Mail Transport Agent, që është një program që lëviz "
+"mesazhet mail nga një tek një tjetër."
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
-"Një shërbim i brendshëm i xinetd, shfaq serverët aktivë. Duhet të keni aktivuar "
-"xinetd për të përdorur këtë shërbim."
+"Një shërbim i brendshëm i xinetd, shfaq serverët aktivë. Duhet të keni "
+"aktivuar xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
 msgstr ""
-"Një shërbim i brendshëm i xinetd, shfaq shërbimet aktive. Duhet të keni aktivuar "
-"xinetd për të përdorur këtë shërbim."
+"Një shërbim i brendshëm i xinetd, shfaq shërbimet aktive. Duhet të keni "
+"aktivuar xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
@@ -688,7 +701,8 @@ msgid ""
 "change. You must enable xinetd to use this service."
 msgstr ""
 "FAM është një daemon për monitorimin e file. Mund të përdoret për të marrë "
-"raportime kur files ndryshohen. Duhet të keni aktivuar xinetd për të përdorur këtë shërbim."
+"raportime kur files ndryshohen. Duhet të keni aktivuar xinetd për të "
+"përdorur këtë shërbim."
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
@@ -735,8 +749,9 @@ msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
-"Syslog është vegla e përdorur nga shumë shërbime për të regjistruar "
-"mesazhet tek file e ndryshëm të mesazheve të sistemit.  Aktivimi i tij është një ide e mirë."
+"Syslog është vegla e përdorur nga shumë shërbime për të regjistruar mesazhet "
+"tek file e ndryshëm të mesazheve të sistemit.  Aktivimi i tij është një ide "
+"e mirë."
 
 #: service-list.pl.in:127
 msgid ""
@@ -745,10 +760,10 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
-"Një server kohe RFC 868. Ky protokoll afron datën dhe orën në format "
-"të lexueshëm nga makina. Shërbimi i Orës i transmeton përsëri burimit "
-"kohën në sekonda që nga mesnata e një Janar 1900.  Ky është versioni "
-"tcp. Duhet të jetë aktiv xinetd për të përdorur këtë shërbim."
+"Një server kohe RFC 868. Ky protokoll afron datën dhe orën në format të "
+"lexueshëm nga makina. Shërbimi i Orës i transmeton përsëri burimit kohën në "
+"sekonda që nga mesnata e një Janar 1900.  Ky është versioni tcp. Duhet të "
+"jetë aktiv xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:128
 msgid ""
@@ -757,10 +772,10 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
-"Një server kohe RFC 868. Ky protokoll afron datën dhe orën në format "
-"të lexueshëm nga makina. Shërbimi i Orës i transmeton përsëri burimit "
-"kohën në sekonda që nga mesnata e një Janar 1900.  Ky është versioni "
-"udp. Duhet të jetë aktiv xinetd për të përdorur këtë shërbim."
+"Një server kohe RFC 868. Ky protokoll afron datën dhe orën në format të "
+"lexueshëm nga makina. Shërbimi i Orës i transmeton përsëri burimit kohën në "
+"sekonda që nga mesnata e një Janar 1900.  Ky është versioni udp. Duhet të "
+"jetë aktiv xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
@@ -772,9 +787,9 @@ msgid ""
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
-"Gjeneratori  i  numrave  të  rastit  grumbullon zhurmën ambientale nga dirvers "
-"e dispozitivëve apo burimeve të tjerë nën një entropy pool. Nga ky entropy "
-"pool krijohen numrat e rastit."
+"Gjeneratori  i  numrave  të  rastit  grumbullon zhurmën ambientale nga "
+"dirvers e dispozitivëve apo burimeve të tjerë nën një entropy pool. Nga ky "
+"entropy pool krijohen numrat e rastit."
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -785,8 +800,8 @@ msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
-"Komanda vmware nis një makinë virtuale Intel X86. Ky script trajton shërbimet "
-"e duhura për të ekzekutuar programin VMware."
+"Komanda vmware nis një makinë virtuale Intel X86. Ky script trajton "
+"shërbimet e duhura për të ekzekutuar programin VMware."
 
 #: service-list.pl.in:132
 msgid "Web-based administration toolkit"
@@ -805,8 +820,8 @@ msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
-"U jep mundësinë pëedoruesve të zbatojnë programe Windows(tm) duke u "
-"klikuar sipër (ose duke shkruar ./file.exe)"
+"U jep mundësinë pëedoruesve të zbatojnë programe Windows(tm) duke u klikuar "
+"sipër (ose duke shkruar ./file.exe)"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
@@ -825,8 +840,8 @@ msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
 msgstr ""
-"Xfs është serveri i gërmave të sistemit X Window. Ai furnizon me gërma serverët "
-"grafikë e X Window System."
+"Xfs është serveri i gërmave të sistemit X Window. Ai furnizon me gërma "
+"serverët grafikë e X Window System."
 
 #: service-list.pl.in:137
 msgid ""
@@ -836,35 +851,83 @@ msgid ""
 "can be started, among other things."
 msgstr ""
 "xinetd është një zëvendësues i fuqishëm i inetd. xinetd ka mekanizme "
-"kontrolli të hyrjeve, aftësi të zgjeruara mesazhimi, aftësinë e vënies në dispozicion "
-"të shërbimeve në varësi të kohës, dhe mund të kufizojë numrin e serverëve që "
-"mund të nisen, përveç gjërave të tjera."
+"kontrolli të hyrjeve, aftësi të zgjeruara mesazhimi, aftësinë e vënies në "
+"dispozicion të shërbimeve në varësi të kohës, dhe mund të kufizojë numrin e "
+"serverëve që mund të nisen, përveç gjërave të tjera."
 
-#: service.pl.in:224 service.pl.in:229
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "Duke ndaluar sistemin"
 
-#: service.pl.in:225 service.pl.in:231
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "Mënyrë tekstuale"
 
-#: service.pl.in:226 service.pl.in:230 service.pl.in:239
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "Mënyrë grafike"
 
-#: service.pl.in:227 service.pl.in:232
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "Duke rinisur sistemin"
 
-#: service.pl.in:234
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "Nis të gjithë shërbimet e nevojshme të sistemit"
 
-#: service.pl.in:235
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "Niveli i prezgjedhur i nisjes"
 
-#: service.pl.in:236
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Niveli i nisjes së rrjetit"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "Vëzhgo regjistrimet e sistemit"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "Përdor dispozitiva audio"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "Hyrje në lexuesit CD-ROM"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "Hyrje në dispozitivat modem"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "Lidhu me Internetin me anë të dispozitivave modem"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "Dërgo dhe merr fakse"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "Hyrje në lexuesit floppy"
+
+#: users-conf.in:186
+msgid "Mount removable devices automatically"
+msgstr "Monto dispozitivat e çmontueshëm automatikisht"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "Hyrje në lexuesit shirit"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "Mundëso marrjen e privilegjeve administrative"
+
+#: users-conf.in:458
+msgid "Default"
+msgstr "Parazgjedhur"
+
+#: users-conf.in:459
+msgid "Default profile"
+msgstr "Profili i parazgjedhur"
 
