@@ -1,5 +1,11 @@
 2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* configure.in: updated intltool version to 0.28
+	* Makefile.am: added OrigTree.pm to EXTRA_DIST
+	* .cvsignore: added intltool-*
+
+2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* service-list.pl.in: fixed some strings, thanks to Elros Cyriatan
 
 2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>

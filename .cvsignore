@@ -21,6 +21,7 @@ font.pl
 general.pl
 gettext.pl
 internetsharing-conf
+intltool-*
 ishare.pl
 libtool
 media.pl
