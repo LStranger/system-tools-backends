@@ -1,3 +1,10 @@
+2001-03-29  Tambet Ingo  <tambet@ximian.com>
+
+	* users-conf.in (read_shells): Implement.
+	(xml_print_shells): Implement.
+
+	* general.pl.in (xst_init): Fixed typo.
+
 2001-03-28  Hans Petter Jansson  <hpj@ximian.com>
 
 	* general.pl.in: Honour --verbose flag like --report.

@@ -29,6 +29,7 @@
 # /etc/group
 # /etc/shadow
 # /etc/login.defs
+# /etc/shells
 
 # NIS support will come later.
 
@@ -70,10 +71,11 @@ $progress_max = 3;
 # We list each config file type with as many alternate locations as possible.
 # They are tried in array order. First found = used.
 
-@passwd_names = ( "/etc/passwd" );
-@shadow_names = ( "/etc/shadow" );
-@group_names = ( "/etc/group" );
+@passwd_names =     ( "/etc/passwd" );
+@shadow_names =     ( "/etc/shadow" );
+@group_names =      ( "/etc/group" );
 @login_defs_names = ( "/etc/login.defs" );
+@shell_names =      ( "/etc/shells" );
 
 # Where are the tools?
 
@@ -95,6 +97,7 @@ $cmd_gpasswd  = &xst_file_locate_tool ("gpasswd");
 %groups_hash = ();
 @groups = ();
 %login_defs = ();
+@shells = ();
 
 $parse_tree = 0;
 
@@ -326,6 +329,27 @@ sub read_profiles
 
   $path = &xst_file_get_data_path . "/users/profiles.xml";
   $profiles = &xst_file_buffer_load ($path);
+}
+
+sub read_shells
+{
+  my $ifh;
+  local *FILE;
+
+  # Init @shells, I think every *nix has /bin/false.
+  push (@shells, "/bin/false") if (stat ("/bin/false") ne "");
+  
+  $ifh = &xst_file_open_read_from_names(@shell_names);
+  return if not $ifh;
+  *FILE = $ifh;
+
+  while (<FILE>) {
+    next if &xst_ignore_line ($_);
+    chomp;
+    push (@shells, $_) if (stat ($_) ne "");
+  }
+  
+  close (FILE);
 }
 
 sub write_logindefs
@@ -810,6 +834,26 @@ sub xml_print_profiles
 	&xst_xml_print_vspace ();
 }
 
+
+sub xml_print_shells
+{
+  my $i;
+
+  return if (@shells < 1);
+
+  &xst_xml_print_line ("<shells>\n");
+  &xst_xml_enter ();
+
+  foreach $i (@shells) {
+    &xst_xml_print_line ("<shell>$i</shell>");
+  }
+  
+	&xst_xml_leave ();
+	&xst_xml_print_line ("</shells>\n");
+	&xst_xml_print_vspace ();
+}
+
+
 sub xml_print_nis
 {
   my ($key, $i, $j, $k);
@@ -886,6 +930,7 @@ sub xml_print
 	&xst_xml_print_vspace ();
 
   &xml_print_profiles ();
+  &xml_print_shells ();
   
   &xst_xml_print_line ("<!-- Now the users -->\n");
   &xst_xml_print_vspace ();
@@ -964,6 +1009,7 @@ sub get
   &read_group (); &xst_print_progress ();
   &read_passwd_shadow (); &xst_print_progress ();
   &read_profiles (); &xst_print_progress ();
+  &read_shells (); &xst_print_progress ();
 
   &xst_end();
   &xml_print ();
