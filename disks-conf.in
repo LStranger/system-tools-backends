@@ -853,51 +853,77 @@ sub get_fs_type
    my ($filesys);
 
    # if mounted get fs
-   $line = `mount | grep "$device"`;
-   if ($line ne "") {
+   if (&gst_partition_is_mounted ($device))
+   {
+      #$line = `mount | grep "$device"`;
+      #if ($line ne "") {
       # already mounted
       ($filesys) = $line =~ /^$device on .* type (.*) .*$/;
-      if ($filesys) {
+      if ($filesys) 
+      {
 	 return $filesys;
-      } else {
+      } 
+      else 
+      {
 	 return "unknown";
       }
    }  
 
    # Not already mounted
    # Try to mount it
-   my ($dev) = ($device =~ /\/dev\/(.*)/);
-   my $point = "/tmp/disks-conf-$dev";
-
-   mkdir ($point);
-
-   $cmd = "mount $device $point";
+   my $ret = &gst_partition_mount_temp ($device);
    
-   $fd = &gst_file_run_pipe_read_with_stderr ($cmd);
+   #my ($dev) = ($device =~ /\/dev\/(.*)/);
+   #my $point = "/tmp/disks-conf-$dev";
+
+   #mkdir ($point);
+
+   #$cmd = "mount $device $point";
    
-   if (!$fd) {
-      my $err = `umount $device`;
-      rmdir ($point);
-      return "unknown";
-   }
+   #$fd = &gst_file_run_pipe_read_with_stderr ($cmd);
+   
+   #if (!$fd) {
+      #   my $err = `umount $device`;
+      #rmdir ($point);
+      #return "unknown";
+      #}
 
    # Not mounted: not supported or unformatted
-   while (<$fd>) {
-      if (/not supported/) {
-	 ($filesys) = ($_ =~ /^mount: fs type (.*) not supported by kernel$/);
-      } elsif (/looks like swapspace/) {
-	 $filesys = "swap";
-      } elsif (/you must specify the filesystem type/) {
-	 $filesys = "none";
-      }
-   }
+   #while (<$fd>) {
+      #   if (/not supported/) {
+#	 ($filesys) = ($_ =~ /^mount: fs type (.*) not supported by kernel$/);
+#     } elsif (/looks like swapspace/) {
+#	 $filesys = "swap";
+#     } elsif (/you must specify the filesystem type/) {
+#	 $filesys = "none";
+#     }
+#  }
 
-   &gst_file_close ($fd);
+#  &gst_file_close ($fd);
 
-   if ($filesys) {
-      rmdir ($point);
+   if ($ret eq "error")
+   {
+      return "unknown";
+   } 
+   elsif ($ret =~ /not_supported/)
+   {
+      my ($msg) = ($ret =~ /^not_supported::(.*)/);
+      ($filesys) = ($msg =~ /^mount: fs type (.*) not supported by kernel$/);
       return $filesys;
    }
+   elsif ($ret eq "swap")
+   {
+      return "swap";
+   }
+   elsif ($ret eq "none")
+   {
+      return "none";
+   }
+
+   #if ($filesys) {
+      #   rmdir ($point);
+      #return $filesys;
+      #}
 
    # Mounted by me
    $line = `mount | grep "$device"`;
@@ -905,8 +931,9 @@ sub get_fs_type
       ($filesys) = ($line =~ /^$device on .* type (.*) .*$/);
    }
    
-   my $err = `umount $device`;
-   rmdir ($point);
+   &gst_partition_umount_temp ($device, $ret);
+   #my $err = `umount $device`;
+   #rmdir ($point);
 
    if ($filesys) {
       return $filesys;
@@ -1327,12 +1354,39 @@ sub get_cdrom_disc_info
       return;
    }
    
+   my ($mp, $umount);
    my $cdtype;
    my $disctype = ioctl (RD, $CDROM_DISC_STATUS, 0);
    if ($disctype eq $CDS_AUDIO) { 
-      $cdtype = "audio"; 
-   } elsif (($disctype eq $CDS_DATA_1) || ($disctype eq $CDS_DATA_2) ||
-           ($disctype eq $CDS_XA_2_1) || ($disctype eq $CDS_XA_2_2)) {
+      $cdtype = "audio";
+   } elsif ($disctype eq $CDS_DATA_1) {
+      # Chack if it's a DVD
+      if (! &gst_partition_is_mounted ($device)) {
+	 $umount = 1;
+	 $mp = &gst_partition_mount_temp ($device);
+      } else {
+	 $umount = 0;
+	 $mp = &gst_partition_get_mount_point ($device);
+      }
+      
+      if (($mp =~ /^\/.*$/) && (-d $mp)) {
+	 my $audio_ts = "audio_ts";
+	 my $video_ts = "video_ts";
+	 if ((-d "$mp/$audio_ts") || (-d "$mp/$video_ts") || 
+             (-d "$mp/" . uc ($audio_ts)) || (-d "$mp/" . uc ($video_ts))) {
+	    $cdtype = "dvd";
+	 } else {
+	    $cdtype = "data";
+	 }
+      } else {
+	 $cdtype = "data";
+      }
+
+      if ($umount) {
+	 &gst_partition_umount_temp ($device, $mp);
+      }
+   } elsif (($disctype eq $CDS_DATA_2) || ($disctype eq $CDS_XA_2_1) || 
+            ($disctype eq $CDS_XA_2_2)) {
       $cdtype = "data";
    } elsif ($disctype eq $CDS_MIXED) {
       $cdtype = "mixed";

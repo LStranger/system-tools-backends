@@ -555,7 +555,6 @@ sub get_fdisk
 	# fs type
 	#%parts->{'type'} = $type;
 	%parts->{'type'} = &get_fs_type ($device);
-	#print ("DBG: tipo " . &get_fs_type ($device) . "\n");
 	push (@fdisk_hash, \%parts);
       }
     }
@@ -649,28 +648,126 @@ sub get_fdisk
   }
 }
 
+## Mount functions
+sub gst_partition_is_mounted
+{
+   my ($device) = @_;
+
+   my $line = `mount | grep "$device"`;
+   
+   if ($line ne "") 
+   {
+      return 1;
+   }
+   else
+   {
+      return 0;
+   }
+}
+
+sub gst_partition_get_mount_point
+{
+   my ($device) = @_;
+
+   my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
+   if ($point)
+   {
+      return $point;
+   } 
+   else 
+   {
+      return undef;
+   }
+}
+
+sub gst_partition_mount_temp
+{
+   my ($device) = @_;
+   my ($filesys);
+
+   my ($dev) = ($device =~ /\/dev\/(.*)/);
+   my $point = "/tmp/disks-conf-$dev";
+
+   mkdir ($point);
+
+   $cmd = "mount $device $point";
+   $fd = &gst_file_run_pipe_read_with_stderr ($cmd);
+
+   if (!$fd) 
+   {
+      my $err = `umount $device`;
+      rmdir ($point);
+      return "error";
+   }
+   
+   # Not mounted: not supported or unformatted
+   while (<$fd>) 
+   {
+      if (/not supported/) 
+      {
+	 #($filesys) = ($_ =~ /^mount: fs type (.*) not supported by kernel$/);
+	 &gst_file_close ($fd);
+	 rmdir ($point);
+	 return "not_supported::$_";
+      }
+      elsif (/looks like swapspace/) 
+      {
+	 #$filesys = "swap";
+	 &gst_file_close ($fd);
+	 rmdir ($point);
+	 return "swap";
+      }
+      elsif (/you must specify the filesystem type/)
+      {
+	 #$filesys = "none";
+	 &gst_file_close ($fd);
+	 rmdir ($point);
+	 return "none";
+      }
+   }
+
+   &gst_file_close ($fd);
+
+   return $point;
+}
+
+sub gst_partition_umount_temp
+{
+   my ($device, $point) = @_;
+
+   my $err = `umount $device`;
+   rmdir ($point);
+}
+
 sub gst_format_partition
 {
    my ($command, $device, $type, $options) = @_;
    my ($cmd, $fd);
 
-   if ($type eq "reiserfs") {
+   if ($type eq "reiserfs") 
+   {
       $options = "$options -f -f"; #-f specified twice, do not ask for confirmation
-   } elsif ($type eq "xfs") {
+   } 
+   elsif ($type eq "xfs") 
+   {
       $options = "$options -f";
-   } elsif ($type eq "xfs") {
+   } 
+   elsif ($type eq "xfs") 
+   {
       $options = "$options -q";
    }
 
    $cmd = "$command $device $options";
    
    $fd = &gst_file_run_pipe_read_with_stderr ($cmd);
-   if (!$fd) {
+   if (!$fd) 
+   {
       # TODO
       return;
    }
 
-   while (<$fd>) {
+   while (<$fd>) 
+   {
 #      print"DBG: $_\n";
    }
 
