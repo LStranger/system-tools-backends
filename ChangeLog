@@ -1,3 +1,7 @@
+2001-04-26  Chema Celorio  <chema@celorio.com>
+
+	* Makefile.am (EXTRA_DIST): add print-conf.in to pass distcheck
+
 2001-04-26  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot-conf.in: Added mandrake-7.2 and debian-2.2 as supported platforms.

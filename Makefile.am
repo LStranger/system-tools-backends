@@ -40,6 +40,7 @@ EXTRA_DIST = \
 	time-conf.in \
 	users-conf.in \
 	boot-conf.in \
+	print-conf.in \
 	guess_system.sh
 
 CLEANFILES = $(backends) $(perl_libs)
