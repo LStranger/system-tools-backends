@@ -1,5 +1,12 @@
 2003-08-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* boot-grub.pl.in: added password support for grub entries,
+	  changed the way it finds out the path to the kernel image
+	* boot-lilo.pl.in: added password support for lilo entries
+	* boot.pl.in: added general password support
+
+2003-08-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* xml.pl.in: made it to ignore any whitespace or carriage return
 	  at the beginning of the xml when parsing
 

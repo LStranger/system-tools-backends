@@ -54,23 +54,37 @@ sub gst_boot_grub_get_config_file
   return undef;
 }
 
-# find out which is the partition where the file (image or initrd) is stored in, just to
-# put /file instead of /path-to-boot/file
-sub gst_boot_grub_set_file_path
+# find out which is the partition where the image is stored in, just to
+# put /image instead of /boot/image (we assume that if an image isn't in /, then it's in
+# the /boot partition)
+sub gst_boot_grub_set_image_path
 {
   my ($image, $root) = @_;
-  my ($mtab, $dir);
+  my ($line);
 
-  $mtab = "$gst_prefix/etc/mtab";
-  $mntopts = &gst_parse_split_first_array ($mtab, $root, "[ \t]+", "[ \t]+");
-  $dir = $$mntopts[0];
+  $line = `cat $gst_prefix/etc/fstab | grep "$root"`;
 
-  if ($dir ne "")
+  # if the root partition of the entry isn't /, then we remove any path from $image
+  if ($line !~ /$root[\t ]+\/[\t ]+.+/)
   {
-    if ($dir ne "/") # if mount point is /, we don't need to remove it
-    {
-      $image =~ s/^$dir//;
-    }
+    $image =~ s/.*\//\//;
+  }
+
+  return $image;
+}
+
+# Tries to get the path in which the image is stored from the root partition of the entry
+# (we assume that if an image isn't in /, then it's in the boot partition)
+sub gst_boot_grub_get_image_path
+{
+  my ($image, $root) = @_;
+  my ($line, $path);
+
+  $line = `cat $gst_prefix/etc/fstab | grep "$root"`;
+
+  if ($line !~ /$root[\t ]+\/[\t ]+.+/)
+  {
+    $image = "/boot" . $image;
   }
 
   return $image;
@@ -136,7 +150,7 @@ sub gst_boot_grub_delete_entry
 sub gst_boot_grub_edit_entry
 {
   my ($entry, $buff, $lineno, $device_map) = @_;
-  my ($end, $val, $value, $image, $initrd);
+  my ($end, $val, $value, $image);
 	
   $end = &gst_boot_grub_find_entry ($buff, $lineno + 1);
   $end = scalar @$buff if ($end < 0);
@@ -147,19 +161,14 @@ sub gst_boot_grub_edit_entry
     $value = $entry->{"root"};
     $value = &gst_boot_grub_linux2grub ($device_map, $value);
 
-    $image = &gst_boot_grub_set_file_path ($entry->{"image"}, $entry->{"root"});
-    if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
-      $initrd = &gst_boot_grub_set_file_path ($entry->{"initrd"}, $entry->{"root"});
-    }
+    $image = &gst_boot_grub_set_image_path ($entry->{"image"}, $entry->{"root"});
     
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\troot (". $value. ")\n";
     $val .= "\tkernel " . $image . " " . $entry->{"append"} . "\n";
-    if ($initrd ne "")
-    {
-      $val .= "\tinitrd ". $initrd . "\n";
+    if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
+      $val .= "\tinitrd ". $entry->{"initrd"} . "\n";
     }
-    $val .= "\n";
   }
   else
   {
@@ -170,9 +179,16 @@ sub gst_boot_grub_edit_entry
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\trootnoverify (" . $value . ")\n";
     $val .= "\tmakeactive\n";
-    $val .= "\tchainloader +1";
-    $val .= "\n\n";
+    $val .= "\tchainloader +1\n";
   }
+
+  if (exists ($entry->{"password"}))
+  {
+    $val .= "\tpassword " . $entry->{"password"} . "\n";
+  }
+
+  $val .= "\n";
+
   $$buff[$lineno] = $val;
 
   # We delete the rest of the entry lines
@@ -187,7 +203,7 @@ sub gst_boot_grub_edit_entry
 sub gst_boot_grub_add_entry
 {
   my ($entry, $buff, $device_map) = @_;
-  my ($end, $val, $value, $image, $initrd);
+  my ($end, $val, $value, $image);
 	
   if (exists ($entry->{"image"}))
   {
@@ -195,20 +211,14 @@ sub gst_boot_grub_add_entry
     $value = $entry->{"root"};
     $value = &gst_boot_grub_linux2grub ($device_map, $value);
 
-    $image = &gst_boot_grub_set_file_path ($entry->{"image"}, $entry->{"root"});
-    if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
-      $initrd = &gst_boot_grub_set_file_path ($entry->{"initrd"}, $entry->{"root"});
-    }
+    $image = &gst_boot_grub_set_image_path ($entry->{"image"}, $entry->{"root"});
 
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\troot (". $value. ")\n";
     $val .= "\tkernel " . $image . " " . $entry->{"append"} . "\n";
-    if ($initrd ne "")
-    {
-      $val .= "\tinitrd ". $initrd . "\n";
+    if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
+      $val .= "\tinitrd ". $entry->{"initrd"} . "\n";
     }
-    $val .= "\n";
-    push @$buff, $val;
   }
   elsif (exists ($entry->{"other"}))
   {
@@ -219,14 +229,21 @@ sub gst_boot_grub_add_entry
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\trootnoverify (" . $value . ")\n";
     $val .= "\tmakeactive\n";
-    $val .= "\tchainloader +1";
-    $val .= "\n\n";
-    push @$buff, $val;
+    $val .= "\tchainloader +1\n";
   }
   else
   {
     return;
   }
+
+  if (exists ($entry->{"password"}))
+  {
+    $val .= "\tpassword " . $entry->{"password"} . "\n";
+  }
+
+  $val .= "\n";
+
+  push @$buff, $val;
 }
 
 sub gst_boot_grub_entries_set
@@ -587,10 +604,11 @@ sub gst_boot_grub_parse_pixmap
 
 sub gst_boot_grub_parse_image
 {
-  my ($grub_conf, $device_map, $mtab, $entry) = @_;
+  my ($grub_conf, $device_map, $mtab, $entry, $root) = @_;
   my ($image);
 
   $image = &gst_boot_grub_parse_file_cmd ($grub_conf, "kernel", $device_map, $mtab, $entry);
+  $image = gst_boot_grub_get_image_path ($image, $root);
 
   return $image;
 }
@@ -672,6 +690,7 @@ sub gst_boot_grub_parse_append
   return undef if $cmd eq undef;
 
   $cmd =~ s/^[^ \t]+[ \t]?//;
+  $cmd =~ s/root=[^ \t]*[ \t]*//;
 
   return $cmd;
 }
@@ -712,12 +731,18 @@ sub gst_boot_grub_parse_type
 
 sub gst_boot_grub_parse_initrd
 {
-  my ($grub_conf, $device_map, $mtab, $entry) = @_;
+  my ($grub_conf, $entry) = @_;
   my ($initrd);
 
-  $initrd = &gst_boot_grub_parse_file_cmd ($grub_conf, "initrd", $device_map, $mtab, $entry);
-
+  $initrd = &gst_boot_grub_parse_cmd ($grub_conf, "initrd", $entry);
   return $initrd;
+}
+
+sub gst_boot_grub_parse_password
+{
+  my ($grub_conf, $entry) = @_;
+
+  return &gst_boot_grub_parse_cmd ($grub_conf, "password", $entry);
 }
 
 # Watch it: this assumes that the entry exists.

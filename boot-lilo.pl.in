@@ -38,7 +38,7 @@ require "$SCRIPTSDIR/replace.pl$DOTIN";
 require "$SCRIPTSDIR/partition.pl$DOTIN";
 
 my @lilo_global_vars = qw (default prompt delay timeout append boot root);
-my @lilo_common_image_vars = qw (label);
+my @lilo_common_image_vars = qw (label password);
 my @lilo_image_vars = (@lilo_common_image_vars, qw (image append root vga initrd));
 my @lilo_other_vars = (@lilo_common_image_vars, qw (other));
 
