@@ -538,16 +538,17 @@ sub change_user_chfn
   $office_phone = shift @line;
   $home_phone =   shift @line;
 
-  $fname = "-f \'" . $fname . "\'";
-  $office = "-o \'" . $office . "\'";
+  $fname = "-f \'" . $fname . "\'";  
   $home_phone = "-h \'" . $home_phone . "\'";
 
   if ($xst_dist =~ /debian/)
   {
+    $office = "-r \'" . $office . "\'";
     $office_phone = "-w \'" . $office_phone . "\'";
   }
   else
   {
+    $office = "-o \'" . $office . "\'";
     $office_phone = "-p \'" . $office_phone . "\'";
   }  
   
