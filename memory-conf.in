@@ -230,11 +230,11 @@ sub get_memory
     {
       if ($entry =~ /^MemTotal:(\s+)(\w+)/)
 	{
-	  $totmem = sprintf ("%dM", $2 / 1024);	# In Mb, integer
+	  $totmem = sprintf ("%dMB", $2 / 1024);	# In Mb, integer
 	}
       elsif ($entry =~ /^SwapTotal:(\s+)(\w+)/)
 	{
-	  $totswap = sprintf ("%dM", $2 / 1024);
+	  $totswap = sprintf ("%dMB", $2 / 1024);
 	}
     }
 
@@ -281,7 +281,7 @@ sub get_fdisk
         shift @line; shift @line;  # Start and end clusters.
 
         ($size) = (@line[0] =~ /([0-9]+)/);
-	$size = sprintf ("%dM", $size / 1024);
+	$size = sprintf ("%dMB", $size / 1024);
         shift @line;
 
         if (@line[0] ne "82") { next; }  # Not Swap
@@ -322,7 +322,7 @@ sub get_swap_size
 	my (@stats) = stat($device);
 	$size = $stats[7];			# size in stat structure.
 	$size = $size /1024 / 1024;		# Size from bytes to Mb.
-	$size .= "M";
+	$size .= "MB";
       }
     elsif ($is_file == 0)
       {
@@ -332,7 +332,7 @@ sub get_swap_size
           {
             if (/^\w+/)
               {
-                 $size = sprintf("%dM", $_ / 1024);		#size from Kb to Mb
+                 $size = sprintf("%dMB", $_ / 1024);		#size from Kb to Mb
               }
           }
       }
@@ -432,7 +432,7 @@ sub setup_swap_files
 	elsif ($entry->{is_file})
 	  {
 	    my ($size) = get_swap_size($entry->{device}, $entry->{is_file});
-	    $size =~ tr/M$//d;	# Remove M from the end
+	    $size =~ tr/MB$//d;	# Remove Mb from the end
 	    $size *= 1024;		# Make it to Kb
 	    if ($size != $entry->{size})
 	      {
