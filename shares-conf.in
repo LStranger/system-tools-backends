@@ -1832,34 +1832,8 @@ sub set_immediate
   $umount_tool = be_locate_tool("umount");
 
   # Update exports.
-  
-  if (-f "/etc/rc.d/init.d/smb" )
-  {
-    if (system "/etc/rc.d/init.d/smb restart >/dev/null 2>/dev/null")
-    {
-      be_report_error(2, "SMB restart failed");
-    }
-    else
-    {
-      be_report_info(11, "SMB restarted with new configuration");
-    }
-  }
-  # location of the samba init-script in debian 
-  elsif (-f "/etc/init.d/samba" )
-  {
-    if (system "/etc/init.d/samba restart >/dev/null 2>/dev/null")
-    {
-      be_report_error(2, "SMB restart failed");
-    }
-    else
-    {
-      be_report_info(11, "SMB restarted with new configuration");
-    }
-  }
-  else
-  {
-    be_report_error(3, "Could not find a way to restart SMB services");
-  }
+
+  be_service_restart(80, "-D", "samba", "smb", "smbd");
 
   if ($exportfs_tool eq "")
   {
@@ -1902,7 +1876,6 @@ sub set_immediate
   {
     be_report_error(6, "Could not find mount tools. No mounting done");
   }
-  
 }
 
 

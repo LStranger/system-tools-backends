@@ -1261,6 +1261,7 @@ sub set_immediate
   $ifdown_cmd = be_locate_tool("ifdown");
   
   # Restart primary interface, so configuration can take effect.
+  # FIXME: Slightly bogus if be_service_*() does its job.
 
   if ($ifup_cmd ne "" && $ifdown_cmd ne "")
   {
@@ -1287,6 +1288,11 @@ sub set_immediate
   {
     be_report_warning(8, "No interface control utilities found");
   }
+
+  # Ensure that network is (en|dis)abled according to user's wishes.
+
+  if ($cf_networking) { be_service_enable(47, "", "network"); }
+  else                { be_service_disable(90, "", "network"); }
 }
 
 
@@ -1294,10 +1300,11 @@ sub set
 {
   xml_parse ();
 
-  $cf_networking = 1;  # This should really be calculated from the old value
-                       # and $cf_onboot. This hack will make it work, possibly
-                       # with a few extra boot messages, if the user doesn't
-                       # have a network.
+  # FIXME: This should really be calculated from the old value and $cf_onboot.
+  # This hack will make it work, possibly with a few extra boot messages, if
+  # the user doesn't have a network.
+
+  $cf_networking = 1;
 
   write_rc_config;
   write_sysconfig_network;

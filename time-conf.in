@@ -468,25 +468,15 @@ sub set_time
 
 sub restart_servers
 {
-  if (-f "/etc/rc.d/init.d/xntpd")
+  if ($cf_sync_active)
   {
-    if ($cf_sync_active)
-    {
-      be_report_info(4, "Restarting XNTPD with new configuration");
-      if (system "/etc/rc.d/init.d/xntpd restart >/dev/null 2>/dev/null")
-      {
-        be_report_warning(2, "XNTPD restart failed");
-      }
-    }
-    else
-    {
-      be_report_info(5, "Stopping XNTPD");
-      system "/etc/rc.d/init.d/xntpd stop >/dev/null 2>/dev/null";
-    }
+    be_report_info(4, "Restarting XNTPD with new configuration");
+    be_service_restart(81, "", "xntpd");
   }
   else
   {
-    be_report_warning(3, "Could not find a way to restart XNTPD service");
+    be_report_info(5, "Stopping XNTPD");
+    be_service_disable(15, "", "xntpd");
   }
 }
 
