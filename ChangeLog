@@ -1,3 +1,10 @@
+2002-11-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* Added general support in all working backends for debian sarge, 
+	  it currently works just like woody.
+	* fixed lsb bug for debian, just as proposed by Jose Carlos García
+	  Sogo.
+
 2002-11-20  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* boot-lilo.pl.in, boot.pl.in: added "timeout" keyword in the lilo

@@ -40,6 +40,7 @@ require "$SCRIPTSDIR/xml.pl$DOTIN";
 $PLATFORM_INFO = {
   "debian-2.2"      => "Debian GNU/Linux 2.2 Potato",
   "debian-woody"    => "Debian GNU/Linux 3.0 Woody",
+  "debian-sarge"    => "Debian GNU/Linux Sarge",
   "redhat-5.2"      => "Red Hat Linux 5.2 Apollo",
   "redhat-6.0"      => "Red Hat Linux 6.0 Hedwig",
   "redhat-6.1"      => "Red Hat Linux 6.1 Cartman",
@@ -60,10 +61,17 @@ $PLATFORM_INFO = {
 sub check_lsb
 {
   my ($ver, $dist);
+  my %vermap =
+      ("3.0" => "woody");
+  my %distmap =
+      ("Debian" => "debian");
 
   # xst_prefix not required here: parse already does that for us.
   $dist = lc (&xst_parse_sh ("/etc/lsb-release", "DISTRIB_ID"));
   $ver = lc (&xst_parse_sh ("/etc/lsb-release", "DISTRIB_RELEASE"));
+  
+  $ver = $vermap{$ver} if exists $vermap{$ver};
+  $dist = $distmap{$dist} if exists $dirmap{$dir};
 
   return -1 if ($dist eq "") || ($ver eq "");
   return "$dist-$ver";
@@ -73,7 +81,8 @@ sub check_debian
 {
   my ($ver, $i);
   my %vermap =
-      ("3.0" => "woody");
+      ("3.0" => "woody",
+       "testing/unstable" => "sarge");
 
   open DEBIAN, "$xst_prefix/etc/debian_version" or return -1;
   chomp ($ver = <DEBIAN>);
