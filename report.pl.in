@@ -117,7 +117,7 @@ sub xst_report
   # Verbose (--verbose) output is human-readable only.
   $format = "$str\n";
   $res = sprintf ($format, @args);
-  print STDERR $res if $xst_do_verbose || $mayor eq "error";
+  print STDERR "$xst_name - ${key}::$res" if $xst_do_verbose || $mayor eq "error";
   
   if ($key ne "progress")
   {

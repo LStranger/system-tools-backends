@@ -262,7 +262,7 @@ sub xst_platform_ensure_supported
 
   foreach $platform (@supported)
   {
-    if ($platform eq $xst_dist)
+    if ($platform eq $$tool{"platform"})
     {
       &xst_report ("platform_success", $platform);
       return;
@@ -276,21 +276,13 @@ sub xst_platform_ensure_supported
     &xst_report ("platform_list",  $platform);
   }
 
-  if ($xst_dist)
+  if (exists $$tool{"platform"})
   {
-    &xst_report ("platform_unsup", $xst_dist);
-    if (!$xst_report_threshold && !$xst_verbose)
-    {
-      print STDERR "Fatal error: Your platform is not supported.\n";
-    }
+    &xst_report ("platform_unsup", $$tool{"platform"});
   }
   else
   {
     &xst_report ("platform_undet");
-    if (!$xst_report_threshold && !$xst_verbose)
-    {
-      print STDERR "Fatal error: Unable to determine host platform.\n";
-    }
   }
 
   &xst_end ();

@@ -857,11 +857,6 @@ while (@ARGV)
 
 # Do our thing.
 
-&xst_init ($name, $version, $description, @ARGV);
-&xst_platform_ensure_supported (@platforms);
-
-# Do our thing.
-
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
 # Read general.pl.in:xst_run_directive to know about the format of this hash.
 

@@ -1,3 +1,20 @@
+Thu Jul 12 12:44:15 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* report.pl.in (xst_report): Better reporting of errors.
+
+	* platform.pl.in (xst_platform_ensure_supported): Use the
+	$tool structure to get the dist.
+
+	* hardware-conf.in: Well, this code is useless, but it had
+	some spurious code here I found during a "grande grep".
+
+	* platform.pl.in (xst_platform_ensure_supported): Removed
+	explicit STDERR debug output: error reports are now forced
+	to STDERR.
+
+	* xml.pl.in (xst_xml_print_request_end): The request end
+	string starts with a new line.
+
 2001-07-13  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_model_get_pcdata): Implement.

@@ -64,7 +64,7 @@ sub xst_xml_print_begin
 
 sub xst_xml_print_request_end
 {
-  &xst_xml_print_string ("<!-- XST: end of request -->\n");
+  &xst_xml_print_string ("\n<!-- XST: end of request -->\n");
 }
 
 
