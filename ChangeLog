@@ -1,3 +1,8 @@
+2003-05-31  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* time-conf.in: added a comma, now the time tool backend works again
+	:-(
+
 2003-05-30  Carlos Garnacho Parro  <garnacho@tuxerver.net>
  
         * Release 0.26.1
