@@ -1801,7 +1801,7 @@ sub get
   read_sysconfig_network;                  # Ditto.
   read_primary_interface;                  # IP subnet information.
   read_smb_conf; be_print_progress ();           # SMB workgroup.
-  get_host_mounts; be_print_progress ();
+  if ($be_do_immediate) { get_host_mounts; } be_print_progress ();
   read_fstab;
   read_exports; be_print_progress ();
 
