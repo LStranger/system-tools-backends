@@ -1615,12 +1615,13 @@ sub gst_network_interfaces_get
     }
   }
 
-  if (&gst_file_locate_tool ("pppd"))
-  {
-    # only show PPP and ISDN devices if pppd exists
-    $dev = "ppp0" if ($$tool{"system"} eq "Linux");
-    $dev = "tun0" if ($$tool{"system"} eq "FreeBSD");
+  # only show PPP and ISDN devices if pppd exists
+  # and they aren't configured yet
+  $dev = "ppp0" if ($$tool{"system"} eq "Linux");
+  $dev = "tun0" if ($$tool{"system"} eq "FreeBSD");
 
+  if (!exists $$hash{$dev} && &gst_file_locate_tool ("pppd"))
+  {
     $$hash{$dev}{"dev"} = $dev;
     $$hash{$dev}{"enabled"} = 0;
     $$hash{$dev}{"type"} = &gst_network_get_interface_type ($dev);
