@@ -923,8 +923,8 @@ sub write_exports
 
   # Find the file.
 
-  $FILE = be_open_write_from_names(@exports_names);
-  if (not FILE) { return; }
+  *FILE = be_open_write_from_names(@exports_names);
+  if (not *FILE) { return; }
 
   # We rewrite everything, as we have complete command of the things to go
   # in this file.

@@ -158,13 +158,13 @@ sub read_ntp_conf
 
 sub write_ntp_conf
 {
-  my ($INFILE, $OUTFILE);
+  local (*INFILE, *OUTFILE);
   my $wrote_servers = 0;
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@ntp_conf_names);
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@ntp_conf_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
 

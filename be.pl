@@ -79,8 +79,6 @@ sub be_xml_scan_make_kid_array
   }
 
 
-sub be_xml_scan_recurse;
-
 sub be_xml_scan_recurse
   {
     my @list;
@@ -348,18 +346,18 @@ sub be_open_write_from_names
 	    $name = $_[0];
 	    if ($be_verbose)
 	      {
-		(my $fullname = "$prefix/$name") =~ tr/\//\//s;
+		(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
 		print STDERR "Could not find \[@_\]. Writing to \"$fullname\".\n";
 	      }
 	  }
       }
     elsif ($be_verbose)
       {
-	(my $fullname = "$prefix/$name") =~ tr/\//\//s;
+	(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
 	print STDERR "Found \"$name\". Writing to \"$fullname\".\n";
       }
     
-    ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+    ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
       be_create_path($name);
     
     # Make a backup if the file already exists - if the user specified a prefix,
@@ -388,7 +386,7 @@ sub be_open_filter_write_from_names
   {
     local *INFILE;
     local *OUTFILE;
-    my $name;
+    my ($name, $elem);
     
     # Find out where it lives.
     
@@ -411,18 +409,18 @@ sub be_open_filter_write_from_names
 	    $name = $_[0];
 	    if ($be_verbose)
 	      {
-		(my $fullname = "$prefix/$name") =~ tr/\//\//s;
+		(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
 		print STDERR "Could not find \[@_\]. Patching \"$fullname\".\n";
 	      }
 	  }
       }
     elsif ($be_verbose)
       {
-	(my $fullname = "$prefix/$name") =~ tr/\//\//s;
+	(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
 	print STDERR "Found \"$name\". Patching \"$fullname\".\n";
       }
     
-    ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+    ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
       be_create_path($name);
     
     # Make a backup if the file already exists - if the user specified a prefix,

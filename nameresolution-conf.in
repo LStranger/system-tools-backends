@@ -346,13 +346,13 @@ sub read_hosts
 
 sub write_hosts
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@hosts_names);
-  if (not OUTFILE) { return; }  # We didn't find it.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@hosts_names);
+  if (not *OUTFILE) { return; }  # We didn't find it.
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -439,15 +439,15 @@ sub read_sysconfig_network
 
 sub write_sysconfig_network
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
   my $wrote_hostname = 0;
   my $wrote_domain = 0;
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@sysconfig_network_names);
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@sysconfig_network_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -547,16 +547,16 @@ sub read_rc_config
 
 sub write_rc_config
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
   my $wrote_hostname = 0;
   my $wrote_searchdomains = 0;
   my $wrote_nameservers = 0;
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@rc_config_names);
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@rc_config_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -650,8 +650,8 @@ sub read_smb_conf
 
 sub write_smb_conf
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
   my $wrote_workgroup = 0;
   my $wrote_description = 0;
   my $wrote_winsserver = 0;
@@ -659,8 +659,8 @@ sub write_smb_conf
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@smb_conf_names);
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@smb_conf_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -736,7 +736,7 @@ sub xml_parse
 {
   # Scan XML to tree.
 
-  $tree = be_xml_scan;
+  $tree = &be_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "resolving" tag.

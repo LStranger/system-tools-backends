@@ -430,8 +430,8 @@ sub read_network_interfaces
 
 sub write_network_interfaces
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
 
   my $wrote_interface;
   my $wrote_hostip;
@@ -450,8 +450,8 @@ sub write_network_interfaces
   my $cfl_broadcast = "";
 
   # Find and open the needed files.
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@network_interfaces_names);
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@network_interfaces_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Generate $cfl_network and $cfl_broadcast
   $cfl_network = ip_calc_network($cf_hostip, $cf_netmask);
@@ -667,12 +667,12 @@ sub read_network_options
 
 sub write_network_options
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
   my $wrote_forward;
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@network_options_names);
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@network_options_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
   while (<INFILE>)
@@ -756,8 +756,8 @@ sub read_sysconfig_network_scripts_ifcfg
 
 sub write_sysconfig_network_scripts_ifcfg
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
   my $wrote_hostip = 0;
   my $wrote_netmask = 0;
   my $wrote_network = 0;
@@ -769,8 +769,8 @@ sub write_sysconfig_network_scripts_ifcfg
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Generate $cfl_network and $cfl_broadcast.
 
@@ -951,8 +951,8 @@ sub read_sysconfig_network
 
 sub write_sysconfig_network
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
   my $wrote_networking = 0;
   my $wrote_forward = 0;
   my $wrote_gateway = 0;
@@ -960,8 +960,8 @@ sub write_sysconfig_network
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@sysconfig_network_names);
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@sysconfig_network_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -1095,8 +1095,8 @@ sub read_rc_config
 
 sub write_rc_config
 {
-  my $INFILE;
-  my $OUTFILE;
+  local *INFILE;
+  local *OUTFILE;
   my $wrote_ipaddr = 0;
   my $wrote_netdev = 0;
   my $wrote_ifconfig = 0;
@@ -1104,8 +1104,8 @@ sub write_rc_config
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@rc_config_names);
-  if (not OUTFILE) { return; }  # No point if we can't write.
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@rc_config_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Generate broadcast address.
   
