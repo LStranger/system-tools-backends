@@ -692,7 +692,12 @@ sub is_in_list
 # <filtered lines>
 # (more interfaces may follow)
 #
-# read_network_interfaces_int_hash will read the contents of
+# A "#" character at the very beginning of a line causes that line to be
+# treated as a comment.
+# A "\" character at the very end of a line causes that line to continue onto
+# the next line.
+#
+# read_network_interfaces_into_hash will read the contents of
 # /etc/network/interfaces into a hash table of references to hash tables.  For
 # example:
 #
@@ -704,15 +709,14 @@ sub is_in_list
 # The resulting hash table, %ifaces, is returned.
 #
 # NOTE: For more information on the format of /etc/network/interfaces, read
-# the "interfaces" man page (section 5).  This is included as part of the
-# "netbase" package in Debian 2.[2|3].
+# the "interfaces" man page (section 5).  Also be sure to look at the example
+# file in /usr/share/doc/netbase/examples/interfaces.  Both of these are
+# included as part of the "netbase" package in Debian 2.[2|3].
 #
 # Exists: Debian 2.[2|3]
 #
 # Absent:
 
-# FIXME: /etc/network/interfaces allows line continuation via the "\"
-# character.  Support for this is currently unimplemented here.
 sub read_network_interfaces_into_hash
 {
   my $FILE;
@@ -729,7 +733,6 @@ sub read_network_interfaces_into_hash
 
     # Remove leading whitespace.
     if ($line[0] eq "") { shift(@line); }
-
 
     # Check to see if this line continues onto other lines.  If so, append
     # them
@@ -797,6 +800,7 @@ sub read_network_interfaces_into_hash
     }
   }
 
+  # All done.  Clean up before returning.
   close($FILE);
 
   return %ifaces;
@@ -817,7 +821,6 @@ sub read_network_interfaces_into_hash
 
 sub read_network_interfaces
 {
-  my $FILE;
   my %ifaces, $current_name, $current_iface;
   my $chosen_name;
 
@@ -952,6 +955,10 @@ sub write_network_interfaces
       elsif ($current_name ne "")
       {
         $current_name = "";
+
+        # From now on, any lines read in from INFILE will be placed in a buffer
+        # called @post_lines.  These will be written to OUTFILE at a later
+        # time.
         $use_post = 1;
       }
     }
@@ -1096,7 +1103,6 @@ sub read_network_options
   while (<FILE>)
   {
     # Split the current line into a list of tokens.
-    #@line = split(/[ \n\r\t]+/, $_);
     @line = split(/[ \n\r\t=]+/, $_);
 
     # Remove leading whitespace.
@@ -1109,6 +1115,9 @@ sub read_network_options
     if ($line[0] eq "ip_forward" && not is_line_comment_start($line[1]))
     { $cf_forward = read_boolean($line[1]); }
   }
+
+  # All done.  Clean up before returning.
+  close(FILE);
 }
 
 
@@ -1130,6 +1139,7 @@ sub write_network_options
     # Remove leading whitespace.
     if ($line[0] eq "") { shift(@line); }
 
+    # Modify and write-out any known variables.
     if ($line[0] eq "ip_forward")
     {
       print OUTFILE "ip_forward=" . print_boolean_yesno($cf_forward) . "\n";
@@ -1138,9 +1148,11 @@ sub write_network_options
     else { print OUTFILE; }
   }
 
+  # Make sure that unwritten, non-empty variables are written to OUTFILE.
   if (not $wrote_forward)
   { print OUTFILE "ip_forward=" . print_boolean_yesno($cf_forward) . "\n"; }
 
+  # All done.  Clean up before returning.
   close (OUTFILE);
   if (INFILE) { close(INFILE); }
 }
