@@ -716,53 +716,53 @@ sub xml_print_nis
 {
   my ($key, $i, $j, $k);
   
-  &xst_xml_print ("<nis_userdb>\n");
+  &xst_xml_print_line ("<nis_userdb>\n");
 	&xst_xml_enter ();
 	foreach $i (@users)
 	{
           &xst_xml_vspace ();
-	  &xst_xml_print ("<user>\n");
+	  &xst_xml_print_line ("<user>\n");
 		&xst_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  &xst_xml_print ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n");
+		  &xst_xml_print_line ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n");
 		}
 		&xst_xml_leave ();
-		&xst_xml_print ("</user>\n");
+		&xst_xml_print_line ("</user>\n");
 	}
 	&xst_xml_leave ();
   
   &xst_xml_vspace ();
-  &xst_xml_print ("</nis_userdb>\n");
+  &xst_xml_print_line ("</nis_userdb>\n");
 	
-  &xst_xml_print ("<!-- Now the groups -->\n");
+  &xst_xml_print_line ("<!-- Now the groups -->\n");
   &xst_xml_vspace ();
 	
-	&xst_xml_print ("<nis_groupdb>\n");
+	&xst_xml_print_line ("<nis_groupdb>\n");
 	&xst_xml_enter ();
 	foreach $i (@groups)
 	{
     &xst_xml_vspace ();
-	  &xst_xml_print ("<group>\n");
+	  &xst_xml_print_line ("<group>\n");
 		&xst_xml_enter ();
 		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
-			&xst_xml_print ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
+			&xst_xml_print_line ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
 		}
-		&xst_xml_print ("<users>\n");
+		&xst_xml_print_line ("<users>\n");
 		&xst_xml_enter ();
 		$k = $$i[$groups_prop_map{"users"}];
 		foreach $j (@$k)
 		{
-			&xst_xml_print ("<user>$j</user>\n");
+			&xst_xml_print_line ("<user>$j</user>\n");
 		}
 		&xst_xml_leave ();
-		&xst_xml_print ("</users>\n");
+		&xst_xml_print_line ("</users>\n");
 
 		&xst_xml_leave ();
-		&xst_xml_print ("</group>\n");
+		&xst_xml_print_line ("</group>\n");
 	}
 	&xst_xml_leave ();
   &xst_xml_vspace ();
-  &xst_xml_print ("</nis_groupdb>\n");
+  &xst_xml_print_line ("</nis_groupdb>\n");
 }
 
 sub xml_print
@@ -775,79 +775,79 @@ sub xml_print
   &xst_xml_enter ();
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- login.defs configuration starts here -->\n");
+  &xst_xml_print_line ("<!-- login.defs configuration starts here -->\n");
   &xst_xml_vspace ();
 
-  &xst_xml_print ("<logindefs>\n");
+  &xst_xml_print_line ("<logindefs>\n");
 	&xst_xml_enter ();
 	foreach $key (keys %login_defs)
 	{
 	  if ($key ne "") {
-	    &xst_xml_print ("<$key>" . $login_defs{$key} . "</$key>\n");
+	    &xst_xml_print_line ("<$key>" . $login_defs{$key} . "</$key>\n");
 	  }
 	}
 	&xst_xml_leave ();
-	&xst_xml_print ("</logindefs>\n");
+	&xst_xml_print_line ("</logindefs>\n");
 	&xst_xml_vspace ();
-  &xst_xml_print ("<!-- Now the users -->\n");
+  &xst_xml_print_line ("<!-- Now the users -->\n");
   &xst_xml_vspace ();
 	
-  &xst_xml_print ("<!-- When was the passwd file last modified (since the epoch)? -->\n");
+  &xst_xml_print_line ("<!-- When was the passwd file last modified (since the epoch)? -->\n");
   &xst_xml_vspace ();
-  &xst_xml_print ("<passwd_last_modified>$passwd_last_modified</passwd_last_modified>\n");
+  &xst_xml_print_line ("<passwd_last_modified>$passwd_last_modified</passwd_last_modified>\n");
   &xst_xml_vspace ();
 	
-	&xst_xml_print ("<userdb>\n");
+	&xst_xml_print_line ("<userdb>\n");
 	&xst_xml_enter ();
 	foreach $i (@users)
 	{
           &xst_xml_vspace ();
-	  &xst_xml_print ("<user>\n");
+	  &xst_xml_print_line ("<user>\n");
 		&xst_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  &xst_xml_print ("<" . $users_prop_map{"$j"} . ">" . xst_xml_quote ($$i[$j]) . "</" . $users_prop_map {$j} . ">\n");
+		  &xst_xml_print_line ("<" . $users_prop_map{"$j"} . ">" . xst_xml_quote ($$i[$j]) . "</" . $users_prop_map {$j} . ">\n");
 		}
 		&xst_xml_leave ();
-		&xst_xml_print ("</user>\n");
+		&xst_xml_print_line ("</user>\n");
 	}
 	&xst_xml_leave ();
   &xst_xml_vspace ();
-  &xst_xml_print ("</userdb>\n");
+  &xst_xml_print_line ("</userdb>\n");
 	
-  &xst_xml_print ("<!-- Now the groups -->\n");
+  &xst_xml_print_line ("<!-- Now the groups -->\n");
   &xst_xml_vspace ();
 	
-  &xst_xml_print ("<!-- When was the group file last modified (since the epoch)? -->\n");
+  &xst_xml_print_line ("<!-- When was the group file last modified (since the epoch)? -->\n");
   &xst_xml_vspace ();
-  &xst_xml_print ("<group_last_modified>$group_last_modified</group_last_modified>\n");
+  &xst_xml_print_line ("<group_last_modified>$group_last_modified</group_last_modified>\n");
   &xst_xml_vspace ();
 	
-	&xst_xml_print ("<groupdb>\n");
+	&xst_xml_print_line ("<groupdb>\n");
 	&xst_xml_enter ();
 	foreach $i (@groups)
 	{
     &xst_xml_vspace ();
-	  &xst_xml_print ("<group>\n");
+	  &xst_xml_print_line ("<group>\n");
 		&xst_xml_enter ();
 		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
-			&xst_xml_print ("<" . $groups_prop_map{$j} . ">" . xst_xml_quote ($$i[$j]) . "</" . $groups_prop_map {$j} . ">\n");
+			&xst_xml_print_line ("<" . $groups_prop_map{$j} . ">" . xst_xml_quote ($$i[$j]) . "</" . $groups_prop_map {$j} . ">\n");
 		}
-		&xst_xml_print ("<users>\n");
+		&xst_xml_print_line ("<users>\n");
 		&xst_xml_enter ();
 		$k = $$i[$groups_prop_map{"users"}];
 		foreach $j (@$k)
 		{
-			&xst_xml_print ("<user>$j</user>\n");
+			&xst_xml_print_line ("<user>$j</user>\n");
 		}
 		&xst_xml_leave ();
-		&xst_xml_print ("</users>\n");
+		&xst_xml_print_line ("</users>\n");
 
 		&xst_xml_leave ();
-		&xst_xml_print ("</group>\n");
+		&xst_xml_print_line ("</group>\n");
 	}
 	&xst_xml_leave ();
   &xst_xml_vspace ();
-  &xst_xml_print ("</groupdb>\n");
+  &xst_xml_print_line ("</groupdb>\n");
 
   # This for test purposes only
   &xml_print_nis () if $TEST_NIS;

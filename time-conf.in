@@ -173,21 +173,24 @@ sub xml_print
   &xst_xml_print_hash ($$h{"local_time"}, "local_time");
   &xst_xml_vspace ();
   
-  &xst_xml_print ("<sync active='" . &xst_print_boolean_yesno ($sync_active) . "'>\n");
+  &xst_xml_vspace ();
+  &xst_xml_print_line ("<sync active='" . &xst_print_boolean_yesno ($sync_active) . "'>\n");
+  
   &xst_xml_enter ();
   foreach $server (@$sync)
   {
-    &xst_xml_print ("<server>$server</server>\n");
+    &xst_xml_print_line ("<server>$server</server>\n");
   }
   &xst_xml_leave ();
-  &xst_xml_print ("</sync>\n");
+  
+  &xst_xml_print_line ("</sync>\n");
   &xst_xml_vspace ();
 
   &xst_xml_print_scalars ($h, @scalar_keys);
   &xst_xml_vspace ();
   
   &xst_xml_leave ();
-  &xst_xml_print ("</time>\n");
+  &xst_xml_print_line ("</time>\n");
 }
 
 # Main operations

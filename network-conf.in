@@ -216,17 +216,17 @@ sub xml_print_statichost
   foreach $i (keys %{$$h{"statichost"}})
   {
     $statichost = $ {$$h{"statichost"}}{$i};
-    &xst_xml_print ("<statichost>\n");
+    &xst_xml_print_line ("<statichost>\n");
     &xst_xml_enter ();
     $val = &xst_xml_quote ($i);
-    &xst_xml_print ("<ip>$val</ip>\n");
+    &xst_xml_print_line ("<ip>$val</ip>\n");
     foreach $j (@$statichost)
     {
       $val = &xst_xml_quote ($j);
-      &xst_xml_print ("<alias>$val</alias>\n");
+      &xst_xml_print_line ("<alias>$val</alias>\n");
     }
     &xst_xml_leave ();
-    &xst_xml_print ("</statichost>\n");
+    &xst_xml_print_line ("</statichost>\n");
   }
 }
 
@@ -256,7 +256,7 @@ sub xml_print
   
   &xst_xml_leave ();
   &xst_xml_vspace ();
-  &xst_xml_print ("</network>\n");
+  &xst_xml_print_line ("</network>\n");
 }
 
 

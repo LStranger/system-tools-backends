@@ -967,23 +967,23 @@ sub xml_print
   &xst_xml_enter ();
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- Configuration starts here -->\n");
+  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
   &xst_xml_vspace ();
 
   # Hostname, domain, search domains, nameservers.
 
-  if ($cfl_hostname ne "") { &xst_xml_print ("<hostname>$cfl_hostname</hostname>\n"); }
-  if ($cfl_domain ne "") { &xst_xml_print ("<domain>$cfl_domain</domain>\n"); }
-  if ($cfl_workgroup ne "") { &xst_xml_print ("<workgroup>$cfl_workgroup</workgroup>\n"); }
-  if ($cfl_description ne "") { &xst_xml_print ("<description>$cfl_description</description>\n"); }
+  if ($cfl_hostname ne "") { &xst_xml_print_line ("<hostname>$cfl_hostname</hostname>\n"); }
+  if ($cfl_domain ne "") { &xst_xml_print_line ("<domain>$cfl_domain</domain>\n"); }
+  if ($cfl_workgroup ne "") { &xst_xml_print_line ("<workgroup>$cfl_workgroup</workgroup>\n"); }
+  if ($cfl_description ne "") { &xst_xml_print_line ("<description>$cfl_description</description>\n"); }
   &xst_xml_vspace ();
-  if ($cfl_winsserver ne "") { &xst_xml_print ("<winsserver>$cfl_winsserver</winsserver>\n"); }
+  if ($cfl_winsserver ne "") { &xst_xml_print_line ("<winsserver>$cfl_winsserver</winsserver>\n"); }
   &xst_xml_vspace ();
 
   for $elem (@cf_searchdomains)
   {
     $elem = &xst_xml_plain_to_entities(\$elem);
-    &xst_xml_print ("<searchdomain>$elem</searchdomain>\n");
+    &xst_xml_print_line ("<searchdomain>$elem</searchdomain>\n");
   }
 
   &xst_xml_vspace ();
@@ -991,7 +991,7 @@ sub xml_print
   for $elem (@cf_nameservers)
   {
     $elem = &xst_xml_plain_to_entities(\$elem);
-    &xst_xml_print ("<nameserver>$elem</nameserver>\n");
+    &xst_xml_print_line ("<nameserver>$elem</nameserver>\n");
   }
 
   # Static hosts.
@@ -1002,23 +1002,23 @@ sub xml_print
     if ($iplist[0] ne "")
     {
       &xst_xml_vspace ();
-      &xst_xml_print ("<statichost enabled='" . &xst_print_boolean_truefalse($iplist[0]) .
+      &xst_xml_print_line ("<statichost enabled='" . &xst_print_boolean_truefalse($iplist[0]) .
                     "'>\n");
       &xst_xml_enter ();
 
       $iplist[1] = &xst_xml_plain_to_entities(\$iplist[1]);
 
-      &xst_xml_print ("<ip>$iplist[1]</ip>\n");
+      &xst_xml_print_line ("<ip>$iplist[1]</ip>\n");
 
       my $aliaslist = $iplist[2];
       for $alias (@$aliaslist)
       {
         $alias = &xst_xml_plain_to_entities(\$alias);
-        &xst_xml_print ("<alias>$alias</alias>\n");
+        &xst_xml_print_line ("<alias>$alias</alias>\n");
       }
 
       &xst_xml_leave ();
-      &xst_xml_print ("</statichost>\n");
+      &xst_xml_print_line ("</statichost>\n");
     }
 
     shift @iplist;
@@ -1027,12 +1027,12 @@ sub xml_print
   }
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- You shouldn't have to modify anything below this line -->\n");
+  &xst_xml_print_line ("<!-- You shouldn't have to modify anything below this line -->\n");
   &xst_xml_vspace ();
 
   # Search order and host matches (multi).
 
-  &xst_xml_print ("<order>");
+  &xst_xml_print_line ("<order>");
   for $elem (@cf_order) { print "<$elem/>"; }
   print "</order>\n";
 
@@ -1041,21 +1041,21 @@ sub xml_print
   else               { print "<hostmatch return='all'/>\n"; }
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- You cannot modify anything below this line -->\n");
+  &xst_xml_print_line ("<!-- You cannot modify anything below this line -->\n");
   &xst_xml_vspace ();
 
   if ($cfl_hostname_reverse ne "")
   {
-    &xst_xml_print ("<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n");
+    &xst_xml_print_line ("<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n");
   }
 
   if ($cfl_domain_reverse ne "")
   {
-    &xst_xml_print ("<domainreverse>$cfl_domain_reverse</domainreverse>\n");
+    &xst_xml_print_line ("<domainreverse>$cfl_domain_reverse</domainreverse>\n");
   }
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- End of configuration -->\n");
+  &xst_xml_print_line ("<!-- End of configuration -->\n");
   &xst_xml_vspace ();
 
   &xst_xml_leave ();

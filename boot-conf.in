@@ -145,7 +145,7 @@ sub xml_print_global_kws
 
   while ($i = shift @tags)
   {
-    &xst_xml_print ("<$i/>\n") if exists $$h{$i};
+    &xst_xml_print_line ("<$i/>\n") if exists $$h{$i};
   }
 }
 
@@ -162,7 +162,7 @@ sub xml_print_globals
   {
     $val = &xst_xml_quote ($$h{$i});
 
-    &xst_xml_print ("<$i>$val</$i>\n") if (exists $$h{$i});
+    &xst_xml_print_line ("<$i>$val</$i>\n") if (exists $$h{$i});
   }
 }
 
@@ -177,19 +177,19 @@ sub xml_print_images
   foreach $entry (@$array)
   {
     &xst_xml_vspace ();
-    &xst_xml_print ("<entry>\n");
+    &xst_xml_print_line ("<entry>\n");
     &xst_xml_enter ();
     
     foreach $i (keys %$entry)
     {
       $val = &xst_xml_quote ($$entry{$i});
 
-      if ($val eq "") { &xst_xml_print ("<$i/>\n"); }
-      else { &xst_xml_print ("<$i>$val</$i>\n"); }
+      if ($val eq "") { &xst_xml_print_line ("<$i/>\n"); }
+      else { &xst_xml_print_line ("<$i>$val</$i>\n"); }
     }
     
     &xst_xml_leave ();
-    &xst_xml_print ("</entry>\n");
+    &xst_xml_print_line ("</entry>\n");
   }
   
   &xst_xml_vspace ();
@@ -207,7 +207,7 @@ sub xml_print
   &xst_xml_enter ();
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- Configuration starts here -->\n");
+  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
   &xst_xml_vspace ();
 
   &xml_print_global_kws ($h);
@@ -215,11 +215,11 @@ sub xml_print
   &xml_print_images ($h, 'images');
   
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- End of configuration -->\n");
+  &xst_xml_print_line ("<!-- End of configuration -->\n");
   &xst_xml_vspace ();
 
   &xst_xml_leave ();
-  &xst_xml_print ("</boot>\n");
+  &xst_xml_print_line ("</boot>\n");
 }
   
 

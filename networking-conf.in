@@ -1154,7 +1154,7 @@ sub xml_print
   &xst_xml_enter ();
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- Configuration starts here -->\n");
+  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
   &xst_xml_vspace ();
 
   # Hostname, domain, search domains, nameservers.
@@ -1165,16 +1165,16 @@ sub xml_print
 
   &xst_xml_vspace ();
 
-  if ($cfl_interface ne "") { &xst_xml_print ("<primaryinterface>$cfl_interface</primaryinterface>\n"); }
-  if ($cfl_hostip ne "") { &xst_xml_print ("<hostip>$cfl_hostip</hostip>\n"); }
-  if ($cfl_netmask ne "") { &xst_xml_print ("<netmask>$cfl_netmask</netmask>\n"); }
-  if ($cfl_gateway ne "") { &xst_xml_print ("<gateway>$cfl_gateway</gateway>\n"); }
+  if ($cfl_interface ne "") { &xst_xml_print_line ("<primaryinterface>$cfl_interface</primaryinterface>\n"); }
+  if ($cfl_hostip ne "") { &xst_xml_print_line ("<hostip>$cfl_hostip</hostip>\n"); }
+  if ($cfl_netmask ne "") { &xst_xml_print_line ("<netmask>$cfl_netmask</netmask>\n"); }
+  if ($cfl_gateway ne "") { &xst_xml_print_line ("<gateway>$cfl_gateway</gateway>\n"); }
   &xst_xml_vspace ();
-  if ($cfl_method ne "") { &xst_xml_print ("<method>$cfl_method</method>\n"); }
+  if ($cfl_method ne "") { &xst_xml_print_line ("<method>$cfl_method</method>\n"); }
   &xst_xml_vspace ();
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- You shouldn't have to modify anything below this line -->\n");
+  &xst_xml_print_line ("<!-- You shouldn't have to modify anything below this line -->\n");
   &xst_xml_vspace ();
 
   &xst_xml_indent (); 
@@ -1182,18 +1182,18 @@ sub xml_print
   else             { print "<forward state='no'/>\n"; }
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- You cannot modify anything below this line -->\n");
+  &xst_xml_print_line ("<!-- You cannot modify anything below this line -->\n");
   &xst_xml_vspace ();
 
   for $elem (@cf_interface_list)
   {
     $elem = &xst_xml_plain_to_entities(\$elem);
     if ($elem ne $cfl_interface)  # Hack: Don't list primary interface here.
-    { &xst_xml_print ("<knowninterface>$elem</knowninterface>\n"); }
+    { &xst_xml_print_line ("<knowninterface>$elem</knowninterface>\n"); }
   }
 
   &xst_xml_vspace ();
-  &xst_xml_print ("<!-- End of configuration -->\n");
+  &xst_xml_print_line ("<!-- End of configuration -->\n");
   &xst_xml_vspace ();
 
   &xst_xml_leave ();

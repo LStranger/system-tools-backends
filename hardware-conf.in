@@ -255,12 +255,12 @@ sub xml_print
     &xst_xml_enter ();
 
     &xst_xml_vspace ();
-    &xst_xml_print ("<!-- Configuration starts here -->\n");
+    &xst_xml_print_line ("<!-- Configuration starts here -->\n");
     &xst_xml_vspace ();
 
     foreach $entry (@cf_hardware)
       {
-	&xst_xml_print ("<device id='$entry->{id}'>\n");
+	&xst_xml_print_line ("<device id='$entry->{id}'>\n");
 
       LOOP: while (($key, $value) = each %$entry)
 	  {
@@ -275,7 +275,7 @@ sub xml_print
 		  &xst_xml_enter;
 		  foreach $range (@$value)
 		    {
-		      &xst_xml_print ("<io low='$range->{low}' high='$range->{high}'/>\n");
+		      &xst_xml_print_line ("<io low='$range->{low}' high='$range->{high}'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -283,7 +283,7 @@ sub xml_print
 		{
 		  foreach $number (@$value)
 		    {
-		      &xst_xml_print ("<interrupt number='$number'/>\n");
+		      &xst_xml_print_line ("<interrupt number='$number'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -291,7 +291,7 @@ sub xml_print
 		{
 		  foreach $channel (@$value)
 		    {
-		      &xst_xml_print ("<dma channel='$channel'/>\n");
+		      &xst_xml_print_line ("<dma channel='$channel'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -299,22 +299,22 @@ sub xml_print
 		{
 		  foreach $mode (@$value)
 		    {
-		      &xst_xml_print ("<mode>$mode</mode>\n");
+		      &xst_xml_print_line ("<mode>$mode</mode>\n");
 		    }
 		  last SWITCH;
 		};
 	      (/^id/ || /^io/ || /^irq/) && next LOOP;
 
-	      &xst_xml_print ("<$key>$value</$key>\n");
+	      &xst_xml_print_line ("<$key>$value</$key>\n");
 				&xst_xml_leave;
 	    }
 	  }
 
-	&xst_xml_print ("</device>\n");
+	&xst_xml_print_line ("</device>\n");
 	&xst_xml_vspace ();
       }
 
-    &xst_xml_print ("<!-- End of configuration -->\n");
+    &xst_xml_print_line ("<!-- End of configuration -->\n");
     &xst_xml_vspace ();
 
     &xst_xml_leave ();

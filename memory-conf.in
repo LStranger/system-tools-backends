@@ -185,47 +185,47 @@ sub xml_print
     &xst_xml_enter ();
 
     &xst_xml_vspace ();
-    &xst_xml_print ("<!-- Configuration starts here -->\n");
+    &xst_xml_print_line ("<!-- Configuration starts here -->\n");
     &xst_xml_vspace ();
 
     foreach $entry (@cf_memory) {
-      &xst_xml_print ("<memsize>$entry->{MemTotal}</memsize>\n");
-      &xst_xml_print ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
+      &xst_xml_print_line ("<memsize>$entry->{MemTotal}</memsize>\n");
+      &xst_xml_print_line ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
     }
 
     &xst_xml_vspace ();
 
     foreach $entry (@cf_partition) {
-      &xst_xml_print ("<partition>\n");
+      &xst_xml_print_line ("<partition>\n");
 			&xst_xml_enter;
-      &xst_xml_print ("<device>$entry->{device}</device>\n");
-      &xst_xml_print ("<size>$entry->{size}</size>\n");
+      &xst_xml_print_line ("<device>$entry->{device}</device>\n");
+      &xst_xml_print_line ("<size>$entry->{size}</size>\n");
 			&xst_xml_leave;
-      &xst_xml_print ("</partition>\n");
+      &xst_xml_print_line ("</partition>\n");
     }
 
     &xst_xml_vspace ();
 
     foreach $entry (@cf_swapinfo) {
-      &xst_xml_print ("<swapdev>\n");
+      &xst_xml_print_line ("<swapdev>\n");
 			&xst_xml_enter;
-      &xst_xml_print ("<device>$entry->{device}</device>\n");
-      &xst_xml_print ("<enabled state='", 
+      &xst_xml_print_line ("<device>$entry->{device}</device>\n");
+      &xst_xml_print_line ("<enabled state='", 
                             &xst_print_boolean_yesno ($entry->{enabled}), 
                             "'/>\n");
-      &xst_xml_print ("<priority>$entry->{priority}</priority>\n");
-      &xst_xml_print ("<isfile state='",
+      &xst_xml_print_line ("<priority>$entry->{priority}</priority>\n");
+      &xst_xml_print_line ("<isfile state='",
                             &xst_print_boolean_truefalse ($entry->{is_file}),
                             "'/>\n");
-      &xst_xml_print ("<size>$entry->{size}</size>\n");
-      &xst_xml_print ("<isnew state='",
+      &xst_xml_print_line ("<size>$entry->{size}</size>\n");
+      &xst_xml_print_line ("<isnew state='",
                             &xst_print_boolean_truefalse ($entry->{is_new}),
                             "'/>\n");
 			&xst_xml_leave;
-      &xst_xml_print ("</swapdev>\n\n");
+      &xst_xml_print_line ("</swapdev>\n\n");
     }
 
-    &xst_xml_print ("<!-- End of configuration -->\n");
+    &xst_xml_print_line ("<!-- End of configuration -->\n");
     &xst_xml_vspace ();
 
     &xst_xml_leave ();

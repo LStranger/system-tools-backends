@@ -1,5 +1,15 @@
 2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
+	* boot-conf.in disks-conf.in hardware-conf.in media.pl.in
+          memory-conf.in nameresolution-conf.in network-conf.in
+          networking-conf.in removable-media.pl.in time-conf.in
+          users-conf.in xml.pl.in: xst_xml_print -> xst_xml_print_line.
+
+	  Doing this replace first, in a way that shouldn't affect the
+	  handful of other functions starting with xst_xml_print_.
+
+2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
+
 	* replace.pl.in (xst_replace_ini): Use debug funcs.
 	  (is_array_ref): Use debug funcs.
 
