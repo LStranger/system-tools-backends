@@ -89,7 +89,7 @@ sub update_partition
   if ($label eq "")
   {
     if ($device eq "") { return; }
-    $label = xst_filesys_translate_ext2_device_to_label ($device);
+    $label = xst_filesys_ext2_device_to_label ($device);
   }
 
   for ($i = 0; $cf_disks[$i]; $i++)

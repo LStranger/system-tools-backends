@@ -1,5 +1,10 @@
 2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
 
+	* disks-conf.in (update_partition): Fix breakage, call
+	  xst_filesys_ext2_device_to_label().
+
+2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
+
 	* file.pl.in (xst_open_filter_write_from_names): Fix log output.
 
 	* filesys.pl.in (xst_filesys_table_to_hash): Not in use, so removed.
