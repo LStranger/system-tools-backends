@@ -506,7 +506,7 @@ sub set
   &be_begin ();
   $hash = &xml_parse ();
 
-#  &xst_network_conf_set ($hash);
+  &xst_network_conf_set ($hash);
 #  &be_ensure_local_host_entry ($$hash{"hostname"});
 
   # network interface configuring

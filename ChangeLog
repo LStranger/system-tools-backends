@@ -1,3 +1,13 @@
+2001-02-04  Arturo Espinosa  <arturo@ximian.com>
+
+	* be.pl.in: (be_buffer_{load,save}): load a file into an array buffer
+	and save it back.
+	(be_map_dist): moved from network.pl.in.
+	* network.pl.in: minor & typos.
+	* replace.pl.in: routines for in-line replacing.
+	* Makefile.am: install replace routines.
+	* .cvsignore: ignore replace routines .pl file.
+
 2001-02-05  Hans Petter Jansson  <hpj@ximian.com>
 
 	* parse.pl.in (xst_parse_split): Keep all tokens on line

@@ -10,7 +10,8 @@ users-conf
 perl_libs = \
 be.pl \
 network.pl \
-parse.pl
+parse.pl \
+replace.pl
 
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh
 
@@ -18,6 +19,7 @@ EXTRA_DIST = \
 be.pl.in \
 network.pl.in \
 parse.pl.in \
+replace.pl.in \
 disks-conf.in \
 memory-conf.in \
 nameresolution-conf.in \

@@ -85,24 +85,6 @@ sub xst_network_sysconfig_ifaces_get_existing
   return @ret;
 }
 
-sub xst_map_dist
-{
-  my (%dist_cmp) = @_;
-  my ($sysstr);
-
-  $sysstr = "$be_dist,$be_dist_version,$be_system";
-  
-  foreach $key (keys %dist_cmp)
-  {
-    if ($sysstr =~ /$key/)
-    {
-	 return $dist_cmp{$key};
-    }
-  }
-
-  return undef;
-}
-
 sub xst_network_interfaces_get
 {
   my %dist_attrib =
@@ -212,12 +194,61 @@ sub xst_network_conf_get
   my ($dist, $hash);
 
   $dist = &xst_map_dist (%dist_cmp);
-  return undef if ($dist eq undef);
+  return undef if ($dist eq undef); # fixme: warn the user
 
   $hash = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
 						   $ {$dist_attrib{$dist}}{"table"});
   return $hash;
 }
 
+sub xst_network_conf_set
+{
+  my $hash = $_[0];
+  
+  my %dist_attrib =
+	 (
+	  redhat62 => {
+	    fn => {
+		 SYSCONFIG_NW => "/etc/sysconfig/network",
+		 RESOLV_CONF  => "/etc/resolv.conf",
+		 HOST_CONF    => "/etc/host.conf",
+		 HOSTS        => "/etc/hosts",
+	      SMB_CONF     => "/etc/smb.conf" },
+	    table => [
+			    [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+			    [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
+			    [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+			    [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+			    [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+			    [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+			    [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, " " ],
+			    [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, " ", " " ],
+			    [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, " " ],
+			    [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, " ", "," ],
+			    [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, " " ],
+			    [ statichost,    \&xst_replace_join_hash,        HOSTS, " ", " " ],
+			    [ workgroup,     \&xst_replace_ini,              SMB_CONF, "global", "workgroup" ],     
+			    [ description,   \&xst_replace_ini,              SMB_CONF, "global", "server string" ],
+			    [ winsserver,    \&xst_replace_ini,              SMB_CONF, "global", "wins server" ],
+			    [ interface,     \&xst_network_interfaces_set ]
+			    ]
+				 }
+	  );
+  
+  # mapping from regular expression, which will be compared to the string
+  # "$be_dist,$be_dist_version,$be_system" to a string, which will be used as
+  # a the key of the dist_attrib field to use.
+  my %dist_cmp = (
+			   "^redhat.*" => "redhat62"
+			   );
 
-
+  my ($dist, $res);
+  
+  $dist = &xst_map_dist (%dist_cmp);
+  return if ($dist eq undef); # fixme: warn the user
+	 
+  # maybe report if there was a problem
+  $res = &xst_replace_from_table ($ {$dist_attrib{$dist}}{"fn"},
+						    $ {$dist_attrib{$dist}}{"table"});
+  return;
+}

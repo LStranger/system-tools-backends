@@ -841,6 +841,44 @@ sub be_open_filter_write_from_names
   }
 
 
+# Open $file and put it into @buffer, for in-line editting.
+# \%buffer on success, undef on error.
+sub be_buffer_load
+{
+  my $file = $_[0];
+  my @buffer;
+  my $fd;
+  
+  $fd = &be_open_read_from_names ($file);
+  return undef if !$fd;
+
+  @buffer = (<$fd>);
+
+  return \@buffer;
+}
+
+
+# Take a $buffer and save it in $file. -1 is error, 0 success.
+sub be_buffer_save
+{
+  my ($buffer, $file) = @_;
+  my $fd, $i;
+
+  $fd = &be_open_from_names ($file);
+  return -1 if !$fd;
+
+  foreach $i (@$buffer)
+  {
+    chomp $i;
+    print $fd $i . "\n";
+  }
+
+  close $fd;
+
+  return 0;
+}
+
+
 sub be_create_path
   {
     my $path;
@@ -2155,6 +2193,26 @@ sub be_guess_system
     || &check_redhat         # Red Hat check must run after Mandrake
     || &check_turbolinux;
   }
+}
+
+# This receives a hash of the form "regular expression" => "profile" to be used in property tables.
+# Difficult to explain, but easy to see in network.pl.in, sub xst_network_conf_get and similar.
+sub be_map_dist
+{
+  my (%dist_cmp) = @_;
+  my ($sysstr);
+
+  $sysstr = "$be_dist,$be_dist_version,$be_system";
+  
+  foreach $key (keys %dist_cmp)
+  {
+    if ($sysstr =~ /$key/)
+    {
+	 return $dist_cmp{$key};
+    }
+  }
+
+  return undef;
 }
 
 # --- Argument parsing --- #
