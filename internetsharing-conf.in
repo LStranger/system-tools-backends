@@ -178,6 +178,19 @@ sub get
 }
 
 
+sub get_interfaces
+{
+  my $hash;
+
+  $hash = &xst_network_interfaces_get ();
+  
+  &xst_report_end ();
+  &xst_xml_print_begin ();
+  &xst_xml_print_hash_hash ($hash, "interface");
+  &xst_xml_print_end ();
+}
+
+
 sub set
 {
   my $hash;
@@ -206,9 +219,10 @@ sub filter
 # Read general.pl.in:xst_run_directive to know about the format of this hash.
 
 $directives = {
-  "get"    => [ \&get,    [], "" ],
-  "set"    => [ \&set,    [], "" ],
-  "filter" => [ \&filter, [], "" ]
+  "get"            => [ \&get,    [], "" ],
+  "set"            => [ \&set,    [], "" ],
+  "filter"         => [ \&filter, [], "" ],
+  "get_interfaces" => [ \&get_interfaces, [], "Get the interface tags only." ]
     };
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);

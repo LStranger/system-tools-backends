@@ -1,5 +1,7 @@
 2001-08-30  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* internetsharing-conf.in (get_interfaces): new directive.
+
 	* ishare.pl.in (xst_ishare_get_linux22_forward_support):
 	Changed masquerading support to check for /proc/net/ip_masquerade.
 
