@@ -1511,3 +1511,75 @@ sub gst_replace_alchemist_print_option
 
   return &gst_xml_model_save ($model, $file, $compressed);
 }
+
+sub gst_replace_slackware_hostname
+{
+  my ($file, $hostname, $domain) = @_;
+
+  return &gst_replace_line_first ($file, "$hostname.$domain");
+}
+
+sub gst_replace_rcinet1conf
+{
+  my ($file, $iface, $kw, $val) = @_;
+  my ($line);
+
+  $iface =~ s/eth//;
+  $line = "$kw\[$iface\]";
+
+  $val = "\"$val\"";
+
+  return &gst_replace_split ($file, $line, "[ \t]*=[ \t]*", $val);
+}
+
+sub gst_replace_rcinet1conf_global
+{
+  my ($file, $kw, $val) = @_;
+
+  $val = "\"$val\"";
+
+  return &gst_replace_split ($file, $kw, "[ \t]*=[ \t]*", $val)
+}
+
+sub gst_replace_wireless_opts
+{
+  my ($file, $iface, $proc, $kw, $value) = @_;
+  my $ifaces = &$proc ();
+  my $found = 0;
+  my $search = 1;
+  my $buff;
+  
+  foreach $i (@$ifaces)
+  {
+    $found = 1 if ($iface eq $i);
+  }
+
+  $buff = &gst_file_buffer_load ($file);
+
+  foreach $i (@$buff)
+  {
+    if (/^case/)
+    {
+      # we don't want to search inside the case
+      $search = 0;
+    }
+    elsif (/^esac/)
+    {
+      # we want to continue searching
+      $search = 1;
+    }
+    if ((/^[ \t]*$kw/) && ($search))
+    {
+      $_ = "$kw=\"$value\"";
+      $found = 1;
+    }
+  }
+
+  if (!$found)
+  {
+    push @$buff, "$kw=\"$value\"";
+  }
+
+  &gst_file_buffer_clean ($buff);
+  return &gst_file_buffer_save ($buff, $file);
+}

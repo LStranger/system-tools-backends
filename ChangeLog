@@ -1,3 +1,22 @@
+2004-01-06  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network-conf.in, network.pl.in: added partial support for slackware 
+	  9.1, ATM it only supports eth interfaces config (wireless eth ifaces
+	  too)
+	* service.pl.in: (gst_service_sysv_installed),
+	  (gst_service_sysv_list_any_installed): replaced by
+	  (gst_service_installed) and (gst_service_list_any_installed).
+	  (gst_service_bsd_set_status): added
+	* time-conf.in: made it to use gst_service_list_any_installed ()
+	* replace.pl.in: (gst_replace_slackware_hostname),
+	  (gst_replace_rcinet1conf), (gst_replace_rcinet1conf_global),
+	  (gst_replace_wireless_opts): functions added to replace in slackware
+	  network config files
+	* parse.pl.in: (gst_parse_slackware_hostname),
+	  (gst_parse_rcinet1conf), (gst_parse_rcinet1conf_bool),
+	  (gst_parse_wireless_opts): functions added to parse slackware network
+	  config files
+
 2004-01-05  Carlos Garcia Campos <elkalmail@yahoo.es>
 
 	* disks-conf.in: get start-end cylinder/block for partitions 

@@ -520,7 +520,7 @@ sub conf_get_parse_table
               [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
               [ "sync_active",  \&gst_service_sysv_get_status, "ntpd" ],
-              [ "ntpinstalled", \&gst_service_sysv_list_any_installed, [ "ntp-simple", "ntp-refclock" ] ],
+              [ "ntpinstalled", \&gst_service_list_any_installed, [ "ntp-simple", "ntp-refclock" ] ],
               ]
                 },
 

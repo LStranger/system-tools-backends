@@ -47,8 +47,8 @@ sub gst_network_get_wireless_ifaces
 {
   my ($fd, $line);
   my (@ifaces);
-  
-  $fd = &gst_file_run_pipe_read ("/sbin/iwconfig");
+
+  $fd = &gst_file_run_pipe_read ("iwconfig");
   return @ifaces if $fd eq undef;
 
   while (<$fd>)
@@ -192,7 +192,8 @@ sub gst_network_get_broadcast_ping_cmd
        "mandrake-9.1" => "debian-2.2",
        "suse-7.0"     => "debian-2.2", # FIXME: assumed that only redhat distros use -b.
        "pld-1.0"      => "redhat-6.2",
-       "fedora-1"     => "redhat-6.2"
+       "fedora-1"     => "redhat-6.2",
+       "slackware-9.1.0" => "redhat-6.2"
        );
 
   return $cmd_map{$dist_map{$gst_dist}};
@@ -638,6 +639,26 @@ sub gst_network_sysconfig_pld10_ifaces_get_existing
   return @{&gst_network_sysconfig_dir_ifaces_get_existing ("/etc/sysconfig/interfaces")};
 }
 
+sub gst_network_slackware91_ifaces_get_existing
+{
+  my $file = "$gst_prefix/etc/rc.d/rc.inet1.conf";
+  my ($fd, $i, @ret);
+
+  $fd = &gst_file_open_read_from_names ($file);
+  return @ret if !$fd;
+
+  while ($i = <$fd>)
+  {
+      if ($i =~ /^[ \t]*IPADDR\[(\S+)\][ \t]*=[ \t]*"(.*)"/)
+      {
+        push @ret, "eth$1" if ($2 ne "");
+      }
+  }
+
+  &gst_file_close ($fd);
+  return @ret;
+}
+
 sub gst_network_suse70_parse_iface_num
 {
   my ($file, $dev) = @_;
@@ -961,7 +982,7 @@ sub gst_network_interfaces_get
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"ifaces_get"};
   @ifaces = &$proc ();
-  
+
   foreach $i (@ifaces)
   {
     foreach $j (keys (%fn))
@@ -1061,6 +1082,18 @@ sub gst_network_suse70_get_file
   return $i;
 }
 
+sub gst_network_slackware91_get_file
+{
+  my ($i, $file);
+
+  $file = "$gst_prefix/etc/rc.d/rc.inet1.conf";
+
+  $i = 0;
+  $i++ while (&gst_parse_sh ($file, "IPADDR[$i]") ne "");
+
+  return $i;
+}
+
 sub gst_network_pld10_get_file
 {
   my ($iface) = @_;
@@ -1105,7 +1138,8 @@ sub gst_network_get_file
     "suse-7.0"     => \&gst_network_suse70_get_file,
 	  "turbolinux-7.0"   => \&gst_network_rh62_get_file,
     "pld-1.0"      => \&gst_network_pld10_get_file,
-    "fedora-1"     => \&gst_network_rh72_get_file
+    "fedora-1"     => \&gst_network_rh72_get_file,
+    "slackware-9.1.0" => \&gst_network_slackware91_get_file,
 	  );
 
   $proc = $dist_map{$gst_dist};
@@ -1282,7 +1316,7 @@ sub gst_network_rh62_interface_activate_by_dev
   if ($enabled)
   {
     &gst_report ("network_iface_activate", $dev);
-    return -1 if &gst_file_run_bg ("ifup $dev");
+    return -1 if &gst_file_run ("ifup $dev");
   }
   else
   {
@@ -1475,6 +1509,19 @@ sub gst_network_pld10_interface_delete
   unlink ($file);
 }
 
+sub gst_network_slackware91_interface_delete
+{
+  my ($old_hash) = @_;
+  my $file = "$gst_prefix/etc/rc.d/rc.inet1.conf";
+  my $dev = $$old_hash {"dev"};
+
+  # empty the values
+  &gst_replace_rcinet1conf ($file, $dev, "IPADDR", "");
+  &gst_replace_rcinet1conf ($file, $dev, "NETMASK", "");
+  &gst_replace_rcinet1conf ($file, $dev, "USE_DHCP", "");
+  &gst_replace_rcinet1conf ($file, $dev, "DHCP_HOSTNAME", "");
+}
+
 sub gst_network_interface_changed
 {
     my ($iface, $iface_old) = @_;
@@ -1504,7 +1551,6 @@ sub gst_network_interfaces_down_and_up_changed
     if (&gst_network_interface_changed ($$values_hash{$i}, $$old_hash{$i}))
     {
       &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 0, 1);
-      sleep 2;
       &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 1, 1);
     }
   }
@@ -1552,9 +1598,6 @@ sub gst_network_interfaces_set
   %dist_attrib = &gst_network_get_interface_replace_table ();
   $old_hash = $$old_hash{"interface"};
 
-  $proc = $dist_attrib{"iface_set"};
-  &gst_network_interfaces_down_and_up_changed ($proc, $old_hash, $values_hash);
-
   # Delete all old interfaces that are not in the hash.
   $proc = $dist_attrib{"iface_delete"};
 
@@ -1568,6 +1611,9 @@ sub gst_network_interfaces_set
     $tmp = &gst_network_interface_set ($i, $$values_hash{$i}, $$old_hash{$i});
     $res = $tmp if !$res;
   }
+
+  $proc = $dist_attrib{"iface_set"};
+  &gst_network_interfaces_down_and_up_changed ($proc, $old_hash, $values_hash);
 
   &gst_report_leave ();
   return $res;
@@ -1846,6 +1892,34 @@ sub gst_network_deb22_replace_bootproto
   }
 
   return &gst_replace_interfaces_stanza_value ($file, $iface, 2, $proto_name_to_debian{$value});
+}
+
+sub gst_network_slackware91_parse_bootproto
+{
+  my ($file, $iface) = @_;
+
+  if (&gst_parse_rcinet1conf_bool ($file, $iface, USE_DHCP))
+  {
+    return "dhcp"
+  }
+  else
+  {
+    return "none";
+  }
+}
+
+sub gst_network_slackware91_replace_bootproto
+{
+    my ($file, $iface, $value) = @_;
+
+    if ($value eq "dhcp")
+    {
+      &gst_replace_rcinet1conf ($file, $iface, USE_DHCP, "yes");
+    }
+    else
+    {
+      &gst_replace_rcinet1conf ($file, $iface, USE_DHCP);
+    }
 }
 
 sub gst_network_suse70_parse_bootproto
@@ -2163,7 +2237,8 @@ sub gst_network_ensure_loopback_interface
     "suse-7.0"     => "",
 	  "turbolinux-7.0"   => "lo",
     "pld-1.0"      => "lo",
-    "fedora-1"     => ""
+    "fedora-1"     => "",
+    "slackware-9.1.0" => ""
 	  );
 
   $dev = $dist_map {$gst_dist};
@@ -2268,7 +2343,8 @@ sub gst_network_get_parse_table
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
     "pld-1.0"      =>  "pld-1.0",
-    "fedora-1"     =>  "redhat-7.2"
+    "fedora-1"     =>  "redhat-7.2",
+    "slackware-9.1.0" => "slackware-9.1.0"
 	  );
 
   my %dist_tables =
@@ -2498,9 +2574,43 @@ sub gst_network_get_parse_table
 		    [ "dialing",       \&gst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&gst_network_interfaces_get ]
 		    ]
-			 }
+			 },
 
-	  );
+    "slackware-9.1.0" =>
+    {
+      fn =>
+      {
+        RC_INET_CONF => "/etc/rc.d/rc.inet1.conf",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        HOSTNAME     => "/etc/HOSTNAME",
+        SMB_CONF     => "/etc/samba/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf"
+      },
+      table =>
+      [
+       [ "hostname",      \&gst_parse_slackware_hostname, HOSTNAME ],
+       [ "gwdevunsup",    \&gst_parse_trivial,           1 ],
+       [ "userifacectl",  \&gst_parse_trivial,           1 ],
+       [ "nameserver",    \&gst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
+       [ "searchdomain",  \&gst_parse_split_first_array_unique, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+       [ "domain",        \&gst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+       [ "order",         \&gst_parse_split_first_array, HOST_CONF,    "order", "[ \t]+", ",[ \t]*" ],
+       [ "hostmatch",     \&gst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
+       [ "statichost",    \&gst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+       [ "workgroup",     \&gst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+       [ "smbdesc",       \&gst_network_rh_get_smb_desc, SMB_CONF,   "global", "server string", "%hostname%" ],
+       [ "winsserver",    \&gst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+       [ "winsuse",       \&gst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+       [ "smbuse",        \&gst_service_sysv_get_status_any, "smbd", "nmbd" ],
+       [ "smbinstalled",  \&gst_service_installed,  "/etc/rc.d/rc.samba" ],
+       [ "dialinstalled", \&gst_file_tool_installed,     "wvdial" ],
+       [ "dialing",       \&gst_network_dialing_get,     WVDIAL ],
+       [ "interface",     \&gst_network_interfaces_get ]
+      ]
+    }
+   );
   
   my $dist = $dist_map{$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
@@ -2533,7 +2643,8 @@ sub gst_network_get_interface_parse_table
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
     "pld-1.0"      => "pld-1.0",
-    "fedora-1"     => "redhat-7.2"
+    "fedora-1"     => "redhat-7.2",
+    "slackware-9.1.0" => "slackware-9.1.0"
 	  );
   
   my %dist_tables =
@@ -2932,7 +3043,29 @@ sub gst_network_get_interface_parse_table
            [ "enabled",            \&gst_network_interface_active, IFACE, \&gst_network_active_interfaces_get ],
            [ "enabled",            \&gst_parse_trivial, 0 ]
            ]
-             }
+             },
+    "slackware-9.1.0" =>
+	  {
+      ifaces_get => \&gst_network_slackware91_ifaces_get_existing,
+      fn =>
+      {
+        INTERFACES  => "/etc/rc.d/rc.inet1.conf",
+        IFACE       => "#iface#",
+        WIRELESS    => "/etc/pcmcia/wireless.opts",
+      },
+      table =>
+      [
+       [ "user",               \&gst_parse_trivial,                  0 ], # not supported.
+       [ "dev",                \&gst_parse_trivial,                  IFACE ],
+       [ "address",            \&gst_parse_rcinet1conf,              [INTERFACES, IFACE], IPADDR ],
+       [ "netmask",            \&gst_parse_rcinet1conf,              [INTERFACES, IFACE], NETMASK ],
+       [ "gateway",            \&gst_parse_sh,                       INTERFACES, GATEWAY ],
+       [ "auto",               \&gst_parse_trivial,                  1 ],
+       [ "bootproto",          \&gst_network_slackware91_parse_bootproto, [INTERFACES, IFACE]],
+       [ "essid",              \&gst_parse_wireless_opts,            [ WIRELESS, IFACE], \&gst_network_get_wireless_ifaces, ESSID ],
+       [ "enabled",            \&gst_network_interface_active,       IFACE, \&gst_network_active_interfaces_get ],
+       ]
+      }
 	  );
   
   my $dist = $dist_map{$gst_dist};
@@ -2965,7 +3098,8 @@ sub gst_network_get_replace_table
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
     "pld-1.0"      => "pld-1.0",
-    "fedora-1"     => "redhat-7.2"
+    "fedora-1"     => "redhat-7.2",
+    "slackware-9.1.0" => "slackware-9.1.0"
 	  );
 
   my %dist_tables =
@@ -3189,7 +3323,38 @@ sub gst_network_get_replace_table
            [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ],
            [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
            ]
-             }
+       },
+    "slackware-9.1.0" =>
+    {
+      fn =>
+      {
+        RC_INET_CONF => "/etc/rc.d/rc.inet1.conf",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        HOSTNAME     => "/etc/HOSTNAME",
+        SMB_CONF     => "/etc/samba/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf"
+      },
+      table =>
+      [
+       [ "hostname",      \&gst_replace_slackware_hostname, HOSTNAME, "%hostname%", "%domain%" ],
+       [ "hostname",      \&gst_network_run_hostname ],
+       [ "domain",        \&gst_replace_join_first_str,   RESOLV_CONF, "domain", "[ \t]+" ],
+       [ "nameserver",    \&gst_replace_join_all,         RESOLV_CONF, "nameserver", "[ \t]+" ],
+       [ "searchdomain",  \&gst_replace_join_first_array, RESOLV_CONF, "search", "[ \t]+", "[ \t]+" ],
+       [ "order",         \&gst_replace_join_first_array, HOST_CONF,   "order", "[ \t]+", ",[ \t]*" ],
+       [ "hostmatch",     \&gst_replace_join_first_bool,  HOST_CONF,   "multi", "[ \t]+", "on", "off" ],
+       [ "statichost",    \&gst_replace_join_hash,        HOSTS,       "[ \t]+", "[ \t]+" ],
+       [ "workgroup",     \&gst_replace_ini,              SMB_CONF,    "global", "workgroup" ],     
+       [ "smbdesc",       \&gst_replace_ini,              SMB_CONF,    "global", "server string" ],
+       [ "winsserver",    \&gst_replace_ini,              SMB_CONF,    "global", "wins server" ],
+       [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
+       [ "smbuse",        \&gst_service_bsd_set_status,   "/etc/rc.d/rc.samba" ],
+       [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ]
+      ]
+    }
+
 	  );
   
   my $dist = $dist_map{$gst_dist};
@@ -3222,7 +3387,8 @@ sub gst_network_get_interface_replace_table
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
     "pld-1.0"      => "pld-1.0",
-    "fedora-1"     => "redhat-7.2"
+    "fedora-1"     => "redhat-7.2",
+    "slackware-9.1.0" => "slackware-9.1.0"
 	  );
 
   my %dist_tables =
@@ -3592,8 +3758,28 @@ sub gst_network_get_interface_replace_table
         [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
         [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
       ]
-    }
+    },
 
+   "slackware-9.1.0" =>
+   {
+     iface_set    => \&gst_network_rh62_interface_activate,
+     iface_delete => \&gst_network_slackware91_interface_delete,
+     ifaces_get => \&gst_network_slackware91_ifaces_get_existing,
+     fn =>
+     {
+       INTERFACES  => "/etc/rc.d/rc.inet1.conf",
+       IFACE       => "#iface#",
+       WIRELESS    => "/etc/pcmcia/wireless.opts",
+     },
+     table =>
+     [
+      [ "gateway",       \&gst_replace_rcinet1conf_global,            INTERFACES, GATEWAY ],
+      [ "address",       \&gst_replace_rcinet1conf,                   [ INTERFACES, IFACE ], IPADDR ],
+      [ "netmask",       \&gst_replace_rcinet1conf,                   [ INTERFACES, IFACE ], NETMASK ],
+      [ "bootproto",     \&gst_network_slackware91_replace_bootproto, [ INTERFACES, IFACE ] ],
+      [ "essid",         \&gst_replace_wireless_opts,                 [ WIRELESS, IFACE ], \&gst_network_get_wireless_ifaces, ESSID ]
+     ]
+   }
   );
   
   my $dist = $dist_map{$gst_dist};

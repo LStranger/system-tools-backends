@@ -250,44 +250,6 @@ sub gst_service_proc_start
   system ("$fqsu -c \"$fqcmd &\" $user >/dev/null 2>/dev/null");
 }
 
-sub gst_service_sysv_installed
-{
-  my ($service) = @_;
-  my ($res, $rcd_path, $initd_path);
-
-  &gst_report_enter ();
-  
-  ($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
-
-  $res = 1;
-  if (! -f "$initd_path/$service")
-  {
-    $res = 0;
-    &gst_report ("service_sysv_not_found", $service);
-  }
-
-  &gst_report_leave ();
-  return $res;
-}
-
-sub gst_service_sysv_list_any_installed
-{
-  my @service = @_;
-  my $res;
-
-  $res = 0;
-  
-  foreach $serv (@service)
-  {
-    if (gst_service_sysv_installed ($serv))
-    {
-      $res = 1;
-    }
-  }
-
-  return $res;
-}
-
 sub gst_service_sysv_list_dir
 {
     my ($path) = @_;
@@ -409,6 +371,8 @@ sub gst_service_sysv_set_links
     &gst_service_sysv_set_links_inactive (100 - $pri, $service);
   }
 }
+
+
 
 # Start or stop the service, depending on $active. Set
 # links accordingly.  $force makes this function use
@@ -1202,4 +1166,78 @@ sub gst_service_run_script
   $proc = $map {$type};
 
   &$proc ($service, $arg);
+}
+
+# functions to know if a service will be installed
+sub gst_service_sysv_installed
+{
+  my ($service) = @_;
+  my ($res, $rcd_path, $initd_path);
+
+  &gst_report_enter ();
+  
+  ($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
+
+  $res = 1;
+  if (! -f "$initd_path/$service")
+  {
+    $res = 0;
+    &gst_report ("service_sysv_not_found", $service);
+  }
+
+  &gst_report_leave ();
+  return $res;
+}
+
+sub gst_service_bsd_installed
+{
+  my ($service) = @_;
+
+  return 1 if ( -f "$service");
+  return 0;
+}
+
+sub gst_service_installed
+{
+  my ($service) = @_;
+  my ($type);
+  $type = &gst_get_init_type ();
+
+  return &gst_service_sysv_installed ($service) if (($type eq "sysv") || ($type eq "file-rc"));
+  return &gst_service_bsd_installed ($service) if ($type eq "bsd");
+}
+
+sub gst_service_list_any_installed
+{
+  my @service = @_;
+  my $res;
+
+  $res = 0;
+  
+  foreach $serv (@service)
+  {
+    if (gst_service_installed ($serv))
+    {
+      $res = 1;
+    }
+  }
+
+  return $res;
+}
+
+sub gst_service_bsd_set_status
+{
+  my ($script, $active) = @_;
+  my (@arr);
+
+  if ($active)
+  {
+    &gst_file_run ("chmod ugo+x $script");
+    &gst_service_run_script ($script, "start");
+  }
+  else
+  {
+    &gst_service_run_script ($script, "stop");
+    &gst_file_run ("chmod ugo-x $script");
+  }
 }

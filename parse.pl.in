@@ -318,7 +318,7 @@ sub gst_parse_split_ref
     next if $line eq "";
     @line = split ($re, $line, 2);
 
-    if (shift (@line) =~ "^$key\$")
+    if (shift (@line) eq $key)
     {
       if ($all) {
         push @res, $line[0];
@@ -1468,4 +1468,85 @@ sub gst_parse_alchemist_print_option
   return undef if (!$node);
 
   return &gst_xml_model_get_attribute ($node, "VALUE");
+}
+
+sub gst_parse_slackware_hostname
+{
+  my ($file) = @_;
+  my ($ret);
+
+  $ret = &gst_parse_line_first ($file);
+  $ret =~ s/\..*//; #remove domain
+
+  return $ret;
+}
+
+sub gst_parse_rcinet1conf
+{
+  my ($file, $iface, $kw) = @_;
+  my ($line);
+
+  $iface =~ s/eth//;
+  $line = "$kw\[$iface\]";
+
+  return &gst_parse_sh ($file, $line);
+}
+
+sub gst_parse_rcinet1conf_bool
+{
+  my ($file, $iface, $kw) = @_;
+  my ($ret);
+
+  $ret = &gst_parse_rcinet1conf ($file, $iface, $kw);
+  
+  return undef if ($ret eq undef);
+  return (&gst_util_read_boolean ($ret)? 1: 0);
+}
+
+sub gst_parse_wireless_opts
+{
+  my ($file, $iface, $proc, $kw) = @_;
+  my $ifaces = &$proc ();
+  my $found = 0;
+  my $search = 1;
+  my $val = "";
+  my $fd;
+  
+  foreach $i (@$ifaces)
+  {
+    $found = 1 if ($iface eq $i);
+  }
+
+  return undef if (!$found);
+
+  $fd = &gst_file_open_read_from_names ($file);
+  while (<$fd>)
+  {
+    $line = $_;
+
+    if ($line =~ /^case/)
+    {
+      # we don't want to search inside the case
+      $search = 0;
+    }
+    elsif ($line =~ /^esac/)
+    {
+      # continue searching
+      $search = 1;
+    }
+    elsif (($line =~ /^[ \t]*$kw/ ) && ($search))
+    {
+      $line =~ s/.*=//;
+
+      if ($line =~ /"(.*)"/)
+      {
+        $line = $1;
+      }
+
+      $val = $line;
+    }
+  }
+
+  &gst_file_close ($fd);
+  return $val;
 }
