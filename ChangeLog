@@ -1,3 +1,11 @@
+2001-10-01  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* display-conf.in: Added mandrake-7.2 to the list of supported
+	platforms.
+
+	* network.pl.in (xst_network_rh62_parse_bootproto): typo caused
+	bootproto to always be "none".
+
 2001-09-28  Tambet Ingo  <tambet@ximian.com>
 
 	* font.pl.in: Implemented addition and removal of TrueType and

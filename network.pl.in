@@ -1534,7 +1534,7 @@ sub xst_network_rh62_parse_bootproto
 	  );
   my $ret;
 
-  $ret = &xst_parse_sh ($file, $iface);
+  $ret = &xst_parse_sh ($file, $key);
   
   if (!exists $rh62_to_proto_name{$ret})
   {

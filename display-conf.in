@@ -52,7 +52,7 @@ use POSIX qw(tmpnam);
 
 $name = "display";
 $version = "___version___";
-@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 turbolinux-7.0 debian-2.2 debian-woody);
+@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 turbolinux-7.0 debian-2.2 debian-woody mandrake-7.2);
 
 $description =<<"end_of_description;";
        Configures XFree86 version 4.
