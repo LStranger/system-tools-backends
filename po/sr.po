@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-system-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-01-10 03:01+0100\n"
-"PO-Revision-Date: 2004-01-10 03:10+0100\n"
+"POT-Creation-Date: 2004-01-15 07:32+0100\n"
+"PO-Revision-Date: 2004-01-15 07:31+0100\n"
 "Last-Translator: Данило Шеган <danilo@prevod.org>\n"
 "Language-Team: Serbian (sr) <serbiangnome-lista@nongnu.org>\n"
 "MIME-Version: 1.0\n"
@@ -124,6 +124,9 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"Унутрашња услуга xinetd-а која сазнаје текуће време система и исписује га у "
+"облику као што је „Wed Nov 13 22:30:27 EST 2002“.  Ово је ТЦП верзија.  "
+"Морате укључити xinetd да бисте користили ову услугу."
 
 #: service-list.pl.in:48
 msgid ""
@@ -131,6 +134,9 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"Унутрашња услуга xinetd-а која сазнаје текуће време система и исписује га у "
+"облику као што је „Wed Nov 13 22:30:27 EST 2002“.  Ово је УДП верзија.  "
+"Морате укључити xinetd да бисте користили ову услугу."
 
 #: service-list.pl.in:49 service-list.pl.in:50
 msgid "Dynamic DNS Client"
@@ -153,12 +159,16 @@ msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"Унутрашња услуга xinetd-а која враћа знакове клијентима.  Ово је ТЦП "
+"верзија.  Морате укључити xinetd да бисте користили ову услугу."
 
 #: service-list.pl.in:53
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"Унутрашња услуга xinetd-а која враћа знакове клијентима.  Ово је УДП "
+"верзија.  Морате укључити xinetd да бисте користили ову услугу."
 
 #: service-list.pl.in:54
 msgid "Exim SMTP Server"
@@ -170,7 +180,7 @@ msgstr "праћење измена датотека (фам)"
 
 #: service-list.pl.in:56
 msgid "Firstboot is a druid style program that runs on the first time"
-msgstr ""
+msgstr "Firstboot је помоћник који се покреће при првом покретању"
 
 #: service-list.pl.in:57
 msgid "Mail Fetcher"
@@ -182,11 +192,11 @@ msgstr "Прикупљање поште са спољашњих сервера"
 
 #: service-list.pl.in:58
 msgid "IPv6 Tunnel Broker"
-msgstr ""
+msgstr "Посредник за ИПв6 тунеле"
 
 #: service-list.pl.in:58
 msgid "A IPv6 Dynamic Tunnel Broker"
-msgstr ""
+msgstr "Посредник за динамичке ИПв6 тунеле"
 
 #: service-list.pl.in:59
 msgid "GNOME Display Manager"
@@ -194,7 +204,7 @@ msgstr "Гномов управник екраном (Гдм)"
 
 #: service-list.pl.in:59
 msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
-msgstr ""
+msgstr "ГДМ обезбеђује Гномово решење за пријаву на систем."
 
 #: service-list.pl.in:60
 msgid "console mouse support"
@@ -206,6 +216,9 @@ msgid ""
 "Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
 msgstr ""
+"GPM додаје подршку за миша у текстуалне програме као што Поноћни наредник. "
+"Такође дозвољава исецање и убацивање текста мишем у конзоли, и укључује "
+"подршку за искачуће меније на конзоли."
 
 #: service-list.pl.in:62
 msgid "internet superserver"
@@ -216,32 +229,37 @@ msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
 msgstr ""
+"inetd омогућава да једна покренута услуга покрене више других, смањујући "
+"оптерећење система."
 
 #: service-list.pl.in:63
 msgid "administration tool for IPv4 packet filtering and NAT"
 msgstr ""
+"Административни алат за филтрирање IPv4 пакета и мрежно прослеђивање (NAT)"
 
 #: service-list.pl.in:63
 msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
 msgstr ""
+"Iptables се користи за поствљање, одржавање и проучавање табела правила за "
+"филтрирање ИП пакета у Линукс језгру."
 
 #: service-list.pl.in:64
 msgid "IrDA stack for Linux"
-msgstr ""
+msgstr "IrDA подршка за Линукс"
 
 #: service-list.pl.in:65
 msgid "The Internet Key Exchange protocol"
-msgstr ""
+msgstr "Протокол за размену кључева преко интернета"
 
 #: service-list.pl.in:65
 msgid "The Internet Key Exchange protocol openbsd implementation"
-msgstr ""
+msgstr "ОпенБСД имплементација протокола за размену кључева путем Интернета"
 
 #: service-list.pl.in:66
 msgid "start and stop ISDN services"
-msgstr ""
+msgstr "покрени и заустви ИСДН услуге"
 
 #: service-list.pl.in:67
 msgid ""
@@ -249,40 +267,49 @@ msgid ""
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
 "leave this enabled for most machines."
 msgstr ""
+"Овај пакет учитава изабрану мапу тастатуре како је подешена у /etc/sysconfig/"
+"keyboard.  Она се може изабрати алатом kbdconfig.  Ово ваља оставити "
+"укључено за већину рачунара."
 
 #: service-list.pl.in:68
 msgid ""
 "klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr ""
+"klogd је системска услуга које пресреће и записује поруке Линукс језгра."
 
 #: service-list.pl.in:69
 msgid ""
 "This runs the hardware probe, and optionally configures changed hardware."
 msgstr ""
+"Ово покреће испробавање хардвера, и необавезно подешава измењени хардвер."
 
 #: service-list.pl.in:70 service-list.pl.in:71
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
 msgstr ""
+"LIRC је пакет који омогућава да декодирате и шаљете инфрацрвене сигнале "
+"често коришћених даљинских управљача."
 
 #: service-list.pl.in:72
 msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
+"lpd је услуга штампе неопходна да би lpr исправно радио. У основи представља "
+"сервер који прослеђује послове штампе штампачима."
 
 #: service-list.pl.in:73
 msgid "Syslog Replacement"
-msgstr ""
+msgstr "Syslog замена"
 
 #: service-list.pl.in:73
 msgid "Modern logging daemon"
-msgstr ""
+msgstr "Савремена услуга дневника"
 
 #: service-list.pl.in:74
 msgid "tools for managing Linux kernel modules"
-msgstr ""
+msgstr "алати за управљање модулима Линукс језгра"
 
 #: service-list.pl.in:75
 msgid "dns server"
@@ -293,18 +320,23 @@ msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
+"named (BIND) је услуга именовања домена (DNS) која се користи за разрешивање "
+"имена рачунара у ИП адресе."
 
 #: service-list.pl.in:76
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
+"Прикључује и искључује све мрежне системе датотека (NFS), SMB (Lan Manager/"
+"Windows) и NCP (NetWare) прикључке."
 
 #: service-list.pl.in:77
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
 msgstr ""
+"Покреће/гаси све мрежне уређаје подешене да се покрену заједно са системом"
 
 #: service-list.pl.in:78
 msgid ""
@@ -312,20 +344,25 @@ msgid ""
 "service provides NFS server functionality, which is configured via the /etc/"
 "exports file."
 msgstr ""
+"NFS је распрострањен протокол за дељење датотека у TCP/IP мрежама. Ова "
+"услуга обезбеђује могућност дељења датотека, што се подешава у датотеци /etc/"
+"exports."
 
 #: service-list.pl.in:79
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS file locking functionality."
 msgstr ""
+"NFS је распрострањен протокол за дељење датотека у TCP/IP мрежама. Ова "
+"услуга обезбеђује могућност закључавања датотека преко NFS-а."
 
 #: service-list.pl.in:80
 msgid "ntpd is the NTPv4 daemon."
-msgstr ""
+msgstr "ntpd је NTPv4 услуга."
 
 #: service-list.pl.in:81
 msgid "HTTP caching proxy"
-msgstr ""
+msgstr "HTTP посредник са оставом"
 
 #: service-list.pl.in:82
 msgid "PCMCIA Services"
@@ -333,15 +370,15 @@ msgstr "PCMCIA услуге"
 
 #: service-list.pl.in:83
 msgid "Caching-Only DNS Server"
-msgstr ""
+msgstr "ДНС сервер само са оставом"
 
 #: service-list.pl.in:84
 msgid "IPsec tunnel implementation"
-msgstr ""
+msgstr "Остварење IPsec тунела"
 
 #: service-list.pl.in:85
 msgid "DARPA port to RPC program number mapper"
-msgstr ""
+msgstr "Пресликавање ДАРПА порта на RPC број програма"
 
 #: service-list.pl.in:85
 msgid ""
@@ -349,10 +386,13 @@ msgid ""
 "NFS and NIS. The portmap server must be running on machines which act as "
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
+"Портмапер управља RPC везама, које користе протоколи као што су NFS и NIS. "
+"Сервер за портмапе мора бити покренут на рачунарима који представљају "
+"сервере за протоколе који користе RPC механизам."
 
 #: service-list.pl.in:86
 msgid "Mail Transport Agent"
-msgstr ""
+msgstr "Агент за пренос поште (MTA)"
 
 #: service-list.pl.in:87
 msgid "database server"
@@ -360,23 +400,26 @@ msgstr "сервер базе података"
 
 #: service-list.pl.in:88
 msgid "Point to Point Protocol daemon"
-msgstr ""
+msgstr "PPP услуга "
 
 #: service-list.pl.in:88
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
 msgstr ""
+"Протокол од тачке до тачке (PPP) је начин преноса датаграма преко серијских "
+"веза од тачке до тачке."
 
 #: service-list.pl.in:89
 msgid "Privacy enhancing HTTP Proxy"
-msgstr ""
+msgstr "HTTP посредник за бољу приватност"
 
 #: service-list.pl.in:90
 msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
 msgstr ""
+"Чува и обнавља ентропију ради образовања случајних бројева већег квалитета."
 
 #: service-list.pl.in:91
 msgid ""
@@ -385,6 +428,10 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
+"Ова скрипта додељује сирове уређаје блок уређајима (као што су деонице "
+"диска). Ово користе такви програми као што је Оракл.  Можете поставити "
+"пресликавање сирових на блок уређаје изменом датотеке /etc/sysconfig/"
+"rawdevices."
 
 #: service-list.pl.in:92
 msgid ""
@@ -393,36 +440,49 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
+"Ово је услуга која уређује повремено повезивање на сервере Редхетове мреже "
+"ради проналажења допуна, обавештења и праћење система према нивоу услуге на "
+"коју је овај сервер претплаћен."
 
 #: service-list.pl.in:93
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
+"Сервер rsync је добар додатак ФТП серверу, пошто дозвољава проверу "
+"интегритета CRC-ом, итд.  Морате користити xinetd за ову услугу."
 
 #: service-list.pl.in:94
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
+"saslauthd је сервер који обрађује захтеве за идентификацијом лозинком у "
+"неизмењеном облику у име библиотеке cyrus-sasl."
 
 #: service-list.pl.in:95
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
+"Сендмејл је агент за пренос поште, односно програм који пребацује пошту са "
+"једног на други рачунар."
 
 #: service-list.pl.in:96
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
-msgstr "Унутрашња xinetd услуга, која исписује активне сервере. Морате укључити xinetd да бисте користили ову услугу."
+msgstr ""
+"Унутрашња xinetd услуга, која исписује активне сервере. Морате укључити "
+"xinetd да бисте користили ову услугу."
 
 #: service-list.pl.in:97
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
-msgstr "Унутрашња xinetd услуга, која исписује активне услуге. Морате укључити xinetd да бисте користили ову услугу."
+msgstr ""
+"Унутрашња xinetd услуга, која исписује активне услуге. Морате укључити "
+"xinetd да бисте користили ову услугу."
 
 #: service-list.pl.in:98
 msgid "get/set serial port information"
@@ -432,13 +492,17 @@ msgstr "сазнај/постави податке о серијском пор�
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
-msgstr "setserial је програм направљен за постављање и/или пријаву података о подешавањима у вези серијског порта."
+msgstr ""
+"setserial је програм направљен за постављање и/или пријаву података о "
+"подешавањима у вези серијског порта."
 
 #: service-list.pl.in:99
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
-msgstr "FAM служи за праћење датотека. Може се користити за обавештавање о изменама датотека. Морате укључити xinetd да бисте користили ову услугу."
+msgstr ""
+"FAM служи за праћење датотека. Може се користити за обавештавање о изменама "
+"датотека. Морате укључити xinetd да бисте користили ову услугу."
 
 #: service-list.pl.in:100
 msgid "control and monitor storage systems using S.M.A.R.T."
@@ -460,7 +524,8 @@ msgstr "OpenSSH SSH сервер"
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
-msgstr "ssh је програм за пријаву на удаљени рачунар и извршавање наредби на њему."
+msgstr ""
+"ssh је програм за пријаву на удаљени рачунар и извршавање наредби на њему."
 
 #: service-list.pl.in:104
 msgid "OpenSSH server daemon"
@@ -475,12 +540,16 @@ msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr ""
+"Sysklogd обезбеђује два системска алата за држање системског дневника и "
+"пресретање порука језгра."
 
 #: service-list.pl.in:106
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
+"Syslog (системски дневник) користе многе услуге за запис порука у разне "
+"системске дневнике.  Увек је добра идеја имати покренут системски дневник."
 
 #: service-list.pl.in:107
 msgid ""
@@ -488,7 +557,11 @@ msgid ""
 "readable date and time. The Time service sends back to the originating "
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
-msgstr "Сервер времена према RFC-у 868. Овај протокол обезбеђује независтан од места, машински читљив датум и време. Услуга времена шаље време у секундама од поноћи, 1. јануара 1900. Ово је TCP верзија. Морате укључити xinetd да бисте користили ову услугу."
+msgstr ""
+"Сервер времена према RFC-у 868. Овај протокол обезбеђује независтан од "
+"места, машински читљив датум и време. Услуга времена шаље време у секундама "
+"од поноћи, 1. јануара 1900. Ово је TCP верзија. Морате укључити xinetd да "
+"бисте користили ову услугу."
 
 #: service-list.pl.in:108
 msgid ""
@@ -496,7 +569,11 @@ msgid ""
 "readable date and time. The Time service sends back to the originating "
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
-msgstr "Сервер времена према RFC-у 868. Овај протокол обезбеђује независтан од места, машински читљив датум и време. Услуга времена шаље време у секундама од поноћи, 1. јануара 1900. Ово је UDP верзија. Морате укључити xinetd да бисте користили ову услугу."
+msgstr ""
+"Сервер времена према RFC-у 868. Овај протокол обезбеђује независтан од "
+"места, машински читљив датум и време. Услуга времена шаље време у секундама "
+"од поноћи, 1. јануара 1900. Ово је UDP верзија. Морате укључити xinetd да "
+"бисте користили ову услугу."
 
 #: service-list.pl.in:109
 msgid "kernel random number source devices"
@@ -507,7 +584,9 @@ msgid ""
 "The  random  number  generator  gathers environmental noise from device "
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
-msgstr "Генератор случајних бројева скупља шум околине из управљачких програма и осталих извора у бунар ентропије. Одавде се образују случајни бројеви."
+msgstr ""
+"Генератор случајних бројева скупља шум околине из управљачких програма и "
+"осталих извора у бунар ентропије. Одавде се образују случајни бројеви."
 
 #: service-list.pl.in:110
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -518,6 +597,8 @@ msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
+"Наредба vmware покреће виртуелну машину засновану на Интелу X86. Ова скрипта "
+"управља услугама неопходним за покретање VMware софтвера."
 
 #: service-list.pl.in:111
 msgid "Web-based administration toolkit"
@@ -532,6 +613,8 @@ msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
+"Омогући корисницима да покрену Виндоуз програме једноставним кликом на њих "
+"(или куцањем ./датотека.exe)"
 
 #: service-list.pl.in:114
 msgid "X font server"
@@ -541,7 +624,9 @@ msgstr "Икс сервер за фонтове"
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
-msgstr "Xfs је сервер за фонтове за Икс систем прозора. Он обезбеђује фонтове Икс серверима за приказ."
+msgstr ""
+"Xfs је сервер за фонтове за Икс систем прозора. Он обезбеђује фонтове Икс "
+"серверима за приказ."
 
 #: service-list.pl.in:115
 msgid ""
@@ -550,6 +635,10 @@ msgid ""
 "available based on time, and can place limits on the number of servers that "
 "can be started, among other things."
 msgstr ""
+"xinetd је моћна замена за inetd. xinetd садржи механизме за контролу "
+"приступа, опширне могућности за праћење, могућност да се направе услуге на "
+"основу времена, и могућност постављања ограничења на број сервера који се "
+"могу покренути, између свега осталог."
 
 #: service.pl.in:169 service.pl.in:174
 msgid "Halting the system"
