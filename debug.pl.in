@@ -23,6 +23,7 @@
 
 
 require "___scriptsdir___/general.pl";
+require "___scriptsdir___/file.pl";
 
 
 sub xst_debug_print_indent
@@ -114,5 +115,33 @@ sub xst_debug_print_struct_r
   else
   {
     &xst_debug_print_line ($a);
+  }
+}
+
+
+$xst_debug_was_made = 0;
+
+sub xst_debug_rotate_try
+{
+  my $debug_file = @_[0];
+  my $debug_tool_dir = &xst_file_get_debug_path () . "/$xst_name/";
+
+  # If this is the first debug created by this tool on this invocation,
+  # rotate the debug directories and create a new, empty one.
+
+  if (!$xst_debug_was_made)
+  {
+    my $i;
+
+    for ($i = 8; $i; $i--)
+    {
+      if (stat ("$debug_tool_dir/$i"))
+      {
+        &xst_run ("mv $debug_tool_dir/$i $debug_tool_dir/" . ($i+1));
+      }
+    }
+    
+    &xst_create_path_for_file ("$debug_tool_dir/1/");
+    $xst_backup_was_made = 1;
   }
 }

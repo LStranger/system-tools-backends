@@ -1,3 +1,7 @@
+2001-03-05  Hans Petter Jansson  <hpj@ximian.com>
+
+	* debug.pl.in: Implement xst_debug_rotate_try().
+
 2001-03-02  Arturo Espinosa  <arturo@ximian.com>
 
 	* network.pl.in: add loopback interface if it doesn't exist
