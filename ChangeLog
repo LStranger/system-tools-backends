@@ -1,3 +1,7 @@
+2001-04-02  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in: Fixed broken report calls.
+
 2001-04-02  Kenneth Christiansen  <kenneth@gnu.org>
 
         * perldoc.pl: A JavaDoc like system for Perl

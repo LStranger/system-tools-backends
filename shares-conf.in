@@ -199,7 +199,7 @@ sub read_network_interfaces_into_hash
       # Also make sure there is a &set configuration method.
       if ($line[3] eq "" || &xst_ignore_line($line[3]))
       {
-        &xst_report ("compat" "Interface $line[1] has no configuration method");
+        &xst_report ("compat", "Interface $line[1] has no configuration method");
         next;
       }
 
@@ -266,7 +266,7 @@ sub read_network_interfaces
   {
     $chosen_name = (keys(%ifaces))[0];
 
-    &xst_report ("compat" "Only one interface, $chosen_name, exists. It is being " .
+    &xst_report ("compat", "Only one interface, $chosen_name, exists. It is being " .
                  "selected as the primary interface");
   }
 
