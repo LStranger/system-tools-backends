@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 #-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-# SysV services configurator. Designed to be architecture- and distribution independent.
+# SysV services configurator. Aims to be designed to be architecture- and distribution independent.
 #
-# Copyright (C) 2000-2001 Ximian, Inc.
+# Copyright (C) 2002 Ximian, Inc.
 #
-# Authors: Arturo Espinosa Aldama <arturo@ximian.com>
+# Authors: Carlos Garnacho Parro <garparr@teleline.es>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -37,7 +37,6 @@ BEGIN {
   require "$SCRIPTSDIR/print.pl$DOTIN";
 }
 
-
 # --- Tool information --- #
 
 $name = "sysv";
@@ -56,22 +55,14 @@ $description =<<"end_of_description;";
        and with what priority. System V init script setup, in short.
 end_of_description;
 
-
 # --- XML parsing --- #
-
-# Scan XML from standard input to an internal tree.
 
 sub xml_parse
 {
   my ($tree, %hash, $elem);
-  
-  # Scan XML to tree.
-
   $tree = &xst_xml_scan ();
 
   # Walk the tree recursively and extract configuration parameters.
-  # This is the top level - find and enter the "networking" tag.
-
   while ($elem = shift @$tree)
   {
     if   ($elem eq "sysv") { &xml_parse_sysv (shift @$tree, \%hash); }
@@ -81,87 +72,105 @@ sub xml_parse
   return (\%hash);
 }
 
-
 sub xml_parse_sysv
 {
   my ($tree, $hash) = @_;
-  my ($elem, $runlevel);
-
-  $runlevel = [];
-  shift @$tree;  # Skip attributes.
-  
-  while ($elem = shift @$tree)
-  {
-      if    ($elem eq "runlevel") { push @$runlevel, &xml_parse_runlevel (shift @$tree); }
-      elsif ($elem eq "services") { $$hash{"services"} = &xml_parse_services (shift @$tree); }
-      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
-  }
-  
-  $$hash{"runlevel"} = $runlevel unless scalar @$runlevel == 0;
-}
-
-
-sub xml_parse_runlevel
-{
-  my ($tree) = @_;
-  my ($elem, $hash, $service);
-
-  $hash = {};
-  $service = [];
-  shift @$tree;  # Skip attributes.
+  my ($services, $elem);
+	
+  shift @$tree; #skip attributes
 
   while ($elem = shift @$tree)
   {
-      if    ($elem eq "level")   { $$hash{"level"} = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "service") { push @$service, &xml_parse_service (shift @$tree); }
-      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    if ($elem eq "runlevel") { $$hash{"runlevel"} = &xst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "services") { push @$services, &xml_parse_services (shift @$tree); }
+	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
-  $$hash{"service"} = $service;
-
-  return $hash;
+  $$hash{"services"} = $services;
 }
-
-
-sub xml_parse_service
-{
-  my ($tree) = @_;
-  my ($elem, $hash);
-
-  $hash = {};
-  shift @$tree;  # Skip attributes.
-
-  while ($elem = shift @$tree)
-  {
-      if    ($elem eq "action")   { $$hash{"action"}   = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "name")     { $$hash{"name"}     = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "priority") { $$hash{"priority"} = &xst_xml_get_pcdata (shift @$tree); }
-      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
-  }
-
-  return $hash;
-}
-
 
 sub xml_parse_services
 {
   my ($tree) = @_;
-  my ($elem, $services);
+  my ($hash, $service, $elem);
 
-  $services = [];
-  shift @$tree;  # Skip attributes.
+  shift @$tree; #skip attributes
 
   while ($elem = shift @$tree)
   {
-      if ($elem eq "service") { push @$services, &xst_xml_get_pcdata (shift @$tree); }
-      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    if ($elem eq "service") { push @$service, &xml_parse_service (shift @$tree); }
+	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
-  return $services;
+  $$hash{"service"} = $service unless scalar @$service == 0;
+  return ($hash);
+}
+
+sub xml_parse_service
+{
+  my ($tree) = @_;
+  my ($hash, $actions, $runlevels, $elem);
+
+  shift @$tree; #skip attributes
+
+  while ($elem = shift @$tree)
+  {
+    if ($elem eq "actions") { push @$actions, &xml_parse_actions (shift @$tree); }
+	elsif ($elem eq "name") { $$hash{"name"} = &xst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "description") { $$hash{"description"} = &xst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "priority") { $$hash{"priority"} = &xst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "runlevels") { push @$runlevels, &xml_parse_runlevels (shift @$tree); }
+	elsif ($elem eq "script") { $$hash{"script"} = &xst_xml_get_pcdata (shift @$tree); }
+	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+  
+  $$hash{"actions"} = $actions unless $actions eq undef;
+  $$hash{"runlevels"} = $runlevels unless $runlevels eq undef;
+  
+  return ($hash);
+}
+
+sub xml_parse_actions
+{
+  my ($tree) = @_;
+  my ($hash, $action, $elem);
+
+  shift @$tree; #skip attributes
+
+  while ($elem = shift @$tree)
+  {
+    if ($elem eq "action") { push @$action, &xst_xml_get_pcdata (shift @$tree); }
+	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+  
+  if (scalar @$action != 0)
+  {
+    $$hash{"action"} = $action;
+    return ($hash);
+  }
+}
+
+sub xml_parse_runlevels
+{
+  my ($tree) = @_;
+  my ($hash, $runlevel, $elem);
+
+  shift @$tree; #skip attributes
+
+  while ($elem = shift @$tree)
+  {
+    if ($elem eq "runlevel") { push @$runlevel, &xst_xml_get_pcdata (shift @$tree); }
+	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+
+  if (scalar @$runlevel != 0)
+  {
+    $$hash{"runlevel"} = $runlevel;
+    return ($hash);
+  }
 }
 
 # --- XML printing --- #
-
 
 sub xml_print
 {
@@ -173,14 +182,15 @@ sub xml_print
   &xst_xml_print_end ();
 }
 
+
 # Main operations
 
 sub get
 {
   my %hash;
 
-  $hash{"runlevel"} = &xst_service_sysv_get_tree ();
-  $hash{"services"} = {"service" => &xst_service_sysv_list_available ()};
+  $hash{"services"} = &xst_service_sysv_get_services ();
+  $hash{"runlevel"} = &xst_service_sysv_get_default_runlevel ();
 
   &xst_report_end ();
   &xml_print (\%hash);
@@ -188,22 +198,23 @@ sub get
 
 sub set
 {
-  my $hash;
-
-  $hash = &xml_parse ();
-#  &xst_sysv_conf_set ($hash);
+  my %hash;
+	
+  $hash = xml_parse ();
   &xst_report_end ();
+	
+	
+  if ($hash)
+  {
+    &xst_service_sysv_set_conf ($hash);
+  }
 }
 
-
 # --- Filter config: XML in, XML out --- #
-
-
 sub filter
 {
-  my $hash;
+  my $hash = &xml_parse ();
 
-  $hash = &xml_parse ();
   &xst_report_end ();
   &xml_print ($hash);
 }
@@ -222,4 +233,3 @@ $directives = {
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);
 &xst_platform_ensure_supported ($tool, @platforms);
 &xst_run ($tool);
-

@@ -1,0 +1,96 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Functions for getting service descriptions.
+#
+# Copyright (C) 2002 Ximian, Inc.
+#
+# Authors: Carlos Garnacho Parro <garparr@teleline.es>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+# This function extracts known names and descriptions from the description hash
+sub xst_service_list_get_info
+{
+	my ($service) = @_;
+	my (%service_description_list);
+	my $desc;
+
+	# This is the hash that describes all the known services
+	%service_description_list = 
+	(
+		# service => [long_name, description]
+		"postgresql"	=>	["PosgreSQL Database Server", ""],
+		"xfs"		=>	["X Font Server", ""],
+		"iptables"	=>	["Iptables firewalling system", ""],
+		"sysklogd"	=>	["sysklogd - Linux system logging utilities", ""],
+		"klogd"		=>	["klogd - Kernel Log Daemon", ""],
+		"urandom"	=>	["urandom - kernel random number source devices", ""],
+		"cupsys"	=>	["CUPS - Common Unix Printing System", ""],
+		"gpm"		=>	["gpm - console mouse server", ""],
+		"inetd"		=>	["Inetd - internet superserver", ""],
+		"ssh"		=>	["ssh - OpenSSH SSH server", ""],
+		"apache"	=>	["Apache web server", ""],
+		"cron"		=>	["cron - daemon to execute scheduled commands", ""],
+		"gdm"		=>	["gdm - GNOME Display Manager", ""]
+	);
+
+	$desc = $service_description_list{$service};
+	return @$desc;	
+}
+
+
+# This function determines if a service is "forbidden" or not (if runlevel-admin must show it or not)
+sub xst_service_list_service_is_forbidden
+{
+	my ($service) = @_;
+	my (%service_forbidden_list);
+	my ($ret);
+	
+	# This is the hash that contains all the "forbidden" services
+	%service_forbidden_list =
+	(
+		# TODO: we ought to separate the services depending on the distro that uses them
+	
+		# These are the forbidden services I found in Red Hat
+		"halt" => 1,
+		"functions" => 1,
+		"killall" => 1,
+	
+		# These are the forbidden services I found in Debian Woody	
+		"single" => 1,
+		"sendsigs" => 1,
+		"reboot" => 1,
+		"rcS" => 1,
+		"modutils" => 1,
+		"hostname.sh" => 1,
+		#"halt" => 1 in debian too
+		"devpts.sh" => 1,
+		"console-screen.sh" => 1,
+		"checkroot" => 1,
+		"checkfs" => 1,
+		"bootmisc.sh" => 1,
+		"checkfs.sh" => 1
+	);
+	
+	$ret = $service_forbidden_list{$service};
+	return $ret;
+}
+	
+
+
+
+1;

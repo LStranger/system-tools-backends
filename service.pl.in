@@ -3,9 +3,9 @@
 
 # Functions for manipulating system services, like daemons and network.
 #
-# Copyright (C) 2000-2001 Ximian, Inc.
+# Copyright (C) 2002 Ximian, Inc.
 #
-# Authors: Hans Petter Jansson <hpj@ximian.com>, Arturo Espinosa <arturo@ximian.com>
+# Authors: Carlos Garnacho Parro <garparr@teleline.es>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -21,7 +21,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-
+$rcd_path;
+$initd_path;
 $SCRIPTSDIR = "___scriptsdir___";
 $FILESDIR = "___filesdir___";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
@@ -35,84 +36,8 @@ use File::Copy;
 
 require "$SCRIPTSDIR/file.pl$DOTIN";
 require "$SCRIPTSDIR/report.pl$DOTIN";
+require "$SCRIPTSDIR/service-list.pl$DOTIN";
 
-# --- Plain process utilities --- #
-
-# Get owner (login) of named process.
-# FIXME: Works only on modern Linux, probably.
-# FIXME: Need a version of this that examines all instances of process name.
-sub xst_service_proc_get_owner
-{
-  my ($service) = @_;
-  my ($pid, $owner);
-  my $res = 0;
-
-  &xst_report_enter ();
-
-  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
-  # FIXME: Portable to other UNIXen?
-  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
-  chomp $pid;
-
-  if ($pid)
-  {
-    $owner = &xst_file_run_backtick ("ps --no-headers -p $pid -o user");
-  }
-  else
-  {
-    $owner = undef;
-  }
-
-  &xst_report_leave ();
-  return $owner;
-}
-
-# FIXME: Need a version of this that stops all instances of process name.
-sub xst_service_proc_stop
-{
-  my ($service) = @_;
-  my ($pid);
-  my $res = 0;
-
-  &xst_report_enter ();
-
-  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
-  # FIXME: Portable to other UNIXen?
-  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
-  chomp $pid;
-
-  if ($pid)
-  {
-    kill "SIGTERM", $pid;
-    $res = 1;
-  }
-
-  &xst_report_leave ();
-  return $res;
-}
-
-# FIXME: Need a version of this that starts all instances of process name.
-sub xst_service_proc_start
-{
-  my ($cmd, $user) = @_;
-  my ($fqsu, $fqcmd);
-
-  $fqcmd = &xst_file_get_cmd_path ($cmd);
-  $fqsu  = &xst_file_get_cmd_path ("su");
-
-  # Can't use xst_file_run_bg here, since it clobbers the quotes.
-  system ("$fqsu -c \"$fqcmd &\" $user >/dev/null 2>/dev/null");
-}
-
-# --- Service/daemon utilities --- #
-
-# Portable SysV rc script and service manipulation.
-# The only subs you should be interested in are
-# xst_service_sysv_restart,
-# xst_service_sysv_get_status and
-# xst_service_sysv_set_status.
-
-# All the other stuff is low-level action.
 
 # Where is the SysV subsystem installed?
 sub xst_service_sysv_get_paths
@@ -145,380 +70,232 @@ sub xst_service_sysv_get_paths
   return @$res;
 }
 
-# Those runlevels that are usually used. Maybe we should add
-# the current running runlevel, using the "runlevel" command.
-sub xst_service_sysv_get_runlevels
+# THESE ARE THE FUNCTIONS WHICH EXTRACT THE CONFIGURATION FROM THE COMPUTER
+
+# we are going to extract the name of the script
+sub xst_service_sysv_get_service_name
 {
-  my %dist_map =
-      (
-       "redhat-5.2"     => [3, 5],
-       "redhat-6.0"     => [3, 5],
-       "redhat-6.1"     => [3, 5],
-       "redhat-6.2"     => [3, 5],
-       "redhat-7.0"     => [3, 5],
-       "redhat-7.1"     => [3, 5],
-       "redhat-7.2"     => [3, 5],
-
-       "mandrake-7.1"   => [3, 5],
-       "mandrake-7.2"   => [3, 5],
-
-			 "debian-2.2"     => [2, 3],
-			 "debian-woody"   => [2, 3],
-
-       "suse-7.0"       => [3, 5],
-
-       "turbolinux-7.0" => [3, 5]
-       );
-  my $res;
-
-  $res = $dist_map{$xst_dist};
-  &xst_report ("service_sysv_unsupported", $xst_dist) if ($res eq undef);
-  return @$res;
-}
-
-
-sub xst_service_sysv_installed
-{
-  my ($service) = @_;
-  my ($res, $rcd_path, $initd_path);
-
-  &xst_report_enter ();
+	my ($service) = @_;
+	
+	$service =~ s/$initd_path\///;
   
-  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
-
-  $res = 1;
-  if (! -f "$initd_path/$service")
-  {
-    $res = 0;
-    &xst_report ("service_sysv_not_found", $service);
-  }
-
-  &xst_report_leave ();
-  return $res;
+	return $service;
 }
 
-
-sub xst_service_sysv_list_dir
+# This function gets the state of the service along the runlevels,
+# it also returns the average priority
+sub xst_service_sysv_get_runlevels_status
 {
-    my ($path) = @_;
-    my ($service, @services);
-
-    foreach $service (<$path/*>)
-    {
-        if (-x $service)
-        {
-            $service =~ s/.*\///;
-            push @services, $service;
-        }
-    }
-
-    return \@services;
+	my ($service) = @_;
+	my ($link);
+	my ($runlevel, $action, $priority);
+	my (@arr, @ret);
+	my ($sum, $count);
+	
+	$sum = $count = 0;
+	
+	foreach $link (<$rcd_path/rc[0-6].d/[SK][0-9][0-9]$service>)
+	{
+		$link =~ s/$rcd_path\///;
+		$link =~ /rc([0-6])\.d\/([SK])([0-9][0-9]).*/;
+		($runlevel,$action,$priority)=($1,$2,$3);
+		if ($action eq "S")
+		{
+			push @arr, $runlevel;
+			$sum += $priority;
+		}
+		else
+		{
+			$sum += (100 -$priority);
+		}
+		$count++;
+	}
+	
+	return (undef,99) if (scalar(@arr) eq 0);
+	push @ret, { "runlevel" => \@arr };
+	return (\@ret, int ($sum / $count));
 }
-
-
-sub xst_service_sysv_list_available
+		
+	
+# This function returns all the available actions for each service
+sub xst_service_sysv_get_service_actions
 {
-    my ($rcd_path, $initd_path);
-    
-    ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+	my ($service) = @_;
+	my (@arr,@actions);
+	my ($size,$output);
+	my (@ret);
+	
+	$output = `$service 2>/dev/null`;
+	
+	# if the output doesn't have the 'usage' word in it, then isn't a valid output
+	return undef unless ($output =~ /usage/i);
+	
+	@arr = split / /, $output;
+	$size = scalar (@arr);
+	
+	# if the array has 0 rows, the service has no actions
+	return undef if ($size eq 0);
+	
+	$arr[$size-1] =~ s/[\{\}]//g;
 
-    return &xst_service_sysv_list_dir ($initd_path);
+	@actions = split /\|/, $arr[size-1];
+	
+	push @ret, { "action" => \@actions };
+	
+	return \@ret;
 }
 
 
-sub xst_service_sysv_get_level_info
+# We are going to extract the information of the service
+sub xst_service_sysv_get_service_info
 {
-    my ($path, $level) = @_;
-    my (%hash, @arr, $list, $entry);
-    my ($action, $priority, $service);
+	my ($service) = @_;
+	my ($script, $name, $description, @actions, @runlevels);
+	my %hash;
+	
+	# We have to check out if the service is executable	
+	return undef unless (-x $service);
 
-    $hash{"level"}   = $level;
-    $hash{"service"} = \@arr;
+	$script = &xst_service_sysv_get_service_name ($service);
+		
+	# We have to check out if the service is in the "forbidden" list
+	return undef if (&xst_service_list_service_is_forbidden ($script));
 
-    $list = &xst_service_sysv_list_dir ($path);
+	($name, $description) = &xst_service_list_get_info ($script);
+	($runlevels, $priority) = &xst_service_sysv_get_runlevels_status($script);
+	$actions = &xst_service_sysv_get_service_actions ($service);
 
-    foreach $entry (@$list)
-    {
-        $entry =~ /([SK])([0-9]+)(.*)/;
-        ($action, $priority, $service) = ($1, $2, $3);
-        push @arr, {"action"   => ($action eq "S")? "start": "kill",
-                    "priority" => $priority,
-                    "name"     => $service};
-    }
+	$hash{"script"} = $script;
+	$hash{"name"} = $name unless ($name eq undef);
+	$hash{"description"} = $description unless ($description eq undef);
+	$hash{"actions"} = $actions unless ($actions eq undef);
+	$hash{"runlevels"} = $runlevels unless ($runlevels eq undef);
+	$hash{"priority"} = $priority;
 
-    return \%hash;
+	return \%hash;
 }
 
 
-sub xst_service_sysv_get_tree
+# This function gets an ordered array of the available services
+sub xst_service_sysv_get_services
 {
-    my ($rcd_path, $initd_path);
-    my ($dir, $level, @arr);
-    
-    ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+	my ($service);
+	my (@arr,@ret);
+	
+	($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
 
-    foreach $dir (<$rcd_path/rc*.d>)
-    {
-        $level = $dir;
-        $level =~ s/.*\/rc(.*)\.d/$1/;
-        push @arr,  &xst_service_sysv_get_level_info ($dir, $level);
-    }
-
-    return \@arr;
+	foreach $service (<$initd_path/*>)
+	{
+		my (%hash);
+		$hash = &xst_service_sysv_get_service_info ($service);
+		if ($hash ne undef)
+		{
+			my ($i,$sc);
+			my (@aux);
+			push @aux, $hash;
+			$i = 0;
+			$sc = scalar (@arr);
+			while (($i < $sc) and ($arr[$i]{"priority"} <= $$hash{"priority"}))
+			{
+				$i++;
+			}
+			splice (@arr, $i, 0, @aux);
+		}
+	}
+	
+	push @ret, { "service" => \@arr };
+	return \@ret;
 }
 
 
-# Return 1 or 0: is the service running?
-# Depends on the rc script to support the "status" arg.
-# Maybe we should do something more portable.
-sub xst_service_sysv_get_status
+# This function gets the runlevel that is in use
+sub xst_service_sysv_get_default_runlevel
 {
-  my ($service) = @_;
-  my ($rc_path, $initd_path, $res);
-  my ($pid);
-
-  &xst_report_enter ();
-
-  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
-  # FIXME: portable to other UNIXES?
-  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
-  chomp $pid;
-
-  if ($pid)
-  {
-    $res = 1;
-    &xst_report ("service_status_running", $service);
-  }
-  else
-  {
-    $res = 0;
-    &xst_report ("service_status_stopped", $service);
-  }
-    
-#  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
-#  $res = 0;
-#  
-#  if (-f "$initd_path/$service")
-#  {
-#    $res = &xst_file_run ("$initd_path/$service status")? 0 : 1;
-#    &xst_report ("service_status_running", $service) if $res;
-#    &xst_report ("service_status_stopped", $service) if !$res;
-#  }
-
-  &xst_report_leave ();
-  return $res;
+	my (@arr);
+	
+	@arr = split / /, `/sbin/runlevel` ;
+	$arr[1] =~ s/\n//;
+	
+	return $arr[1];
 }
 
-# If any of the passed services is running, return true.
-sub xst_service_sysv_get_status_any
-{
-  my (@services) = @_;
-  my $i;
 
-  foreach $i (@services)
-  {
-    return 1 if &xst_service_sysv_get_status ($i);
-  }
+# THESE ARE THE FUNCTIONS WHICH APPLY THE CHANGES MADE TO THE CONFIGURATION OF THE COMPUTER
 
-  return 0;
-}
-
-# Setup a link, at the designated runlevel, for the defined
-# service. $pre is something like "S01" or "K99".
 sub xst_service_sysv_add_link
 {
-  my ($runlevel, $pre, $service) = @_;
-  my ($rcd_path, $initd_path);
+  my ($runlevel, $action, $priority, $service) = @_;
+  my ($prio) = sprintf ("%0.2d",$priority);
 
-  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
-
-  symlink ("$initd_path/$service", "$rcd_path/rc$runlevel.d/$pre$service");
+  symlink ("$initd_path/$service", "$rcd_path/rc$runlevel.d/$action$prio$service");
   
   &xst_report_enter ();
-  &xst_report ("service_sysv_add_link", "$rcd_path/rc$runlevel.d/$pre$service");
+  &xst_report ("service_sysv_add_link", "$rcd_path/rc$runlevel.d/$action$prio$service");
   &xst_report_leave ();
 }
 
-# Remove any links matching re at the given runlevel.
 sub xst_service_sysv_remove_link
 {
-  my ($runlevel, $re) = @_;
-  local *RC_DIR;
-  my $link;
-  my $dir;
-  my ($rcd_path, $initd_path);
-
-  &xst_report_enter ();
-
-  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
-  $dir = "$xst_prefix/$rcd_path/rc$runlevel.d";
-  
-  if (!(opendir RC_DIR, $dir))
+  my ($runlevel, $script) = @_;
+	
+  foreach $link (<$rcd_path/rc$runlevel.d/[SK][0-9][0-9]$script>)
   {
-    &xst_report ("service_sysv_no_runlevel", $runlevel, $dir);
+    &xst_report ("service_sysv_remove_link", "$link");
+    unlink ("$link");
     &xst_report_leave ();
-    return;
-  }
-
-  foreach $link (readdir (RC_DIR))
-  {
-    if ($link =~ /$re/)
-    {
-      &xst_report ("service_sysv_remove_link", "$dir/$link");
-      unlink ("$dir/$link");
-    }
-  }
-
-  closedir (RC_DIR);
-  &xst_report_leave ();
-}
-
-# Set start links and remove stop links at the usual runlevels.
-# Old start link is removed, in case the priority is different from $pri.
-sub xst_service_sysv_set_links_active
-{
-  my ($pri, $service) = @_;
-
-  foreach $runlevel (&xst_service_sysv_get_runlevels ())
-  {
-    &xst_service_sysv_remove_link ($runlevel, "^K[0-9]+$service\$");
-    &xst_service_sysv_remove_link ($runlevel, "^S[0-9]+$service\$");
-    &xst_service_sysv_add_link ($runlevel, "S" . sprintf ("%02d", $pri), $service);
   }
 }
 
-# Set stop links and remove start links at the usual runlevels.
-sub xst_service_sysv_set_links_inactive
+sub xst_service_sysv_set_service
 {
-  my ($pri, $service) = @_;
-
-  foreach $runlevel (&xst_service_sysv_get_runlevels ())
-  {
-    &xst_service_sysv_remove_link ($runlevel, "^S[0-9]+$service\$");
-    &xst_service_sysv_add_link ($runlevel, "K" . sprintf ("%02d", $pri), $service);
-  }
-}
-
-# Set links for active/inactive service at the given priority.
-sub xst_service_sysv_set_links
-{
-  my ($pri, $service, $active) = @_;
-
-  if ($active)
-  {
-    &xst_service_sysv_set_links_active ($pri, $service);
-  }
-  else
-  {
-    &xst_service_sysv_set_links_inactive (100 - $pri, $service);
-  }
-}
-
-# Run the init.d script for the corresponding service, with
-# arg, which can be "stop", "start" or "restart".
-sub xst_service_sysv_run_initd_script
-{
-  my ($service, $arg) = @_;
-  my ($rc_path, $initd_path);
-  my $str;
-  my %map =
-      ("restart" => "restarted",
-       "stop" => "stopped",
-       "start" => "started");
-
-  &xst_report_enter ();
-  
-  if (!exists $map{$arg})
-  {
-    &xst_report ("service_sysv_op_unk", $arg);
-    &xst_report_leave ();
-    return -1;
-  }
-
-  $str = $map{$arg};
+  my ($service) = @_;
+  my ($script, $priority, $runlevels);
+  my ($found);
 
   ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
 
-  if (-f "$initd_path/$service")
-  {
-    if (!&xst_file_run ("$initd_path/$service $arg"))
-    {
-      &xst_report ("service_sysv_op_success", $service, $str);
-      &xst_report_leave ();
-      return 0;
-    }
+  $script = $$service{"script"};
+  $priority = $$service{"priority"};
+  $runlevels = $$service{"runlevels"}[0]{"runlevel"};
+
+  # pass though all the runlevels checking if the service must be started or stopped  
+  for ($i = 0; $i<=6; $i++){
+    $found = 0;
+    foreach $j (@$runlevels)
+	{
+		$found = 1 if $i == $j;
+	}
+	&xst_service_sysv_remove_link ($i, $script);
+	if ($found ==1)
+	{
+	  &xst_service_sysv_add_link($i, "S", $priority, $script);
+	}
+	else
+	{
+	  &xst_service_sysv_add_link($i, "K", 100 - $priority, $script);
+	}
   }
+}
+
+sub xst_service_sysv_set_services
+{
+	my ($services) = @_;
+	
+	foreach $i (@$services)
+	{
+		&xst_service_sysv_set_service($i);
+	}
+}
+
+sub xst_service_sysv_set_conf
+{
+  my ($hash) = @_;
+  my ($services);
   
-  &xst_report ("service_sysv_op_failed", $service, $str);
-  &xst_report_leave ();
-  return -1;
-}
-
-sub xst_service_sysv_restart
-{
-  my ($pri, $service) = @_;
-
-  &xst_service_sysv_set_links ($pri, $service, 1);
-  &xst_service_sysv_run_initd_script ($service, "restart");
-}
-
-# Start or stop the service, depending on $active. Set
-# links accordingly.  $force makes this function use
-# start/stop only, without considerations for restart.
-# Not to be called from parse/replace tables, due to last $force
-# param: use the following two functions instead.
-sub xst_service_sysv_set_status_do
-{
-  my ($priority, $service, $active, $force) = @_;
-  my ($arg, $status);
-
-  &xst_service_sysv_set_links ($priority, $service, $active);
+  return unless $hash;
+  $services = $$hash{"services"}[0]{"service"};
+  return unless $services;
   
-  $status = &xst_service_sysv_get_status ($service);
-  if ($status && !$force)
-  {
-    # if it's already active and you want it active, restart.
-    $arg = $active? "restart" : "stop";
-  }
-  else
-  {
-    # normal operation.
-    $arg = $active? "start" : "stop";
-  }
-
-  return &xst_service_sysv_run_initd_script ($service, $arg);
+  &xst_service_sysv_set_services($services);
 }
 
-sub xst_service_sysv_set_status
-{
-  my ($priority, $service, $active) = @_;
-
-  return &xst_service_sysv_set_status_do ($priority, $service, $active, 0);
-}
-
-sub xst_service_sysv_force_status
-{
-  my ($priority, $service, $active) = @_;
-
-  return &xst_service_sysv_set_status_do ($priority, $service, $active, 1);
-}
-
-sub xst_service_sysv_install_script
-{
-  my ($service, $file) = @_;
-  my ($res, $rcd_path, $initd_path);
-
-  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
-
-  if (!copy ("$FILESDIR/$file", "$initd_path/$service"))
-  {
-      &xst_report ("file_copy_failed", "$FILESDIR/$file", "$initd_path/$service");
-      return -1;
-  }
-
-  chmod (0755, "$initd_path/$service");
-
-  return 0;
-}
-
-1;
