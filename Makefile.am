@@ -7,7 +7,7 @@ shares-conf \
 time-conf \
 users-conf
 
-scripts_SCRIPTS = $(backends) be.pl
+scripts_SCRIPTS = $(backends) be.pl guess_system.sh
 
 EXTRA_DIST = \
 be.pl \
