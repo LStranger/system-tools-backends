@@ -159,7 +159,7 @@ sub xml_parse_runlevels
 
   while ($elem = shift @$tree)
   {
-    if ($elem eq "runlevel") { push @$runlevel, &xst_xml_get_pcdata (shift @$tree); }
+    if ($elem eq "runlevel") { push @$runlevel, &xml_parse_single_runlevel (shift @$tree); }
 	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
@@ -168,6 +168,25 @@ sub xml_parse_runlevels
     $$hash{"runlevel"} = $runlevel;
     return ($hash);
   }
+}
+
+sub xml_parse_single_runlevel
+{
+  my ($tree) = @_;
+  my ($number, $action);
+  my ($elem);
+  
+  shift @$tree; #skip attributes
+  
+  while ($elem = shift @$tree)
+  {
+    if ($elem eq "number") { $number = &xst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "action") { $action = &xst_xml_get_pcdata (shift @$tree); }
+	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+  
+  return { "number" => $number,
+           "action" => $action };
 }
 
 # --- XML printing --- #
