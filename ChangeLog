@@ -1,4 +1,10 @@
+2004-08-17  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* users-conf.in (change_user_chfn): compared old and new data before
+	changing it. Fixed #150248
+
 2004-08-07  Runa Bhattacharjee <runab@redhat.com>
+
 	* configure.in: Added Bengali(bn) in ALL_LINGUAS.
 
 2004-08-07  Carlos Garnacho Parro  <carlosg@gnome.org>

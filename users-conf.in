@@ -801,22 +801,27 @@ sub del_user
 
 sub change_user_chfn
 {
-  my ($comment, $username) = @_;
+  my ($old_comment, $comment, $username) = @_;
   my ($fname, $office, $office_phone, $home_phone);
-  my ($command, @line);
+  my ($command, @line, @old_line);
 
   return if !$username;
-  
+
+  @line     = split /\,/, $comment;
+  @old_line = split /\,/, $old_comment;
+
+  # Compare old and new data
+  return if (!&arr_cmp_recurse (\@line, \@old_line));
+
   if ($gst_dist =~ /^freebsd/)
   {
     $command = "$cmd_pw usermod -n " . $username . " -c \'" . $comment . "\'";
   }
   else
   {
-    @line = split /\,/, $comment;
     ($fname, $office, $office_phone, $home_phone) = @line;
 
-    $fname = "-f \'" . $fname . "\'";  
+    $fname = "-f \'" . $fname . "\'";
     $home_phone = "-h \'" . $home_phone . "\'";
 
     if ($gst_dist =~ /^debian/)
@@ -832,6 +837,7 @@ sub change_user_chfn
   
     $command = "$cmd_chfn $fname $office $office_phone $home_phone $username";
   }
+
   &gst_file_run ($command);
 }
 
@@ -879,7 +885,7 @@ sub add_user
     &gst_file_run ($command);
   }
 
-  &change_user_chfn ($$data[$users_prop_map{"comment"}], $$data[$users_prop_map{"login"}]);
+  &change_user_chfn (undef, $$data[$users_prop_map{"comment"}], $$data[$users_prop_map{"login"}]);
 }
 
 sub change_user
@@ -914,7 +920,9 @@ sub change_user
     &gst_file_run ($command);
   }
 
-  &change_user_chfn ($$new_data[$users_prop_map{"comment"}], $$new_data[$users_prop_map{"login"}]);
+  &change_user_chfn ($$old_data[$users_prop_map{"comment"}],
+                     $$new_data[$users_prop_map{"comment"}],
+                     $$new_data[$users_prop_map{"login"}]);
 }
 
 sub del_group
