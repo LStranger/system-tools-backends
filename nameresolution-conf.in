@@ -1177,7 +1177,7 @@ sub set
   write_smb_conf (); be_progress(10);
   write_rc_config (); be_progress(20);
   write_sysconfig_network (); be_progress(30);
-  write_defaultdomain (); be_progress(40);
+#  write_defaultdomain (); be_progress(40);
   write_hostname (); be_progress(50);
   write_resolv_conf (); be_progress(60);
   write_hosts (); be_progress(70);
