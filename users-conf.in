@@ -218,6 +218,9 @@ sub read_passwd
 	$passwd_last_modified = (stat (FILE))[9]; # get the mtime.
 
   # Parse the file.
+	
+	@users = ();
+	%users_hash = ();
 
   while (<FILE>)
   {
@@ -245,6 +248,9 @@ sub read_group
 	$gruop_last_modified = (stat (FILE))[9]; # get the mtime.
 
   # Parse the file.
+	
+	@groups = ();
+	%groups_hash = ();
 
   while (<FILE>)
   {
@@ -259,18 +265,21 @@ sub read_group
 	close (FILE);
 }
 
-sub write_passwd
+sub write_group_passwd
 {
   my ($i, $j, $k);
-	my %all;
+	my (%users_all, %parse_users_hash, @parse_users, $parse_passwd_last_modified);
+	my (%groups_all, %parse_groups_hash, @parse_groups, $parse_group_last_modified);
 	
-  %parse_hash = %users_hash;
+  %parse_users_hash = %users_hash;
 	@parse_users = @users;
 	$parse_passwd_last_modified = $passwd_last_modified;
-	
-	@users = ();
-	%users_hash = ();
 	&read_passwd;
+	
+  %parse_groups_hash = %groups_hash;
+	@parse_groups = @groups;
+	$parse_group_last_modified = $group_last_modified;
+	&read_group;
 	
 	if ($passwd_last_modified > $parse_passwd_last_modified) 
 	{
@@ -278,21 +287,60 @@ sub write_passwd
 		return;
 	}
 
-  foreach $i (keys (%users_hash)) 
+	if ($group_last_modified > $parse_group_last_modified) 
 	{
-		$all{$i} |= 1;
-	}	
-	
-	foreach $i (keys (%parse_hash)) 
-	{
-	  $all{$i} |= 2;
+	  print STDERR "Password file may be inconsistent! No changes made.\n";
+		return;
 	}
 	
-	foreach $i (sort (keys (%all))) 
+  foreach $i (keys (%users_hash)) 
 	{
-	  &del_user ($users_hash{$i}) if ($all{$i} == 1);
-		&add_user ($parse_hash{$i}) if ($all{$i} == 2);
-		&change_user ($users_hash{$i}, $parse_hash{$i}) if ($all{$i} == 3);
+		$users_all{$i} |= 1;
+	}	
+	
+	foreach $i (keys (%parse_users_hash))
+	{
+	  $users_all{$i} |= 2;
+	}
+	
+  foreach $i (keys (%groups_hash)) 
+	{
+		$groups_all{$i} |= 1;
+	}	
+	
+	foreach $i (keys (%parse_groups_hash))
+	{
+	  $groups_all{$i} |= 2;
+	}
+	
+	foreach $i (sort (keys (%users_all)))
+	{
+	  &del_user ($users_hash{$i}) if ($users_all{$i} == 1);
+	}
+	
+	foreach $i (sort (keys (%groups_all)))
+	{
+	  &del_group ($groups_hash{$i}) if ($groups_all{$i} == 1);
+	}
+	
+	foreach $i (sort (keys (%groups_all)))
+	{
+	  &add_group ($parse_groups_hash{$i}) if ($groups_all{$i} == 2);
+	}
+	
+	foreach $i (sort (keys (%users_all)))
+	{
+	  &add_user ($parse_users_hash{$i}) if ($users_all{$i} == 2);
+	}
+	
+	foreach $i (sort (keys (%groups_all)))
+	{
+		&change_group ($groups_hash{$i}, $parse_groups_hash{$i}) if ($groups_all{$i} == 3);
+	}
+	
+	foreach $i (sort (keys (%users_all)))
+	{
+		&change_user ($users_hash{$i}, $parse_users_hash{$i}) if ($users_all{$i} == 3);
 	}
 }
 
@@ -300,6 +348,7 @@ sub del_user
 {
 	my $data = $_[0];
 	
+	print "del user @$data[1]\n";
 	1;
 }
 
@@ -323,6 +372,7 @@ sub add_user
 	  "\" -u \"" . @$data[$users_prop_map{"uid"}] .
 	  "\" " . @$data[$users_prop_map{"login"}];
 		
+	print "add user @$data[1]\n";
 	1;
 }
 
@@ -331,49 +381,15 @@ sub change_user
 	my $old_data = $_[0];
 	my $new_data = $_[1];
 	
+	print "change user @$old_data[1]\n";
 	1;
-}
-
-sub write_group
-{
-  my ($i, $j, $k);
-	my %all;
-	
-  %parse_hash = %groups_hash;
-	@parse_groups = @groups;
-	$parse_group_last_modified = $group_last_modified;
-	
-	@groups = ();
-	%groups_hash = ();
-	&read_group;
-	
-	if ($group_last_modified > $parse_group_last_modified) 
-	{
-	  print STDERR "Password file may be inconsistent! No changes made.\n";
-		return;
-	}
-
-  foreach $i (keys (%groups_hash)) 
-	{
-		$all{$i} |= 1;
-	}	
-	
-	foreach $i (keys (%parse_hash)) 
-	{
-	  $all{$i} |= 2;
-	}
-	
-	foreach $i (sort (keys (%all))) 
-	{
-	  &del_group ($groups_hash{$i}) if ($all{$i} == 1);
-		&add_group ($parse_hash{$i}) if ($all{$i} == 2);
-		&change_group ($groups_hash{$i}, $parse_hash{$i}) if ($all{$i} == 3);
-	}
 }
 
 sub del_group
 {
 	my $data = $_[0];
+	
+	print "del group @$data[1]\n";
 	
 	1;
 }
@@ -383,6 +399,7 @@ sub add_group
 	my $data = $_[0];
 	my $groupadd;
 	
+	print "add group @$data[1]\n";
 	$groupadd = be_locate_tool ("groupadd");
 	if ($groupadd eq "")
 	{
@@ -401,6 +418,7 @@ sub change_group
 	my $old_data = $_[0];
 	my $new_data = $_[1];
 	
+	print "change group @$old_data[1]\n";
 	1;
 }
 
@@ -695,7 +713,7 @@ sub set
   if ($be_do_immediate)
   {
     if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
-		&write_passwd ();
+		&write_group_passwd ();
   }
 }
 
