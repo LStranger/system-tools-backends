@@ -1,3 +1,8 @@
+2004-04-09  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* service-list.pl.in: added some more descriptions and forbidden 
+	  services to the list
+
 2004-04-08  Adam Weinberger  <adamw@gnome.org>
 
 	* configure.in: Added en_CA to ALL_LINGUAS.
