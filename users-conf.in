@@ -317,7 +317,6 @@ my $rh_logindefs_defaults = {
   'shell'       => '/bin/bash',
   'group'       => '$user',
   'skel_dir'    => '/etc/skel/',
-  'groups'      => ['dialout','cdrom','floppy','audio','video','plugdev','scanner'],
 };
 
 my $gentoo_logindefs_defaults = {
@@ -450,6 +449,39 @@ sub read
   &read_shells        (\%hash);
 
   return \%hash;
+}
+
+sub check_use_md5
+{
+  my ($file) = @_;
+  my ($fh, @line, $i, $use_md5);
+
+  my $fh = &gst_file_open_read_from_names ("/etc/pam.d/$file");
+  return 0 if (!$fh);
+
+  $use_md5 = 0;
+
+  while (<$fh>)
+  {
+    next if &gst_ignore_line ($_);
+    chomp;
+    @line = split /[ \t]+/;
+
+    if ($line[0] eq "\@include")
+    {
+      $use_md5 = &check_use_md5 ($line[1]);
+    }
+    elsif ($line[0] eq "password")
+    {
+      foreach $i (@line)
+      {
+        $use_md5 = 1 if ($i eq "md5");
+      }
+    }
+  }
+
+  close $fh;
+  return $use_md5;
 }
 
 sub logindefs_add_defaults
@@ -626,6 +658,7 @@ sub read_passwd_shadow
   $$hash{"users"}      = \@users;
   $$hash{"users_hash"} = \%users_hash;
   $$hash{"passwd_last_modified"} = $passwd_last_modified;
+  $$hash{"use_md5"} = &check_use_md5 ("passwd");
 
   if (scalar @users)
   {
@@ -1455,6 +1488,8 @@ sub xml_print
   $groups = $$hash{"groups"};
 
   &gst_xml_print_begin ();
+
+  &gst_xml_print_pcdata ("use_md5", $$hash{"use_md5"});
 
   &gst_xml_print_vspace ();
   &gst_xml_print_comment ('Profiles configuration starts here');
