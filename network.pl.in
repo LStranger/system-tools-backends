@@ -914,6 +914,7 @@ sub xst_network_get_parse_table
 		    [ "description",   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
 		    [ "winsserver",    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
 		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+        [ "smbuse",        \&xst_service_sysv_get_status, "smb" ],
 		    [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&xst_network_interfaces_get ]
 		    ]
@@ -946,6 +947,7 @@ sub xst_network_get_parse_table
            [ "description",   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
            [ "winsserver",    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+           [ "smbuse",        \&xst_service_sysv_get_status, "smb" ],
            [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
            [ "interface",     \&xst_network_interfaces_get ]
            ]
@@ -1115,6 +1117,7 @@ sub xst_network_get_replace_table
            [ "description",   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
            [ "winsserver",    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
+           [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
            [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
@@ -1148,6 +1151,7 @@ sub xst_network_get_replace_table
            [ "description",   \&xst_replace_ini,              SMB_CONF,    "global", "server string" ],
            [ "winsserver",    \&xst_replace_ini,              SMB_CONF,    "global", "wins server" ],
            [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
+           [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
            [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]

@@ -1,5 +1,10 @@
 2001-03-28  Arturo Espinosa  <arturo@ximian.com>
 
+	* network.pl.in: smbuse, a feature that reports if
+	  the samba daemon is running.
+	
+2001-03-28  Arturo Espinosa  <arturo@ximian.com>
+
 	* report.pl.in: New report code, which dumps the use
 	  of mayor and minor numbers and uses keys instead. A
 	  hash, mapping keys to messages is at the end of this
