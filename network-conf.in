@@ -442,14 +442,27 @@ sub list_ifaces
 sub detect_modem
 {
   my ($tool) = @_;
-  my (%hash);
+  my ($device);
 
-  $$hash {"device"} = &gst_network_autodetect_modem ();
+  $device = &gst_network_autodetect_modem ();
   &gst_report_end ();
   
-  &gst_xml_print_begin ("network-modem-device");
-  &gst_xml_print_hash ($hash);
-  &gst_xml_print_end ("network-modem-device");
+  &gst_xml_print_begin  ("network-modem-device");
+  &gst_xml_print_pcdata ("device", $device) if ($device ne undef);
+  &gst_xml_print_end    ("network-modem-device");
+}
+
+sub get_interface_name
+{
+  my ($tool, $keyword) = @_;
+  my ($name);
+
+  $name = &gst_network_get_interface_name ($keyword);
+  &gst_report_end ();
+
+  &gst_xml_print_begin  ("network-get-interface-name");
+  &gst_xml_print_pcdata ("name", $name) if ($name ne undef);
+  &gst_xml_print_end    ("network-get-interface-name");
 }
 
 
@@ -459,15 +472,18 @@ sub detect_modem
 # Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
-  "get"          => [ \&get,          [], "" ],
-  "set"          => [ \&set,          [], "" ],
-  "filter"       => [ \&filter,       [], "" ],
-  "list_ifaces"  => [ \&list_ifaces,  [],
+  "get"                => [ \&get,          [], "" ],
+  "set"                => [ \&set,          [], "" ],
+  "filter"             => [ \&filter,       [], "" ],
+  "list_ifaces"        => [ \&list_ifaces,  [],
                       "List interfaces and active/inactive status." ],
-  "enable_iface" => [ \&enable_iface, [ "interface", "enabled" ],
-                      "Immediatly enable or disable a given interface. " .
-                      "interface is the file tag value, enabled is 1 or 0." ],
-  "detect_modem" => [ \&detect_modem, [], "Detects the modem device." ]
+  "enable_iface"       => [ \&enable_iface, [ "interface", "enabled" ],
+                            "Immediatly enable or disable a given interface. " .
+                            "interface is the file tag value, enabled is 1 or 0." ],
+  "detect_modem"       => [ \&detect_modem, [], "Detects the modem device." ],
+  "get_interface_name" => [ \&get_interface_name, ["interface name" ],
+                            "get the system dependent device name from a keyword. " .
+                            "it accepts [Modem|Ethernet|Parallel|Infrared]." ]
 };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);

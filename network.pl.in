@@ -85,6 +85,36 @@ sub gst_network_autodetect_modem
   }
 }
 
+# Returns a system dependent interface name from a given keyword
+sub gst_network_get_interface_name
+{
+  my ($keyword) = @_;
+  my ($plat)    = $$tool {"system"};
+  my ($ifaces);
+
+  if ($plat eq "Linux")
+  {
+    $ifaces = {
+      "Modem"    => "ppp",
+      "Ethernet" => "eth",
+      "Parallel" => "plip",
+      "Infrared" => "irlan"
+    };
+  }
+  elsif ($plat eq "FreeBSD")
+  {
+    $ifaces = {
+      "Modem"    => "tun",
+      "Ethernet" => "dc",
+      "Parallel" => "lp"
+      # FIXME: missing infrared
+    };
+  }
+
+  return undef if ($ifaces eq undef);
+  return $$ifaces {$keyword};
+}
+
 # Parse <interface>...</interface>. Put here so it can be shared with internetsharing.
 sub gst_network_xml_parse_interface
 {

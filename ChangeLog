@@ -1,3 +1,12 @@
+2004-04-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network-conf.in (detect_modem): improved code a bit. Added the
+	  get_interface_name directive, to get the system dependent interface
+	  names (eth, ppp, dc, wi...) for each interface from a given keyword.
+	  Yes, I know it sucks, but right now it must be done by the backend,
+	  as it can be run in a different machine/platform than the frontend
+	* network.pl.in: ditto
+
 2004-04-22  Carlos García Campos <elkalmail@yahoo.es>
 
 	* disks-conf.in: added bit present to all devices to represent a
