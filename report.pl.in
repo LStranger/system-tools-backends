@@ -285,8 +285,8 @@ sub xst_report
 
      "filesys_mount"            => ["info",  _("Mounting [%s] on [%s].")],
      "filesys_mount_failed"     => ["warn",  _("Failed to mount [%s] on [%s].")],
-     "filesys_unmount"          => ["info",  _("Unmounting [%s].")],
-     "filesys_unmount_failed"   => ["warn",  _("Failed to unmount [%s].")],
+     "filesys_unmount"          => ["info",  _("Unmounting [%s] from [%s].")],
+     "filesys_unmount_failed"   => ["warn",  _("Failed to unmount [%s] from [%s].")],
 
      "boot_lilo_failed"         => ["warn",  _("Failed to run lilo.")],
      "boot_lilo_success"        => ["info",  _("Succesfully executed lilo.")],

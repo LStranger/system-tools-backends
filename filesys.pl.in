@@ -1060,12 +1060,13 @@ sub xst_filesys_mount_on
 sub xst_filesys_mount_off
 {
   my ($info) = @_;
-  my ($point);
+  my ($dev, $point);
 
+  $dev   = &xst_filesys_info_print_device ($info);
   $point = &xst_filesys_info_get_point ($info);
 
   &xst_report_enter ();
-  &xst_report ("filesys_unmount", $point);
+  &xst_report ("filesys_unmount", $dev, $point);
 
   if (&xst_file_run ("umount -f " . $point))
   {
