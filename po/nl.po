@@ -8,13 +8,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-04-23 04:20+0200\n"
+"POT-Creation-Date: 2004-05-03 15:25+0200\n"
 "PO-Revision-Date: 2004-04-24 14:52+0200\n"
 "Last-Translator: Elros Cyriatan <cyriatan@fastmail.fm>\n"
 "Language-Team: Dutch <vertaling@nl.linux.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -106,7 +106,8 @@ msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
 msgstr ""
-"Loopt op de achtergrond en kopieert alle tekst die naar het /dev/console apparaat wordt gestuurd naar een logbestand"
+"Loopt op de achtergrond en kopieert alle tekst die naar het /dev/console "
+"apparaat wordt gestuurd naar een logbestand"
 
 #: service-list.pl.in:45
 msgid ""
@@ -140,7 +141,9 @@ msgid ""
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
 msgstr ""
-"cpufreqd wordt gebruikt om de status van de batterij bij te houden en de frequentie van de processor daaraan aan te passen, met de bedoeling batterijvermogen te besparen en optimale snelheid te geven"
+"cpufreqd wordt gebruikt om de status van de batterij bij te houden en de "
+"frequentie van de processor daaraan aan te passen, met de bedoeling "
+"batterijvermogen te besparen en optimale snelheid te geven"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -177,7 +180,7 @@ msgid ""
 "version. You must enable xinetd to use this service."
 msgstr ""
 "Een interne xinetd dienst die de huidige systeemtijd opvraagt een weergeeft "
-"in een formaat zoals het volgende: 'Woe·Nov·13·22:30:27·CET·2002'.  Dit is "
+"in een formaat zoals het volgende: 'Woe Nov 13 22:30:27 CET 2002'.  Dit is "
 "de TCP-versie. U dient xinetd aan te zetten om deze dienst te kunnen "
 "gebruiken."
 
@@ -315,7 +318,10 @@ msgid ""
 "software when some significant (usually hardware-related) events take place. "
 "An example is when a USB or Cardbus device has just been plugged in."
 msgstr ""
-"hotplug is een programma dat door de kernel wordt gebruikt om gebruikerssoftware op de hoogte te brengen van bepaalde belangrijke (meestal hardware-gerelateerde) gebeurtenissen. Een voorbeeld is wanneer een USB- of Cardbus-apparaat net aangesloten is."
+"hotplug is een programma dat door de kernel wordt gebruikt om "
+"gebruikerssoftware op de hoogte te brengen van bepaalde belangrijke (meestal "
+"hardware-gerelateerde) gebeurtenissen. Een voorbeeld is wanneer een USB- of "
+"Cardbus-apparaat net aangesloten is."
 
 #: service-list.pl.in:71
 msgid "internet superserver"
@@ -427,7 +433,8 @@ msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
 msgstr ""
-"Script dat de apparaten in /dev aanmaakt die worden gebruikt als interface voor stuurprogramma's in de kernel"
+"Script dat de apparaten in /dev aanmaakt die worden gebruikt als interface "
+"voor stuurprogramma's in de kernel"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -538,7 +545,8 @@ msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
 msgstr ""
-"Daemon die de systeemtijd instelt en bijhoudt, synchroon met standaardtijd Internetservers"
+"Daemon die de systeemtijd instelt en bijhoudt, synchroon met standaardtijd "
+"Internetservers"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
@@ -879,4 +887,3 @@ msgstr "Standaard werkniveau"
 #: service.pl.in:194
 msgid "Networkless runlevel"
 msgstr "Netwerkloos werkniveau"
-
