@@ -312,8 +312,6 @@ sub xml_print
 	  hostmatch, workgroup, description, winsserver);
   my @array_keys =
 	 (nameserver, searchdomain, order);
-  my @hash_keys =
-	 (statichost);
 
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE network []>\n\n";
@@ -330,6 +328,7 @@ sub xml_print
   &xml_print_scalars ($h, @scalar_keys);
   &xml_print_arrays ($h, @array_keys);
   &xml_print_statichost ($h);
+
   &xml_print_hash ($$h{"interface"}, "interface");
   &xml_print_hash ($$h{"dialing"}, "dialing");
   

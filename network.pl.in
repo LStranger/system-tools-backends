@@ -36,55 +36,55 @@ require "___scriptsdir___/replace.pl";
 sub xst_network_dialing_get
 {
   my %vars =
-	 (
-	  "Modem" => "device",
-	  "Baud" => "speed",
-	  "Init1" => "init1",
-	  "Init2" => "init2",
-	  "Phone" => "phone",
-	  "Username" => "login",
-	  "Password" => "passwd",
-	  "Dial Command" => "dialcmd",
-	  "SetVolume" => "setvol",
-	  "Stupid mode" => "stupid",
-	  "Inherits" => "inherits"
-	  );
+      (
+       "Modem" => "device",
+       "Baud" => "speed",
+       "Init1" => "init1",
+       "Init2" => "init2",
+       "Phone" => "phone",
+       "Username" => "login",
+       "Password" => "passwd",
+       "Dial Command" => "dialcmd",
+       "SetVolume" => "setvol",
+       "Stupid mode" => "stupid",
+       "Inherits" => "inherits"
+       );
   my %title2type =
-	 (
-	  "Dialer (.*)" => "dialer",
-	  "Modem(.*)" => "modem"
-	  );
+      (
+       "Dialer (.*)" => "dialer",
+       "Modem(.*)" => "modem"
+       );
   
   my ($file) = @_;
   my %ret, @sections;
   my $i, $j, $name, $val;
-
+  
   &xst_run ("wvdialconf $xst_prefix/$file") if (!-e "$xst_prefix/$file");
   
   @sections = &xst_parse_ini_sections ($file);
   foreach $i (@sections)
   {
     my %hash;
-
+    
     $hash{"type"} = "unknown";
     foreach $j (keys %title2type)
     {
-	 if ($i =~ /$j/)
-	 {
-	   $hash{"name"} = $1;
-	   $hash{"type"} = $title2type{$j};
-	 }
+      if ($i =~ /$j/)
+      {
+        $hash{"name"} = $1;
+        $hash{"type"} = $title2type{$j};
+      }
     }
     
     $ret{$hash{"name"}} = \%hash;
-
+    
     foreach $j (keys %vars)
     {
-	 $val = &xst_parse_ini ($file, $i, $j);
-	 $hash{$vars{$j}} = $val if ($val ne undef);
+      $val = &xst_parse_ini ($file, $i, $j);
+      $hash{$vars{$j}} = $val if ($val ne undef);
     }
   }
-
+  
   return \%ret;
 }
 
@@ -155,10 +155,11 @@ sub xst_network_interfaces_get
   my ($i, $j);
 
   %dist_attrib = &xst_network_get_interfaces_parse_table ();
-
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"ifaces_get"};
   @ifaces = &$proc ();
+  $key = 0;
+  
   foreach $i (@ifaces)
   {
     foreach $j (keys (%fn))
@@ -443,6 +444,7 @@ sub xst_network_get_interfaces_parse_table
 		    [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
 		    [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
 		    [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
+		    [ gateway,            \&xst_parse_sh,      IFCFG, GATEWAY ],
 		    [ bootproto,          \&xst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
 		    [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
 		    [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
@@ -559,6 +561,7 @@ sub xst_network_get_interface_replace_table
         [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
         [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
         [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
+        [ gateway,            \&xst_replace_sh,      IFCFG, GATEWAY ],
         [ bootproto,          \&xst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
         [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
         [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
