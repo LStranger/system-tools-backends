@@ -361,11 +361,11 @@ sub write_group_passwd
 	$parse_group_last_modified = $group_last_modified;
 	&read_group;
 	
-	if ($passwd_last_modified > $parse_passwd_last_modified) 
-	{
-	  print STDERR "Password file may be inconsistent! No changes made.\n";
-		return;
-	}
+#	if ($passwd_last_modified > $parse_passwd_last_modified) 
+#	{
+#	  print STDERR "Password file may be inconsistent! No changes made.\n";
+#		return;
+#	}
 
   foreach $i (keys (%users_hash)) 
 	{
