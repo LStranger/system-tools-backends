@@ -46,7 +46,7 @@ require "___scriptsdir___/be.pl";
 # --- Usage text --- #
 
 my $Usage =<<"End_of_Usage;";
-Usage: users2-conf <--get | --set | --filter | --help>
+Usage: users-conf <--get | --set | --filter | --help>
                  [--prefix <location>] [--disable-immediate]
                  [--verbose] [--progress]
 
