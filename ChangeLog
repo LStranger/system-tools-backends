@@ -1,3 +1,18 @@
+2001-11-26  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* file.pl.in (xst_file_run_pipe): Use FILE_READ
+	as default mode_mask.
+
+	* Makefile.am (PERLBODY): Added partition.pl.in.
+
+	* partition.pl.in: Stuff related to hd partitions.
+	(xst_filesys_scan_types): Run sfdisk -d and give all
+	available info related to partitions.
+
+	* report.pl.in (xst_report): Added sfdisk_failed report.
+
+	* parse.pl.in (xst_parse_trivial): avoiding $#arr notation.
+
 2001-11-24  Tambet Ingo  <tambet@ximian.com>
 
 	* font.pl.in: Implemented infrastructure and two modules:

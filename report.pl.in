@@ -339,6 +339,8 @@ sub xst_report
      "boot_conf_read_failed"    => ["error", _("Failed to open boot configuration file [%s].")],
      "boot_grub_convert_failed" => ["error", _("Conversion of [%s] failed.")],
 
+     "sfdisk_failed"            => ["error", _("Could not run sfdisk.")],
+
      "disks_fstab_add"          => ["info",  _("Adding [%s] to fstab.")],
      "disks_partition_probe"    => ["info",  _("Looking for partitions on [%s].")],
      "disks_size_query"         => ["info",  _("Querying size of [%s].")],

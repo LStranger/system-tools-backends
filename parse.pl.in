@@ -222,7 +222,7 @@ sub xst_parse_trivial
   &xst_report ("parse_trivial", "@res");
   &xst_report_leave ();
 
-  return $res[0] if $#res <= 0;
+  return $res[0] if (scalar @res) <= 1;
   return \@res;
 }
 

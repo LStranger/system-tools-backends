@@ -441,6 +441,8 @@ sub xst_file_run_pipe
   my ($command);
   local *PIPE;
 
+  $mode_mask = $XST_FILE_READ if $mode_mask eq undef;
+
   &xst_report_enter ();
   $command = &xst_file_get_cmd_path ($cmd);
   if ($command == -1)

@@ -647,7 +647,7 @@ sub xst_boot_conf_get
               [ 'timeout',  \&xst_boot_grub_parse_timeout, GRUB_CONF ],
               [ 'prompt',   \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
               [ 'default',  \&xst_boot_grub_parse_default, GRUB_CONF ],
-              [ 'entries',   \&xst_boot_entries_get,                   ],
+              [ 'entries',  \&xst_boot_entries_get,                  ],
               ] 
        }
        );
@@ -684,6 +684,13 @@ sub xst_boot_get_entries_parse_table
          },
          table =>
              [
+#              ["XstEntryType", \&xst_boot_grub_parse_type]
+              ["label",        \&xst_parse_trivial, ENTRY],
+#              ["root",         \&],
+#              ["other",        \&],
+#              ["image",        \&],
+#              ["append",       \&]
+              
               ]
                 }
        );

@@ -17,26 +17,27 @@ BACKENDSBODY = \
 	font-conf.in
 
 PERLBODY = \
-	boot.pl.in     \
+	boot.pl.in      \
 	boot-grub.pl.in \
-	debug.pl.in    \
-	file.pl.in     \
-	filesys.pl.in  \
-	font.pl.in     \
-	general.pl.in  \
-	gettext.pl.in  \
-	ishare.pl.in   \
-	media.pl.in    \
-	network.pl.in  \
-	parse.pl.in    \
-	platform.pl.in \
-	print.pl.in    \
-	replace.pl.in  \
-	report.pl.in   \
-	service.pl.in  \
-	share.pl.in    \
-	util.pl.in     \
-	x.pl.in        \
+	debug.pl.in     \
+	file.pl.in      \
+	filesys.pl.in   \
+	font.pl.in      \
+	general.pl.in   \
+	gettext.pl.in   \
+	ishare.pl.in    \
+	media.pl.in     \
+	network.pl.in   \
+	parse.pl.in     \
+	partition.pl.in \
+	platform.pl.in  \
+	print.pl.in     \
+	replace.pl.in   \
+	report.pl.in    \
+	service.pl.in   \
+	share.pl.in     \
+	util.pl.in      \
+	x.pl.in         \
 	xml.pl.in
 
 perl_libs = $(PERLBODY:.pl.in=.pl)
