@@ -31,6 +31,15 @@
 #
 # /sbin/lilo
 
+# Distros 
+#
+# RedHat 7.1   - LILO version 21.4-4
+# Mandrake 7.1 - LILO version 21.4-3
+#
+#
+#
+#
+
 
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/platform.pl";
