@@ -32,9 +32,9 @@
 
 sub xst_read_boolean
 {
-  if ($_[0] eq "true" ||
-      $_[0] eq "yes" ||
-      $_[0] eq "on")
+  if ($_[0] =~ /true/i ||
+      $_[0] =~ /yes/i ||
+      $_[0] =~ /on/i)
   {
     return 1;
   }

@@ -1403,11 +1403,11 @@ sub xml_print
   print "<shares>\n";
   &xst_xml_enter ();
 
-  &xst_xml_vspace ();
-  &xst_xml_print ("<!-- Configuration starts here -->\n");
-  &xst_xml_vspace ();
-  &xst_xml_print ("<!-- Imports, listed and potentials -->\n");
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<!-- Imports, listed and potentials -->\n");
+  &xst_xml_print_vspace ();
 
   my @shares = @cf_shares_list;
 
@@ -1415,8 +1415,8 @@ sub xml_print
   {
     if ($shares[0] ne "")
     {
-      &xst_xml_vspace ();
-      &xst_xml_print ("<import type='$shares[5]'>\n");
+      &xst_xml_print_vspace ();
+      &xst_xml_print_line ("<import type='$shares[5]'>\n");
       &xst_xml_enter ();
 
       $shares[0] = &xst_xml_quote($shares[0]);
@@ -1425,14 +1425,14 @@ sub xml_print
       $shares[6] = &xst_xml_quote($shares[6]);
       $shares[7] = &xst_xml_quote($shares[7]);
 
-      &xst_xml_print ("<host>$shares[0]</host>\n");
-      &xst_xml_print ("<path>$shares[1]</path>\n");
-      if ($shares[6] ne "") { &xst_xml_print ("<user>$shares[6]</user>\n"); }
-      if ($shares[7] ne "") { &xst_xml_print ("<password>$shares[7]</password>\n"); }
-      if ($shares[2] ne "") { &xst_xml_print ("<comment>$shares[2]</comment>\n"); }
-      if ($shares[8] ne "") { &xst_xml_print ("<point>$shares[8]</point>\n"); }
+      &xst_xml_print_line ("<host>$shares[0]</host>\n");
+      &xst_xml_print_line ("<path>$shares[1]</path>\n");
+      if ($shares[6] ne "") { &xst_xml_print_line ("<user>$shares[6]</user>\n"); }
+      if ($shares[7] ne "") { &xst_xml_print_line ("<password>$shares[7]</password>\n"); }
+      if ($shares[2] ne "") { &xst_xml_print_line ("<comment>$shares[2]</comment>\n"); }
+      if ($shares[8] ne "") { &xst_xml_print_line ("<point>$shares[8]</point>\n"); }
 
-      &xst_xml_indent ();
+      &xst_xml_print_indent ();
 
       print "<mounted state='";
       print &xst_print_boolean_truefalse($shares[3]);
@@ -1447,7 +1447,7 @@ sub xml_print
       print "'/>\n";
 
       &xst_xml_leave ();
-      &xst_xml_print ("</import>\n");
+      &xst_xml_print_line ("</import>\n");
     }
     
     shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
@@ -1455,9 +1455,9 @@ sub xml_print
     shift @shares;
   }
 
-  &xst_xml_vspace ();
-  &xst_xml_print ("<!-- Exports -->\n");
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<!-- Exports -->\n");
+  &xst_xml_print_vspace ();
   
   my @shares = @cf_exports_list;
   
@@ -1465,22 +1465,22 @@ sub xml_print
   {
     if ($shares[0] ne "")
     {
-      &xst_xml_vspace ();
-      &xst_xml_print ("<export type='$shares[0]'>\n");
+      &xst_xml_print_vspace ();
+      &xst_xml_print_line ("<export type='$shares[0]'>\n");
       &xst_xml_enter ();
 
-      &xst_xml_print ("<path>$shares[1]</path>\n");
+      &xst_xml_print_line ("<path>$shares[1]</path>\n");
 
       if ($shares[0] eq "smb")
       {
-        &xst_xml_print ("<name>$shares[2]</name>\n");
-        if ($shares[3] ne "") { &xst_xml_print ("<comment>$shares[3]</comment>\n"); }
+        &xst_xml_print_line ("<name>$shares[2]</name>\n");
+        if ($shares[3] ne "") { &xst_xml_print_line ("<comment>$shares[3]</comment>\n"); }
 
-        &xst_xml_indent ();
+        &xst_xml_print_indent ();
         print "<enabled state='", &xst_print_boolean_truefalse($shares[4]), "'/>";
         print "<browse state='", &xst_print_boolean_truefalse($shares[5]), "'/>";
         print "<public state='", &xst_print_boolean_truefalse($shares[6]), "'/>\n";
-        &xst_xml_indent ();
+        &xst_xml_print_indent ();
         print "<write state='", &xst_print_boolean_truefalse($shares[7]), "'/>\n";
 
         shift @shares; shift @shares; shift @shares; shift @shares;
@@ -1493,7 +1493,7 @@ sub xml_print
         {
           if ($$clients[0] ne "")
           {
-            &xst_xml_print ("<allow><pattern>$$clients[0]</pattern><write state='");
+            &xst_xml_print_line ("<allow><pattern>$$clients[0]</pattern><write state='");
             print &xst_print_boolean_truefalse($$clients[1]);
             print "'/></allow>\n";
           }
@@ -1504,14 +1504,14 @@ sub xml_print
       }
 
       &xst_xml_leave ();
-      &xst_xml_print ("</export>\n");
+      &xst_xml_print_line ("</export>\n");
     }
     
   }
   
-  &xst_xml_vspace ();
-  &xst_xml_print ("<!-- End of configuration -->\n");
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<!-- End of configuration -->\n");
+  &xst_xml_print_vspace ();
 
   &xst_xml_leave ();
   print "</shares>\n";

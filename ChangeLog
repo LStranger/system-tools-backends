@@ -1,3 +1,9 @@
+2001-03-29  Simo Sorce  <simo.sorce@polimi.it>
+
+	* shares-conf.in (xml_print): Make XML printing work again.
+
+	* util.pl.in (xst_read_boolean): Ignore case in boolean-denoting strings.
+
 2001-03-29  Arturo Espinosa  <arturo@ximian.com>
 
 	* report.pl.in: Report entries for replace.
