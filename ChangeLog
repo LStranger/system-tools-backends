@@ -1,3 +1,9 @@
+2001-08-28  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* ishare.pl.in (xst_ishare_fwrules_get_ipchains): typo
+	- $$hash{"kerneltool"} -> $hash{"kerneltool"}.
+	Do set the "active" key, even if it's not configured.
+
 Wed Aug 22 22:16:03 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* *{pl,-conf}.in: Oops, forgot about the .in suffix of files

@@ -64,11 +64,11 @@ sub xst_ishare_fwrules_get_ipchains
   my (%hash, $fd, $val);
 
   $hash{"tools"} = &xst_file_tool_installed ("ipchains");
-  $$hash{"kerneltool"} = (-f "/proc/net/ip_fwchains")? 1: 0;
+  $hash{"kerneltool"} = (-f "/proc/net/ip_fwchains")? 1: 0;
 
-  if ($hash{"tools"})
+  if ($hash{"tools"} && $hash{"kerneltool"})
   {
-    $fd = &xst_file_open_read_from_names ($ipchains_conf);
+    $fd = &xst_file_run_pipe_read ("ipchains-save");
     if ($fd ne undef)
     {
       $hash{"configured"} = 0;
@@ -86,7 +86,7 @@ sub xst_ishare_fwrules_get_ipchains
   }
 
   &xst_ishare_get_linux22_forward_support (\%hash);
-  &xst_ishare_get_linux22_forward_support_active (\%hash) if ($hash{"configured"});
+  &xst_ishare_get_linux22_forward_support_active (\%hash);
 
   return \%hash;
 }
