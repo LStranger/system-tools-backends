@@ -158,7 +158,7 @@ sub gst_network_enable_iface
 
   if ($bootproto eq "dhcp")
   {
-    $command = "$command_dhclient $dev";
+    $command = "$command_dhclient -e $dev";
   }
   else
   {
