@@ -246,6 +246,25 @@ sub xst_parse_split_all_hash_comment
   return &xst_parse_split_all ($file, $key, $re, \&xst_parse_chomp_line_hash_comment);
 }
 
+# Make the elements of the resulting array unique.
+sub xst_parse_split_all_unique_hash_comment
+{
+  my ($file, $key, $re) = @_;
+  my ($arr, @res);
+  my (%hash, $i);
+
+  $arr =  &xst_parse_split_all ($file, $key, $re, \&xst_parse_chomp_line_hash_comment);
+
+  foreach $i (@$arr)
+  {
+    next if exists $hash{$i};
+    $hash{$i} = 1;
+    push @res, $i;
+  }
+
+  return \@res;
+}
+
 # Same, but for $all = 0. (ie nameserver 10.0.0.1)
 sub xst_parse_split_first_str
 {
@@ -275,6 +294,24 @@ sub xst_parse_split_first_array
   @ret = split ($sep, &xst_parse_split ($file, $key, $re, 0, $line_read_proc));
 
   return \@ret;
+}
+
+sub xst_parse_split_first_array_unique
+{
+  my ($file, $key, $re, $sep, $line_read_proc) = @_;
+  my (@arr, @res);
+  my (%hash, $i);
+  
+  @arr = split ($sep, &xst_parse_split ($file, $key, $re, 0, $line_read_proc));
+
+  foreach $i (@arr)
+  {
+    next if exists $hash{$i};
+    $hash{$i} = 1;
+    push @res, $i;
+  }
+
+  return \@res;
 }
 
 sub xst_parse_split_hash

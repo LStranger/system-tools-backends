@@ -6,11 +6,18 @@
 	  (xst_file_locate_tool): return trivialy if path is absolute.
 	* network.pl.in: when checking for "smbuse", use new service behaviour
 	  to check for smbd and nmbd.
+	  Parsing for hosts and dns servers now filters repeated entries out.
 	* service.pl.in (xst_service_sysv_get_status): some init.d scripts are broken.
 	  Stole redhat's init.d/function:status to do new, more fine-grained checking.
 	  (xst_service_sysv_get_status_any): just a proxy.
 	  (xst_service_sysv_run_initd_script): fixed init.d script invocation typo.
 	  (xst_service_sysv_set_status): Always set links, to fix broken setups.
+	* network-conf.in (xml_parse_network, push_unique): when parsing hosts and
+	  dns servers, filter repeated entries out.
+	* parse.pl.in (xst_parse_split_all_unique_hash_comment,
+	  xst_parse_split_first_array_unique): new functions that return arrays with
+	  unique elements.
+	
 	
 2001-04-17  Arturo Espinosa  <arturo@ximian.com>
 

@@ -99,6 +99,19 @@ sub xml_parse
 
 # <network>...</network>
 
+sub push_unique
+{
+  my ($arr, $val) = @_;
+  my $i;
+
+  foreach $i (@$arr)
+  {
+    return if $i eq $val;
+  }
+
+  push @$arr, $val;
+}
+
 sub xml_parse_network
 {
   my $tree = $_[0];
@@ -113,8 +126,8 @@ sub xml_parse_network
     elsif ($$tree[0] eq "forward")         { $$hash{"forward"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "nameserver")      { push (@nameserver, &xst_xml_get_pcdata ($$tree[1])); }
-    elsif ($$tree[0] eq "searchdomain")    { push (@searchdomain, &xst_xml_get_pcdata ($$tree[1])); }
+    elsif ($$tree[0] eq "nameserver")      { &push_unique (\@nameserver, &xst_xml_get_pcdata ($$tree[1])); }
+    elsif ($$tree[0] eq "searchdomain")    { &push_unique (\@searchdomain, &xst_xml_get_pcdata ($$tree[1])); }
     elsif ($$tree[0] eq "domainname")      { $$hash{"domainname"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "order")           { push (@order, &xst_xml_get_pcdata ($$tree[1])); }
     elsif ($$tree[0] eq "hostmatch")       { $$hash{"hostmatch"} = &xst_xml_get_pcdata ($$tree[1]); }
