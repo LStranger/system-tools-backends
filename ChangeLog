@@ -1,3 +1,15 @@
+2001-06-28  Hans Petter Jansson  <hpj@ximian.com>
+
+	* replace.pl.in (xst_replace_printcap_print_stanza): Implement.
+	  (xst_replace_printcap_print_option): Implement.
+	  (xst_replace_printcap_add_stanza): Implement.
+	  (xst_replace_printcap_add_option_slot): Implement.
+	  (xst_replace_printcap_remove_stanza_from_buf): Implement.
+	  (xst_replace_printcap_remove_option_slot): Implement.
+	  (xst_replace_printcap_remove_printer): Implement.
+	  (xst_replace_printcap): Add stanzas and options that are referred
+	  to but not present.
+
 2001-06-27  Hans Petter Jansson  <hpj@ximian.com>
 
 	* replace.pl.in (xst_replace_cap): Comment out for now, we've got

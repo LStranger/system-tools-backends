@@ -100,7 +100,9 @@ sub test_interfaces
 
 # &xst_replace_remove_cap_section ("/etc/printcap", "lp");
 
-&xst_replace_printcap ("/etc/printcap", "lp", "lp", "/dev/fette");
+&xst_replace_printcap ("/etc/printcap", "lp", "lpekk", "#", "100");
+&xst_replace_printcap ("/etc/printcap", "newlp", "loff", "", 1);
+&xst_replace_printcap_remove_printer ("/etc/printcap", "lp");
 
 # $buf = &xst_replace_load_printcap_buffer ("/etc/printcap");
 #

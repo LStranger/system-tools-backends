@@ -824,6 +824,18 @@ sub xst_replace_printcap_parse_option
   return ($key, $value);
 }
 
+sub xst_replace_printcap_print_stanza
+{
+  my ($stanza) = @_;
+  return $stanza . ":\n";
+}
+
+sub xst_replace_printcap_print_option
+{
+  my ($option, $type, $value) = @_;
+  return "\t:" . $option . $type . $value . ":\n";
+}
+
 # Locate stanza line for $printer in $buf, starting at $line_no.
 sub xst_replace_printcap_find_stanza
 {
@@ -859,9 +871,91 @@ sub xst_replace_printcap_find_option
   return -1;
 }
 
+sub xst_replace_printcap_add_stanza
+{
+  my ($buf, $stanza) = @_;
+
+  push @$buf, "\n";
+  push @$buf, "##PRINTTOOL3## LOCAL unknown NAxNA {} Unknown Default {}\n";
+  push @$buf, &xst_replace_printcap_print_stanza ($stanza);
+
+  return ($#$buf - 1, $#$buf);
+}
+
+sub xst_replace_printcap_add_option_slot
+{
+  my ($buf, $stanza_line_no) = @_;
+  my (@buf_tail);
+
+  @buf_tail = splice (@$buf, $stanza_line_no + 1);
+  push @$buf, "\t:NEW_OPTION:\n";
+  push @$buf, @buf_tail;
+
+  return $stanza_line_no + 1;
+}
+
+sub xst_replace_printcap_remove_stanza_from_buf
+{
+  my ($buf, $printtool_line_no, $stanza_line_no) = @_;
+  my ($next_printtool_line_no, $next_stanza_line_no);
+  my ($splice_start, $splice_end);
+
+  ($next_printtool_line_no, $next_stanza_line_no) =
+    &xst_replace_printcap_get_next_stanza ($buf, $stanza_line_no + 1);
+
+  if ($printtool_line_no != -1)
+  {
+    $splice_start = $printtool_line_no;
+  }
+  else
+  {
+    $splice_start = $stanza_line_no;
+  }
+
+  if ($next_printtool_line_no != -1)
+  {
+    $splice_end = $next_printtool_line_no;
+  }
+  else
+  {
+    $splice_end = $next_stanza_line_no;
+  }
+
+  if ($splice_end != -1)
+  {
+    splice (@$buf, $splice_start, $splice_end - $splice_start);
+  }
+  else
+  {
+    splice (@$buf, $splice_start);
+  }
+}
+
+sub xst_replace_printcap_remove_option_slot
+{
+  my ($buf, $option_line_no) = @_;
+  splice (@$buf, $option_line_no, 1);
+}
+
+# High-level API.
+sub xst_replace_printcap_remove_printer
+{
+  my ($file, $printer) = @_;
+  my ($buf, $printtool_line_no, $stanza_line_no);
+
+  $buf = &xst_replace_printcap_buffer_load ($file);
+
+  ($printtool_line_no, $stanza_line_no) = &xst_replace_printcap_find_stanza ($buf, 0, $printer);
+  &xst_replace_printcap_remove_stanza_from_buf ($buf, $printtool_line_no, $stanza_line_no);
+
+  $ret = &xst_replace_printcap_buffer_save ($file, $buf);
+  return $ret;
+}
+
+# High-level API.
 sub xst_replace_printcap
 {
-  my ($file, $section, $var, $value) = @_;
+  my ($file, $section, $var, $type, $value) = @_;
   my ($printtool_line_no, $stanza_line_no, $option_line_no);
   my ($buf, $ret);
 
@@ -870,19 +964,27 @@ sub xst_replace_printcap
   ($printtool_line_no, $stanza_line_no) = &xst_replace_printcap_find_stanza ($buf, 0, $section);
   if ($stanza_line_no == -1)
   {
-    # TODO: Create stanza line here.
-    return -1;
+    ($printtool_line_no, $stanza_line_no) = &xst_replace_printcap_add_stanza ($buf, $section);
   }
 
   $option_line_no = &xst_replace_printcap_find_option ($buf, $stanza_line_no + 1, $var);
   if ($option_line_no == -1)
   {
-    # TODO: Create option line here.
-    return -1;
+    $option_line_no = &xst_replace_printcap_add_option_slot ($buf, $stanza_line_no);
   }
 
-  # TODO: Handle different types, i.e. #, = and boolean.
-  $$buf [$option_line_no] = "\t:" . $var . "=" . $value . ":\n";
+  if ($type ne "")
+  {
+    $$buf [$option_line_no] = "\t:" . $var . $type . $value . ":\n";
+  }
+  elsif ($value == 1)
+  {
+    $$buf [$option_line_no] = "\t:" . $var . ":\n";
+  }
+  else
+  {
+    &xst_replace_printcap_remove_option_slot ($buf, $option_line_no);
+  }
 
   $ret = &xst_replace_printcap_buffer_save ($file, $buf);
   return $ret;
