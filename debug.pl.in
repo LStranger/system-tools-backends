@@ -92,7 +92,10 @@ sub xst_debug_print_indented_line
 
 sub xst_debug_print_struct
 {
-  &xst_debug_print_struct_r (0, 0, @_);
+  foreach $i (@_)
+  {
+    &xst_debug_print_struct_r (0, 0, $i);
+  }
 }
 
 
@@ -120,7 +123,7 @@ sub xst_debug_print_struct_r
 
     for ($i = 0; $i <= $#$a; $i++)
     {
-      &xst_debug_print_struct_r ($indent, 0, $$a[$i]);
+      &xst_debug_print_struct_r ($indent + 1, 0, $$a[$i]);
     }
   }
   elsif ($type eq "HASH")
