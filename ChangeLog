@@ -1,5 +1,14 @@
 Sat Jul 14 11:54:50 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* file.pl.in (xst_file_run): Added PATH=$PATH:/sbin:/usr/sbin
+	to the running command, as these important routes may not be
+	set by the mortal user, and the executed scripts may fail (ie
+	debian's ifup/ifdown fail when tool run by normal user).
+
+	* network-conf.in (enable_iface): A directive handler that
+	ifup/ifdowns a given interface.
+	$directives: added directive entry, params and description.
+
 	* report.pl.in (xst_report): New warning "platform_no_table",
 	used now in all backends when no table for the detected dist
 	is available (shouldn't happen, but typos happen).

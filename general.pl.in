@@ -450,9 +450,10 @@ sub xst_print_interface
 #
 # install_font::/usr/share/fonts::/tmp/myfile::/tmp/myfile2
 #
-# the function xst_font_install will be called, with /usr/share/fonts,
+# the function xst_font_install will be called, with the tool structure, /usr/share/fonts,
 # /tmp/myfile and /tmp/myfile2 as arguments. Directives with 1 or 0 arguments
 # would be rejected, as we are requiring 2, and optionaly allowing more.
+# Check enable_iface in network-conf.in for an example of a directive handler.
 #
 # The generated interface XML piece for this entry would be:
 #

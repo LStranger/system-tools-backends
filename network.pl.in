@@ -1029,18 +1029,24 @@ sub xst_network_rh62_interface_activate_by_dev
 {
   my ($dev, $enabled) = @_;
 
+  &xst_report_enter ();
+  
   if ($enabled)
   {
+    &xst_report ("network_iface_activate", $dev);
     &xst_debug_print_string ("\n\nifup $dev\n\n");
     print STDERR ("\n\nifup $dev\n\n");
     return -1 if &xst_file_run ("ifup $dev &");
   }
   else
   {
+    &xst_report ("network_iface_deactivate", $dev);
     &xst_debug_print_string ("\n\nifdown $dev\n\n");
     print STDERR ("\n\nifdown $dev\n\n");
     return -1 if &xst_file_run ("ifdown $dev");
   }
+  
+  &xst_report_leave ();
 
   return 0;
 }
@@ -1068,11 +1074,7 @@ sub xst_network_rh62_interface_activate
 
   if ($dev)
   {
-    &xst_report_enter ();
-    &xst_report ("network_iface_activate", $dev) if $enabled;
-    &xst_report ("network_iface_deactivate", $dev) if !$enabled;
     &xst_network_rh62_interface_activate_by_dev ($dev, $enabled);
-    &xst_report_leave ();
   }
 }
 
@@ -1080,23 +1082,28 @@ sub xst_network_suse70_interface_activate_by_dev
 {
   my ($dev, $enabled) = @_;
   my ($network, @paths);
-  my $devno;
 
   @paths = &xst_service_sysv_get_paths ();
   $network = $paths[1] . "/network";
 
+  &xst_report_enter ();
+  
   if ($enabled)
   {
+    &xst_report ("network_iface_deactivate", $hash{"dev"});
     &xst_debug_print_string ("\n\nifup $dev\n\n");
     print STDERR ("\n\nifup $dev\n\n");
     return -1 if &xst_file_run ("$network start $dev &");
   }
   else
   {
+    &xst_report ("network_iface_activate", $hash{"dev"});
     &xst_debug_print_string ("\n\nifdown $dev\n\n");
     print STDERR ("\n\nifup $dev\n\n");
     return -1 if &xst_file_run ("$network stop $dev");
   }
+  
+  &xst_report_leave ();
 
   return 0;
 }
@@ -1117,11 +1124,7 @@ sub xst_network_suse70_interface_activate
   
   if ($dev)
   {
-    &xst_report_enter ();
-    &xst_report ("network_iface_activate", $hash{"dev"}) if $enabled;
-    &xst_report ("network_iface_deactivate", $hash{"dev"}) if !$enabled;
     &xst_network_suse70_interface_activate_by_dev ($dev, $enabled);
-    &xst_report_leave ();
   }
 }
 
