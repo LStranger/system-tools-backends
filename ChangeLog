@@ -1,3 +1,10 @@
+2001-07-11  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_version): Beginnings of X version detection.
+	(parse_modeline): Finished to support "ModeLine" entries.
+	(x_xml_print_modelines): Implement.
+	(x_parse_section): Fixed options parsing bug.
+
 2001-07-10  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_get_replace_table): Oops:

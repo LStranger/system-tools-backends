@@ -57,6 +57,7 @@ $sections = {
       ModelName  => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
       HorizSync  => [ \&parse_range_hz,  \&xml_parse_kw_unique, 0 ],
       VertRefresh =>[ \&parse_range_hz,  \&xml_parse_kw_unique, 0 ],
+      ModeLine   => [ \&parse_modeline,  \&xml_parse_modeline,  1 ],
     },
     options => {},
   },
@@ -109,7 +110,25 @@ $sections = {
   }
 };
 
+sub x_version
+{
+  my $version;
+  my $command = &xst_file_locate_tool ("X");
 
+  open (FD, "$command -version  |");
+  while (<FD>) {
+    if (/^XFree86 Version (\d+)\.(\d+)\.(\d+)/) {
+      $version = $1 . $2 . $3;
+      last;
+    }
+  }
+  close (FD);
+
+  $version = 403;
+  
+  return $version;
+}
+  
 # Difference from xst_item_is_in_list is that XF86Config keywords are
 # case-insensitive and "_" characters are ignored.
 # Returns found value from list or 0.
@@ -317,22 +336,42 @@ sub parse_option
 
 sub parse_modeline
 {
+  # TODO: We don't support Mode "name" and multiline Modeline definitions
+
   my $line = shift;
-  my (@array);
+  my (%hash, $i, $name);
+  my @fields = qw (dotclock hdisp hsyncstart hsyncend htotal
+                   vdisp vsyncstart vsyncend vtotal);
+  my $field_count = scalar @fields;
 
-  shift @$line; # Dump "ModeLine" keyword.  
-  my $name = shift @$line;
+  shift @$line; # Dump 'ModeLine' keyword
 
+  # Get name, remove quotes
+  $name = shift @$line;
   $name =~ s/\"//g;
-  push @array, $name;
+  $hash{'name'} = $name;
 
-  # TODO: make it work with "Mode"s and multiline ModeLines
-
-  foreach (@$line) {
-    push @array, $_;
+  # Get all other stuff (except falgs)
+  for ($i = 0; @$line, $i < $field_count; $i++) {
+    $hash{$fields[$i]} = shift @$line;
   }
-  
-  bless \@array, "XstXModeLine";
+
+  unless ($i == $field_count) {
+    # TODO give error, something is missing
+    1;
+    return undef;
+  }
+
+  # Get flags if any
+  while (@$line) {
+    my $val = shift @$line;
+
+    # HSkew is only flag with parameter
+    $val .= " " . shift @$line if ($val =~ /^HSkew/i);
+    push @{$hash{'flags'}}, $val;
+  }
+
+  bless \%hash, "XstXModeLine";
 }
 
 sub parse_serverlayout_screen
@@ -403,12 +442,10 @@ sub add2section
     foreach (@$source) { push @{$dest->{$kw}}, $_; }
     bless $dest->{$kw}, $type;
   }
-
+  
   elsif ($type eq "XstXModeLine") {
-    my ($name) = shift @$source;
-
-    foreach (@$source) { push @{$dest->{'ModeLine'}{$name}}, $_; }
-    bless $dest->{'ModeLine'}, $type;
+    push @{$dest->{'ModeLine'}}, $source;
+    bless $dest->{'ModeLine'}, "XstXModeLines";
   }
 
   elsif ($type eq 'XstXDisplayMode') {
@@ -449,7 +486,7 @@ sub x_parse_section
       $func = $keywords->{$kw}[0];
     }
     
-    elsif ($line[0] =~ /^Option/i && &xst_x_option_in_list ($line[1], @$options)) {
+    elsif ($line[0] =~ /^Option/i && &xst_x_option_in_list ($line[1], keys %$options)) {
       $func = \&parse_option;
     }
 
@@ -534,6 +571,44 @@ sub x_xml_print_serverlayout_screen
   &xst_xml_print_pcdata ($key, $hash->{'name'});
 }
 
+# Internal
+sub x_xml_print_modelines
+{
+  my $key = shift;
+  my $modelines = shift;
+  my @kws = qw(name dotclock hdisp hsyncstart hsyncend htotal
+               vdisp vsyncstart vsyncend vtotal);
+
+  &xst_xml_container_enter ("Modes");
+  
+  foreach $mode (@$modelines) {
+    my $type = ref ($mode);
+    my ($kw);
+
+    if ($type ne "XstXModeLine") {
+      # TODO: Give warning
+      next;
+    }
+    
+    &xst_xml_container_enter ("Mode");
+
+    foreach $kw (@kws) {
+      my $val = &xst_xml_quote ($mode->{$kw});
+      &xst_xml_print_line ("<$kw>$val</$kw>");
+    }
+
+    if (exists ($mode->{'flags'})) {
+      foreach $kw (@{$mode->{'flags'}}) {
+        my $val = &xst_xml_quote ($kw);
+        &xst_xml_print_line ("<flag>$val</flag>");
+      }
+    }
+    
+    &xst_xml_container_leave ();
+  }
+  &xst_xml_container_leave ();
+}
+
 sub x_xml_print_section
 {
   my $hash = shift;
@@ -572,14 +647,14 @@ sub x_xml_print_section
       &x_xml_print_hash ($key, $hash->{$key});
     }
 
-    elsif ($type eq "XstXModeLine") {
-      &x_xml_print_hash ($key, $hash->{$key});
+    elsif ($type eq "XstXModeLines") {
+      &x_xml_print_modelines ($key, $hash->{$key});
     }
 
     elsif ($type eq "XstXServerLayoutScreen") {
       &x_xml_print_serverlayout_screen ($key, $hash->{$key});
     }
-    
+
     elsif ($type eq "XstXSubsection") {
       my ($tmp);
       
