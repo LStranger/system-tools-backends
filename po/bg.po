@@ -9,10 +9,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup tools backends gnome 2.8 branch\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-01-24 15:11+0200\n"
-"PO-Revision-Date: 2005-01-24 15:11+0200\n"
+"POT-Creation-Date: 2005-02-16 19:17+0200\n"
+"PO-Revision-Date: 2005-02-16 19:17+0200\n"
 "Last-Translator: Stoycho Stanchev <sstanchev@i-space.org>\n"
-"Language-Team: Bulgarian <dict@linux.zonebg.com>\n"
+"Language-Team: Bulgarian <dict@fsa-bg.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -911,8 +911,8 @@ msgid "Access to floppy drives"
 msgstr "Достъп до флопидискови устройства"
 
 #: users-conf.in:186
-msgid "Mount removable devices automatically"
-msgstr "Автоматично свързване на преносимите устройства"
+msgid "Enable access to external storage devices automatically"
+msgstr "Включване на автоматично свързване на преносимите устройства"
 
 #: users-conf.in:187
 msgid "Access to tape drives"
@@ -922,10 +922,10 @@ msgstr "Достъп до лентови устройства"
 msgid "Be able to get administrator privileges"
 msgstr "Може да получава администраторски права"
 
-#: users-conf.in:459
+#: users-conf.in:491
 msgid "Default"
 msgstr "По подразбиране"
 
-#: users-conf.in:460
+#: users-conf.in:492
 msgid "Default profile"
 msgstr "Профил по подразбиране"
