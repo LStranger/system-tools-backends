@@ -1,5 +1,11 @@
 2004-08-17  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* xml.pl.in: Modified patch from Joe Marcus Clarke
+	<marcus@freebsd.org> which fixes Encode module detection for 
+	Perl < 5.8. Should fix #150191
+
+2004-08-17  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* users-conf.in (change_user_chfn): compared old and new data before
 	changing it. Fixed #150248
 

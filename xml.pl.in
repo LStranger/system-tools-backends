@@ -37,12 +37,10 @@ require "$SCRIPTSDIR/debug.pl$DOTIN";
 
 use Text::ParseWords;
 
-eval "use Encode";
-$has_encode = ($@ eq "");
-
-if ($has_encode)
-{
-  use Encode;
+$has_encode = 0;
+if (eval "require Encode") {
+  Encode->import ();
+  $has_encode = 1;
 }
 
 # --- XML print formatting  --- #
@@ -120,16 +118,16 @@ sub gst_xml_print_string
 {
   if ($has_encode)
   {
-    if (Encode::decode_utf8 ($_[0]) eq undef)
+    if (decode_utf8 ($_[0]) eq undef)
     {
       # we first decode the string, if it's not
-      # utf-8 (returns null), then encode it
-      print Encode::encode_utf8 ($_[0]);
+      # utf-8 (returns undef), then encode it
+      print "" . encode_utf8 ($_[0]);
       return;
     }
   }
 
-  # It could not encode the string write it as is
+  # It could not encode the string, write it as is
   print $_[0];
 }
 
