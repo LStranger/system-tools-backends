@@ -68,7 +68,9 @@ $version = "___version___";
 
               "suse-7.0", "turbolinux-7.0",
 	      
-	      "slackware-8.0.0");
+              "slackware-8.0.0", "slackware-9.0",
+
+              "gentoo");
 
 $description =<<"end_of_description;";
        Configures your system clock, timezone and time server list.
@@ -410,27 +412,30 @@ sub conf_get_parse_table
 {
   my %dist_map =
   (
-   "redhat-6.0"   => "redhat-6.2",
-   "redhat-6.1"   => "redhat-6.2",
-   "redhat-6.2"   => "redhat-6.2",
+   "redhat-6.0"      => "redhat-6.2",
+   "redhat-6.1"      => "redhat-6.2",
+   "redhat-6.2"      => "redhat-6.2",
 
-   "redhat-7.0"   => "redhat-7.0",
-   "redhat-7.1"   => "redhat-7.0",
-   "redhat-7.2"   => "redhat-7.0",
-   "redhat-7.3"   => "redhat-7.0",
+   "redhat-7.0"      => "redhat-7.0",
+   "redhat-7.1"      => "redhat-7.0",
+   "redhat-7.2"      => "redhat-7.0",
+   "redhat-7.3"      => "redhat-7.0",
 
-   "mandrake-7.1" => "redhat-7.0",
-   "mandrake-7.2" => "redhat-7.0",
+   "mandrake-7.1"    => "redhat-7.0",
+   "mandrake-7.2"    => "redhat-7.0",
 
-   "debian-2.2"   => "debian-2.2",
-   "debian-woody" => "debian-2.2",
-   "debian-sarge" => "debian-2.2",
+   "debian-2.2"      => "debian-2.2",
+   "debian-woody"    => "debian-2.2",
+   "debian-sarge"    => "debian-2.2",
 
-   "suse-7.0"     => "suse-7.0",
+   "suse-7.0"        => "suse-7.0",
 
-   "turbolinux-7.0" => "redhat-7.0",
+   "turbolinux-7.0"  => "redhat-7.0",
    
-   "slackware-8.0.0" => "debian-2.2"
+   "slackware-8.0.0" => "debian-2.2",
+   "slackware-9.0"   => "debian-2.2",
+
+   "gentoo"          => "redhat-7.0"
    );
 
   my %dist_tables =
@@ -520,27 +525,28 @@ sub conf_get_replace_table
 {
   my %dist_map =
   (
-   "redhat-6.0"   => "redhat-6.2",
-   "redhat-6.1"   => "redhat-6.2",
-   "redhat-6.2"   => "redhat-6.2",
+   "redhat-6.0"      => "redhat-6.2",
+   "redhat-6.1"      => "redhat-6.2",
+   "redhat-6.2"      => "redhat-6.2",
    
-   "redhat-7.0"   => "redhat-7.0",
-   "redhat-7.1"   => "redhat-7.0",
-   "redhat-7.2"   => "redhat-7.0",
-   "redhat-7.3"   => "redhat-7.0",
+   "redhat-7.0"      => "redhat-7.0",
+   "redhat-7.1"      => "redhat-7.0",
+   "redhat-7.2"      => "redhat-7.0",
+   "redhat-7.3"      => "redhat-7.0",
 
-   "mandrake-7.1" => "redhat-7.0",
-   "mandrake-7.2" => "redhat-7.0",
+   "mandrake-7.1"    => "redhat-7.0",
+   "mandrake-7.2"    => "redhat-7.0",
 
-   "debian-2.2"   => "debian-2.2",
-   "debian-woody" => "debian-2.2",
-   "debian-sarge" => "debian-2.2",
+   "debian-2.2"      => "debian-2.2",
+   "debian-woody"    => "debian-2.2",
+   "debian-sarge"    => "debian-2.2",
 
-   "suse-7.0"     => "suse-7.0",
+   "suse-7.0"        => "suse-7.0",
 
-   "turbolinux-7.0"   => "redhat-7.0",
+   "turbolinux-7.0"  => "redhat-7.0",
    
-   "slackware-8.0.0"  => "debian-2.2"
+   "slackware-8.0.0" => "debian-2.2",
+   "slackware-9.0"   => "debian-2.2"
    );
 
   my %dist_tables =

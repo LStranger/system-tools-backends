@@ -1,3 +1,27 @@
+2002-11-22  Carlos Garnacho Parro <garnacho@tuxerver.net>
+
+	* added RH7.3 in $PLATFORM_INFO
+
+2002-11-22  Markus Bertheau  <twanger@bluetwanger.de>
+
+	* platform.in: Added Gentoo Linux
+
+	* time-conf.in: Added Gentoo Linux, it works like redhat-7.0
+
+2002-11-22  Álvaro Peña <icekooder@usuarios.retecal.es>
+
+         * platform.in: Added Slackware 9.0,
+         (check_slackware): Changed the regular expresion
+
+         * time-conf.in: Added Slackware 9.0,
+         (conf_get_replace_table, conf_get_parse_table): in dist_map
+         slackware-9.0 is like debian-2.2
+
+         * users-conf.in: Added Slackware 9.0,
+         (logindefs_dist_map): slackware-9.0 uses rh_logindefs_defaults
+
+         * boot-conf.in: Added Slackware 9.0
+
 2002-11-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Added general support in all working backends for debian sarge, 
