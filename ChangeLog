@@ -1,5 +1,9 @@
 2004-12-21  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* Release 1.1.3
+
+2004-12-21  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* network-conf.in: removed a spare semicolon
 
 2004-12-10  Carlos Garnacho Parro  <carlosg@gnome.org>
