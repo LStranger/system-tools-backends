@@ -200,7 +200,7 @@ sub xst_parse_split_ref
     next if $line eq "";
     @line = split ($re, $line, 2);
 
-    if (shift (@line) eq $key)
+    if (shift (@line) =~ "^$key\$")
     {
       if ($all) {
         push @res, $line[0];

@@ -524,14 +524,18 @@ sub xst_network_conf_set
 sub xst_network_get_pap_passwd
 {
   my ($file, $login) = @_;
-  my @arr;
+  my (@arr, $passwd);
 
+  $login = '"?' . $login . '"?';
   &xst_report_enter ();
   &xst_report ("network_get_pap_passwd", $login, $file);
   $arr = &xst_parse_split_first_array ($file, $login, "[ \t]+", "[ \t]+");
+  $passwd = $$arr[1];
   &xst_report_leave ();
+
+  $passwd =~ s/^\"([^\"]*)\"$/\1/;
   
-  return $$arr[1];
+  return $passwd;
 }
 
 sub xst_network_get_ppp_options_re
@@ -920,6 +924,7 @@ sub xst_network_get_parse_table
 		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
         [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
         [ "smbinstalled",  \&xst_service_sysv_installed,  "smb" ],
+        [ "dialinstalled", \&xst_file_tool_installed,     "wvdial" ],
 		    [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&xst_network_interfaces_get ]
 		    ]
@@ -954,6 +959,7 @@ sub xst_network_get_parse_table
            [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
            [ "smbinstalled",  \&xst_service_sysv_installed,  "samba" ],
+           [ "dialinstalled", \&xst_file_tool_installed,     "wvdial" ],
            [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
            [ "interface",     \&xst_network_interfaces_get ]
            ]
@@ -1010,7 +1016,7 @@ sub xst_network_get_interfaces_parse_table
            [ "mru",                \&xst_parse_sh,      IFCFG, MRU ],
            [ "remote_address",     \&xst_parse_sh,      IFCFG, REMIP ],
            [ "login",              \&xst_parse_sh,      IFCFG, PAPNAME ],
-           [ "password",           \&xst_network_get_pap_passwd, PAP, "%login%" ],
+           [ "password",           \&xst_network_get_pap_passwd, PAP,  "%login%" ],
            [ "password",           \&xst_network_get_pap_passwd, CHAP, "%login%" ],
            [ "serial_port",        \&xst_parse_sh,      IFCFG, MODEMPORT ],
            [ "serial_speed",       \&xst_parse_sh,      IFCFG, LINESPEED ],

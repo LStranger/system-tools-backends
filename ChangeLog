@@ -1,5 +1,16 @@
 2001-05-08  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* parse.pl.in (xst_parse_split_ref): Do a regexp comparison,
+	which is more flexible.
+
+	* network.pl.in (xst_network_get_parse_table): Check if
+	wvdial tool is installed. Just to warn the user about it.
+	(xst_network_get_pap_passwd): Handle values surrounded
+	by double quotes.
+
+	* file.pl.in (xst_file_tool_installed): Check if a tool
+	is found. Return 1/0 value.
+
 	* general.pl.in (xst_end): Turn off reporting here, to make
 	sure no further reporting gets mixed with the XML.
 

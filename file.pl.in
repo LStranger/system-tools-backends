@@ -539,4 +539,13 @@ sub xst_file_locate_tool
   return ($found);
 }
 
+sub xst_file_tool_installed
+{
+  my ($tool) = @_;
+  
+  $tool = &xst_file_locate_tool ($tool);
+  return 0 if $tool eq "";
+  return 1;
+}
+
 1;
