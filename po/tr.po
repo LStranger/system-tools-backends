@@ -1,32 +1,32 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# Turkish translation of stb.
+# Copyright (C) 2003 THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Gorkem Cetin <gorkem@bahcesehir.edu.tr>, 2003.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: stb\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2003-12-30 20:47+0100\n"
-"PO-Revision-Date: 2003-12-30 20:47+0100\n"
+"PO-Revision-Date: 2003-12-31 07:47+0000\n"
 "Last-Translator: Gorkem Cetin <gorkem@bahcesehir.edu.tr>\n"
 "Language-Team: Turkish <gnome-turk@gnome.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
 #: service-list.pl.in:36
 msgid "Advanced Linux Sound Architecture"
-msgstr ""
+msgstr "Gelişmiş Linux Ses Sistemi"
 
 #: service-list.pl.in:37 service-list.pl.in:61
 msgid "web server"
-msgstr ""
+msgstr "Web sunucu"
 
 #: service-list.pl.in:37 service-list.pl.in:61
 msgid ""
 "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
-msgstr ""
+msgstr "Apache, HTML ve CGI sayfalarını sunmak için kullanılan bir web sunucudur."
 
 #: service-list.pl.in:38
 msgid "Run missed scheduled jobs at startup"
@@ -38,7 +38,7 @@ msgstr ""
 
 #: service-list.pl.in:39
 msgid "Automatic power management daemon"
-msgstr ""
+msgstr "Otomatik güç yönetim programı"
 
 #: service-list.pl.in:39
 msgid ""
@@ -143,7 +143,7 @@ msgstr ""
 
 #: service-list.pl.in:54
 msgid "Exim SMTP Server"
-msgstr ""
+msgstr "Exim SMTP Sunucu"
 
 #: service-list.pl.in:55
 msgid "file alteration monitor"
@@ -155,7 +155,7 @@ msgstr ""
 
 #: service-list.pl.in:57
 msgid "Mail Fetcher"
-msgstr ""
+msgstr "E-posta Alıcı"
 
 #: service-list.pl.in:57
 msgid "A Mail Fetcher from external Servers"
@@ -163,7 +163,7 @@ msgstr ""
 
 #: service-list.pl.in:58
 msgid "IPv6 Tunnel Broker"
-msgstr ""
+msgstr "IPv6 Tünelleyici"
 
 #: service-list.pl.in:58
 msgid "A IPv6 Dinamic Tunnel Broker"
@@ -171,7 +171,7 @@ msgstr ""
 
 #: service-list.pl.in:59
 msgid "GNOME Display Manager"
-msgstr ""
+msgstr "GNOME Görüntü Yöneticisi"
 
 #: service-list.pl.in:59
 msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
@@ -179,7 +179,7 @@ msgstr ""
 
 #: service-list.pl.in:60
 msgid "console mouse support"
-msgstr ""
+msgstr "Konsol fare desteği"
 
 #: service-list.pl.in:60
 msgid ""
@@ -190,7 +190,7 @@ msgstr ""
 
 #: service-list.pl.in:62
 msgid "internet superserver"
-msgstr ""
+msgstr "İnternet süper sunucusu"
 
 #: service-list.pl.in:62
 msgid ""
@@ -210,11 +210,11 @@ msgstr ""
 
 #: service-list.pl.in:64
 msgid "IrDA stack for Linux"
-msgstr ""
+msgstr "Linux için IrDA desteği"
 
 #: service-list.pl.in:65
 msgid "The Internet Key Exchange protocol"
-msgstr ""
+msgstr "Internet Key Exchange Protocol"
 
 #: service-list.pl.in:65
 msgid "The Internet Key Exchange protocol openbsd implementation"
@@ -265,7 +265,7 @@ msgstr ""
 
 #: service-list.pl.in:75
 msgid "dns server"
-msgstr ""
+msgstr "DNS sunucu"
 
 #: service-list.pl.in:75
 msgid ""
@@ -304,15 +304,15 @@ msgstr ""
 
 #: service-list.pl.in:81
 msgid "HTTP caching proxy"
-msgstr ""
+msgstr "HTTP önbellekleme vekil sunucu"
 
 #: service-list.pl.in:82
 msgid "PCMCIA Services"
-msgstr ""
+msgstr "PCMCIA Servisleri"
 
 #: service-list.pl.in:83
 msgid "Caching-Only DNS Server"
-msgstr ""
+msgstr "Salt-önbellekleyen DNS Sunucusu"
 
 #: service-list.pl.in:84
 msgid "IPsec tunnel implementation"
@@ -335,7 +335,7 @@ msgstr ""
 
 #: service-list.pl.in:87
 msgid "database server"
-msgstr ""
+msgstr "Veritabanı sunucusu"
 
 #: service-list.pl.in:88
 msgid "Point to Point Protocol daemon"
@@ -429,11 +429,11 @@ msgstr ""
 
 #: service-list.pl.in:102
 msgid "Simple Network Management Protocol (SNMP) Daemon"
-msgstr ""
+msgstr "Simple Network Management Protocol (SNMP) Programı"
 
 #: service-list.pl.in:103 service-list.pl.in:104
 msgid "OpenSSH SSH server"
-msgstr ""
+msgstr "OpenSSH SSH sunucusu"
 
 #: service-list.pl.in:103
 msgid ""
@@ -443,7 +443,7 @@ msgstr ""
 
 #: service-list.pl.in:104
 msgid "OpenSSH server daemon"
-msgstr ""
+msgstr "OpenSSH sunucu programı"
 
 #: service-list.pl.in:105
 msgid "Linux system logging utilities"
@@ -514,7 +514,7 @@ msgstr ""
 
 #: service-list.pl.in:114
 msgid "X font server"
-msgstr ""
+msgstr "X yazıtipi sunucusu"
 
 #: service-list.pl.in:114
 msgid ""
@@ -532,16 +532,17 @@ msgstr ""
 
 #: service.pl.in:166 service.pl.in:171
 msgid "Halting the system"
-msgstr ""
+msgstr "Sistem durduruluyor"
 
 #: service.pl.in:167 service.pl.in:173
 msgid "Text mode"
-msgstr ""
+msgstr "Metin giriş"
 
 #: service.pl.in:168 service.pl.in:172 service.pl.in:176
 msgid "Graphical mode"
-msgstr ""
+msgstr "Grafiksel giriş"
 
 #: service.pl.in:169 service.pl.in:174
 msgid "Rebooting the system"
-msgstr ""
+msgstr "Sistem yeniden başlatılıyor"
+
