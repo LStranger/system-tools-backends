@@ -1,5 +1,10 @@
 2001-03-31  Hans Petter Jansson  <hpj@ximian.com>
 
+	* parse.pl.in (xst_parse_fstab): Went back underground, now rumored to
+	  be living in filesys.pl.in, under the name xst_filesys_parse_fstab().
+
+2001-03-31  Hans Petter Jansson  <hpj@ximian.com>
+
 	* filesys.pl.in: Added. Implements parsing of fstab and mtab files,
 	  and manipulating the information presented by these as in-memory
 	  structures.
