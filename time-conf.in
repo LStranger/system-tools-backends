@@ -160,8 +160,7 @@ sub xml_print
 {
   my $h = $_[0];
   my @sync;
-
-  @scalar_keys = qw (timezone ntpinstalled);
+  my @scalar_keys = qw (timezone ntpinstalled);
 
   $sync = $$h{"sync"};
 
@@ -411,6 +410,7 @@ sub conf_get_parse_table
          {
            NTP_CONF     => "/etc/ntp.conf",
            STEP_TICKERS => "/etc/ntp/step-tickers",
+           ZONEINFO     => "/usr/share/zoneinfo",
            LOCAL_TIME    => "/etc/localtime"
          },
          table =>

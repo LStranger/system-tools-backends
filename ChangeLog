@@ -2,6 +2,10 @@
 
 	* 0.4 RELEASE
 
+2001-05-09  Hans Petter Jansson  <hpj@ximian.com>
+
+	* time-conf.in: Red Hat 7.0 timezone fix from Arturo.
+
 2001-05-09  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* report.pl.in (xst_report): We're sending report strings into debug
