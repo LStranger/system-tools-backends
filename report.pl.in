@@ -126,14 +126,11 @@ sub xst_report
   }
 
   # Verbose (--verbose) output is human-readable only.
-  if ($xst_debug)
-  {
-    $format = "$str\n";
-    $res = sprintf ($format, @args);
-    print STDERR $res if $xst_do_verbose;
-
-    &xst_debug_print_indented_string ($xst_report_level, "report $key: $res");
-  }
+  $format = "$str\n";
+  $res = sprintf ($format, @args);
+  print STDERR $res if $xst_do_verbose;
+  
+  &xst_debug_print_indented_string ($xst_report_level, "report $key: $res");
 }
 
 

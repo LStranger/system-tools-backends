@@ -1,5 +1,8 @@
 2001-05-09  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* report.pl.in (xst_report): We're sending report strings into debug
+	file again: they're quite useful.
+
 	* debug.pl.in (xst_debug_open_output_file): set up a hash here so we
 	cache the opened files. 
 	(xst_debug_print_string_to_file): Not closing this files any more.
