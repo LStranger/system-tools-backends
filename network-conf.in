@@ -136,7 +136,7 @@ sub xml_parse_network
     elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "winsuse")         { $$hash{"winsuse"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "smbuse")          { $$hash{"smbuse"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "interface")       { &xml_parse_interface ($$tree[1], \%interface); }
+    elsif ($$tree[0] eq "interface")       { &xst_network_xml_parse_interface ($$tree[1], \%interface); }
     elsif ($$tree[0] eq "dialing")         { &xml_parse_dialing ($$tree[1], \%dialing); }
 
     shift @$tree;
@@ -175,30 +175,6 @@ sub xml_parse_statichost
   {
     $$statichost{$ip} = \@alias;
   }
-}
-
-# <interface>...</interface>
-
-sub xml_parse_interface
-{
-  my $tree = $_[0];
-  my $interface = $_[1];
-  my %hash;
-  my $dev;
-
-  shift @$tree;
-  
-  while (@$tree)
-  {
-    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
-
-    shift @$tree;
-    shift @$tree;
-  }
-
-  $hash{"file"} = &xst_network_get_file ($hash{"dev"}) if !exists $hash{"file"};
-  $dev = $hash{"file"};
-  $$interface{$dev} = \%hash;
 }
 
 sub xml_parse_dialing
@@ -249,7 +225,7 @@ sub xml_print_statichost
 
 sub xml_print
 {
-  my $h = $_[0];
+  my ($h) = @_;
   my @scalar_keys =
       qw(auto hostname gateway gatewaydev gwdevunsup domain 
          hostmatch workgroup description winsserver winsuse smbuse
@@ -293,11 +269,7 @@ sub set
   my $hash;
   
   $hash = &xml_parse ();
-
-  # check the success result of this.
   &xst_network_conf_set ($hash);
-#  &be_ensure_local_host_entry ($$hash{"hostname"});
-
   &xst_end ();
 }
 

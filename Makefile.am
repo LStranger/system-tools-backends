@@ -1,3 +1,4 @@
+SUBDIRS = files
 
 backends = \
 	disks-conf \

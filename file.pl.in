@@ -27,6 +27,10 @@ require "___scriptsdir___/general.pl";
 require "___scriptsdir___/report.pl";
 
 
+$XST_FILE_READ  = 1;
+$XST_FILE_WRITE = 2;
+
+
 # --- File operations --- #
 
 
@@ -215,36 +219,13 @@ sub xst_file_open_read_from_names
   if ($fname eq "") 
   { 
     &xst_report ("file_open_read_failed", "@_");
-    return;
+    return undef;
   }
 
   &xst_report ("file_open_read_success", $fullname);
   &xst_report_leave ();
 
   return *FILE;
-}
-
-
-sub xst_file_run_pipe_read
-{
-  my ($cmd) = @_;
-  my ($command);
-  
-  local *PIPE;
-
-  &xst_report_enter ();
-  $command = &xst_file_get_cmd_path ($cmd);
-  if ($command == -1)
-  {
-    &xst_report ("file_run_pipe_read_failed", $command);
-    &xst_report_leave ();
-    return undef;
-  }
-  
-  open PIPE, "$command|";
-  &xst_report ("file_run_pipe_read_success", $command);
-  &xst_report_leave ();
-  return *PIPE;
 }
 
 
@@ -290,7 +271,7 @@ sub xst_file_open_write_from_names
   if (!open (FILE, ">$name"))
   {
     &xst_report ("file_open_write_failed",  $name);
-    return;
+    return undef;
   }
 
   return *FILE;
@@ -421,6 +402,47 @@ sub xst_file_open_write_compressed
   }
 
   return *FILE;
+}
+
+
+sub xst_file_run_pipe
+{
+  my ($cmd, $mode_mask) = @_;
+  my ($command);
+  local *PIPE;
+
+  &xst_report_enter ();
+  $command = &xst_file_get_cmd_path ($cmd);
+  if ($command == -1)
+  {
+    &xst_report ("file_run_pipe_failed", $command);
+    &xst_report_leave ();
+    return undef;
+  }
+
+  $command .= " |"        if $mode_mask & $XST_FILE_READ;
+  $command = "| $command" if $mode_mask & $XST_FILE_WRITE;
+  
+  open PIPE, $command;
+  &xst_report ("file_run_pipe_success", $command);
+  &xst_report_leave ();
+  return *PIPE;
+}
+
+
+sub xst_file_run_pipe_read
+{
+  my ($cmd) = @_;
+
+  return &xst_file_run_pipe ($cmd, $XST_FILE_READ);
+}
+
+
+sub xst_file_run_pipe_write
+{
+  my ($cmd) = @_;
+
+  return &xst_file_run_pipe ($cmd, $XST_FILE_WRITE);
 }
 
 

@@ -1,3 +1,17 @@
+Sun Aug  5 20:26:03 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* file.pl.in (xst_file_run_pipe_write): The write version
+	of run_pipe_read.
+	(xst_file_run_pipe): And then some abstraction occurs.
+
+Fri Aug  3 22:32:38 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network-conf.in (xml_parse_network): Call xst_network_xml_parse_interface,
+	which used to be xml_parse_interface.
+
+	* network.pl.in (xst_network_xml_parse_interface):
+	Relocated so it can be shared with internetsharing.
+
 2001-08-03  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* internetsharing-conf.in (xst_ishare_fwrules_get_ipchains): Get

@@ -42,41 +42,97 @@ require "___scriptsdir___/network.pl";
 
 $name = "internetsharing";
 $version = "___version___";
-@platforms = ("redhat-7.1", "redhat-7.0", "mandrake-7.2");
+@platforms = ("redhat-7.1", "redhat-7.0", "mandrake-7.2", "debian-2.2");
 
 $description =<<"end_of_description;";
        Sets up firewall rules for a basic internet sharing (masq)
        network.
 end_of_description;
 
-$progress_max = 365;
-
 
 # --- XML parsing --- #
-
 
 # Scan XML from standard input to an internal tree.
 
 sub xml_parse
 {
-  my ($tree, %hash);
+  my ($tree, %hash, $elem);
   
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan;
+  $tree = &xst_xml_scan ();
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "networking" tag.
 
-#  while (@$tree)
-#  {
-#    if ($$tree[0] eq "time") { &xml_parse_time($$tree[1], \%hash); }
-#
-#    shift @$tree;
-#    shift @$tree;
-#  }
+  while ($elem = shift @$tree)
+  {
+    if   ($elem eq "internetsharing") { &xml_parse_internetsharing (shift @$tree, \%hash); }
+    else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
 
-  return(\%hash);
+  return (\%hash);
+}
+
+
+sub xml_parse_internetsharing
+{
+  my ($tree, $hash) = @_;
+  my ($elem, %interface);
+  
+  shift @$tree;  # Skip attributes.
+  
+  while ($elem = shift @$tree)
+  {
+      if    ($elem eq "fwrules")   { $$hash{"fwrules"} = &xml_parse_fwrules (shift @$tree);        }
+      elsif ($elem eq "dhcp")      { $$hash{"dhcp"}    = &xml_parse_dhcp    (shift @$tree);        }
+      elsif ($elem eq "interface") { &xst_network_xml_parse_interface (shift @$tree, \%interface); }
+      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+  
+  $$hash{"interface"} = \%interface unless scalar keys %interface == 0;
+}
+
+
+sub xml_parse_fwrules
+{
+  my ($tree) = @_;
+  my ($elem, $hash);
+
+  $hash = {};
+  shift @$tree;  # Skip attributes.
+
+  while ($elem = shift @$tree)
+  {
+      if    ($elem eq "tools")        { $$hash{"tools"}        = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "configured")   { $$hash{"configured"}   = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "forwarding")   { $$hash{"forwarding"}   = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "masquerading") { $$hash{"masquerading"} = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "active")       { $$hash{"active"}       = &xst_xml_get_pcdata (shift @$tree); }
+      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+
+  return $hash;
+}
+
+
+sub xml_parse_dhcp
+{
+  my ($tree) = @_;
+  my ($elem, $hash);
+
+  $hash = {};
+  shift @$tree;  # Skip attributes.
+
+  while ($elem = shift @$tree)
+  {
+      if    ($elem eq "installed")    { $$hash{"installed"}  = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "configured")   { $$hash{"configured"} = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "active")       { $$hash{"active"}     = &xst_xml_get_pcdata (shift @$tree); }
+      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+
+  return $hash;
 }
 
 
@@ -114,11 +170,11 @@ sub xst_ishare_fwrules_get_ipchains
 
   if ($hash{"tools"})
   {
-    $fd = &xst_file_run_pipe_read ('ipchains-save 2>/dev/null | grep "^-A forward.*MASQ\$"');
+    $fd = &xst_file_open_read_from_names ($ipchains_conf);
     if ($fd ne undef)
     {
       $val = <$fd>;
-      $hash{"configured"} = ($val =~ /MASQ$/)? 1: 0;
+      $hash{"configured"} = ($val =~ /^-A forward.*MASQ$/)? 1: 0;
       close $fd;
     }
   }
@@ -130,7 +186,16 @@ sub xst_ishare_fwrules_get_ipchains
 }
 
 
-sub xst_ishare_dhcp_mdk72_get
+sub xst_ishare_fwrules_set_ipchains
+{
+  my ($ipchains_conf, $values_hash) = @_;
+  my ($fd, $val);
+
+  
+}
+
+
+sub xst_ishare_dhcp_isc_get
 {
   my ($dhcpd_conf) = @_;
   my (%hash);
@@ -148,36 +213,12 @@ sub xst_ishare_dhcp_mdk72_get
 
 sub xml_print
 {
-  my $h = $_[0];
-  my @sync;
-
-  @scalar_keys = qw (ip_forwarding_installed);
-
-  $sync = $$h{"sync"};
+  my ($h) = @_;
 
   &xst_xml_print_begin ();
-
-  
-#  &xst_xml_print_vspace ();
-#  &xst_xml_print_hash ($$h{"local_time"}, "local_time");
-#  &xst_xml_print_vspace ();
-  
-#  &xst_xml_print_vspace ();
-#  &xst_xml_print_line ("<sync active='" . &xst_print_boolean_yesno ($sync_active) . "'>\n");
- 
-#  &xst_xml_enter ();
-#  foreach $server (@$sync)
-#  {
-#    &xst_xml_print_line ("<server>$server</server>\n");
-#  }
-#  &xst_xml_leave ();
-  
-#  &xst_xml_print_line ("</sync>\n");
-#  &xst_xml_print_vspace ();
-
-  &xst_xml_print_scalars ($h, @scalar_keys);
-  &xst_xml_print_vspace ();
-
+  &xst_xml_print_hash      ($$h{"fwrules"}, "fwrules");
+  &xst_xml_print_hash      ($$h{"dhcp"},    "dhcp");
+  &xst_xml_print_hash_hash ($$h{"interface"}, "interface");
   &xst_xml_print_end ();
 }
 
@@ -186,7 +227,7 @@ sub xml_print
 sub get
 {
   my $hash;
-
+  
   $hash = &conf_get ();
 
   &xst_end();
@@ -199,9 +240,7 @@ sub set
   my $hash;
 
   $hash = &xml_parse ();
-
   &conf_set ($hash);
-  
   &xst_end();
 }
 
@@ -248,13 +287,14 @@ sub conf_get
 
 sub conf_set
 {
-  my $values_hash = $_[0];
-  my %dist_attrib;
+  my ($values_hash) = @_;
+  my (%dist_attrib, $old_hash);
 
   %dist_attrib = &conf_get_replace_table ();
 
+  $old_hash = &xst_network_conf_get ();
   $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
-                                  $values_hash);
+                                  $values_hash, $old_hash);
 
   return $res;
 }
@@ -265,7 +305,8 @@ sub conf_get_parse_table
   (
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
-   "mandrake-7.2" => "mandrake-7.2"
+   "mandrake-7.2" => "mandrake-7.2",
+   "debian-2.2"   => "mandrake-7.2"
    );
 
   my %dist_tables =
@@ -281,7 +322,7 @@ sub conf_get_parse_table
              [
               [ "interface", \&xst_network_interfaces_get ],
               [ "fwrules",   \&xst_ishare_fwrules_get_ipchains, IPCHAINS_CONF],
-              [ "dhcp",      \&xst_ishare_dhcp_mdk72_get,       DHCPD_CONF],
+              [ "dhcp",      \&xst_ishare_dhcp_isc_get,       DHCPD_CONF],
               ]
                 },
        );
@@ -297,23 +338,26 @@ sub conf_get_replace_table
 {
   my %dist_map =
   (
-   "redhat-7.0"   => "redhat-7.0",
-   "redhat-7.1"   => "redhat-7.0",
-   "mandrake-7.2" => "redhat-7.0",
-   "turbolinux-7.0"   => "redhat-7.0",
+   "redhat-7.0"   => "mandrake-7.2",
+   "redhat-7.1"   => "mandrake-7.2",
+   "mandrake-7.2" => "mandrake-7.2",
+   "debian-2.2"   => "mandrake-7.2"
    );
 
   my %dist_tables =
       (
-       "redhat-7.0" =>
+       "mandrake-7.2" =>
        {
          fn =>
          {
            IPCHAINS_CONF => "/etc/sysconfig/ipchains",
+           DHCPD_CONF    => "/etc/dhcpd.conf"
          },
          table =>
              [
-              [ "ip_forwarding_installed", \&xst_service_sysv_set_status, 8, "ipchains" ],
+              [ "interface", \&xst_network_interfaces_set,      OLD_HASH ],
+              [ "fwrules",   \&xst_ishare_fwrules_set_ipchains, IPCHAINS_CONF ],
+              [ "dhcp",      \&xst_ishare_dhcp_isc_set,         DHCPD_CONF ],
               ]
                 },
        );
