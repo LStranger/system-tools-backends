@@ -249,11 +249,14 @@ sub xst_network_rh62_interface_set
   my ($dev, $enabled) = @_;
   my @ifaces, $i;
 
-  return -1 if &xst_run ("ifdown $dev");
-  
   if ($enabled)
   {
     return -1 if &xst_run ("ifup $dev");
+  }
+  else
+  {
+    print STDERR, "\n\nifdown $dev\n\n";
+    return -1 if &xst_run ("ifdown $dev");
   }
 
   return 0;
