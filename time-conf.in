@@ -74,7 +74,7 @@ sub xml_parse
   $tree = &xst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
-  # This is the top level - find and enter the "networking" tag.
+  # This is the top level - find and enter the "time" tag.
 
   while (@$tree)
   {
@@ -88,7 +88,7 @@ sub xml_parse
 }
 
 
-# <networking>...</networking>
+# <time>...</time>
 
 sub xml_parse_time
 {
