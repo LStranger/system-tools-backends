@@ -1,5 +1,15 @@
 2001-07-19  Hans Petter Jansson  <hpj@ximian.com>
 
+	* parse.pl.in (xst_parse_xml_child_names): Return array, not reference.
+	  Fixed comparison to be against input list, not output.
+	  (xst_parse_alchemist): Set args. Alchemist attr is always VALUE.
+	  (xst_parse_alchemist_print): Ditto.
+	  (xst_parse_alchemist_print_option): Ditto.
+
+	* print.pl.in (xst_print_get_printer_parse_table): Some fixes, additions.
+
+2001-07-19  Hans Petter Jansson  <hpj@ximian.com>
+
 	* xml.pl.in (xst_xml_model_get_children): Implement.
 	
 	* parse.pl.in (xst_parse_xml): Use new return convention of

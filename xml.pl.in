@@ -554,7 +554,7 @@ sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
   }
   else
   {
-    $doc = &xst_xml_read_stdin ();
+    return undef, 0;
   }
 
   @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)/mg); # pcdata, tag, pcdata, tag, ...

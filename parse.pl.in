@@ -1322,14 +1322,14 @@ sub xst_parse_xml_child_names
   ($model) = &xst_xml_model_scan ($file);
   $branch  = &xst_xml_model_find ($model, $varpath);
 
-  if (!$branch) { return \@children; }
+  if (!$branch) { return @children; }
 
   my @list = @$branch;
   shift @list;  # Attributes
 
   while (@list)
   {
-    if (@list [0] ne "__unparsed__" && @children [0] ne "0")
+    if (@list [0] ne "__unparsed__" && @list [0] ne "0")
     {
       push @children, shift @list;
     }
@@ -1341,28 +1341,28 @@ sub xst_parse_xml_child_names
     shift @list;
   }
 
-  return \@children;
+  return @children;
 }
 
 sub xst_parse_alchemist
 {
-  my ($file, $varpath, $property);
+  my ($file, $varpath) = @_;
 
   $varpath = "/adm_context/datatree/" . $varpath;
-  return &xst_parse_xml ($file, $varpath, $property);
+  return &xst_parse_xml ($file, $varpath, "VALUE");
 }
 
 sub xst_parse_alchemist_print
 {
-  my ($file, $printer, $varpath, $property);
+  my ($file, $printer, $varpath) = @_;
 
   $varpath = "printconf/print_queues/" . $printer . "/" . $varpath;
-  return &xst_parse_alchemist ($file, $varpath, $property);
+  return &xst_parse_alchemist ($file, $varpath);
 }
 
 sub xst_parse_alchemist_print_option
 {
-  my ($file, $printer, $name);
+  my ($file, $printer, $name) = @_;
   my ($varpath, $model, $branch, $fd, $options, $option);
 
   ($model) = &xst_xml_model_scan ($file);
