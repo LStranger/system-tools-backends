@@ -1,3 +1,12 @@
+2001-06-13  Tambet Ingo  <tambet@ximian.com>
+
+	* Makefile.am (backends): s/xconf/display/
+
+	* x.pl.in: Many improvemets, parser works.
+
+	* display-conf.in: Renamed from misnamed xconf-conf.in
+	Mucho improvements.
+
 2001-06-12  Richard Bos  <allabos@freeler.nl>
 
 	* platform.pl.in (check_solaris): Add Solaris check.

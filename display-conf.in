@@ -1,0 +1,176 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Display configurator. Designed to be architecture and distribution independent.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Tambet Ingo <tambet@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/X11/XF86Config
+
+# Running programs affected:
+#
+
+require "___scriptsdir___/platform.pl";
+require "___scriptsdir___/x.pl";
+
+# --- Tool information --- #
+
+$name = "Display";
+$version = "0.1.0";
+@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1);
+
+$description =<<"end_of_description;";
+       Configures XFree86 verion 4.
+end_of_description;
+
+# --- Platform handling --- #
+
+$platmap =
+{
+  "redhat-6.2"   => XFree4,
+  "redhat-7.0"   => XFree4,
+  "redhat-7.1"   => XFree4,
+};
+
+$filemap = {
+  XFree4 => "/etc/X11/XF86Config",
+};
+
+sub distro_file
+{
+  return $$filemap{$$platmap{$xst_dist}};
+}
+
+# --- XML parsing ---
+# Scan XML from standard input to an internal tree.
+
+
+# Configuration handling.
+
+# Sections hash is in format:
+# %sections = ( Section name => {
+#                 keywords => {
+#                   keyword1, \&function_to_parse_keyword1,
+#                   ...
+#                 },
+#                 options => (list of known options)
+#               }
+#               ...
+#              )
+# Note that "Section name" must match with real section name,
+# same about "keyword1" and list of options.
+#
+# currently implemented functions to parse sections:
+# general_parse_kw, parse_range_hz, parse_kw_list
+
+my %sections = (
+                Monitor => {
+                  keywords => {
+                    ( Identifier,  \&general_parse_kw ),
+                    ( VendorName,  \&general_parse_kw ),
+                    ( ModelName,   \&general_parse_kw ),
+                    ( HorizSync,   \&parse_range_hz   ),
+                    ( VertRefresh, \&parse_range_hz   ),
+                  },
+                  options => [(DPMS, SyncOnGreen)],
+                },
+                Device => {
+                  keywords => {
+                    ( Identifier,    \&general_parse_kw ),
+                    ( Driver,        \&general_parse_kw ),
+                    ( BusID,         \&general_parse_kw ),
+                    ( Screen,        \&general_parse_kw ),
+                    ( Chipset,       \&general_parse_kw ),
+                    ( Ramdac,        \&general_parse_kw ),
+                    ( ClockChip,     \&general_parse_kw ),
+                    ( VideoRam,      \&general_parse_kw ),
+                    ( BiosBase,      \&general_parse_kw ),
+                    ( MemBase,       \&general_parse_kw ),
+                    ( IOBase,        \&general_parse_kw ),
+                    ( ChipID,        \&general_parse_kw ),
+                    ( ChipRev,       \&general_parse_kw ),
+                    ( TextClockFreq, \&general_parse_kw ),
+                  },
+                  options => [()],
+                },
+                Screen => {
+                  keywords => {
+                    ( Identifier,   \&general_parse_kw ),
+                    ( Device,       \&general_parse_kw ),
+                    ( Monitor,      \&general_parse_kw ),
+                    ( DefaultDepth, \&general_parse_kw ),
+                    ( DefaultFbBpp, \&general_parse_kw ),                    
+                  },
+                  options => [()],
+                },
+                Files => {
+                  keywords => {
+                    ( FontPath,   \&parse_kw_list    ),
+                    ( RGBPath,    \&general_parse_kw ),
+                    ( ModulePath, \&general_parse_kw ),
+                  },
+                  options => [()],
+                }
+                
+                );
+
+sub get_config
+{
+  return &xst_xfree4_conf_get (&distro_file (), \%sections);
+}
+
+# Top-level actions.
+
+sub get
+{
+  my $config = &get_config ();
+      
+  &xst_end();
+  &xst_x_xml_print ($config);
+}
+
+sub set
+{
+  &xst_end ();
+}
+
+sub filter
+{
+  my $config;
+
+  $config = &xml_parse ();
+  &xst_end ();
+  &xst_x_xml_print ($config);
+}
+
+
+# --- Main --- #
+
+&xst_init ($name, $version, $description, @ARGV);
+&xst_platform_ensure_supported (@platforms);
+
+# Do our thing.
+
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }

@@ -9,7 +9,8 @@ backends = \
 	print-conf \
 	internetsharing-conf \
 	mouse-conf \
-	package-conf
+	package-conf \
+	display-conf
 
 PERLBODY = \
 	gettext.pl.in \
@@ -28,7 +29,8 @@ PERLBODY = \
 	media.pl.in \
 	debug.pl.in \
 	print.pl.in \
-	share.pl.in
+	share.pl.in \
+	x.pl.in
 
 
 perl_libs = \

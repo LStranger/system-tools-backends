@@ -1,11 +1,11 @@
 #!/usr/bin/env perl
 #-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-# Common functions for exporting network shares (NFS or SMB).
+# Common functions for XFree86Config file.
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
-# Authors: Hans Petter Jansson <hpj@ximian.com>
+# Authors: Tambet Ingo <tambet@ximian.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -21,26 +21,49 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/file.pl";
-require "___scriptsdir___/parse.pl";
-require "___scriptsdir___/replace.pl";
+require "___scriptsdir___/xml.pl";
 
-# XFree86 version 4
+# XFree86 version 4 sections:
+# Files
+# ServerFlags
+# Module
+# InputDevice
+# Device
+# VideoAdaptor
+# Monitor
+# Modes
+# Screen
+# ServerLayout
+# DRI
+# Vendor
 
-@xfree4_section_list = ("Files", "ServerFlags", "Module", "InputDevice",
-                        "Device", "VideoAdaptor", "Monitor", "Modes",
-                        "Screen", "ServerLayout", "DRI", "Vendor");
 
-# Returns 1 if keyword is in list.
+
 # Difference from xst_item_is_in_list is that XF86Config keywords are
 # case-insensitive and "_" characters are ignored.
-sub xst_x_keyword_in_list
+# Returns found value from list or 0.
+sub xst_x_keyword_in_list ($@)
 {
   my $keyword = shift @_;
 
-  $keyword =~ s/\_//g;
+  $keyword =~ s/\_//g; # We don't care about underscores (_)
+  
+  foreach my $item (@_)
+  {
+    return $item if ($keyword =~ /^$item$/i);
+  }
+
+  return 0;
+}
+
+sub xst_x_option_in_list ($@)
+{
+  my $keyword = shift @_;
+
+  $keyword =~ s/\"//g; # We don't care about quotes (")
+  $keyword =~ s/^No//i; # and it could start with optional "No"
   
   foreach my $item (@_)
   {
@@ -49,63 +72,198 @@ sub xst_x_keyword_in_list
 
   return 0;
 }
- 
-sub xst_x_get_section_files
+
+sub general_parse_section ($)
 {
   my ($buff) = @_;
-  my @vars = ("FontPath", "RGBPath", "ModulePath");
-  my $line;
+  
+  while (<$buff>) {
+    next if &xst_ignore_line ($_); # Comment or empty line.
+    next if (/^\s*Section\s+\"([a-zA-Z]+)\"/i); # First line with beginning of section.
+    return if (/^[ \t]*EndSection/i); # End of section.
 
-  #Fill with defaults
-  my %Files =
-  {
-    FontPath => (
-                 "/usr/X11R6/lib/X11/fonts/misc/",
-                 "/usr/X11R6/lib/X11/fonts/Speedo/",
-                 "/usr/X11R6/lib/X11/fonts/Type1/",
-                 "/usr/X11R6/lib/X11/fonts/CID/",
-                 "/usr/X11R6/lib/X11/fonts/75dpi/",
-                 "/usr/X11R6/lib/X11/fonts/100dpi/"
-                 ),
-    RGBPath => "/usr/X11R6/lib/X11/rgb",
-    ModulePath => (),
-  };
-        
-
-  foreach $line (@$buff)
-  {
-    next if &xst_ignore_line ($line);
-
-    if ($line =~ /^\s*Section\s+\"([a-z]+)\"/i)
-    {
-      $found++ if $1 =~ /Files/i;
-    }
-    next if !$found;
-    last if ($line =~ /^[ \t]*EndSection/i);
+    chomp;
+    s/^[ \t]*//g;
     
-    # Inside section
-#    if (!&xst_x_keyword_in_list (, @vars))
-#    {
-#      &xst_report ("xst_x_get_section_failed: Invalid line.");
-#    }    
+    return split (/[ \t]+/);    
   }
-    
-  return \%Files;
 }
 
-  
-
-# Returns "SectionName" if $line is section beginning, 0 otherwise.
-sub xst_x_section_start
+# Parse general unique value 
+sub general_parse_kw ($)
 {
   my ($line) = @_;
+  my (%hash, $val);
 
-  if ($line =~ /^\s*Section\s+\"([a-zA-Z]+)\"/)
+  $val = $$line[1];
+  $val =~ s/\"//g if $val;
+  
+  $hash{$$line[0]} = $val;
+ 
+  return \%hash;
+}
+
+# Parse general value with non-unique value
+sub parse_kw_list ($)
+{
+  my ($line) = @_;
+  my (%hash, $val, @array);
+
+  $val = $$line[1];
+  $val =~ s/\"//g if $val;
+
+  push @array, $val;
+  $hash{$$line[0]} = \@array;
+ 
+  return \%hash;
+}
+
+# Parse VertRefresh and HorizSync
+sub parse_range_hz ($)
+{
+  my ($line) = @_;
+  my (@array) = ();
+  my ($kw, $val, %hash);
+
+  $kw = shift @$line;
+
+  foreach $val (@$line) {
+    last if $val =~ /^\#/; # Start of comment
+    $val =~ s/,//; # We don't need commas
+    push @array, $val;
+  }
+  
+  $hash{$kw} = \@array;
+
+  return \%hash;
+}
+
+# parse_option
+# Parses "Option" line form XF86Config.
+# Arguments:
+#  $line - ref to array containing the actual line split by \s. 
+# Returns hash with one key (Option) containing hash with option
+# name as key and option value as val.
+sub parse_option ($)
+{
+  my ($line) = @_;
+  my ($name, $value, %hash, %subhash);
+  my ($val, $bool);
+
+  shift @$line; # Remove "Option"
+
+  $name = shift @$line;
+  $value = shift @$line;
+
+  $name =~ s/\"//g;
+  $value =~ s/\"//g;
+
+  if ($value =~ /^(1|on|true|yes)$/i) {
+    $val = 1;
+    $bool = 1;
+  } elsif ($value =~ /^(0|off|false|no)$/i) {
+    $val = 0;
+    $bool = 1;
+  } else {
+    $val = $value;
+  }
+
+  if ($bool) {
+    $val = !$val if ($name =~ s/^No//i);
+
+    $val = 'true' if $val;
+    $val = 'false' if not $val;
+  }
+
+  $subhash{$name} = $val;
+  $hash{Option} = \%subhash;
+
+  return \%hash;
+}
+
+# This function tries to be real smart. It takes two hash references as arguments
+# and adds source to dest. If key from source exists in dest (and is an array) it
+# adds to the end of array of $dest{$key}. If source hash also contians array it
+# adds all elements of the array one by one to the end of $dest{$key} array.
+# Returns reference to dest. hash.
+sub add2hash ($$)
+{
+  my ($destref, $sourceref) = @_;
+  my (%dest) = %$destref;
+  my (%source) = %$sourceref;
+  my ($key, $val);
+  
+  foreach $key (keys %source) {
+    if ($dest{$key} && ref ($dest{$key}) eq "ARRAY") {
+      # Hash at given key is array
+      my ($array) = $dest{$key};
+      
+      if (ref ($source{$key}) eq "ARRAY") {
+        # Source is array too, let's add all elements
+        foreach $val (@{$source{$key}}) {
+          push @$array, $val;
+        }
+      } else {
+        # Source is scalar, simply add it 
+        push @$array, $source{$key};
+      }            
+    } else {
+      # Add first key to hash
+      $dest{$key} = $source{$key};
+    }
+  }
+
+  return \%dest;
+}
+
+# get_section:
+# Parses Sections from XF86Config.
+# Arguments:
+#  $buff;
+#  $keywords - ref to hash in form: Keywordname => \&parser_func
+#  $options  - ref to list of known options
+#
+# Returns hash containg the section.
+
+sub get_section ($$$)
+{
+  my ($buff, $keywords, $options) = @_;
+  my (@line, $ref);
+  my (%hash);
+
+  while (@line = &general_parse_section ($buff)) {
+    my ($kw, $func);
+
+    if ($kw = &xst_x_keyword_in_list ($line[0], keys %$keywords)) {
+      $func = $$keywords{$kw};
+    }
+    elsif ($line[0] =~ /^Option/i && &xst_x_option_in_list ($line[1], @$options)) {
+      $func = \&parse_option;
+    }
+
+    if ($func) {
+      my ($ref) = &$func (\@line);
+
+      $ref = &add2hash (\%hash, $ref);
+      %hash = %$ref;
+    }
+  }
+
+  return \%hash;
+}
+
+# Returns "SectionName" if $line is section beginning, 0 otherwise.
+sub xst_x_section_start ($@)
+{
+  my ($line, @section_list) = @_;
+  my ($section);
+
+  if ($line =~ /^\s*Section\s+\"([a-zA-Z]+)\"/i)
   {
-    my $section = $1;
+    $section = $1;
 
     &xst_report_enter ();
-    if (&xst_item_is_in_list ($section, @xfree4_section_list))
+    if (&xst_item_is_in_list ($section, @section_list))
     {
       &xst_report ("xst_x_section_start_success", $section);
     }
@@ -122,11 +280,13 @@ sub xst_x_section_start
   return 0;
 }
 
-sub xst_xfree4_conf_get
+sub xst_xfree4_conf_get ($$)
 {
-  my $file;
+  my ($fname, $tmp) = @_;
+  my (%section_list) = %$tmp;
+  my ($file, $section);
   local *FILE;
-  my ($fname) = @_;
+  my (%config);  
 
   $file = &xst_file_open_read_from_names ($fname);
   return if not $file;
@@ -137,8 +297,93 @@ sub xst_xfree4_conf_get
     next if &xst_ignore_line ($_);
     chomp;
 
-    &xst_x_section_start ($_);
+    $section = &xst_x_section_start ($_, keys %section_list);
+    if ($section) {
+      my ($ref);
+      
+      $ref = &get_section (\*FILE,
+                           $section_list{$section}{keywords},
+                           $section_list{$section}{options});
+      
+      if ($ref) {
+        my (@array);
+        
+        if ($config{$section}) {
+          @array = @{$config{$section}};
+        } else {
+          @array = ();
+        }
+
+        push @array, $ref;
+        $config{$section} = \@array;
+      }
+    }
   }
 
   close (FILE);
+
+  return \%config;
 }
+
+# XML Printing.
+
+# Internal
+sub xst_x_xml_print_section ($)
+{
+  my ($hash) = @_;
+  my ($key);
+
+  &xst_xml_enter ();
+
+  foreach $key (keys %$hash) {
+    if (ref ($$hash{$key}) eq "ARRAY") {
+      # Array
+      my ($array) = $$hash{$key};
+      my ($val);
+      
+      foreach $val (@$array) {
+        &xst_xml_print_pcdata ($key, $val);
+      }
+    } elsif (ref ($$hash{$key}) eq "HASH") {
+      # Hash
+      my ($subhash) = $$hash{$key};
+      my ($subkey, $val);
+
+      foreach $subkey (keys %$subhash) {
+        $val = &xst_xml_quote ($$subhash{$subkey});
+        &xst_xml_print_line ("<$key name='$subkey' value='$val'/>");
+      }
+    } else {
+      # Plain scalar.
+      &xst_xml_print_pcdata ($key, $$hash{$key});
+    }
+  }
+  
+  &xst_xml_leave ();
+}
+
+sub xst_x_xml_print ($)
+{
+  my ($config) = @_;
+  my ($section, $hash);
+  
+  &xst_xml_print_begin ();
+  &xst_xml_print_vspace ();
+
+  foreach $section (keys %$config) {
+    my ($arrayref) = $$config{$section};
+
+    foreach $hash (@$arrayref) {
+      &xst_xml_container_enter ("$section");
+      &xst_x_xml_print_section ($hash);
+      &xst_xml_container_leave ();
+      &xst_xml_print_vspace ();
+    }
+  }
+  
+  &xst_xml_print_end ();
+}
+
+# END { }
+
+1;
