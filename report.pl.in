@@ -76,6 +76,9 @@ sub xst_print_progress  # Compat with old $progress_max use.
 
 sub xst_report
 {
+  return;
+  # I added this return because it was causing a bug in all the backends
+  # when they where ran from a front end. Chema.
   if ($xst_reporting)
   {
     printf "%1d%02d %s.\n", @_[0], @_[1], @_[2];

@@ -1,3 +1,8 @@
+2001-02-21  Chema Celorio  <chema@celorio.com>
+
+	* report.pl.in (xst_report): return, don't report status. This was
+	causing a bug (which took me 3 hrs. to find) in the backends.
+
 2001-02-21  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_set_global_kw): New fn to add or modify global keywords.
