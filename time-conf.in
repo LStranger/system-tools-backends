@@ -68,7 +68,8 @@ $version = "@VERSION@";
               "debian-2.2", "debian-3.0", "debian-sarge",
               "suse-7.0", "suse-9.0", "turbolinux-7.0",
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0", "slackware-9.1.0",
-              "gentoo", "pld-1.0", "pld-1.1", "pld-1.99", "fedora-1");
+              "gentoo", "pld-1.0", "pld-1.1", "pld-1.99", "fedora-1",
+              "freebsd-5" );
 
 $description =<<"end_of_description;";
        Configures your system clock, timezone and time server list.
@@ -331,31 +332,43 @@ sub conf_get
   return $hash;
 }
 
-sub time_set_local_time
+# This function will force date format when setting time
+sub time_change_date
 {
   my ($time) = @_;
-  my ($res, $xscreensaver_owner, $xscreensaver_running);
+  my ($plat) = $$tool {"system"};
+  my ($command);
 
-  &gst_report_enter ();
+  my $plat_table = {
+    "Linux"   => "date %02d%02d%02d%02d%04d.%02d",
+    "FreeBSD" => "date -f %%m%%d%%H%%M%%Y.%%S  %02d%02d%02d%02d%04d.%02d"
+  };
 
-  # Kill screensaver, so it doesn't confuse the user.
-  # FIXME: This should handle multiple processes owned by different users.
-  $xscreensaver_owner   = &gst_service_proc_get_owner ("xscreensaver");
-  $xscreensaver_running = &gst_service_proc_stop      ("xscreensaver");
-
-  $command = sprintf ("date %02d%02d%02d%02d%04d.%02d", $$time{"month"}, $$time{"monthday"},
-                      $$time{"hour"}, $$time{"minute"}, $$time{"year"}, $$time{"second"});
+  $command = sprintf ($$plat_table {$plat},
+                      $$time{"month"}, $$time{"monthday"},
+                      $$time{"hour"},  $$time{"minute"}, 
+                      $$time{"year"},  $$time{"second"});
 
   &gst_report ("time_localtime_set", $command);
 
-  $res = &gst_file_run ($command);
+  return &gst_file_run ($command);
+}
+
+sub time_set_local_time
+{
+  my ($time) = @_;
+  my ($res, $xscreensaver_owners);
+
+  &gst_report_enter ();
+
+  # Kill screensaver, so it doesn't confuse the users.
+  $xscreensaver_owners = &gst_service_proc_get_owners ("xscreensaver");
+  &gst_service_proc_stop_all  ("xscreensaver");
+
+  $res = &time_change_date ($time);
 
   # Restart screensaver.
-  # FIXME: This should handle multiple processes owned by different users.
-  if ($xscreensaver_running)
-  {
-    &gst_service_proc_start ("xscreensaver -no-splash", $xscreensaver_owner);
-  }
+  &gst_service_proc_start_all ("xscreensaver -no-splash", $xscreensaver_owners);
 
   &gst_report_leave ();
   return -1 if $res;
@@ -397,7 +410,8 @@ sub conf_set
   my $values_hash = $_[0];
   my %dist_attrib;
 
-  # we need to init those values to start/stop ntp properly 
+  # we need to init those values to start/stop ntp properly,
+  # if the system is not sysV it will warn and return safely
   ($rcd_path, $initd_path, $relative_path) = &gst_service_sysv_get_paths ();
 
   %dist_attrib = &conf_get_replace_table ();
@@ -451,7 +465,9 @@ sub conf_get_parse_table
    "pld-1.0"         => "pld-1.0",
    "pld-1.1"         => "pld-1.0",
    "pld-1.99"        => "pld-1.0",
-   "fedora-1"        => "redhat-7.0"
+   "fedora-1"        => "redhat-7.0",
+
+   "freebsd-5"       => "freebsd-5"
    );
 
   my %dist_tables =
@@ -600,6 +616,24 @@ sub conf_get_parse_table
           [ "ntpinstalled", \&gst_service_installed, "ntpd" ],
           ]
         },
+
+       "freebsd-5" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+         [
+          [ "local_time",   \&time_get_local_time ],
+          [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+          [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+          [ "sync_active",  \&gst_service_rcng_get_status, "ntpd" ],
+          [ "ntpinstalled", \&gst_service_installed, "ntpd" ],
+          ]
+        },
        );
 
   my $dist = $dist_map {$gst_dist};
@@ -649,7 +683,9 @@ sub conf_get_replace_table
    "pld-1.0"         => "pld-1.0",
    "pld-1.1"         => "pld-1.0",
    "pld-1.99"        => "pld-1.0",
-   "fedora-1"        => "redhat-7.0"
+   "fedora-1"        => "redhat-7.0",
+
+   "freebsd-5"       => "freebsd-5"
    );
 
   my %dist_tables =
@@ -787,6 +823,23 @@ sub conf_get_replace_table
           [ "local_time",   \&time_set_local_time ],
           [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
           [ "sync_active",  \&gst_service_gentoo_set_status, "ntpd", 1, "%sync_active%" ],
+          ]
+        },
+
+       "freebsd-5" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+         [
+          [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+          [ "local_time",   \&time_set_local_time ],
+          [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+          [ "sync_active",  \&gst_service_rcng_set_status, "ntpd", "%sync_active%" ],
           ]
         },
        );

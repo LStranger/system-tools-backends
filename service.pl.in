@@ -205,70 +205,54 @@ sub gst_service_get_verbose_runlevels
 
 # --- Plain process utilities --- #
 
-# Get owner (login) of named process.
-# FIXME: Works only on modern Linux, probably.
-# FIXME: Need a version of this that examines all instances of process name.
-sub gst_service_proc_get_owner
+# Get owners list (login) of named process.
+sub gst_service_proc_get_owners
 {
   my ($service) = @_;
-  my ($pid, $owner);
-  my $res = 0;
+  my ($user, $pid, $command);
+  my ($fd);
+  my (@arr);
 
   &gst_report_enter ();
 
-  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
-  # FIXME: Portable to other UNIXen?
-  $pid = &gst_file_run_backtick ("pidof -o %PPID -x $service");
-  chomp $pid;
+  $fd = gst_file_run_pipe_read ("ps acx -o user,pid,command");
 
-  if ($pid)
+  while (<$fd>)
   {
-    $owner = &gst_file_run_backtick ("ps --no-headers -p $pid -o user");
-  }
-  else
-  {
-    $owner = undef;
+    /(.*)[ \t]+(.*)[ \t]+(.*)/;
+    $user    = $1;
+    $pid     = $2;
+    $command = $3;
+
+    push @arr, $user if ($command eq $service);
   }
 
   &gst_report_leave ();
-  return $owner;
+  return \@arr;
 }
 
-# FIXME: Need a version of this that stops all instances of process name.
-sub gst_service_proc_stop
+# Stops all instances of a process
+sub gst_service_proc_stop_all
 {
   my ($service) = @_;
-  my ($pid);
-  my $res = 0;
 
-  &gst_report_enter ();
-
-  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
-  # FIXME: Portable to other UNIXen?
-  $pid = &gst_file_run_backtick ("pidof -o %PPID -x $service");
-  chomp $pid;
-
-  if ($pid)
-  {
-    kill "SIGTERM", $pid;
-    $res = 1;
-  }
-
-  &gst_report_leave ();
-  return $res;
+  return &gst_file_run ("killall $service");
 }
 
-# FIXME: Need a version of this that starts all instances of process name.
-sub gst_service_proc_start
+# Starts instances of a process for a given list of users
+sub gst_service_proc_start_all
 {
-  my ($cmd, $user) = @_;
-  my ($fqsu, $fqcmd);
+  my ($cmd, $users) = @_;
+  my ($fqcmd, $fqsu);
 
   $fqcmd = &gst_file_get_cmd_path ($cmd);
-  $fqsu  = &gst_file_get_cmd_path ("su");
+  $fqsu  = &gst_file_locate_tool  ("su");
 
-  # Can't use gst_file_run_bg here, since it clobbers the quotes.
-  system ("$fqsu -c \"$fqcmd &\" $user >/dev/null 2>/dev/null");
+  foreach $user (@$users)
+  {
+    # Can't use gst_file_run_bg here, since it clobbers the quotes.
+    system ("$fqsu $user -c \"$fqcmd &\" >/dev/null 2>/dev/null");
+  }
 }
 
 sub gst_service_sysv_list_dir
@@ -287,7 +271,6 @@ sub gst_service_sysv_list_dir
 
     return \@services;
 }
-
 
 sub gst_service_sysv_list_available
 {

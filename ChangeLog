@@ -1,11 +1,28 @@
 2004-04-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
-	* network-conf.in (detect_modem): improved code a bit. Added the
-	  get_interface_name directive, to get the system dependent interface
-	  names (eth, ppp, dc, wi...) for each interface from a given keyword.
-	  Yes, I know it sucks, but right now it must be done by the backend,
-	  as it can be run in a different machine/platform than the frontend
-	* network.pl.in: ditto
+	* service.pl.in (gst_service_proc_get_owners), 
+	  (gst_service_proc_stop_all), (gst_service_proc_start_all):
+	  generic replacement for (gst_service_proc_get_owner),
+	  (gst_service_proc_stop) and (gst_service_proc_start)
+	* time-conf.in: added somewhat support for FreeBSD, although date
+	  changing seems to give a lot of problems with open descriptors :-?
+
+2004-04-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+                                                                                
+        * network-conf.in (detect_modem): improved code a bit. Added the
+          get_interface_name directive, to get the system dependent interface
+          names (eth, ppp, dc, wi...) for each interface from a given keyword.
+          Yes, I know it sucks, but right now it must be done by the backend,
+          as it can be run in a different machine/platform than the frontend
+        * network.pl.in: ditto
+
+2004-04-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* Makefile.am: made it to delete the correct intltool-* when making
+	  clean
+	* report.pl.in: marked "service_sysv_unsupported" as info, not error
+	* service.pl.in: used "forcestatus" to get a service status.
+	  (gst_service_rcng_installed): added
 
 2004-04-22  Carlos García Campos <elkalmail@yahoo.es>
 
@@ -22,6 +39,7 @@
 
 	* configure.in: Added pl to ALL_LINGUAS.
 
+>>>>>>> 1.649
 2004-04-20  Carlos García Campos <elkalmail@yahoo.es>
 
 	* disks-conf.in: declare @tracks variable with "my" to set local scope
