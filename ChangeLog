@@ -1,3 +1,11 @@
+2001-02-23  Hans Petter Jansson  <hpj@ximian.com>
+
+	* file.pl.in (xst_file_get_base_path): Implement.
+	  (xst_file_get_tmp_path): Implement.
+	  (xst_file_get_backup_path): Implement.
+	  (xst_backup_file): Use xst_file_get_backup_path.
+	  (xst_open_filter_write_from_names): Use xst_file_get_tmp_path.
+
 2001-02-23  Arturo Espinosa  <arturo@ximian.com>
 
 	* replace.pl.in (xst_replace_sh): surround by quotes after escaping.

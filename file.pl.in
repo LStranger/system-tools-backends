@@ -26,11 +26,26 @@
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/report.pl";
 
-# FIXME: /var/cache/ximian-setup-tools/ needs to be configured by Automake,
-# just like ___scriptsdir___.
-
 
 # --- File operations --- #
+
+
+sub xst_file_get_base_path
+{
+  return "/var/cache/ximian-setup-tools";
+}
+
+
+sub xst_file_get_tmp_path
+{
+  return (&xst_file_get_base_path () . "/tmp");
+}
+
+
+sub xst_file_get_backup_path
+{
+  return (&xst_file_get_base_path () . "/backup");
+}
 
 
 sub xst_create_path
@@ -77,7 +92,7 @@ $xst_backup_was_made = 0;
 sub xst_backup_file
 {
   my $backup_file = @_[0];
-  my $backup_tool_dir = "/var/cache/ximian-setup-tools/backup/$xst_name/";
+  my $backup_tool_dir = &xst_file_get_backup_path () . "/$xst_name/";
 
   # If this is the first backup created by this tool on this invocation,
   # rotate the backup directories and create a new, empty one.
@@ -260,11 +275,13 @@ sub xst_open_filter_write_from_names
   # invalid (no source file), in which case the caller should just write to
   # OUTFILE without bothering with INFILE filtering.
 
-  &xst_create_path ("/var/cache/ximian-setup-tools/tmp");
-  unlink ("/var/cache/ximian-setup-tools/tmp/$xst_name-$filename");
-  &xst_run ("cp $name /var/cache/ximian-setup-tools/tmp/$xst_name-$filename");
+  my $tmp_path = &xst_file_get_tmp_path ();
 
-  open (INFILE, "/var/cache/ximian-setup-tools/tmp/$xst_name-$filename");
+  &xst_create_path ("$tmp_path");
+  unlink ("$tmp_path/$xst_name-$filename");
+  &xst_run ("cp $name $tmp_path/$xst_name-$filename");
+
+  open (INFILE, "$tmp_path/$xst_name-$filename");
 
   if (!open (OUTFILE, ">$name"))
   {
