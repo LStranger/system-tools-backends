@@ -52,6 +52,7 @@ EXTRA_DIST = \
 	mouse-conf.in \
 	internetsharing-conf.in \
 	package-conf.in \
+	display-conf.in \
 	guess_system.sh
 
 CLEANFILES = $(backends) $(perl_libs)
