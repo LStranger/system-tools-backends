@@ -87,28 +87,29 @@ sub xst_boot_parse_global
 sub xst_boot_parse_images
 {
   my $file = $_[0];
-  my ($fd, @line, $re, $found, $hash, @images);
+  my ($fd, @line, $found, $hash, @images);
   my ($key, $val);
 
   $found = -1;
-  $re = "[ \t]*=[ \t]*";
   $fd = &xst_open_read_from_names ($file);
 
   while (<$fd>)
   {
     chomp;
     s/^[ \t]+//;
-    next if (/^\#/ || /^$/); # Remove comments
 
-    @line = split ($re, $_, 2);
-    
-    if ($line[0] =~ /^(image|other)/)
-    {
-      $found++;
-    }
-
+    $found++ if (/^(image|other)/);
     next if $found < 0;
+    
+    next if (/^$/);
+    if (/^\#[ \t]*(\w+)/)
+    {
+      next if $1 ne "XstPartitionType";
 
+      s/^\#[ \t]*//;
+    }
+    
+    @line = split ("[ \t]*=[ \t]*", $_, 2);    
     $key = $line[0];
     $val = $line[1];
 
@@ -221,6 +222,23 @@ sub xst_boot_del_global
 }
 
 
+sub xst_boot_conf_del_images
+{
+  my ($fn, $images) = @_;
+
+  $buf = &xst_buffer_load ($fn);
+
+  $found = -1;
+  foreach $i (@$buf)
+  {
+    $found++ if ($i =~ /^[ \t]*(image|other)/);
+    next if ($found < 0);
+
+  }
+}
+                   
+
+
 sub xst_boot_conf_set_images
 {
   my ($fn, $key, $images) = @_;
@@ -276,6 +294,15 @@ sub xst_boot_conf_replace_image
     chomp $i;
     $pre_space = $1 if $i =~ s/^([ \t]+)//;
     $post_comment = $1 if $i =~ s/([ \t]*[\#;].*)//;
+
+    # Special case: #XstPartitionType
+    if ($i eq "" && $post_comment =~ /\#[ \t]*XstPartitionType/)
+    {
+      $i = $post_comment;
+      $i =~ s/\#[ \t]*//;
+      $pre_space .= "# ";
+      $post_comment = "";
+    }
     
     @line = split (/([ \t]*=[ \t]*)/, $i, 2);
 
@@ -309,9 +336,12 @@ sub xst_boot_conf_replace_image
     
     foreach $key (keys %image)
     {
-      $i = "\t$key=$image{$key}\n" if $image{$key};
-      $i = "\t$key\n" unless $image{$key};
+      $i = "$key\n" unless $image{$key};
+      $i = "$key = $image{$key}\n" if $image{$key};
 
+      if ($key eq "XstPartitionType") { $i = "\t# " . $i; }
+      else { $i = "\t". $i; }
+      
       push @$buff, $i;
     }
   }

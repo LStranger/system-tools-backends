@@ -1,3 +1,8 @@
+2001-02-23  Tambet Ingo  <tambet@ximian.com>
+
+	* boot.pl.in (xst_boot_conf_replace_image): We are #XstPartitionType aware.
+	(xst_boot_parse_images): We too!
+
 2001-02-22  Arturo Espinosa  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_get_pap_passwd): get the pap password from a pap-secrets file.
