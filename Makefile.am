@@ -53,5 +53,4 @@ $(backends): %-conf: %-conf.in
 
 $(perl_libs): %.pl: %.pl.in
 	sed s#___scriptsdir___#$(scriptsdir)# < $< > $@
-	chmod +x $@
 
