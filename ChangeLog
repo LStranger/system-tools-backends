@@ -1,3 +1,7 @@
+2001-02-08  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in: Added missing dependency on service.pl.
+
 2001-02-08  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in: New file.
