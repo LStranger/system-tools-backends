@@ -1,3 +1,7 @@
+2001-02-06  Hans Petter Jansson  <hpj@ximian.com>
+
+	* be.pl.in: be_xml_print_state(): Implement.
+
 2001-02-06  Tambet Ingo  <tambet@ximian.com>
 
 	* boot-conf.in: Get some more stuff out of lilo.conf
