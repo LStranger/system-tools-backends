@@ -1,3 +1,9 @@
+2001-04-27  Hans Petter Jansson  <hpj@ximian.com>
+
+	* file.pl.in (xst_file_open_filter_write_from_names): Corrected a bug which
+	  would cause the file to never be found. Local variables don't propagate
+	  upwards.
+
 2001-04-27  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* parse.pl.in (xst_parse_process_sh_line): sepparated from
@@ -12,7 +18,6 @@
 	* boot-conf.in (xml_parse_boot): Added keytable support, guided by
 	some unexplained impulse.
 	(xml_print): replaced xml_print_globals with xst_xml_print_scalars.
-	
 
 2001-04-26  Arturo Espinosa Aldama  <arturo@ximian.com>
 
