@@ -182,10 +182,12 @@ sub xst_xml_print_scalars
   }
 }
 
-# Print the @$array using <$key>val</$key> foreach val in the array.
+# Print the @$array using <$tag>val</$tag> foreach val in the array.
+# Actually lets print_structure do that now. Just print sequentially
+# the given elements, using as $tag as the surrounding tags.
 sub xst_xml_print_array
 {
-  my ($array, $key) = @_;
+  my ($array, $tag) = @_;
   my ($i, $val);
 
   return if (scalar @$array <= 0);
@@ -193,8 +195,7 @@ sub xst_xml_print_array
   &xst_xml_print_vspace ();
   foreach $i (@$array)
   {
-    $val = &xst_xml_quote ($i);
-    &xst_xml_print_line ("<$key>$val</$key>\n");
+    &xst_xml_print_structure ($i, $tag);
   }
 }
 
@@ -214,6 +215,7 @@ sub xst_xml_print_arrays
 # Pass a hash, create a parent tag $tag and print <key>val</key> for every
 # value pair in the hash. If hash refs are found, these are recursively
 # printed with this same function. Array refs are printed with print_array.
+# This now done through xst_xml_print_structure.
 sub xst_xml_print_hash
 {
   my ($hash, $tag) = @_;
@@ -225,21 +227,29 @@ sub xst_xml_print_hash
   
   foreach $j (sort keys (%$hash))
   {
-    $val = $$hash{$j};
-       if (ref $val eq "ARRAY") { &xst_xml_print_array ($val, $j); }
-    elsif (ref $val eq "HASH")  { &xst_xml_print_hash  ($val, $j); }
-    else
-    {
-      $val = &xst_xml_quote ($val);
-      &xst_xml_print_line ("<$j>$val</$j>\n");
-    }
+    &xst_xml_print_structure ($$hash{$j}, $j);
   }
   
   &xst_xml_leave ();
   &xst_xml_print_line ("</$tag>\n");
 }
 
+# Call the corresponding function depending on the reference
+# type of $s. If just a scalar, print <$tag>$s</$tag>.
+sub xst_xml_print_structure
+{
+  my ($s, $tag) = @_;
 
+     if (ref $val eq "ARRAY") { &xst_xml_print_array ($val, $tag); }
+  elsif (ref $val eq "HASH")  { &xst_xml_print_hash  ($val, $tag); }
+  else
+  {
+    &xst_xml_print_line ("<$tag>" . &xst_xml_quote ($s) . "</$tag>\n");
+  }
+}
+
+# Treats hash as an array: doesn't use the keys as tags for its
+# elements, but the given tag.
 sub xst_xml_print_hash_hash
 {
   my ($h, $tag) = @_;

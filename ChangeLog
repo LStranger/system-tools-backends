@@ -1,5 +1,11 @@
 2001-08-09  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* xml.pl.in (xst_xml_print_array): Use xst_xml_print_structure.
+	(xst_xml_print_hash): same.
+	(xst_xml_print_structure): Call the corresponding function
+	depending on the reference type of $s. If just a scalar, print
+	<$tag>$s</$tag>.
+
 	* internetsharing-conf.in (xml_parse_fwrules): "overwrite"
 	tag support for ipchains too.
 
