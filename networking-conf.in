@@ -85,72 +85,6 @@ $cf_onboot = 1;
 $cf_forward = 0;
 
 
-# --- Miscellaneous data-structure accessors --- #
-
-# get_key_for_subkeys
-#
-# Given:
-#   * A hash-table with its values containing references to other hash-tables,
-#     which are called "sub-hash-tables".
-#   * A list of possible keys (stored as strings), called the "match_list".
-# this method will look through the "sub-keys" (the keys of each
-# sub-hash-table) seeing if one of them matches up with an item in the
-# match_list.  If so, the key will be returned.
-
-sub get_key_for_subkeys
-{
-  my %hash = %{$_[0]};
-  my @match_list = @{$_[1]};
-
-  foreach $key (keys(%hash))
-  {
-    my %subhash = %{$hash{$key}};
-    foreach $item (@match_list)
-    {
-      if ($subhash{$item} ne "") { return $key; }
-    }
-  }
-
-  return "";
-}
-
-# get_key_for_subkey_and_subvalues
-#
-# Given:
-#   * A hash-table with its values containing references to other hash-tables,
-#     which are called "sub-hash-tables".  These sub-hash-tables contain
-#     "sub-keys" with associated "sub-values".
-#   * A sub-key, called the "match_key".
-#   * A list of possible sub-values, called the "match_list".
-# this function will look through each sub-hash-table looking for an entry
-# whose:
-#   * sub-key equals match_key.
-#   * sub-key associated sub-value is contained in the match_list.
-
-sub get_key_for_subkey_and_subvalues
-{
-  my %hash = %{$_[0]};
-  my $key;
-  my $match_key = $_[1];
-  my @match_list = @{$_[2]};
-
-  foreach $key (keys(%hash))
-  {
-    my %subhash = %{$hash{$key}};
-    my $subvalue = $subhash{$match_key};
-
-    if ($subvalue eq "") { next; }
-
-    foreach $item (@match_list)
-    {
-      if ($item eq $subvalue) { return $key; }
-    }
-  }
-
-  return "";
-}
-
-
 # --- Configuration file manipulation --- #
 
 # Debian 2.[2|3]+ style /etc/network/interfaces
@@ -329,12 +263,12 @@ sub read_network_interfaces
   else
   {
     # Look for an interface with a preset gateway.
-    $chosen_name = get_key_for_subkeys(\%ifaces, ["gateway"]);
+    $chosen_name = be_get_key_for_subkeys(\%ifaces, ["gateway"]);
 
     # If need be, look for an interface with a dynamic configuration "method".
     if ($chosen_name eq "")
     {
-      $chosen_name = get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
+      $chosen_name = be_get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
     }
 
     # If an interface hasn't been chosen, then just pick the first available one.

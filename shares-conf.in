@@ -274,12 +274,12 @@ sub read_network_interfaces
   else
   {
     # Look for an interface with a preset gateway.
-    $chosen_name = get_key_for_subkeys(\%ifaces, ["gateway"]);
+    $chosen_name = be_get_key_for_subkeys(\%ifaces, ["gateway"]);
 
     # If need be, look for an interface with a dynamic configuration "method".
     if ( $chosen_name eq "" )
     {
-      $chosen_name = get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
+      $chosen_name = be_get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
     }
 
     # If an interface hasn't been chosen, then just pick the first available one.

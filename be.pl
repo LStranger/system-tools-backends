@@ -463,7 +463,69 @@ sub be_item_is_in_list
 }
 
 
+# be_get_key_for_subkeys
+#
+# Given:
+#   * A hash-table with its values containing references to other hash-tables,
+#     which are called "sub-hash-tables".
+#   * A list of possible keys (stored as strings), called the "match_list".
+# this method will look through the "sub-keys" (the keys of each
+# sub-hash-table) seeing if one of them matches up with an item in the
+# match_list.  If so, the key will be returned.
 
+sub be_get_key_for_subkeys
+{
+  my %hash = %{$_[0]};
+  my @match_list = @{$_[1]};
+
+  foreach $key (keys(%hash))
+  {
+    my %subhash = %{$hash{$key}};
+    foreach $item (@match_list)
+    {
+      if ($subhash{$item} ne "") { return $key; }
+    }
+  }
+
+  return "";
+}
+
+
+# be_get_key_for_subkey_and_subvalues
+#
+# Given:
+#   * A hash-table with its values containing references to other hash-tables,
+#     which are called "sub-hash-tables".  These sub-hash-tables contain
+#     "sub-keys" with associated "sub-values".
+#   * A sub-key, called the "match_key".
+#   * A list of possible sub-values, called the "match_list".
+# this function will look through each sub-hash-table looking for an entry
+# whose:
+#   * sub-key equals match_key.
+#   * sub-key associated sub-value is contained in the match_list.
+
+sub be_get_key_for_subkey_and_subvalues
+{
+  my %hash = %{$_[0]};
+  my $key;
+  my $match_key = $_[1];
+  my @match_list = @{$_[2]};
+
+  foreach $key (keys(%hash))
+  {
+    my %subhash = %{$hash{$key}};
+    my $subvalue = $subhash{$match_key};
+
+    if ($subvalue eq "") { next; }
+
+    foreach $item (@match_list)
+    {
+      if ($item eq $subvalue) { return $key; }
+    }
+  }
+
+  return "";
+}
 
 
 # --- File operations --- #
