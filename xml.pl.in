@@ -1,5 +1,4 @@
 #!/usr/bin/env perl
-#-*-perl-*-
 #-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
 
 # XML printing, scanning and parsing.
@@ -184,7 +183,7 @@ sub xst_xml_entities_to_plain
 	
     $out = join('', $out, $elist[0]);
     shift @elist;
-	
+
     # Find entity and join its text equivalent.
     # Unknown entities are simply removed.
 	
