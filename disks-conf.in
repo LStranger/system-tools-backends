@@ -400,7 +400,7 @@ sub write_fstab
 
       my $prev = 0;
       if (!$imounted) { print OUTFILE "noauto"; $prev = 1; }
-      my @options = ($options =~ /([a-zA-Z0-9=]+),?/mg);
+      my @options = ($options =~ /([a-zA-Z0-9=-]+),?/mg);
       for $option (@options)
       {
         # Strip options we handle, keep the rest.

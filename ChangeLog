@@ -1,5 +1,9 @@
 2001-05-09  Hans Petter Jansson  <hpj@ximian.com>
 
+	* disks-conf.in: Include '-' in fstab option matching.
+
+2001-05-09  Hans Petter Jansson  <hpj@ximian.com>
+
 	* network.pl.in: For redhat-7.0, smb.conf is in /etc/samba/smb.conf. Make
 	  a new pair of parse/replace-tables for this.
 
