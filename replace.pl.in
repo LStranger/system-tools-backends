@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
 # replace.pl: Common in-line replacing stuff for the ximian-setup-tools backends.
 #

@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
 # Users account mannager. Designed to be architecture and distribution independent.
 #

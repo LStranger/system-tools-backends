@@ -1,5 +1,5 @@
 #!/usr/bin/env perl
-#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
 # Common stuff for the ximian-setup-tools backends.
 #
@@ -453,45 +453,46 @@ sub xst_network_get_interface_replace_table
   );
 
   my %dist_tables =
-	 (
-	  "redhat-6.2" =>
+	(
+    "redhat-6.2" =>
 	  {
-	    iface_set => \&xst_network_rh62_interface_set,
-	    fn =>
+      iface_set => \&xst_network_rh62_interface_set,
+      fn =>
 	    {
-		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-		 CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
-		 IFACE => "#iface#" },
-	    table =>
-		   [
-		    [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
-		    [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
-		    [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
-		    [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
-		    [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
-		    [ bootproto,          \&xst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
-		    [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
-		    [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
-		    [ remote_address,     \&xst_replace_sh,      IFCFG, REMIP ],
-		    [ login,              \&xst_replace_sh,      IFCFG, PAPNAME ],
-		    [ disconnect_timeout, \&xst_replace_sh,      IFCFG, DISCONNECTTIMEOUT ],
-		    [ retry_timeout,      \&xst_replace_sh,      IFCFG, RETRYTIMEOUT ],
-		    [ serial_port,        \&xst_replace_sh,      IFCFG, MODEMPORT ],
-		    [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
-		    [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
-		    [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
-		    [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
-		    [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
-		    [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
-		    [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
-		    [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],
-		    [ serial_escapechars, \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
-		    [ serial_defabort,    \&xst_replace_sh_bool, IFCFG, DEFABORT ],
-		    [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
-		    [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
-		    ]
-			 }
-	  );
+        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
+        IFACE => "#iface#"
+      },
+      table =>
+      [
+        [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
+        [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
+        [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
+        [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
+        [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
+        [ bootproto,          \&xst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
+        [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
+        [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
+        [ remote_address,     \&xst_replace_sh,      IFCFG, REMIP ],
+        [ login,              \&xst_replace_sh,      IFCFG, PAPNAME ],
+        [ disconnect_timeout, \&xst_replace_sh,      IFCFG, DISCONNECTTIMEOUT ],
+        [ retry_timeout,      \&xst_replace_sh,      IFCFG, RETRYTIMEOUT ],
+        [ serial_port,        \&xst_replace_sh,      IFCFG, MODEMPORT ],
+        [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
+        [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
+        [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
+        [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
+        [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
+        [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
+        [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
+        [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],
+        [ serial_escapechars, \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+        [ serial_defabort,    \&xst_replace_sh_bool, IFCFG, DEFABORT ],
+        [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+        [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+      ]
+    }
+  );
   
   my $dist = $dist_map{$be_dist};
   return %{$dist_tables{$dist}} if $dist;
