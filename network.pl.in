@@ -4970,7 +4970,7 @@ sub gst_network_get_interface_parse_table
        [ "persist",            \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "persist" ]],
        [ "serial_escapechars", \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_split_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
        [ "serial_hwctl",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "crtscts" ]],
-       [ "external_line",      \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd[^0-9]*([0-9]*)[wW]" ]],
+       [ "external_line",      \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd[^0-9]*([0-9*#]*)[wW]" ]],
        [ "phone_number",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd.*[ptw]([0-9, -]+)" ]],
        [ "dial_command",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
        [ "volume",             \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_modem_volume, CHAT ]],
@@ -5015,7 +5015,7 @@ sub gst_network_get_interface_parse_table
        [ "persist",            \&gst_parse_sh_bool,                  PPPNET, PERSIST ],
        [ "serial_escapechars", \&gst_parse_sh_bool,                  PPPNET, ESCAPECHARS ],
        [ "serial_hwctl",       \&gst_parse_sh_bool,                  PPPNET, HARDFLOWCTL ],
-       [ "external_line",      \&gst_parse_sh_re,                    PPPNET, NUMBER, "^([0-9]*)w" ],
+       [ "external_line",      \&gst_parse_sh_re,                    PPPNET, NUMBER, "^([0-9*#]*)wW" ],
        [ "phone_number",       \&gst_parse_sh_re,                    PPPNET, NUMBER, "w?([0-9]*)\$" ],
        [ "volume",             \&gst_parse_sh_re,                    PPPNET, INITSTRING, "^at.*[ml]([0-3])" ],
       ]

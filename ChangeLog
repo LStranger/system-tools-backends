@@ -1,5 +1,10 @@
 2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* network.pl.in: use [0-9*#]+ as regexp for getting the dial prefix
+	in all distros
+
+2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* time-conf.in: added openntpd as NTP daemon for gentoo, replace
 	ntp-simple and npt-refclock with ntp-server in debian. Closes #153491
 	and #154377 (This one with patch from Vincent Vuntz)
