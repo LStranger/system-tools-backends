@@ -59,11 +59,6 @@ BEGIN {
 }
 
 
-$progress_max = 4;
-
-$DEBUG = 3; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
-$TEST_NIS = 0;
-
 # --- Tool information --- #
 
 $name = "users";
@@ -203,12 +198,48 @@ for ($i = 0; $profiles_prop_array[$i] ne ""; $i += 2)
 }
 
 
+my $rh_logindefs_defaults = {
+  'shell'       => '/bin/bash',
+  'group'       => '$user',
+  'skel_dir'    => '/etc/skel/',
+};
+
+my $logindefs_dist_map = {
+  'redhat-5.2'     => $rh_logindefs_defaults,
+  'redhat-6.0'     => $rh_logindefs_defaults,
+  'redhat-6.1'     => $rh_logindefs_defaults,
+  'redhat-6.2'     => $rh_logindefs_defaults,
+  'redhat-7.0'     => $rh_logindefs_defaults,
+  'redhat-7.1'     => $rh_logindefs_defaults,
+  'mandrake-7.1'   => $rh_logindefs_defaults,
+  'mandrake-7.2'   => $rh_logindefs_defaults,
+
+  # FIXME: I don't know about those, so using RH values for now.
+  'debian-2.2'     => $rh_logindefs_defaults,
+  'debian-woody'   => $rh_logindefs_defaults,
+  'suse-7.0'       => $rh_logindefs_defaults,
+  'turbolinux-7.0' => $rh_logindefs_defaults,
+};
+
+
 # Add reporting table.
 
 &xst_report_table ({
-  'users_getting_db'         => ['info',  _('Getting user database.')],
-  'users_read_skel_success'  => ['info',  _('Successfully read skeleton dir [%s]')],
-  'users_read_skel_fail'     => ['warn',  _("Couldn\'t read skeleton dir [%s]")],
+  'users_read_profiledb_success' => ['info', _('Profiles read successfully.')],
+  'users_read_profiledb_fail'    => ['warn', _('Profiles read failed.')],
+  'users_read_users_success'     => ['info', _('Users read successfully.')],
+  'users_read_users_fail'        => ['warn', _('Users read failed.')],
+  'users_read_groups_success'    => ['info', _('Groups read successfully.')],
+  'users_read_groups_fail'       => ['warn', _('Groups read failed.')],
+  'users_read_shells_success'    => ['info', _('Shells read successfully.')],
+  'users_read_shells_fail'       => ['warn', _('Reading shells failed.')],
+
+  'users_write_profiledb_success' => ['info', _('Profiles written successfully.')],
+  'users_write_profiledb_fail'    => ['warn', _('Writing profiles failed.')],
+  'users_write_users_success'     => ['info', _('Users written successfully.')],
+  'users_write_users_fail'        => ['warn', _('Writing users failed.')],
+  'users_write_groups_success'    => ['info', _('Groups written successfully.')],
+  'users_write_groups_fail'       => ['warn', _('Writing groups failed.')],
 });
 
 
@@ -254,8 +285,6 @@ sub read
 {
   my (%hash);
 
-  &xst_report ("users_getting_db");
-
   &read_group         (\%hash);
   &read_passwd_shadow (\%hash);
   &read_profiledb     (\%hash);
@@ -263,6 +292,64 @@ sub read
 
   return \%hash;
 }
+
+sub logindefs_add_defaults
+{
+  # Common for all distros
+  my $logindefs = {
+    'name'        => 'Default',
+    'comment'     => 'Default profile',
+    'login_defs'  => 1,
+    'home_prefix' => '/home/$user',
+  };
+
+  # Distro specific
+  my $dist_specific = $logindefs_dist_map->{$xst_dist};
+
+  # Just to be 100% sure SOMETHING gets filled:
+  unless ($dist_specific)
+  {
+    $dist_specific = $rh_logindefs_defaults;
+    &xst_debug_print_line ("logindefs_add_defaults: Couldn't find distro specific parameters.");
+  }
+
+  foreach my $key (keys %$dist_specific)
+  {
+    # Make sure there's no crappy entries
+    if (exists ($profiles_prop_map{$key}))
+    {
+      $logindefs->{$key} = $dist_specific->{$key};
+    }
+  }
+}
+
+sub read_logindefs
+{
+  my $profiledb = shift;
+  my $logindefs =  &get_logindefs ($profiledb);
+
+  unless ($logindefs)
+  {
+    push @$profiledb, &logindefs_add_defaults ();
+  }
+
+  # Get new data in case someone has changed login_defs manually.
+  my $fh = &xst_file_open_read_from_names (@login_defs_names);
+  return unless $fh;
+
+  while (<$fh>)
+  {
+    next if &xst_ignore_line ($_);
+    chomp;
+    my @line = split /[ \t]+/;
+    if (exists $login_defs_prop_map{$line[0]})
+    {
+      $logindefs->{$login_defs_prop_map{$line[0]}} = $line[1];
+    }
+  }
+  close $fh;
+}
+
 
 sub read_profiledb
 {
@@ -286,6 +373,17 @@ sub read_profiledb
       &xst_report ('xml_unexp_tag', $$tree[0]);
     }
   }
+
+  &read_logindefs ($profiles);
+
+  if (scalar @$profiles)
+  {
+    &xst_report ('users_read_profiledb_success');
+  }
+  else
+  {
+    &xst_report ('users_read_profiledb_fail');
+  }
 }
 
 sub read_passwd_shadow
@@ -299,7 +397,11 @@ sub read_passwd_shadow
   # Find the passwd file.
 
   $ifh = &xst_file_open_read_from_names(@passwd_names);
-  if (not $ifh) { return; }  # We didn't find it.
+  unless ($ifh)
+  {
+    &xst_report ('users_read_users_fail');
+    return;
+  }
   $passwd_last_modified = (stat ($ifh))[9]; # &get the mtime.
 
   # Parse the file.
@@ -350,6 +452,15 @@ sub read_passwd_shadow
   $$hash{"users"}      = \@users;
   $$hash{"users_hash"} = \%users_hash;
   $$hash{"passwd_last_modified"} = $passwd_last_modified;
+
+  if (scalar @users)
+  {
+    &xst_report ('users_read_users_success');
+  }
+  else
+  {
+    &xst_report ('users_read_users_fail');
+  }
 }
 
 sub read_group
@@ -362,7 +473,11 @@ sub read_group
   # Find the file.
 
   $ifh = &xst_file_open_read_from_names(@group_names);
-  if (not $ifh) { return; }  # We didn't find it.
+  unless ($ifh)
+  {
+    &xst_report ('users_read_groups_fail');
+    return;
+  }
   $group_last_modified = (stat ($ifh))[9]; # &get the mtime.
 
   # Parse the file.
@@ -388,6 +503,15 @@ sub read_group
   $$hash{"groups"}      = \@groups;
   $$hash{"groups_hash"} = \%groups_hash;
   $$hash{"group_last_modified"} = $group_last_modified;
+
+  if (scalar @groups)
+  {
+    &xst_report ('users_read_groups_success');
+  }
+  else
+  {
+    &xst_report ('users_read_groups_fail');
+  }
 }
 
 sub read_shells
@@ -399,7 +523,7 @@ sub read_shells
   push (@shells, "/bin/false") if (stat ("/bin/false"));
   
   $ifh = &xst_file_open_read_from_names(@shell_names);
-  return if not $ifh;
+  return unless $ifh;
 
   while (<$ifh>)
   {
@@ -410,6 +534,7 @@ sub read_shells
   &xst_file_close ($ifh);
 
   $$hash{"shelldb"} = \@shells;
+  &xst_report ('users_read_shells_success');
 }
 
 
@@ -431,9 +556,7 @@ sub write_group_passwd
   $parse_group_last_modified = $$hash{"group_last_modified"};
 
   &read_passwd_shadow (\%old_hash);
-  &xst_progress(10);
   &read_group (\%old_hash);
-  &xst_progress(20);
 
   $users = $old_hash{"users"};
   $users_hash = $old_hash{"users_hash"};
@@ -468,36 +591,26 @@ sub write_group_passwd
 	  $groups_all{$i} |= 2;
 	}
 	
-	&xst_progress(25);
-	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  &del_user ($$users_hash{$i}) if ($users_all{$i} == 1);
 	}
-	
-	&xst_progress(35);
-	
-	foreach $i (sort (keys (%groups_all)))
+
+  foreach $i (sort (keys (%groups_all)))
 	{
 	  &del_group ($$groups_hash{$i}) if ($groups_all{$i} == 1);
 	}
-	
-	&xst_progress(45);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
 	  &add_group ($$parse_groups_hash{$i}) if ($groups_all{$i} == 2);
 	}
 	
-	&xst_progress(55);
-	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  &add_user ($$parse_users_hash{$i}) if ($users_all{$i} == 2);
 	}
 
-	&xst_progress(70);
-	
 	foreach $i (sort (keys (%groups_all)))
 	{
 	  if ($groups_all{$i} == 3 && &arr_cmp_recurse ($$groups_hash{$i}, $$parse_groups_hash{$i}))
@@ -506,8 +619,6 @@ sub write_group_passwd
 		}
 	}
 	
-	&xst_progress(85);
-	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  if ($users_all{$i} == 3 && &arr_cmp_recurse ($$users_hash{$i}, $$parse_users_hash{$i}))
@@ -515,8 +626,9 @@ sub write_group_passwd
 		  &change_user ($$users_hash{$i}, $$parse_users_hash{$i});
 		}
 	}
-	
-	&xst_progress(95);
+
+  &xst_report ('users_write_users_success');
+  &xst_report ('users_write_groups_success');
 }
 
 sub del_user
@@ -694,7 +806,11 @@ sub write_profiledb
   my ($hash) = @_;
   my $profiledb = $hash->{'profiledb'};
 
-  return unless $profiledb;
+  unless ($profiledb)
+  {
+    &xst_report ('users_write_profiledb_fail');
+    return;
+  }
 
   # Update login.defs file.  
   &write_logindefs (&get_logindefs ($profiledb));
@@ -707,6 +823,11 @@ sub write_profiledb
     local *STDOUT = $fh;
     &xml_print_profiledb ($hash);
     close ($fh);
+    &xst_report ('users_write_profiledb_success');
+  }
+  else
+  {
+    &xst_report ('users_write_profiledb_fail');
   }
 }
 
@@ -1093,6 +1214,11 @@ sub set
 
   if ($hash)
   {
+    # Make backup manually, otherwise they don't get backed up.
+    &xst_file_backup ($_) foreach (@passwd_names);
+    &xst_file_backup ($_) foreach (@shadow_names);
+    &xst_file_backup ($_) foreach (@group_names);
+
     &write_profiledb ($hash);
     &write_group_passwd ($hash);
   }

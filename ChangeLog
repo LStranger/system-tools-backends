@@ -1,3 +1,9 @@
+2001-10-03  Tambet Ingo  <tambet@ximian.com>
+
+	* users-conf.in: Override new values found from logindefs
+	and not in profiles. Removed xst_progress remains.
+	Added reporting. Backups all files it (remotely) touches.
+
 2001-10-02  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network-conf.in (list_ifaces): directive that lists
