@@ -240,8 +240,8 @@ sub xst_xml_print_structure
 {
   my ($s, $tag) = @_;
 
-     if (ref $val eq "ARRAY") { &xst_xml_print_array ($val, $tag); }
-  elsif (ref $val eq "HASH")  { &xst_xml_print_hash  ($val, $tag); }
+     if (ref $s eq "ARRAY") { &xst_xml_print_array ($s, $tag); }
+  elsif (ref $s eq "HASH")  { &xst_xml_print_hash  ($s, $tag); }
   else
   {
     &xst_xml_print_line ("<$tag>" . &xst_xml_quote ($s) . "</$tag>\n");
