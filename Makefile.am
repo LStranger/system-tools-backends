@@ -24,3 +24,8 @@ CLEANFILES = $(backends)
 $(backends): %-conf: %-conf.in
 	sed s#___scriptsdir___#$(scriptsdir)# < $< > $@
 	chmod +x $@
+
+be.pl: be.pl.in
+	sed s#___scriptsdir___#$(scriptsdir)# < $< > $@
+	chmod +x $@
+

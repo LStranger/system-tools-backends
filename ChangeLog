@@ -4,6 +4,8 @@
 	* guess_system.sh: stolen from autoconf, a script to tell the
 	system the backends are running on.
 	* Makefile.am: install guess_system.sh where be.pl goes.
+	* be.pl.in: need to replace ___scriptsdir___ here too, so I removed
+	  be.pl and have this one for preprocessing.
 
 2001-01-16  Tambet Ingo  <tambet@ximian.com>
 
