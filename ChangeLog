@@ -2,6 +2,8 @@
 
 	* boot.pl.in (xst_boot_set_global): Quote globals with spaces
 	if neccecary.
+	(xst_boot_conf_replace_image): Reverted from 1.23 changes,
+	fixes bugs 2986 and 2989.
 
 2001-05-22  Hans Petter Jansson  <hpj@ximian.com>
 

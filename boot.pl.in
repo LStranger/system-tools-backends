@@ -279,55 +279,48 @@ sub xst_boot_conf_set_images
 }
 
 
-sub xst_boot_conf_search_label
-{
-  my ($label, @buff) = @_;
-  my $i;
-
-  foreach $i (@buff)
-  {
-    return 1 if $i =~ /^[ \t]*label[ \t]*=[ \t]*$label/;
-    return 0 if $i =~ /^[ \t]*(image|other)/;
-  }
-
-  return 0;
-}
-
-
 sub xst_boot_conf_replace_image
 {
   my ($file, %image) = @_;
-  my ($buff, $i, $found, $lineno);
+  my ($buff, $i, $found);
   my ($pre_space, $post_comment);
   my (@line, $key, $op, $txt);
 
   $buff = &xst_file_buffer_load ($file);
   &xst_file_buffer_join_lines ($buff);
   
-  $lineno = $found = 0;
+  $found = 0;
 
   $name = 'image' if exists $image{'image'};
   $name = 'other' if exists $image{'other'};
 
   foreach $i (@$buff)
   {
-    $lineno ++;
-    
-    if (!$found && $i =~ /^[ \t]*$name[ \t]*=[ \t]*$image{$name}\s+/)
+    if ($i =~ /^[ \t]*$name[ \t]*=[ \t]*$image{$name}\s+/)
     {
-      # Ugly Perl.
-      if (&xst_boot_conf_search_label ($image{"label"},
-                                       @$buff[$lineno .. $#$buff]))
-      {
-        $found ++;
-        delete $image{$name};
-      }
-      
+      $found ++;
       next;
     }
+
+    if ($i =~ /(image|other)/ && $found == 1)
+    {
+      delete $image{$name};
+      $found++;
+      foreach $key (keys %image)
+      {
+        $txt = "$key\n" unless $image{$key};
+        $txt = "$key = $image{$key}\n" if $image{$key};
+
+        if ($key eq "XstPartitionType") { $txt = "\t# " . $txt; }
+        else { $txt = "\t". $txt; }
+
+        $i = $txt . $i;
+      }
+      last;
+
+    }
     
-    next if (!$found);
-    last if ($i =~ /^[ \t]*(image|other)/); # Next image.
+    next if ($found != 1);
 
     $pre_space = $post_comment = "";
     
@@ -381,36 +374,30 @@ sub xst_boot_conf_replace_image
   }
 
   # end of file or new section reached, let's add pending tags.
-  if (keys %image) 
+  if (keys %image && $found) 
   {
     if (!$found) 
     {
-      splice (@$buff, $line_no++, 0, "\n$name=$image{$name}\n");
+      delete $image{$name};
+      foreach $key (keys %image)
+      {
+        $i = "$key\n" unless $image{$key};
+        $i = "$key = $image{$key}\n" if $image{$key};
+
+        if ($key eq "XstPartitionType") { $i = "\t# " . $i; }
+        else { $i = "\t". $i; }
+
+        push @$buff, $i;
+      }
+    }
+
+    elsif (!$found) # We didn't find image, lets add it to the end of file.
+    {
+      push @$buff, "\n$name=$image{$name}\n";
       delete $image{$name};
     }
-    
-    foreach $key (keys %image)
-    {
-      if ($image{$key})
-      {
-        my $value;
-        
-        $value = $image{$key};
-        $value = "\"$value\"" if ($value =~ /[ \t]/);
-        $txt = "$key = $value\n";
-      }
-      else
-      {
-        $txt = "$key\n";
-      }
-      
-      if ($key eq "XstPartitionType") { $txt = "\t# " . $txt; }
-      else { $txt = "\t". $txt; }
-      
-      splice (@$buff, $line_no++, 0, $i);
-    }
   }
-  
+    
   &xst_file_buffer_clean ($buff);
   return &xst_file_buffer_save ($buff, $file);
 }
