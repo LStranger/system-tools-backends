@@ -1,3 +1,7 @@
+2003-09-01  Hasbullah Bin Pit  <sebol@my-penguin.org>
+                                                                                
+        * configure.in: Added 'ms' (Malay) to ALL_LINGUAS.
+
 2004-08-30  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* boot-grub.pl.in (boot_grub_check_device_map): Added, it creates
