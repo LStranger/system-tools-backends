@@ -1,3 +1,8 @@
+2003-08-09  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* general.pl.in: added a carriage return for synchronism with the
+	  frontend
+
 2003-07-09  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* platform.pl.in: s/Mandrake\ Linux/Linux\ Mandrake/ in PLATFORM_INFO,

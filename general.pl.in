@@ -300,6 +300,9 @@ sub gst_init
   my ($name, $version, $description, $directives, @args) = @_;
   my (%tool, $arg);
 
+  # print a CR for syncronysm with the frontend
+  print "\n";
+
   # Set the output autoflush.
   $| = 1;
   
