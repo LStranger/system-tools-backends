@@ -110,21 +110,21 @@ sub xst_replace_split
     
     if ($i ne "")
     {
-	 @line = split ($re, $i, 2);
-	 $line_key = shift (@line);
-
-	 # found the key?
-	 if ($line_key eq $key)
-	 {
-	   if ($#value < 0)
-	   {
-		$i = "";
-		next;
-	   }
-	   
-	   $val = shift (@value);
-	   $i = &set_value ($key, $val, $re);
-	 }
+      @line = split ($re, $i, 2);
+      $line_key = shift (@line);
+      
+      # found the key?
+      if ($line_key eq $key)
+      {
+        if ($#value < 0)
+        {
+          $i = "";
+          next;
+        }
+        
+        $val = shift (@value);
+        $i = &set_value ($key, $val, $re);
+      }
     }
     $i = $pre_space . $i . $post_comment . "\n";
   }
