@@ -657,7 +657,7 @@ sub gst_file_buffer_load
   &gst_report ("file_buffer_load", $file);
 
   $fd = &gst_file_open_read_from_names ($file);
-  return undef unless $fd;
+  return [] unless $fd;
 
   @buffer = (<$fd>);
 
