@@ -1,3 +1,5 @@
+SUBDIRS =
+
 backends = \
 	disks-conf \
 	memory-conf \
@@ -53,7 +55,11 @@ EXTRA_DIST = \
 	internetsharing-conf.in \
 	package-conf.in \
 	display-conf.in \
-	guess_system.sh
+	guess_system.sh \
+	\
+	README \
+	AUTHORS \
+	NEWS
 
 CLEANFILES = $(backends) $(perl_libs)
 
