@@ -212,7 +212,7 @@ sub set
   &xst_begin ();
   $hash = &xml_parse ();
 
-#  &conf_set ($hash);
+  &conf_set ($hash);
   
   &xst_end();
 }
@@ -300,7 +300,7 @@ sub time_get_rh62_zone
   close (TZLIST);
 }
 
-sub xst_rh62_service_status
+sub xst_rh62_service_get_status
 {
   my ($service) = @_;
   
@@ -337,6 +337,85 @@ sub conf_get
   return $hash;
 }
 
+sub time_set_local_time
+{
+  my ($time) = @_;
+
+  $command = sprintf ("date %02d%02d%02d%02d%04d.%02d", $$time{"month"}, $$time{"monthday"},
+                      $$time{"hour"}, $$time{"minute"}, $$time{"year"}, $$time{"second"});
+  $res = &xst_run ($command);
+
+  return -1 if $res;
+  return 0;
+}
+
+sub time_set_rh62_zone
+{
+  my ($localtime, $zonebase, $timezone) = @_;
+
+  &xst_report_info(10, "Setting timezone");
+
+  $tz = "$zonebase/$timezone";
+
+  if (stat($tz) ne "")
+  {
+    $fd = &xst_open_write_from_names ($localtime);
+    return -1 if !$fd;
+    close $fd;
+
+    unlink $localtime;  # Important, since it might be a symlink.
+    
+    $res = &xst_run("cp $tz $localtime");
+    return -1 if $res;
+    return 0;
+  }
+
+  return -1;
+}
+
+sub xst_rh62_service_set_status
+{
+  my ($service, $active) = @_;
+
+  $status = &xst_rh62_service_get_status ($service);
+
+  if ($status)
+  {
+    $arg = $active? "restart" : "stop";
+    $str = $active? "restarted" : "stopped";
+  }
+  else
+  {
+    $arg = $active? "start" : "stop";
+    $str = $active? "started" : "stopped";
+  }
+  
+  if (-f "/etc/rc.d/init.d/$service")
+  {
+    if (!&xst_run ("/etc/rc.d/init.d/$service $arg"))
+    {
+      &xst_report_info (2, "Service $service $str");
+      return 0;
+    }
+  }
+  
+  &xst_report_warning (1, "Service $service could not be $str");
+  return -1;
+}
+  
+sub conf_set
+{
+  my $values_hash = $_[0];
+  my %dist_attrib;
+
+  %dist_attrib = &conf_get_replace_table ();
+
+  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+                                  $values_hash);
+
+  return $res;
+}
+
 sub conf_get_parse_table
 {
   my %dist_map =
@@ -363,7 +442,7 @@ sub conf_get_parse_table
               [local_time,  \&time_get_local_time],
               [timezone,    \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO]],
               [sync,        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
-              [sync_active, \&xst_rh62_service_status, "xntpd"],
+              [sync_active, \&xst_rh62_service_get_status, "xntpd"],
               ]
                 }
        );
@@ -400,8 +479,8 @@ sub conf_get_replace_table
              [
               [local_time,  \&time_set_local_time],
               [timezone,    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              [sync,        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
-              [sync_active, \&xst_rh62_service_status, "xntpd"],
+              [sync,        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
+              [sync_active, \&xst_rh62_service_set_status, "xntpd"],
               ]
                 }
        );

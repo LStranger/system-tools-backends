@@ -1,3 +1,9 @@
+2001-03-08  Arturo Espinosa  <arturo@ximian.com>
+
+	* time-conf.in (time_set_local_time, time_set_rh62_zone,
+	time_rh62_service_set_status, conf_set): replace functions.
+	Not tested yet.
+	
 2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
 	* Makefile.am: Remove nameresolution-conf relics.
@@ -32,7 +38,7 @@
 	* xml.pl.in (xst_xml_scan): Dump scanned XML to in.xml.
 	  (xst_xml_get_pcdata): Use debug funcs.
 
-2001-03-08  Arturo Espinosa  <arturo@ximian.com>
+2001-03-07  Arturo Espinosa  <arturo@ximian.com>
 
 	* replace.pl.in (xst_replace_from_table): big oops here. A
 	  line of old code (51) wasn't deleted and this prevented any
