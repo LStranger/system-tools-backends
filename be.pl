@@ -556,7 +556,7 @@ sub be_xml_get_text
     
     while (@$tree)
       {
-	if ($$tree[0] = 0)
+	if ($$tree[0] == 0)
 	  {
 	    ($retval = $$tree[1]) =~ tr/\n\r\t\f/    /;
 	    $retval = be_xml_entities_to_plain(\$retval);
