@@ -30,7 +30,8 @@ PERLBODY = \
 	debug.pl.in \
 	print.pl.in \
 	share.pl.in \
-	x.pl.in
+	x.pl.in \
+	font.pl.in
 
 
 perl_libs = \

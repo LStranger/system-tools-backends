@@ -1,3 +1,18 @@
+2001-06-14  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* font.pl.in (regexp_cmp_foreach): helper.
+	(xst_font_info_get_foundry_from_notice): Deduct foundry from copyright.
+	(xst_font_info_get_setwidth_from_label): Deduct setwidth from font name.
+	(xst_font_info_deduct_extras): From the information obtained, try to
+	find implicit info.
+	(xst_font_info_get_from_afm_buff): Parse an afm buffer, return font_info.
+	(xst_font_info_get_from_afm_str): Split string in \n, parse buffer.
+	(xst_font_info_get_from_afm): Read file into buffer, parse.
+	(xst_font_info_get_from_ttf2pt1): Run ttf2pt1 -A, pipe into buffer, parse.
+	(namerec_value): Helper for ttf routines.
+	(xst_font_info_get_from_ttf): Use Font::TTF to get font_info from ttf.
+	(xst_font_info_to_fontdir): Return fontdir line from font_info.
+
 2001-06-13  Tambet Ingo  <tambet@ximian.com>
 
 	* Makefile.am (backends): s/xconf/display/
