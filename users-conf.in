@@ -99,7 +99,7 @@ $version = "0.1.0";
 
 $progress_max = 3;
 
-$DEBUG = 3; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
+$DEBUG = 2; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
 
 
 # --- System config file locations --- #
@@ -760,7 +760,7 @@ sub xml_print
 	  &be_xml_print ("<user>\n");
 		&be_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  if ($i->[$j]) { &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $i->[$j] . "</" . $users_prop_map {$j} . ">\n"); }
+		  if ($i->[$j] ne "") { &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $i->[$j] . "</" . $users_prop_map {$j} . ">\n"); }
 		}
 		&be_xml_leave ();
 		&be_xml_print ("</user>\n");
