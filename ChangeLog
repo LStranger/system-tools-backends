@@ -1,6 +1,10 @@
+2001-05-23  Chema Celorio  <chema@celorio.com>
+
+	* users-conf.in: added RH 7.1
+
 2001-05-23  Arturo Espinosa <arturo@ximian.com>
 
-  * network.pl.in (xst_network_debian_woody_set_auto): Fixed
+	* network.pl.in (xst_network_debian_woody_set_auto): Fixed
 	invariant bug in while loop (bug 2714 fixed).
 
 2001-05-23  Tambet Ingo  <tambet@ximian.com>
@@ -317,7 +321,6 @@
 
 	* internetsharing-conf.in (xst_ishare_rules_get_ipchains): implement.
 
->>>>>>> 1.202
 2001-05-14  Chema Celorio  <chema@celorio.com>
 
 	* time-conf.in: tested in RH 7.1. Add the platform
