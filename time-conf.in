@@ -7,6 +7,7 @@
 #
 # Authors: Hans Petter Jansson <hpj@ximian.com>
 #          Grzegorz Golawski <grzegol@pld-linux.org> (PLD Support)
+#          James Ogley <james@usr-local-bin.org> (SuSE 9.0 support)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -65,7 +66,7 @@ $version = "@VERSION@";
               "openna-1.0",
               "mandrake-7.1", "mandrake-7.2", "mandrake-9.0", "mandrake-9.1", "mandrake-9.2",
               "debian-2.2", "debian-3.0", "debian-sarge",
-              "suse-7.0", "turbolinux-7.0",
+              "suse-7.0", "suse-9.0", "turbolinux-7.0",
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0", "slackware-9.1.0",
               "gentoo", "pld-1.0", "pld-1.1", "pld-1.99", "fedora-1");
 
@@ -436,6 +437,7 @@ sub conf_get_parse_table
    "debian-sarge"    => "debian-3.0",
 
    "suse-7.0"        => "suse-7.0",
+   "suse-9.0"        => "suse-9.0",
 
    "turbolinux-7.0"  => "redhat-7.0",
    
@@ -545,6 +547,24 @@ sub conf_get_parse_table
               ]
                 },
 
+       "suse-9.0" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_get_status, "xntpd" ],
+              [ "ntpinstalled", \&gst_service_sysv_installed, "xntpd" ],
+              ]
+                },
+
        "pld-1.0" =>
        {
          fn =>
@@ -598,6 +618,7 @@ sub conf_get_replace_table
    "debian-sarge"    => "debian-3.0",
 
    "suse-7.0"        => "suse-7.0",
+   "suse-9.0"        => "suse-9.0",
 
    "turbolinux-7.0"  => "redhat-7.0",
    
@@ -685,6 +706,23 @@ sub conf_get_replace_table
                 },
        
        "suse-7.0" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "local_time",   \&time_set_local_time ],
+              [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_set_status, 90, "xntpd", "%sync_active%" ],
+              ]
+                },
+
+       "suse-9.0" =>
        {
          fn =>
          {

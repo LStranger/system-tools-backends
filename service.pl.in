@@ -71,6 +71,7 @@ sub gst_service_sysv_get_paths
        "debian-sarge" => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
 
        "suse-7.0"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d", "../"],
+       "suse-9.0"     => ["$gst_prefix/etc/init.d", "$gst_prefix/etc/init.d", "../"],
 
        "turbolinux-7.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
@@ -116,6 +117,7 @@ sub gst_service_sysv_get_runlevels
        "debian-sarge"   => [2, 3],
 
        "suse-7.0"       => [3, 5],
+       "suse-9.0"       => [3, 5],
 
        "turbolinux-7.0" => [3, 5],
 
@@ -160,6 +162,7 @@ sub gst_service_get_verbose_runlevels
      "debian-sarge"   => "debian-2.2",
      
      "suse-7.0"       => "redhat-5.2",
+     "suse-9.0"       => "redhat-5.2",
      
      "turbolinux-7.0" => "redhat-5.2",
      "pld-1.0"        => "redhat-5.2",
