@@ -1,3 +1,8 @@
+2002-01-02  Tambet Ingo  <tambet@ximian.com>
+
+	* xml.pl.in (xst_xml_scan_make_kid_array): Single quote (') can be used
+	as an xml attribute enclosing symbol as well.
+
 2001-12-20  Tambet Ingo  <tambet@ximian.com>
 
 	* service.pl.in (xst_service_sysv_remove_link): Close dir also after

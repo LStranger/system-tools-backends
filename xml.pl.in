@@ -401,7 +401,7 @@ sub xst_xml_scan_make_kid_array
   foreach (@list)
   {
     my @tmp = split '[ \t]*=[ \t]*';
-    if (scalar @tmp == 2 && $tmp[1] =~ s/\"//g)
+    if (scalar @tmp == 2 && $tmp[1] =~ s/[\"\']//g)
     {
       push @attr, @tmp;
     }
