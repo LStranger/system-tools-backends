@@ -450,7 +450,7 @@ sub write_network_interfaces
   my $cfl_broadcast = "";
 
   # Find and open the needed files.
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@network_interfaces_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@network_interfaces_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Generate $cfl_network and $cfl_broadcast
@@ -671,7 +671,7 @@ sub write_network_options
   my $OUTFILE;
   my $wrote_forward;
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@network_options_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@network_options_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -686,7 +686,7 @@ sub write_network_options
     # Modify and write-out any known variables.
     if ($line[0] eq "ip_forward")
     {
-      print OUTFILE "ip_forward=" . print_boolean_yesno($cf_forward) . "\n";
+      print OUTFILE "ip_forward=" . be_print_boolean_yesno($cf_forward) . "\n";
       $wrote_forward = 1;
     }
     else { print OUTFILE; }
@@ -694,7 +694,7 @@ sub write_network_options
 
   # Make sure that unwritten, non-empty variables are written to OUTFILE.
   if (not $wrote_forward)
-  { print OUTFILE "ip_forward=" . print_boolean_yesno($cf_forward) . "\n"; }
+  { print OUTFILE "ip_forward=" . be_print_boolean_yesno($cf_forward) . "\n"; }
 
   # All done.  Clean up before returning.
   close (OUTFILE);
@@ -769,7 +769,7 @@ sub write_sysconfig_network_scripts_ifcfg
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Generate $cfl_network and $cfl_broadcast.
@@ -811,7 +811,7 @@ sub write_sysconfig_network_scripts_ifcfg
     }
     elsif ($line[0] eq "ONBOOT")
     {
-      print OUTFILE join('', "ONBOOT=", print_boolean_yesno($cf_onboot), "\n");
+      print OUTFILE join('', "ONBOOT=", be_print_boolean_yesno($cf_onboot), "\n");
       $wrote_onboot = 1;
     }
     else { print OUTFILE; }
@@ -822,7 +822,7 @@ sub write_sysconfig_network_scripts_ifcfg
   if (not $wrote_network)   { print OUTFILE "NETWORK=$cfl_network\n"; }
   if (not $wrote_broadcast) { print OUTFILE "BROADCAST=$cfl_broadcast\n"; }
   if (not $wrote_method)    { print OUTFILE "BOOTPROTO=$cf_method\n"; }
-  if (not $wrote_onboot)    { print OUTFILE join('', "ONBOOT=", print_boolean_yesno($cf_onboot), "\n"); }
+  if (not $wrote_onboot)    { print OUTFILE join('', "ONBOOT=", be_print_boolean_yesno($cf_onboot), "\n"); }
 
   close(OUTFILE);
   if (*INFILE) { close(INFILE); }
@@ -960,7 +960,7 @@ sub write_sysconfig_network
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@sysconfig_network_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@sysconfig_network_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -972,12 +972,12 @@ sub write_sysconfig_network
 
     if ($line[0] eq "NETWORKING")
     {
-      print OUTFILE join('', "NETWORKING=", print_boolean_yesno($cf_networking), "\n");
+      print OUTFILE join('', "NETWORKING=", be_print_boolean_yesno($cf_networking), "\n");
       $wrote_networking = 1;
     }
     elsif ($line[0] eq "FORWARD_IPV4")
     {
-      print OUTFILE join('', "FORWARD_IPV4=", print_boolean_truefalse($cf_forward), "\n");
+      print OUTFILE join('', "FORWARD_IPV4=", be_print_boolean_truefalse($cf_forward), "\n");
       $wrote_forward = 1;
     }
     elsif ($line[0] eq "GATEWAY")
@@ -994,9 +994,9 @@ sub write_sysconfig_network
   }
 
   if (not $wrote_networking)
-  { print OUTFILE join('', "NETWORKING=", print_boolean_yesno($cf_networking), "\n"); }
+  { print OUTFILE join('', "NETWORKING=", be_print_boolean_yesno($cf_networking), "\n"); }
   if (not $wrote_forward)
-  { print OUTFILE join('', "FORWARD_IPV4=", print_boolean_truefalse($cf_forward), "\n"); }
+  { print OUTFILE join('', "FORWARD_IPV4=", be_print_boolean_truefalse($cf_forward), "\n"); }
   if (not $wrote_gateway)
   { print OUTFILE "GATEWAY=$cf_gateway\n"; }
   if (not $wrote_interface)
@@ -1104,7 +1104,7 @@ sub write_rc_config
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@rc_config_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@rc_config_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Generate broadcast address.

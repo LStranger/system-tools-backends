@@ -29,7 +29,7 @@
 # files.
 
 $be_prefix = "";
-$be_verbose = 1;
+$be_verbose = 0;
 $be_progress = 0;
 $be_do_immediate = 1;
 

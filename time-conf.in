@@ -151,7 +151,7 @@ sub read_ntp_conf
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace.
     
     if ($line[0] eq "server" && $line[1] ne "127.127.1.0")  # Disregard loopback.
-    { push_unique(\@cf_servers, $line[1]); }
+    { be_push_unique(\@cf_servers, $line[1]); }
   }
 }
 
@@ -163,7 +163,7 @@ sub write_ntp_conf
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@ntp_conf_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@ntp_conf_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -212,12 +212,12 @@ sub write_ntp_conf
 
 sub write_ntp_step_tickers
 {
-  my $FILE;
+  local *FILE;
 
   # Find the file (it might very well not exist beforehand).
 
-  $FILE = open_write_from_names(@ntp_step_tickers_names);
-  if (not FILE) { return; }
+  *FILE = be_open_write_from_names(@ntp_step_tickers_names);
+  if (not *FILE) { return; }
 
   # Write the file.
 
@@ -270,7 +270,7 @@ sub write_localtime
     }
 
     ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
-    create_path($name);
+    be_create_path($name);
 
     # Make a backup if the file already exists - if the user specified a prefix,
     # it might not.

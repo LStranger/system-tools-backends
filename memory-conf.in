@@ -150,7 +150,7 @@ sub xml_parse_swapinfo
 	elsif (@$tree[0] eq 'enabled') 
 	  {
 	    $node = @$tree[1];
-	    $entry->{enabled} = read_boolean (@$node[0]->{state});
+	    $entry->{enabled} = be_read_boolean (@$node[0]->{state});
 	  }
 	elsif (@$tree[0] eq 'priority') 
 	  { 
@@ -163,12 +163,12 @@ sub xml_parse_swapinfo
 	elsif (@$tree[0] eq 'isfile') 
 	  { 
 	    $node = @$tree[1];
-	    $entry->{is_file} = read_boolean (@$node[0]->{state});
+	    $entry->{is_file} = be_read_boolean (@$node[0]->{state});
 	  }
 	elsif (@$tree[0] eq 'isnew') 
 	  { 
 	    $node = @$tree[1];
-	    $entry->{is_new} = read_boolean (@$node[0]->{state});
+	    $entry->{is_new} = be_read_boolean (@$node[0]->{state});
 	  }
 	
 	shift @$tree;
@@ -431,9 +431,9 @@ sub get
     
     if ($be_verbose) { print STDERR "Getting swap entries.\n"; }
 
-    get_memory; print_progress;
-    get_fdisk;  print_progress;
-    get_swap_entries; print_progress;
+    get_memory; be_print_progress;
+    get_fdisk;  be_print_progress;
+    get_swap_entries; be_print_progress;
     
     if ($be_verbose) { print STDERR "Printing XML.\n"; }
     if ($be_progress) { print "\n"; }
@@ -493,7 +493,7 @@ sub set_swap_entries
     my ($priority_str);
 
     (*FSTAB_IN_FILE, *FSTAB_OUT_FILE) = 
-      open_filter_write_from_names (@fstab_names);
+      be_open_filter_write_from_names (@fstab_names);
 
     while (<FSTAB_IN_FILE>)
       {

@@ -360,7 +360,7 @@ sub write_fstab
 {
   my ($INFILE, $OUTFILE);
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@fstab_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@fstab_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   while (<INFILE>)

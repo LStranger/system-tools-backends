@@ -138,6 +138,833 @@ $cf_netmask = "";
 $cf_hostip = "";
 
 
+# --- Configuration file manipulation --- #
+
+
+# Red Hat style /etc/sysconfig/network-scripts/ifcfg-*
+#
+# <filtered lines>
+# IPADDR=<ip>
+# NETMASK=<ip mask>
+# NETWORK=<network ip>
+# BROADCAST=<broadcast ip>
+# BOOTPROTO=<bootp|dhcp|none>
+# ONBOOT=<boolean>
+# <filtered lines>
+#
+# Determines the configuration of a specific network interface. First
+# argument must be the name of the interface.
+#
+# Exists: Red Hat [5|6].x
+#
+# Absent:
+
+sub read_sysconfig_network_scripts_ifcfg
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
+  if (not *FILE) { return; }
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "IPADDR" && not be_is_line_comment_start($line[1]))
+    { $cf_hostip = $line[1]; }
+    elsif ($line[0] eq "NETMASK" && not be_is_line_comment_start($line[1]))
+    { $cf_netmask = $line[1]; }
+  }
+
+  close(FILE);
+}
+
+
+# Red Hat style primary interface reader.
+#
+# Tries to figure out what the "primary" interface is, and calls
+# read_sysconfig_network_scripts_ifcfg on that interface.
+#
+# Must run after get_immediate and read_sysconfig_network, which will
+# (hopefully) provide information to identify the primary device.
+
+sub read_primary_interface
+{
+  # If the interface was specified, we use that.
+
+  if ($cf_interface ne "") { }
+
+  # If the known-interfaces list contains only one interface, we use that.
+  # This is actually not too uncommon, after weeding lo and dummy.
+
+  elsif ($#cf_interface_list == 0) { $cf_interface = $cf_interface_list[0]; }
+  
+  # If we have a gateway, try to find an interface with a matching subnet, by
+  # going through the interface configurations. This will fail if a gateway
+  # has been configured without any interfaces, or if the gateway is on a
+  # foreign, bridged subnet. Both are pretty rare conditions.
+
+  elsif ($cf_gateway ne "")
+  {
+    for $elem (@cf_interface_list)
+    {
+      read_sysconfig_network_scripts_ifcfg($elem);
+      if ($cf_netmask eq "") { next; }
+
+      if (ip_calc_network($cf_gateway, $cf_netmask) eq ip_calc_network($cf_hostip, $cf_netmask))
+      {
+        $cf_interface = $elem;
+        last;
+      }
+
+      $cf_hostip = "";
+      $cf_netmask = "";
+      $cf_method = "";
+      $cf_onboot = 0;
+    }
+  }
+
+  # Last ditch. Pick an interface from the list according to some built-in
+  # rules. ethN on Linux and hmeN or Solaris.
+
+  else
+  {
+    for $elem (@cf_interface_list)
+    {
+      if (($elem =~ /eth.*/) || ($elem =~ /hme.*/))
+      {
+        $cf_interface = $elem;
+        last;
+      }
+    }
+  }
+
+  if ($cf_interface ne "") { read_sysconfig_network_scripts_ifcfg($cf_interface); }
+}
+
+
+# Red Hat style /etc/sysconfig/network
+#
+# <filtered lines>
+# NETWORKING=<boolean>
+# FORWARD_IPV4=<boolean>
+# GATEWAY=<ip>
+# GATEWAYDEV=<interface>
+# <filtered lines>
+#
+# Determines the primary network configuration. BEWARE: This is actually a
+# sourced shell script. We rely on some lenience from the user (and the distro)
+# to be able to parse it correctly.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0
+#
+# Absent: SuSE 6.3, SunOS 5.7
+
+sub read_sysconfig_network
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@sysconfig_network_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "GATEWAY" && not be_is_line_comment_start($line[1]))
+    { $cf_gateway = $line[1]; }
+    elsif ($line[0] eq "GATEWAYDEV" && not be_is_line_comment_start($line[1]))
+    { $cf_interface = $line[1]; }
+  }
+
+  close(FILE);
+}
+
+
+# SuSE style /etc/rc.config
+#
+# <filtered lines>
+# FQHOSTNAME="<fully qualified hostname>"
+# SEARCHLIST="<space separated list of searchdomains>"
+# NAMESERVER="<space separated list of nameservers>"
+# <filtered lines>
+#
+# Determines the local hostname.domain, searchdomains and nameservers.
+# BEWARE: This is actually a sourced shell script. We rely on some lenience
+# from the user (and the distro) to be able to parse it correctly. The file
+# is read by SuSE configuration tools and translated to NET-3 config files
+# at strategic times.
+#
+# Exists: SuSE 6.3
+#
+# Absent: Red Hat 6.x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SunOS 5.7
+
+sub read_rc_config
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@rc_config_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "NETDEV_0" && not be_is_line_comment_start($line[1]))
+    {
+      $cf_interface = $line[1];
+    }
+    elsif ($line[0] eq "IPADDR_0")
+    {
+      $cf_hostip = $line[1];
+    }
+    elsif ($line[0] eq "IFCONFIG_0")
+    {
+      shift @line;
+
+      while (@line)
+      {
+        if (be_is_line_comment_start($line[0])) { last; }
+	
+	if ($line[0] eq "broadcast")
+	{
+	  # Calculate this ourselves.
+
+	  shift @line;
+	  shift @line;
+	}
+	elsif ($line[0] eq "netmask")
+	{
+	  $cf_netmask = $line[1];
+	  shift @line;
+	  shift @line;
+	}
+	elsif ($line[0] eq "bootp")
+	{
+	  last;
+	}
+	elsif ($line[0] =~ /dhcp.*/)
+	{
+	  last;
+	}
+        elsif ($line[0] ne "") { $cf_hostip = $line[0]; shift @line; }
+	else { shift @line; }
+      }
+    }
+  }
+
+  close(FILE);
+}
+
+
+# Samba /etc/smb.conf
+#
+# <filtered lines>
+# workgroup = <workgroup>
+# server string = <description>
+# <filtered lines>
+#
+# Exists: (Wherever Samba is installed)
+#
+# Absent: (Wherever Samba is not installed)
+
+sub read_smb_conf
+{
+  local *FILE;
+  my $section = "";
+  my $path = "", $enabled = 1, $public = 0, $browseable = 0, $comment = "",
+     $writeable = 0, $printable = 0;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@smb_conf_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (join(' ', @line) =~ /^\[.*\]/)
+    {
+      # New section. If last section was a share, store it in global
+      # records, then flush locals for next instance.
+
+      if (($path ne "") && !$printable)
+      {
+        push @cf_exports_list, "smb";        # Type
+        push @cf_exports_list, $path;        # Path
+        push @cf_exports_list, $section;     # Name
+        push @cf_exports_list, $comment;     # Comment
+        push @cf_exports_list, $enabled;     # Enabled
+        push @cf_exports_list, $browseable;  # Browseable
+        push @cf_exports_list, $public;      # Public
+        push @cf_exports_list, $writeable;   # Writeable
+      }
+
+      $path = ""; $comment = ""; $enabled = 1; $public = 0; $browseable = 0;
+      $writeable = 0; $printable = 0;
+
+      ($section) = (join(' ', @line) =~ /^\[(.*)\]/);
+    }
+    elsif ($line[0] eq "workgroup" && not be_is_line_comment_start($line[1]))
+    {
+      $cf_workgroup = $line[1];
+    }
+    elsif ($line[0] eq "path" && not be_is_line_comment_start($line[1]))
+    {
+      $path = $line[1];
+    }
+    elsif ($line[0] eq "comment" && not be_is_line_comment_start($line[1]))
+    {
+      shift @line;
+      $comment = join(' ', @line);
+    }
+    elsif ($line[0] eq "available" && not be_is_line_comment_start($line[1]))
+    {
+      $enabled = be_read_boolean($line[1]);
+    }
+    elsif ($line[0] =~ /^browse?able/ && not be_is_line_comment_start($line[1]))
+    {
+      $browseable = be_read_boolean($line[1]);
+    }
+    elsif ($line[0] eq "public" && not be_is_line_comment_start($line[1]))
+    {
+      $public = be_read_boolean($line[1]);
+    }
+    elsif ($line[0] eq "guest" && $line[1] eq "ok" &&
+           not be_is_line_comment_start($line[2]))
+    {
+      $public = be_read_boolean($line[2]);
+    }
+    elsif ($line[0] =~ /write?able/ && not be_is_line_comment_start($line[1]))
+    {
+      $writeable = be_read_boolean($line[1]);
+    }
+    elsif ($line[0] eq "printable" && not be_is_line_comment_start($line[1]))
+    {
+      $printable = be_read_boolean($line[1]);
+    }
+  }
+
+  # Push the last share found, if any.
+
+  if (($path ne "") && !$printable)
+  {
+    push @cf_exports_list, "smb";        # Type
+    push @cf_exports_list, $path;        # Path
+    push @cf_exports_list, $section;     # Name
+    push @cf_exports_list, $comment;     # Comment
+    push @cf_exports_list, $enabled;     # Enabled
+    push @cf_exports_list, $browseable;  # Browseable
+    push @cf_exports_list, $public;      # Public
+    push @cf_exports_list, $writeable;   # Writeable
+  }
+
+  close(FILE);
+}
+
+
+sub write_smb_conf
+{
+  local (*INFILE, *OUTFILE);
+  my ($section, $printable, $wrote_security) = ("", 0, 0);
+  my @buf = ();
+
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@smb_conf_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (join(' ', @line) =~ /^\[.*\]/)
+    {
+      # New section. If last section was a printable, leave it alone
+      # (output it as-is).
+
+      if ($printable || $section =~ /^global/i || $section =~ /^homes/i)
+      {
+        print OUTFILE join('', @buf);
+        $printable = 0;
+      }
+      
+      if ($section =~ /^global/i && !$wrote_security)
+      {
+        print OUTFILE "   security = share\n";
+      }
+
+      ($section) = (join(' ', @line) =~ /^\[(.*)\]/);
+      @buf = ();
+      push @buf, $_;
+    }
+    elsif ($line[0] eq "printable" && not be_is_line_comment_start($line[1]))
+    {
+      $printable = be_read_boolean($line[1]);
+      push @buf, $_;
+    }
+    elsif ($line[0] eq "security" && not be_is_line_comment_start($line[1]) &&
+           $section =~ /^global/i)
+    {
+      push @buf, "   security = share\n";
+      $wrote_security = 1;
+    }
+    else
+    {
+      push @buf, $_;
+    }
+  }
+  
+  # Now, print our exports at the end.
+  
+  my @shares = @cf_exports_list;
+  
+  while (@shares)
+  {
+    if ($shares[0] ne "")
+    {
+      if ($shares[0] eq "smb")
+      {
+        print OUTFILE "\n[$shares[2]]\n",
+                      "   path = $shares[1]\n",
+                      "   available = ", be_print_boolean_yesno($shares[4]), "\n",
+                      "   browseable = ", be_print_boolean_yesno($shares[5]), "\n",
+                      "   writable = ", be_print_boolean_yesno($shares[7]), "\n",
+                      "   public = ", be_print_boolean_yesno($shares[6]), "\n";
+
+        if ($shares[3] ne "") { print OUTFILE "   comment = $shares[3]\n"; }
+
+        shift @shares; shift @shares; shift @shares; shift @shares;
+        shift @shares; shift @shares; shift @shares; shift @shares;
+      }
+      elsif ($shares[0] eq "nfs")
+      { shift @shares; shift @shares; shift @shares; }
+    }
+  }
+  
+  close(INFILE);
+  close(OUTFILE);
+}
+
+
+# /etc/fstab
+#
+# <device> <mount point> <filesystem> <option,option,...> <dump> <fsck>
+# <device> <mount point> smbfs        defaults            0      0
+# <device> <mount point> nfs          defaults            0      0
+# <device> <mount point> <filesystem> <option,option,...> <dump> <fsck>
+#
+# Exists: (Presumably everywhere)
+#
+# Absent: (Presumably nowhere)
+
+sub read_fstab
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@fstab_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    my ($host, $path, $type);
+
+    @line = split(/[ \n\r\t]+/, $_);
+
+    if ($line[0] eq "") { shift @line; }
+    if ($line[0] eq "") { next; }
+    if (be_is_line_comment_start($line[0])) { next; }
+    ($device, $dir, $fs, $options) = @line;
+
+    $host = ""; $path = "";
+    ($password) = ($options =~ /password=([^ \t,]*)/);
+    ($user) = ($user =~ /username=([^ \t,]*)/);
+    if ($dir eq "none") { $dir = ""; }
+
+    if ($fs eq "smbfs")
+    {
+      ($host) = ($device =~ /[\/\\]*([^\/\\]+)/);
+      ($path) = ($device =~ /[\/\\]*[^\/\\]+(.*)/);
+      $path =~ tr/\\/\//;
+      $type = "smb";
+    }
+    elsif ($fs eq "nfs")
+    {
+      ($host) = ($device =~ /(.*):/);
+      ($path) = ($device =~ /.*:(.*)/);
+      $type = "nfs";
+    }
+
+    # (Find and update) or (add) our internal mount record.
+
+    if ($host ne "" && $path ne "")
+    {
+      $found = 0;
+      for ($i = 0; $cf_shares_list[$i] ne ""; )
+      {
+        if (($cf_shares_list[$i] =~ /^$host$/i) == 1 &&
+            ($cf_shares_list[$i + 1] =~ /^$path$/i) == 1 &&
+            ($cf_shares_list[$i + 5] eq $type))
+        {
+          # Found. Flag it as mounted and set extra mount parameters.
+
+          if (!($options =~ /noauto/)) { $cf_shares_list[$i + 3] = 1; }  # Mounted
+          $cf_shares_list[$i + 10] = 1;  # Listed
+          $cf_shares_list[$i + 6] = $user;
+          $cf_shares_list[$i + 7] = $password;
+          $cf_shares_list[$i + 8] = $dir;
+          $found = 1; last;
+        }
+
+        $i = $i + 11;  # Host, path, comment, mounted, detected, type, user,
+                       # password, point, printed, listed.
+      }
+      
+      if (!$found)
+      {
+        push(@cf_shares_list, $host);      # Host
+        push(@cf_shares_list, $path);      # Path
+        push(@cf_shares_list, "");         # Comment
+        if (!($options =~ /noauto/)) { push(@cf_shares_list, 1); }  # Mounted
+        else { push(@cf_shares_list, 0); }                          # Mounted
+        push(@cf_shares_list, 0);          # Detected
+        push(@cf_shares_list, $type);      # Type
+        push(@cf_shares_list, $user);      # User
+        push(@cf_shares_list, $password);  # Password
+        push(@cf_shares_list, $dir);       # Point
+        push(@cf_shares_list, 0);          # Printed
+        push(@cf_shares_list, 1);          # Listed
+      }
+    }
+  }
+
+  close(FILE);
+}
+
+
+sub write_fstab
+{
+  local (*INFILE, *OUTFILE);
+  
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@fstab_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
+
+  while (<INFILE>)
+  {
+    my ($host, $path, $type);
+
+    @line = split(/[ \n\r\t]+/, $_);
+
+    if ($line[0] eq "") { shift @line; }
+    if ($line[0] eq "") { print OUTFILE; next; }
+    if (be_is_line_comment_start($line[0])) { print OUTFILE; next; }
+    ($device, $dir, $fs, $options) = @line;
+
+    $host = ""; $path = "";
+    ($password) = ($options =~ /password=([^ \t,]*)/);
+    ($user) = ($user =~ /username=([^ \t,]*)/);
+
+    if ($fs eq "smbfs")
+    {
+      ($host) = ($device =~ /[\/\\]*([^\/\\]+)/);
+      ($path) = ($device =~ /[\/\\]*[^\/\\]+(.*)/);
+      $path =~ tr/\\/\//;
+      $type = "smb";
+    }
+    elsif ($fs eq "nfs")
+    {
+      ($host) = ($device =~ /(.*):/);
+      ($path) = ($device =~ /.*:(.*)/);
+      $type = "nfs";
+    }
+    else
+    {
+      print OUTFILE; next;
+    }
+
+    # Try to find a corresponding internal mount record and insert it here.
+
+    if ($host ne "" && $path ne "")
+    {
+      $found = 0;
+    
+      for ($i = 0; $cf_shares_list[$i] ne ""; )
+      {
+        if (($cf_shares_list[$i] =~ /^$host$/i) == 1 &&
+            ($cf_shares_list[$i + 1] =~ /^$path$/i) == 1 &&
+            ($cf_shares_list[$i + 5] eq $type))
+        {
+          # Found. Write it out.
+          
+          if (!($cf_shares_list[$i + 10]))
+          {
+            # Stay unlisted.
+          }
+          elsif ($type eq "smb")
+          {
+            # FIXME: The fmask here needs to be user-controllable through
+            # a multiple-choice interface. It's too permissive right now.
+
+            print OUTFILE "//$cf_shares_list[$i]$cf_shares_list[$i + 1] ";
+
+            if ($cf_shares_list[$i + 8] ne "") { print OUTFILE "$cf_shares_list[$i + 8]"; }
+            else { print OUTFILE "none"; }
+
+            print OUTFILE " smbfs username=$cf_shares_list[$i + 6],",
+                          "password=$cf_shares_list[$i + 7],fmask=0777";
+            if (!($cf_shares_list[$i + 3])) { print OUTFILE ",noauto"; }
+
+            # Options merging and printing. Note that we always write some
+            # options, above.
+
+            my @options = ($options =~ /([a-zA-Z0-9=]+),?/mg);
+            for $option (@options)
+            {
+              # Strip options we handle, keep the rest.
+
+              if ($option eq "auto" || $option eq "noauto" ||
+                  $option eq "defaults" || $option =~ /^username/ ||
+                  $option =~ "^password" || $option =~ /^fmask/) { next; }
+
+              print $OUTFILE "," . $option;
+            }
+
+            # Dump and fsck priority.
+
+            print OUTFILE " 0 0\n";
+          }
+          elsif ($type eq "nfs")
+          {
+            print OUTFILE "$cf_shares_list[$i]:$cf_shares_list[$i + 1] ";
+
+            if ($cf_shares_list[$i + 8] ne "") { print OUTFILE "$cf_shares_list[$i + 8]"; }
+            else { print OUTFILE "none"; }
+            
+            print OUTFILE " nfs ";
+
+            # Options merging and printing.
+
+            my $prev = 0;
+
+            if (!($cf_shares_list[$i + 3]))
+            {
+              print OUTFILE "noauto"; $prev = 1;
+            }
+
+            my @options = ($options =~ /([a-zA-Z0-9=]+),?/mg);
+            for $option (@options)
+            {
+              # Strip options we handle, keep the rest.
+
+              if ($option eq "auto" || $option eq "noauto" ||
+                  $option eq "defaults") { next; }
+              if ($prev) { print OUTFILE ","; }
+              print OUTFILE $option;
+              $prev = 1;
+            }
+
+            if (!$prev) { print OUTFILE "defaults"; }
+
+            # Dump and fsck priority.
+
+            print OUTFILE " 0 0\n";
+          }
+          else
+          {
+            # Unsupported share type. This is actually caught earlier.
+          }
+
+          $found = 1;
+          $cf_shares_list[$i + 9] = 1;  # Printed
+        }
+
+        $i = $i + 11;  # Host, path, comment, mounted, detected, type, user,
+                       # password, point, printed, listed.
+      }
+
+      if (!$found) { print OUTFILE; }
+    }
+  }
+
+  # Print leftover shares.
+
+  for ($i = 0; $cf_shares_list[$i] ne ""; )
+  {
+    if (!($cf_shares_list[$i + 9]))
+    {
+      # Not already printed. Do it now.
+
+      if (!($cf_shares_list[$i + 10]))
+      {
+        # Stay unlisted.
+      }
+      elsif ($cf_shares_list[$i + 5] eq "smb")
+      {
+        # FIXME: The fmask here needs to be user-controllable through
+        # a multiple-choice interface. It's too permissive right now.
+
+        print OUTFILE "//$cf_shares_list[$i]$cf_shares_list[$i + 1] ";
+
+        if ($cf_shares_list[$i + 8] ne "") { print OUTFILE "$cf_shares_list[$i + 8]"; }
+        else { print OUTFILE "none"; }
+
+        print OUTFILE " smbfs ",
+                      "username=$cf_shares_list[$i + 6],",
+                      "password=$cf_shares_list[$i + 7],fmask=0777";
+        if (!($cf_shares_list[$i + 3])) { print OUTFILE ",noauto"; }
+        print OUTFILE " 0 0\n";
+      }
+      elsif ($cf_shares_list[$i + 5] eq "nfs")
+      {
+        print OUTFILE "$cf_shares_list[$i]:$cf_shares_list[$i + 1] ";
+
+        if ($cf_shares_list[$i + 8] ne "") { print OUTFILE "$cf_shares_list[$i + 8]"; }
+        else { print OUTFILE "none"; }
+
+        print OUTFILE " nfs ";
+
+        if (!($cf_shares_list[$i + 3])) { print OUTFILE "noauto"; }
+        else { print OUTFILE "defaults"; }
+        print OUTFILE " 0 0\n";
+      }
+      else
+      {
+        # Unsupported share type. This is actually caught earlier.
+      }
+
+      $cf_shares_list[$i + 9] = 1;  # Printed
+    }
+
+    $i = $i + 11;  # Host, path, comment, mounted, detected, type, user,
+                   # password, point, printed, listed.
+  }
+
+  close(INFILE);
+  close(OUTFILE);
+}
+
+
+# /etc/exports
+#
+# <path> <client spec>(<option>,<option>,...) <client spec>(...) ...
+# <path> <client spec>(<option>,<option>,...) <client spec>(...) ...
+# ...
+#
+# Exists: (Presumably everywhere)
+#
+# Absent: (Presumably nowhere)
+
+sub read_exports
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@exports_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    my $host;
+    my $clients = [];
+
+    @line = split(/[ \n\r\t]+/, $_);
+
+    if ($line[0] eq "") { shift @line; }
+    if ($line[0] eq "") { next; }
+    if (be_is_line_comment_start($line[0])) { next; }
+
+    $path = $line[0]; shift @line;
+    push @cf_exports_list, "nfs";  # Type
+    push @cf_exports_list, $path;  # Path
+
+    for $client (@line)
+    {
+      ($spec, $options) = ($client =~ /^([^\(]+)\(([^\)]+)/);
+      push @$clients, $spec;                        # Spec
+      if ($options =~ /rw/) { push @$clients, 1; }  # Writeable
+      else                  { push @$clients, 0; }  # Writeable
+    }
+
+    push @cf_exports_list, $clients;  # Client patterns and options
+  }
+
+  close(FILE);
+}
+
+
+sub write_exports
+{
+  local *FILE;
+
+  # Find the file.
+
+  $FILE = be_open_write_from_names(@exports_names);
+  if (not FILE) { return; }
+
+  # We rewrite everything, as we have complete command of the things to go
+  # in this file.
+
+  my @shares = @cf_exports_list;
+
+  while (@shares)
+  {
+    if ($shares[0] ne "")
+    {
+      if ($shares[0] eq "smb")
+      {
+        shift @shares; shift @shares; shift @shares; shift @shares;
+        shift @shares; shift @shares; shift @shares; shift @shares;
+      }
+      elsif ($shares[0] eq "nfs")
+      {
+        print FILE "$shares[1]";  # Path
+
+        my $clients = $shares[2];
+        while (@$clients)
+        {
+          if (@$clients[0] ne "")
+          {
+            print FILE " @$clients[0]";               # Pattern
+            if (@$clients[1]) { print FILE "(rw)"; }  # Writeable
+          }
+          shift @$clients; shift @$clients;
+        }
+
+        print FILE "\n";
+        shift @shares; shift @shares; shift @shares;
+      }
+    }
+  }
+  
+  close(FILE);
+}
+
+
 # --- XML printing --- #
 
 

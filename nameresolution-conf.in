@@ -163,13 +163,13 @@ $cf_hostmatch = 0;  # 0 = all, 1 = first
 
 sub read_resolv_conf
 {
-  my $FILE;
+  local *FILE;
   my @line = ();
 
   # Find the file.
 
-  $FILE = be_open_read_from_names(@resolv_conf_names);
-  if (not FILE) { return; }  # We didn't find it.
+  *FILE = be_open_read_from_names(@resolv_conf_names);
+  if (not *FILE) { return; }  # We didn't find it.
 
   # Parse the file.
 
@@ -185,7 +185,7 @@ sub read_resolv_conf
       for $elem (@line)
       {
         if (be_is_line_comment_start($elem)) { last; }
-        if ($elem ne "") { push_unique(\@cf_searchdomains, $elem); }
+        if ($elem ne "") { be_push_unique(\@cf_searchdomains, $elem); }
       }
     }
     elsif ($line[0] eq "nameserver")
@@ -194,7 +194,7 @@ sub read_resolv_conf
       for $elem (@line)
       {
         if (be_is_line_comment_start($elem)) { last; }
-        if ($elem ne "") { push_unique(\@cf_nameservers, $elem); }
+        if ($elem ne "") { be_push_unique(\@cf_nameservers, $elem); }
       }
     }
   }
@@ -206,12 +206,12 @@ sub read_resolv_conf
 
 sub write_resolv_conf
 {
-  my $FILE;
+  local *FILE;
 
   # Find the file.
 
-  $FILE = open_write_from_names(@resolv_conf_names);
-  if (not FILE) { return; }  # We didn't find it.
+  *FILE = be_open_write_from_names(@resolv_conf_names);
+  if (not *FILE) { return; }  # We didn't find it.
 
   # Write the file.
 
@@ -271,12 +271,12 @@ sub read_host_conf
 
 sub write_host_conf
 {
-  my $FILE;
+  local *FILE;
 
   # Find the file.
 
-  $FILE = open_write_from_names(@host_conf_names);
-  if (not FILE) { return; }  # We didn't find it.
+  *FILE = be_open_write_from_names(@host_conf_names);
+  if (not *FILE) { return; }  # We didn't find it.
 
   # Write the file.
 
@@ -351,7 +351,7 @@ sub write_hosts
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@hosts_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@hosts_names);
   if (not OUTFILE) { return; }  # We didn't find it.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -446,7 +446,7 @@ sub write_sysconfig_network
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@sysconfig_network_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@sysconfig_network_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -524,7 +524,7 @@ sub read_rc_config
       for $elem (@line)
       {
         if (be_is_line_comment_start($elem)) { last; }
-        if ($elem ne "") { push_unique(\@cf_searchdomains, $elem); }
+        if ($elem ne "") { be_push_unique(\@cf_searchdomains, $elem); }
       }
     }
     elsif ($line[0] eq "NAMESERVER")
@@ -533,7 +533,7 @@ sub read_rc_config
       for $elem (@line)
       {
         if (be_is_line_comment_start($elem)) { last; }
-        if ($elem ne "") { push_unique(\@cf_nameservers, $elem); }
+        if ($elem ne "") { be_push_unique(\@cf_nameservers, $elem); }
       }
     }
   }
@@ -555,7 +555,7 @@ sub write_rc_config
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@rc_config_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@rc_config_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -659,7 +659,7 @@ sub write_smb_conf
 
   # Find the file.
 
-  ($INFILE, $OUTFILE) = open_filter_write_from_names(@smb_conf_names);
+  ($INFILE, $OUTFILE) = be_open_filter_write_from_names(@smb_conf_names);
   if (not OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -740,15 +740,15 @@ sub xml_parse_resolving
 
   while (@$tree)
   {
-    if    (@$tree[0] eq "hostname")        { $cf_hostname = xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "domain")          { $cf_domain = xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "hostnamereverse") { $cf_hostname_reverse = xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "domainreverse")   { $cf_domain_reverse = xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "workgroup")       { $cf_workgroup = xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "description")     { $cf_description = xml_get_text(@$tree[1]); }
-    elsif (@$tree[0] eq "winsserver")      { $cf_winsserver = xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "searchdomain")    { push(@cf_searchdomains, xml_get_word(@$tree[1])); }
-    elsif (@$tree[0] eq "nameserver")      { push(@cf_nameservers, xml_get_word(@$tree[1])); }
+    if    (@$tree[0] eq "hostname")        { $cf_hostname = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "domain")          { $cf_domain = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "hostnamereverse") { $cf_hostname_reverse = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "domainreverse")   { $cf_domain_reverse = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "workgroup")       { $cf_workgroup = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "description")     { $cf_description = be_xml_get_text(@$tree[1]); }
+    elsif (@$tree[0] eq "winsserver")      { $cf_winsserver = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "searchdomain")    { push(@cf_searchdomains, be_xml_get_word(@$tree[1])); }
+    elsif (@$tree[0] eq "nameserver")      { push(@cf_nameservers, be_xml_get_word(@$tree[1])); }
     elsif (@$tree[0] eq "statichost")      { xml_parse_statichost(@$tree[1]); }
     elsif (@$tree[0] eq "order")           { xml_parse_order(@$tree[1]); }
     elsif (@$tree[0] eq "hostmatch")       { xml_parse_hostmatch(@$tree[1]); }
@@ -771,8 +771,8 @@ sub xml_parse_statichost
 
   while (@$tree)
   {
-    if    (@$tree[0] eq "ip")    { $ip = xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "alias") { push(@alias, xml_get_word(@$tree[1])); }
+    if    (@$tree[0] eq "ip")    { $ip = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "alias") { push(@alias, be_xml_get_word(@$tree[1])); }
 
     shift @$tree;
     shift @$tree;
