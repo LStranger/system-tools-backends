@@ -1,3 +1,7 @@
+2004-01-02  Danilo ≈†egan  <dsegan@gmx.net>
+
+	* configure.in: Added "sr" and "sr@Latn" to ALL_LINGUAS.
+
 2003-12-31  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* general.pl.in: fuck debian, why the hell the
@@ -71,7 +75,7 @@
 	* disks-conf.in: updated CD/DVD type content detection (data, blank,
 	mixed or audio)
 	
-2003-12-22  Alvaro del Castillo San FÈlix <acs@barrapunto.com>
+2003-12-22  Alvaro del Castillo San F√©lix <acs@barrapunto.com>
 
 	* disks-conf.in: several modifications to add support for the new
 	  tool to manage disks in GNOME System Tools.
@@ -366,7 +370,7 @@
  
         * Release 0.25.0
 
-2003-05-05  Eduardo GarcÌa Cebollero <kiwnix@yahoo.es>
+2003-05-05  Eduardo Garc√≠a Cebollero <kiwnix@yahoo.es>
 
 	* service-list.pl.in: added more services descriptions
 
@@ -510,7 +514,7 @@
 
 	* time-conf.in: Added Gentoo Linux, it works like redhat-7.0
 
-2002-11-22  ¡lvaro PeÒa <icekooder@usuarios.retecal.es>
+2002-11-22  √Ålvaro Pe√±a <icekooder@usuarios.retecal.es>
 
          * platform.in: Added Slackware 9.0,
          (check_slackware): Changed the regular expresion
@@ -528,7 +532,7 @@
 
 	* Added general support in all working backends for debian sarge, 
 	  it currently works just like woody.
-	* fixed lsb bug for debian, just as proposed by Jose Carlos GarcÌa
+	* fixed lsb bug for debian, just as proposed by Jose Carlos Garc√≠a
 	  Sogo.
 
 2002-11-20  Carlos Garnacho Parro  <garnacho@tuxerver.net>
@@ -581,7 +585,7 @@
 
 	* Release 0.21.0
 
-2002-09-02 ¡lvaro PeÒa <alvaropg@mac.com>
+2002-09-02 √Ålvaro Pe√±a <alvaropg@mac.com>
 
 	* platform.pl.in: Added Slackware 8.0.0 to platforms list
 	and check_slackware for check it.
