@@ -26,12 +26,11 @@
 
 use Socket;
 
-
 $SCRIPTSDIR = "___scriptsdir___";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 {
-    $SCRIPTSDIR = ".";
-    $DOTIN = ".in";
+  $SCRIPTSDIR = ".";
+  $DOTIN = ".in";
 }
 
 require "$SCRIPTSDIR/general.pl$DOTIN";
@@ -54,7 +53,7 @@ sub xst_network_xml_parse_interface
   {
     $hash{$elem} = &xst_xml_get_pcdata (shift @$tree);
   }
-
+  
   $hash{"file"} = &xst_network_get_file (\%hash) if !exists $hash{"file"};
   $dev = $hash{"file"};
   $$interface{$dev} = \%hash;
@@ -92,7 +91,7 @@ sub xst_network_ipv4_calc_subnet_vec
 sub xst_network_ipv4_calc_subnet
 {
   my ($addr, $mask) = @_;
-
+    
   return &xst_network_ipv4_vec2str (&xst_network_ipv4_calc_subnet_vec);
 }
 
@@ -100,7 +99,7 @@ sub xst_network_ipv4_calc_subnet
 sub xst_network_ipv4_calc_bcast_vec
 {
   my ($addr, $mask) = @_;
-  
+    
   $addrvec = &xst_network_ipv4_str2vec ($addr);
   $maskvec = &xst_network_ipv4_str2vec ($mask);
 
@@ -1539,17 +1538,17 @@ sub xst_network_get_ppp_options_unsup
   {
     $_ = $$line;
     next if /^[ \t]*$/;
-
+      
     foreach $re (@known_options)
     {
       next GET_LINE if /^$re/;
     }
-
+      
     $res .= "$_ ";
   }
-
+  
   chop $res;
-
+  
   return $res;
 }
 
@@ -2349,6 +2348,7 @@ sub xst_network_get_interface_parse_table
            [ "update_dns",         \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
 #           [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
 #           [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
+           [ "noauth",             \&xst_parse_kw,                       PPP_OPTIONS, "noauth" ],
            [ "mtu",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mtu", "[ \t]+" ],
            [ "mru",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mru", "[ \t]+" ],
            [ "remote_address",     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
@@ -2402,6 +2402,7 @@ sub xst_network_get_interface_parse_table
            [ "update_dns",         \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
 #           [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
 #           [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
+           [ "noauth",             \&xst_parse_kw,                       PPP_OPTIONS, "noauth" ],
            [ "mtu",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mtu", "[ \t]+" ],
            [ "mru",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mru", "[ \t]+" ],
            [ "remote_address",     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
@@ -2820,6 +2821,7 @@ sub xst_network_get_interface_replace_table
            [ "update_dns",         \&xst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
 # not sup  [ "dns1",               \&xst_replace_sh,                       IFCFG,       DNS1 ],
 # not sup  [ "dns2",               \&xst_replace_sh,                       IFCFG, DNS2 ],
+           [ "noauth",             \&xst_replace_kw,                       PPP_OPTIONS, "noauth" ],
            [ "mtu",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mtu", "[ \t]+" ],
            [ "mru",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mru", "[ \t]+" ],
            [ "remote_address",     \&xst_network_debian_replace_remote_address, [INTERFACES, IFACE]],
@@ -2870,6 +2872,7 @@ sub xst_network_get_interface_replace_table
            [ "update_dns",         \&xst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
 # not sup  [ "dns1",               \&xst_replace_sh,                       IFCFG,       DNS1 ],
 # not sup  [ "dns2",               \&xst_replace_sh,                       IFCFG, DNS2 ],
+           [ "noauth",             \&xst_replace_kw,                       PPP_OPTIONS, "noauth" ],
            [ "mtu",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mtu", "[ \t]+" ],
            [ "mru",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mru", "[ \t]+" ],
            [ "remote_address",     \&xst_network_debian_replace_remote_address, [INTERFACES, IFACE]],

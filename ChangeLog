@@ -1,3 +1,8 @@
+2002-12-18  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network.pl.in: fixed ppp interface creation in debian (other distros
+	  should be tested)
+
 2002-12-12  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Fixed bug 100683
