@@ -463,7 +463,7 @@ sub xst_replace_ini
           $found_flag = 2;
         }
         
-        if ($found_flag && $i =~ /^$var[ \t]*=/i)
+        if ($i =~ /^$var[ \t]*=/i)
         {
           if ($value ne "")
           {

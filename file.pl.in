@@ -243,7 +243,7 @@ sub xst_file_open_write_from_names
 
   if (!open (FILE, ">$name"))
   {
-    &xst_report ("file_open_write_failed",  "Failed to write to \[$name\]");
+    &xst_report ("file_open_write_failed",  $name);
     return;
   }
 

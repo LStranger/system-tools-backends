@@ -1,3 +1,17 @@
+2001-07-12  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* file.pl.in (xst_file_open_write_from_names): Wrong report
+	call.
+
+2001-07-11  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_interfaces_parse_table):
+	Commented out dns[12] unsupported tags for debians.
+	(xst_network_debian_woody_set_auto): Dunno what I was
+	thinking when I first coded this. Fixed now.
+
+	* parse.pl.in (xst_parse_trivial): Return undef if 0 args.
+
 2001-07-12  Chema Celorio  <chema@celorio.com>
 
 	* configure.in (dnl): try again

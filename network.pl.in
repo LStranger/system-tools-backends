@@ -1690,19 +1690,36 @@ sub xst_network_debian_woody_set_auto
 
   while (($found = &xst_replace_interfaces_get_next_stanza ($buff, \$line_no, "auto")) != -1)
   {
-    last if $$buff[$line_no] =~ s/[ \t]$iface$//;
-    # I'm including the hash here, although the man page says it's not supported.
-    last if $$buff[$line_no] =~ s/[ \t]$iface([\# \t])/\1/;
+    if ($value)
+    {
+      if ($$buff[$line_no] =~ /[ \t]$iface([\# \t\n])/)
+      {
+        return &xst_file_buffer_save ($buff, $file);
+      }
+    }
+    else
+    {
+      # I'm including the hash here, although the man page says it's not supported.
+      last if $$buff[$line_no] =~ s/[ \t]$iface([\# \t\n])/\1/;
+    }
 		
 		$line_no ++;
   }
 
   if ($found == -1)
   {
-    &xst_replace_interfaces_auto_stanza_create ($buff, $iface);
+    if ($value)
+    {
+      &xst_replace_interfaces_auto_stanza_create ($buff, $iface);
+    }
   }
   else
   {
+    if ($value)
+    {
+      chomp $$buff[$line_no];
+      $$buff[$line_no] .= " $iface\n";
+    }
     $$buff[$line_no] =~ s/auto[ \t]*$//;
   }
   
@@ -2082,8 +2099,8 @@ sub xst_network_get_interfaces_parse_table
            [ "wvsection",          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
            [ "update_dns",         \&xst_network_pump_get_nodns,         PUMP, "%dev%", "%bootproto%" ],
            [ "update_dns",         \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
-           [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
-           [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
+#           [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
+#           [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
            [ "mtu",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mtu", "[ \t]+" ],
            [ "mru",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mru", "[ \t]+" ],
            [ "remote_address",     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
@@ -2134,8 +2151,8 @@ sub xst_network_get_interfaces_parse_table
            [ "wvsection",          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
            [ "update_dns",         \&xst_network_pump_get_nodns,         PUMP, "%dev%", "%bootproto%" ],
            [ "update_dns",         \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
-           [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
-           [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
+#           [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
+#           [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
            [ "mtu",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mtu", "[ \t]+" ],
            [ "mru",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mru", "[ \t]+" ],
            [ "remote_address",     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
