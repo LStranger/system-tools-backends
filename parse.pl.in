@@ -431,6 +431,15 @@ sub gst_parse_split_first_array
   return \@ret;
 }
 
+sub gst_parse_split_first_array_pos
+{
+  my ($file, $key, $pos, $re, $sep, $line_read_proc) = @_;
+  my (@ret);
+
+  @ret = split ($sep, &gst_parse_split ($file, $key, $re, 0, $line_read_proc));
+  return $ret[$pos];
+}
+
 # Do an gst_parse_split_first_array and then make
 # the array elements unique. This is to fix broken
 # searchdomain entries in /etc/resolv.conf, for example.
@@ -1494,13 +1503,28 @@ sub gst_parse_alchemist_print_option
   return &gst_xml_model_get_attribute ($node, "VALUE");
 }
 
-sub gst_parse_slackware_hostname
+# extracts hostname from a fully qualified hostname
+# contained in a file
+sub gst_parse_fq_hostname
 {
   my ($file) = @_;
   my ($ret);
 
   $ret = &gst_parse_line_first ($file);
   $ret =~ s/\..*//; #remove domain
+
+  return $ret;
+}
+
+# extracts domain from a fully qualified hostname
+# contained in a file
+sub gst_parse_fq_domain
+{
+  my ($file) = @_;
+  my ($ret);
+
+  $ret = &gst_parse_line_first ($file);
+  $ret =~ s/^[^\.]*\.//;
 
   return $ret;
 }

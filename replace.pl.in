@@ -1554,11 +1554,18 @@ sub gst_replace_alchemist_print_option
   return &gst_xml_model_save ($model, $file, $compressed);
 }
 
-sub gst_replace_slackware_hostname
+sub gst_replace_fq_hostname
 {
   my ($file, $hostname, $domain) = @_;
 
-  return &gst_replace_line_first ($file, "$hostname.$domain");
+  if ($domain eq undef)
+  {
+    return &gst_replace_line_first ($file, "$hostname");
+  }
+  else
+  {
+    return &gst_replace_line_first ($file, "$hostname.$domain");
+  }
 }
 
 sub gst_replace_rcinet1conf

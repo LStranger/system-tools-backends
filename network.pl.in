@@ -269,6 +269,8 @@ sub gst_network_get_broadcast_ping_cmd
        "mandrake-10.0" => "debian-2.2",
        "mandrake-10.1" => "redhat-6.2",
        "suse-7.0"     => "debian-2.2",
+       "suse-9.0"     => "redhat-6.2",
+       "suse-9.1"     => "redhat-6.2",
        "pld-1.0"      => "redhat-6.2",
        "pld-1.1"      => "redhat-6.2",
        "pld-1.99"     => "redhat-6.2",
@@ -785,6 +787,11 @@ sub gst_network_suse70_ifaces_get_existing
 
   &gst_file_close ($fd);
   return @ret;
+}
+
+sub gst_network_suse90_ifaces_get_existing
+{
+  return @{&gst_network_sysconfig_dir_ifaces_get_existing ("/etc/sysconfig/network")};
 }
 
 sub gst_network_sysconfig_pld10_ifaces_get_existing
@@ -1421,6 +1428,8 @@ sub gst_network_get_file
     "debian-3.0"   => \&gst_network_deb22_get_file,
     "debian-sarge" => \&gst_network_deb22_get_file,
     "suse-7.0"     => \&gst_network_suse70_get_file,
+    "suse-9.0"     => \&gst_network_deb22_get_file,
+    "suse-9.1"     => \&gst_network_deb22_get_file,
 	  "turbolinux-7.0"   => \&gst_network_rh62_get_file,
     "pld-1.0"      => \&gst_network_pld10_get_file,
     "pld-1.1"      => \&gst_network_pld10_get_file,
@@ -1639,6 +1648,27 @@ sub gst_network_rh62_interface_activate
   }
 }
 
+sub gst_network_suse9_interface_activate
+{
+  my ($hash, $old_hash, $enabled, $force) = @_;
+  my ($iface, $dev);
+
+  if ($force || &gst_network_interface_changed ($hash, $old_hash))
+  {
+    if (exists $$hash{"file"})
+    {
+      $iface = $$hash{"file"};
+      $dev = &gst_network_suse9_get_dev_name ($iface);
+    }
+    else
+    {
+      $dev = $$hash{"dev"};
+    }
+      
+    &gst_network_rh62_interface_activate_by_dev ($dev, $enabled);
+  }
+}
+
 sub gst_network_suse70_interface_activate_by_dev
 {
   my ($dev, $enabled) = @_;
@@ -1652,13 +1682,11 @@ sub gst_network_suse70_interface_activate_by_dev
   if ($enabled)
   {
     &gst_report ("network_iface_deactivate", $hash{"dev"});
-    &gst_debug_print_string ("\n\nifup $dev\n\n");
     return -1 if &gst_file_run_bg ("$network start $dev");
   }
   else
   {
     &gst_report ("network_iface_activate", $hash{"dev"});
-    &gst_debug_print_string ("\n\nifdown $dev\n\n");
     return -1 if &gst_file_run ("$network stop $dev");
   }
   
@@ -1823,7 +1851,7 @@ sub gst_network_rh62_interface_delete
     &gst_network_remove_pap_entry ("/etc/ppp/chap-secrets", $login);
   }
 
-  unlink ($file);
+  &gst_file_remove ($file);
 }
 
 sub gst_network_rh72_interface_delete
@@ -1843,9 +1871,9 @@ sub gst_network_rh72_interface_delete
     &gst_network_remove_pap_entry ("/etc/ppp/chap-secrets", $login);
   }
 
-  unlink ("$gst_prefix/etc/sysconfig/networking/devices/ifcfg-$filedev");
-  unlink ("$gst_prefix/etc/sysconfig/networking/profiles/default/ifcfg-$filedev");
-  unlink ("$gst_prefix/etc/sysconfig/network-scripts/ifcfg-$dev");
+  &gst_file_remove ("$gst_prefix/etc/sysconfig/networking/devices/ifcfg-$filedev");
+  &gst_file_remove ("$gst_prefix/etc/sysconfig/networking/profiles/default/ifcfg-$filedev");
+  &gst_file_remove ("$gst_prefix/etc/sysconfig/network-scripts/ifcfg-$dev");
  
   &gst_file_run ("redhat-config-network-cmd");
 }
@@ -1888,6 +1916,20 @@ sub gst_network_suse70_interface_delete
   &gst_replace_sh ($file, "IFCONFIG_$dev", "");
 }
 
+sub gst_network_suse90_interface_delete
+{
+  my ($old_hash) = @_;
+  my $file = $$old_hash{"file"};
+  my $provider = &gst_parse_sh ("$gst_prefix/etc/sysconfig/network/ifcfg-$file", PROVIDER);
+  my $dev = &gst_network_suse9_get_dev_name ($file);
+
+  &gst_network_rh62_interface_activate_by_dev ($dev, 0);
+
+  &gst_file_remove ("$gst_prefix/etc/sysconfig/network/ifroute-$file");
+  &gst_file_remove ("$gst_prefix/etc/sysconfig/network/ifcfg-$file");
+  &gst_file_remove ("$gst_prefix/etc/sysconfig/network/providers/$provider");
+}
+
 sub gst_network_pld10_interface_delete
 {
   my ($old_hash) = @_;
@@ -1904,7 +1946,7 @@ sub gst_network_pld10_interface_delete
     &gst_network_remove_pap_entry ("/etc/ppp/chap-secrets", $login);
   }
                                                                                 
-  unlink ($file);
+  &gst_file_remove ($file);
 }
 
 sub gst_network_slackware91_interface_delete
@@ -1997,7 +2039,7 @@ sub gst_network_interface_changed
     my ($attr);
     my @attrs = qw(bootproto dev address netmask broadcast network gateway update_dns
                   dns1 dns2 mtu mru remote_address login serial_port serial_speed essid
-                  ppp_options set_default_gw persist serial_hwctl phone_number enabled);
+                  ppp_options dial_command set_default_gw persist serial_hwctl phone_number enabled);
 
     return 1 if (!$iface_old);
     foreach $attr (@attrs)
@@ -2479,8 +2521,22 @@ sub gst_network_parse_bootproto
 {
   my ($file, $key) = @_;
 
-  return "dhcp" if (&gst_parse_sh ($file, $key) =~ /dhcp/i);
+  return "dhcp"  if (&gst_parse_sh ($file, $key) =~ /dhcp/i);
+  return "bootp" if (&gst_parse_sh ($file, $key) =~ /bootp/i);
   return "none";
+}
+
+sub gst_network_suse90_replace_bootproto
+{
+  my ($file, $key, $value) = @_;
+  my %proto_name_to_suse90 =
+     (
+      "dhcp"     => "dhcp",
+      "bootp"    => "bootp",
+      "static"   => "none",
+     );
+
+  return &gst_replace_sh ($file, $key, $proto_name_to_suse90{$value});
 }
 
 sub gst_network_gentoo_replace_bootproto
@@ -2920,6 +2976,32 @@ sub gst_network_freebsd5_set_auto
   &gst_replace_sh ($file, "network_interfaces", $val);
 }
 
+sub gst_network_suse90_get_auto
+{
+  my ($file, $key) = @_;
+  my ($ret);
+
+  $ret = &gst_parse_sh ($file, $key);
+
+  return 1 if ($ret =~ /^onboot$/i);
+  return 0;
+}
+
+sub gst_network_suse90_set_auto
+{
+  my ($file, $key, $enabled) = @_;
+  my ($ret);
+  
+  if($enabled)
+  {
+    return &gst_replace_sh($file, $key, "onboot");
+  }
+  else
+  {
+    return &gst_replace_sh($file, $key, "manual");
+  }    
+}
+
 # Return IP address or netmask, depending on $what
 sub gst_network_pld10_get_ipaddr
 {
@@ -3034,7 +3116,7 @@ sub gst_network_get_gateway_dev_from_address
     $address = $$interface{$key}{"address"};
     $netmask = $$interface{$key}{"netmask"};
 
-    return $key if (&gst_network_is_ip_in_same_network ($address, $gateway, $netmask));
+    return $$interface{$key}{"dev"} if (&gst_network_is_ip_in_same_network ($address, $gateway, $netmask));
   }
 
   return undef;
@@ -3062,6 +3144,36 @@ sub gst_network_get_gateway
   return $gateway if &gst_network_is_ip_in_same_network ($address, $gateway, $netmask);
   return undef;
 }
+
+sub gst_network_suse90_get_gateway
+{
+  my ($file, $address, $netmask) = @_;
+  my ($gateway) = &gst_parse_split_first_array_pos ($file, "default", 0, "[ \t]+", "[ \t]+");
+
+  return $gateway if &gst_network_is_ip_in_same_network ($address, $gateway, $netmask);
+  return undef;
+}
+
+sub gst_network_suse90_get_plip_gateway
+{
+  my ($file, $remote_address) = @_;
+  my ($gateway) = &gst_parse_split_first_array_pos ($file, "default", 0, "[ \t]+", "[ \t]+");
+
+  return $gateway if ($gateway eq $remote_address);
+  return undef;
+}
+
+sub gst_network_suse90_replace_gateway
+{
+  my ($file, $dev, $address, $netmask, $value) = @_;
+
+  
+  return &gst_replace_split ($file, "default", "[ \t]+", "$value \- $dev") if &gst_network_is_ip_in_same_network ($address, $value, $netmask); 
+#  return &gst_replace_split ($file, "default", "[ \t]+", "$value \- $dev") ; 
+  return undef; 
+
+}
+    
 
 # runs a function if the interface is of type $type
 sub gst_network_check_iface
@@ -3132,6 +3244,104 @@ sub gst_network_freebsd_create_ppp_startif
   }
 }
 
+# Functions for parsing provider file in suse 9.X
+sub gst_network_suse90_parse_provider_file_func
+{
+  my ($provider, $key, $func) = @_;
+  my ($path) = "/etc/sysconfig/network/providers/";
+
+  return &$func ("$path/$provider", $key);
+}
+
+sub gst_network_suse90_parse_provider_file
+{
+  my ($provider, $key) = @_;
+  return &gst_network_suse90_parse_provider_file_func ($provider, $key, \&gst_parse_sh);
+}
+
+sub gst_network_suse90_parse_provider_file_bool
+{
+  my ($provider, $key) = @_;
+  return &gst_network_suse90_parse_provider_file_func ($provider, $key, \&gst_parse_sh_bool);
+}
+
+# Functions for replacing in provider file in SuSE 9.X
+sub gst_network_suse90_replace_provider_file_func
+{
+  my ($provider, $key, $value, $func) = @_;
+  my ($path) = "/etc/sysconfig/network/providers/";
+
+  return &$func ("$path/$provider", $key, $value);
+}
+
+sub gst_network_suse90_replace_provider_file
+{
+  my ($provider, $key, $value) = @_;
+  #make sure the function is called only by modem   
+  if ($provider =~ /ppp/)
+  {
+    return &gst_network_suse90_replace_provider_file_func ($provider, $key, $value, \&gst_replace_sh);
+  }
+}
+
+sub gst_network_suse90_replace_provider_file_bool
+{
+  my ($provider, $key, $value) = @_;
+  #make sure the function is called only by modem   
+  if ($provider =~ /ppp/)
+  {
+    return &gst_network_suse90_replace_provider_file_func ($provider, $key, $value, \&gst_replace_sh_bool);
+  }
+}
+
+sub gst_network_suse9_get_dev_name
+{
+  my ($iface) = @_;
+  my ($ifaces, $dev, $hwaddr, $d);
+  my ($dev);
+
+  $dev = &gst_parse_sh ("/var/run/sysconfig/if-$iface", "interface");
+
+  if ($dev eq undef)
+  {
+    $fd = &gst_file_run_backtick ("getcfg-interface $iface");
+  }
+
+  if ($dev eq undef)
+  {
+    # Those are the last cases, we make rough guesses
+    if ($iface =~ /-pcmcia-/)
+    {
+      # it's something like wlan-pcmcia-0
+      $dev =~ s/-pcmcia-//;
+    }
+    elsif ($iface =~ /-id-([a-fA-F0-9\:]*)/)
+    {
+      # it's something like eth-id-xx:xx:xx:xx:xx:xx, which is the NIC MAC
+      $hwaddr = $1;
+      $ifaces = &gst_network_interfaces_get_info ();
+
+      foreach $d (keys %$ifaces)
+      {
+        if ($hwaddr eq $$ifaces{$d}{"hwaddr"})
+        {
+          $dev = $d;
+          last;
+        }
+      }
+    }
+  }
+
+  if ($dev eq undef)
+  {
+    # We give up, take $iface as $dev
+    $dev = $iface;
+  }
+
+  return $dev;
+}
+
+
 # Set dist_map for your distro to "" if you don't want
 # loopback ensuring. See suse-7.0 entry for example.
 sub gst_network_ensure_loopback_interface
@@ -3163,6 +3373,8 @@ sub gst_network_ensure_loopback_interface
     "debian-3.0"   => "lo",
     "debian-sarge" => "lo",
     "suse-7.0"     => "",
+    "suse-9.0"     => "",
+    "suse-9.1"     => "",
 	  "turbolinux-7.0"   => "lo",
     "pld-1.0"      => "lo",
     "pld-1.1"      => "lo",
@@ -3278,6 +3490,8 @@ sub gst_network_get_parse_table
     "debian-3.0"   => "debian-2.2",
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
+    "suse-9.0"     => "suse-9.0",
+    "suse-9.1"     => "suse-9.0",
 	  "turbolinux-7.0"  => "redhat-7.0",
     "pld-1.0"      => "pld-1.0",
     "pld-1.1"      => "pld-1.0",
@@ -3479,8 +3693,42 @@ sub gst_network_get_parse_table
 		    [ "interface_tmp", \&gst_network_interfaces_get ],
         [ "interface",     \&gst_network_suse70_get_ppp,         "%dialing%", "%interface_tmp%" ],
 		    ]
-			 },
+    },
 
+    "suse-9.0" =>
+    {
+      fn =>
+      {
+        ROUTE_CONF   => "/etc/sysconfig/network/routes",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        HOSTNAME     => "/etc/HOSTNAME",
+        SMB_CONF     => "/etc/samba/smb.conf",
+      },
+      table =>
+      [
+       [ "hostname",      \&gst_parse_fq_hostname, HOSTNAME ],
+       [ "domain",        \&gst_parse_fq_domain,   HOSTNAME ],
+       [ "domain",        \&gst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+       [ "nameserver",    \&gst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
+       [ "searchdomain",  \&gst_parse_split_first_array_unique, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+       [ "order",         \&gst_parse_split_first_array, HOST_CONF,    "order", "[ \t]+", ",[ \t]*" ],
+       [ "hostmatch",     \&gst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
+       [ "statichost",    \&gst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+       [ "workgroup",     \&gst_parse_ini,               SMB_CONF,     "global", "workgroup" ],
+       [ "smbdesc",       \&gst_network_rh_get_smb_desc, SMB_CONF,   "global", "server string", "%hostname%" ],
+       [ "winsserver",    \&gst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+       [ "winsuse",       \&gst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+       [ "smbuse",        \&gst_service_get_status,      "smb" ],
+       [ "smbinstalled",  \&gst_service_installed,       "smb" ],
+       [ "dialinstalled", \&gst_parse_trivial, 1 ],
+       [ "interface",     \&gst_network_interfaces_get ],
+       [ "gateway",       \&gst_parse_split_first_array_pos, ROUTE_CONF, "default", 0, "[ \t]+", "[ \t]+" ],
+       [ "gatewaydev",    \&gst_network_get_gateway_dev_from_address,  "%interface%", "%gateway%" ],
+      ]
+    },
+    
 	  "pld-1.0" =>
 	  {
 	    fn =>
@@ -3531,7 +3779,7 @@ sub gst_network_get_parse_table
       },
       table =>
       [
-       [ "hostname",      \&gst_parse_slackware_hostname, HOSTNAME ],
+       [ "hostname",      \&gst_parse_fq_hostname, HOSTNAME ],
        [ "nameserver",    \&gst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
        [ "searchdomain",  \&gst_parse_split_first_array_unique, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
        [ "domain",        \&gst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
@@ -3610,7 +3858,7 @@ sub gst_network_get_parse_table
        [ "gateway",       \&gst_parse_sh,                             RC_CONF, defaultrouter ],
        [ "gatewaydev",    \&gst_network_get_gateway_dev_from_address, "%interface%", "%gateway%" ],
        ]
-     }
+     },
    );
   
   my $dist = $dist_map{$gst_dist};
@@ -3647,6 +3895,8 @@ sub gst_network_get_interface_parse_table
     "debian-3.0"   => "debian-3.0",
     "debian-sarge" => "debian-3.0",
     "suse-7.0"     => "suse-7.0",
+    "suse-9.0"     => "suse-9.0",
+    "suse-9.1"     => "suse-9.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
     "pld-1.0"      => "pld-1.0",
     "pld-1.1"      => "pld-1.0",
@@ -4055,7 +4305,50 @@ sub gst_network_get_interface_parse_table
                                                                 \&gst_network_suse70_active_interfaces_get ],
            [ "enabled",            \&gst_parse_trivial,                   0 ]
            ]
-             },
+       },
+
+    "suse-9.0" =>
+	  {
+	    ifaces_get => \&gst_network_suse90_ifaces_get_existing,
+	    fn =>
+	    {
+        IFCFG      => "/etc/sysconfig/network/ifcfg-#iface#",
+        ROUTE_CONF => "/etc/sysconfig/network/routes",
+        IFACE      => "#iface#"
+      },
+      table =>
+      [
+       [ "dev",                \&gst_network_suse9_get_dev_name,      IFACE ],
+       [ "enabled",            \&gst_network_interface_active,        "%dev%", \&gst_network_active_interfaces_get ],
+       [ "auto",               \&gst_network_suse90_get_auto,         IFCFG,   STARTMODE      ],
+       [ "bootproto",          \&gst_network_parse_bootproto,         IFCFG,   BOOTPROTO      ],
+       [ "address",            \&gst_parse_sh,                        IFCFG,   IPADDR         ],
+       [ "netmask",            \&gst_parse_sh,                        IFCFG,   NETMASK        ],
+       [ "remote_address",     \&gst_parse_sh,                        IFCFG,   REMOTE_IPADDR  ],
+       [ "essid",              \&gst_parse_sh,                        IFCFG,   WIRELESS_ESSID ],
+       [ "gateway",            \&gst_network_suse90_get_gateway,      ROUTE_CONF, "%address%", "%netmask%" ],
+       [ "gateway",            \&gst_network_suse90_get_plip_gateway, ROUTE_CONF, "%remote_address%"       ],
+       # Modem stuff goes here
+       [ "serial_port",        \&gst_parse_sh,                        IFCFG,   MODEM_DEVICE   ],
+       [ "serial_speed",       \&gst_parse_sh,                        IFCFG,   SPEED          ],
+       [ "mtu",                \&gst_parse_sh,                        IFCFG,   MTU            ],
+       [ "mru",                \&gst_parse_sh,                        IFCFG,   MRU            ],
+       [ "ppp_options",        \&gst_parse_sh,                        IFCFG,   PPPD_OPTIONS   ],
+       [ "dial_command",       \&gst_parse_sh,                        IFCFG,   DIALCOMMAND    ],
+       [ "external_line",      \&gst_parse_sh,                        IFCFG,   DIALPREFIX     ],
+       [ "provider",           \&gst_parse_sh,                        IFCFG,   PROVIDER       ],
+       [ "volume",             \&gst_parse_sh_re,                     IFCFG,   INIT8, "AT.*[ml]([0-3])" ],
+       [ "login",              \&gst_network_suse90_parse_provider_file,       "%provider%", USERNAME     ],
+       [ "password",           \&gst_network_suse90_parse_provider_file,       "%provider%", PASSWORD     ],
+       [ "phone_number",       \&gst_network_suse90_parse_provider_file,       "%provider%", PHONE        ],
+       [ "dns1",               \&gst_network_suse90_parse_provider_file,       "%provider%", DNS1         ],
+       [ "dns2",               \&gst_network_suse90_parse_provider_file,       "%provider%", DNS2         ],
+       [ "update_dns",         \&gst_network_suse90_parse_provider_file_bool,  "%provider%", MODIFYDNS    ],
+       [ "persist",            \&gst_network_suse90_parse_provider_file_bool,  "%provider%", PERSIST      ],
+       [ "stupid",             \&gst_network_suse90_parse_provider_file_bool,  "%provider%", STUPIDMODE   ],
+       [ "set_default_gw",     \&gst_network_suse90_parse_provider_file_bool,  "%provider%", DEFAULTROUTE ],
+      ]
+    },
 
 	  "pld-1.0" =>
 	  {
@@ -4242,7 +4535,7 @@ sub gst_network_get_interface_parse_table
        [ "volume",             \&gst_network_parse_pppconf_re,       [ PPPCONF, STARTIF, IFACE ], "dial",  "AT.*[ml]([0-3]) OK " ],
        [ "persist",            \&gst_network_get_freebsd5_ppp_persist, [ STARTIF, IFACE ]],
       ]
-    }
+    },
 	  );
   
   my $dist = $dist_map{$gst_dist};
@@ -4278,6 +4571,8 @@ sub gst_network_get_replace_table
     "debian-3.0" => "debian-2.2",
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
+    "suse-9.0"     => "suse-9.0",
+    "suse-9.1"     => "suse-9.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
     "pld-1.0"      => "pld-1.0",
     "pld-1.1"      => "pld-1.0",
@@ -4473,8 +4768,39 @@ sub gst_network_get_replace_table
         [ "interface",     \&gst_network_interfaces_set,	 OLD_HASH ],
         [ "_always_",      \&gst_file_run,                 SUSECONFIG ],
 		    ]
-			 },
+    },
 
+    "suse-9.0" =>
+    {
+      fn =>
+      {
+        ROUTE_CONF   => "/etc/sysconfig/network/routes",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        HOSTNAME     => "/etc/HOSTNAME",
+        SMB_CONF     => "/etc/samba/smb.conf",
+      },
+      table =>
+      [
+       [ "hostname",      \&gst_replace_fq_hostname,      HOSTNAME,    "%hostname%", "%domain%" ],
+       [ "hostname",      \&gst_network_run_hostname ],
+       [ "domain",        \&gst_replace_join_first_str,   RESOLV_CONF, "domain", "[ \t]+" ],
+       [ "nameserver",    \&gst_replace_join_all,         RESOLV_CONF, "nameserver", "[ \t]+" ],
+       [ "searchdomain",  \&gst_replace_join_first_array, RESOLV_CONF, "search", "[ \t]+", "[ \t]+" ],
+       [ "order",         \&gst_replace_join_first_array, HOST_CONF,   "order", "[ \t]+", ",[ \t]*" ],
+       [ "hostmatch",     \&gst_replace_join_first_bool,  HOST_CONF,   "multi", "[ \t]+", "on", "off" ],
+       [ "statichost",    \&gst_replace_join_hash,        HOSTS,       "[ \t]+", "[ \t]+" ],
+       [ "workgroup",     \&gst_replace_ini,              SMB_CONF,    "global", "workgroup" ],
+       [ "smbdesc",       \&gst_replace_ini,              SMB_CONF,    "global", "server string" ],
+       [ "winsserver",    \&gst_replace_ini,              SMB_CONF,    "global", "wins server" ],
+       [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
+       [ "smbuse",        \&gst_service_suse_set_status,  "smb" ],
+       [ "gateway",       \&gst_replace_join_first_str,   ROUTE_CONF,  "default", "[ \t]+", "%gateway% - -" ],
+       [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ],
+      ]
+    },
+    
 	  "pld-1.0" =>
 	  {
 	    fn =>
@@ -4524,7 +4850,7 @@ sub gst_network_get_replace_table
       },
       table =>
       [
-       [ "hostname",      \&gst_replace_slackware_hostname, HOSTNAME, "%hostname%", "%domain%" ],
+       [ "hostname",      \&gst_replace_fq_hostname, HOSTNAME, "%hostname%", "%domain%" ],
        [ "hostname",      \&gst_network_run_hostname ],
        [ "gateway",       \&gst_replace_rcinet1conf_global, RC_INET_CONF, GATEWAY ],
        [ "domain",        \&gst_replace_join_first_str,   RESOLV_CONF, "domain", "[ \t]+" ],
@@ -4637,6 +4963,8 @@ sub gst_network_get_interface_replace_table
     "debian-3.0"   => "debian-3.0",
     "debian-sarge" => "debian-3.0",
     "suse-7.0"     => "suse-7.0",
+    "suse-9.0"     => "suse-9.0",
+    "suse-9.1"     => "suse-9.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
     "pld-1.0"      => "pld-1.0",
     "pld-1.1"      => "pld-1.0",
@@ -5015,7 +5343,49 @@ sub gst_network_get_interface_replace_table
            [ "remote_address",     \&gst_network_suse70_set_ifconfig_arg,   [IFCFG, IFACE], pointopoint ],
            [ "update_dns",         \&gst_replace_kw,                        PPP_OPTIONS, "usepeerdns" ]
       ]
-    },
+   },
+    
+   "suse-9.0" =>
+   {
+     iface_set    => \&gst_network_suse9_interface_activate, 
+     iface_delete => \&gst_network_suse90_interface_delete,  
+     ifaces_get   => \&gst_network_suse90_ifaces_get_existing, 
+     fn =>
+     {
+       IFCFG       => "/etc/sysconfig/network/ifcfg-#iface#",
+       ROUTE_CONF  => "/etc/sysconfig/network/routes",
+       IFACE       => "#iface#",
+       PPP_OPTIONS => "/etc/ppp/options"
+     },
+     table =>
+     [
+      [ "auto",               \&gst_network_suse90_set_auto,           IFCFG,   STARTMODE      ],
+      [ "bootproto",          \&gst_network_suse90_replace_bootproto,  IFCFG,   BOOTPROTO      ],
+      [ "address",            \&gst_replace_sh,                        IFCFG,   IPADDR         ], 
+      [ "netmask",            \&gst_replace_sh,                        IFCFG,   NETMASK        ],
+      [ "remote_address",     \&gst_replace_sh,                        IFCFG,   REMOTE_IPADDR  ],
+      [ "essid",              \&gst_replace_sh,                        IFCFG,   WIRELESS_ESSID ],
+      # Modem stuff goes here
+      [ "serial_port",        \&gst_replace_sh,                        IFCFG,   MODEM_DEVICE   ],
+      [ "serial_speed",       \&gst_replace_sh,                        IFCFG,   SPEED          ],
+      [ "mtu",                \&gst_replace_sh,                        IFCFG,   MTU            ],
+      [ "mru",                \&gst_replace_sh,                        IFCFG,   MRU            ],
+      [ "ppp_options",        \&gst_replace_sh,                        IFCFG,   PPPD_OPTIONS   ],
+      [ "dial_command",       \&gst_replace_sh,                        IFCFG,   DIALCOMMAND    ],
+      [ "external_line",      \&gst_replace_sh,                        IFCFG,   DIALPREFIX     ],
+      [ "provider",           \&gst_replace_sh,                        IFCFG,   PROVIDER       ],
+      [ "volume",             \&gst_network_check_iface,               [ IFACE, "ppp", \&gst_network_set_modem_volume_string, IFCFG, INIT8 ]],
+      [ "login",              \&gst_network_suse90_replace_provider_file,       "%provider%", USERNAME     ],
+      [ "password",           \&gst_network_suse90_replace_provider_file,       "%provider%", PASSWORD     ],
+      [ "phone_number",       \&gst_network_suse90_replace_provider_file,       "%provider%", PHONE        ],
+      [ "dns1",               \&gst_network_suse90_replace_provider_file,       "%provider%", DNS1         ],
+      [ "dns2",               \&gst_network_suse90_replace_provider_file,       "%provider%", DNS2         ],
+      [ "update_dns",         \&gst_network_suse90_replace_provider_file_bool,  "%provider%", MODIFYDNS    ],
+      [ "stupid",             \&gst_network_suse90_replace_provider_file_bool,  "%provider%", STUPIDMODE   ],
+      [ "persist",            \&gst_network_suse90_replace_provider_file_bool,  "%provider%", PERSIST      ],
+      [ "set_default_gw",     \&gst_network_suse90_replace_provider_file_bool,  "%provider%", DEFAULTROUTE ],
+      ]
+   },
 
     "pld-1.0" =>
 	  {

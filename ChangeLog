@@ -1,5 +1,16 @@
 2004-06-27  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* network-conf.in, network.pl.in: at last, added network tool support
+	  for suse 9.0 and 9.1, thanks to Satvik <satvik@students.iiit.net>
+	  and Kirti <kirtisinha@students.iiit.net> for their cool work.
+	* parse.pl.in (gst_parse_split_first_array_pos), (gst_parse_fq_domain):
+	  added. (gst_parse_slackware_hostname): replaced by
+	  (gst_parse_fq_hostname)
+	* replace.pl.in (gst_replace_slackware_hostname): replaced by
+	  (gst_replace_fq_hostname)
+
+2004-06-27  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* service.pl.in: sexy improvements for suse, for time and network
 	  to take advantage of them
 	* time-conf.in: use those improvements
