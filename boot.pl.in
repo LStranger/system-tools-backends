@@ -328,7 +328,7 @@ sub xst_boot_replace_from_table
     }
     else
     {
-      &xst_boot_del_global ("/home/tambeti/lilo.conf", $key);
+      &xst_boot_del_global ("/etc/lilo.conf", $key);
     }
   }
 
@@ -352,7 +352,7 @@ sub xst_boot_conf_set
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/home/tambeti/lilo.conf"},
+		 LILO_CONF => "/etc/lilo.conf"},
 	    table => [
                 [ prompt,  \&xst_boot_set_global_kw, LILO_CONF, prompt ],
                 [ root,    \&xst_boot_set_global, LILO_CONF, root ],
@@ -387,7 +387,7 @@ sub xst_boot_conf_get
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/home/tambeti/lilo.conf" },
+		 LILO_CONF => "/etc/lilo.conf" },
 	    table => [
                 [ 'prompt',  \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
                 [ 'lba32',   \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],
