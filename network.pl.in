@@ -5879,6 +5879,7 @@ sub gst_network_get_interface_replace_table
           [
 # not sup  [ "user",               \&gst_parse_sh_bool, IFCFG, USERCTL ],
            [ "_always_",           \&gst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
+           [ "bootproto",          \&gst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
            [ "auto",               \&gst_replace_interfaces_option_kw_not, [INTERFACES, IFACE], "noauto" ],
            [ "name",               \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
            [ "address",            \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "address" ],
@@ -5927,6 +5928,7 @@ sub gst_network_get_interface_replace_table
 	    table =>
           [
            [ "_always_",           \&gst_network_deb22_replace_bootproto, [INTERFACES, IFACE]],
+           [ "bootproto",          \&gst_network_deb22_replace_bootproto, [INTERFACES, IFACE]],
            [ "auto",               \&gst_network_debian_woody_set_auto,   [INTERFACES, IFACE]],
            [ "address",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "address" ],
            [ "netmask",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "netmask" ],
