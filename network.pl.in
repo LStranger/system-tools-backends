@@ -49,7 +49,7 @@ sub gst_network_get_wireless_ifaces
   my (@ifaces);
   
   $fd = &gst_file_run_pipe_read ("/sbin/iwconfig");
-  return {} if $fd eq undef;
+  return @ifaces if $fd eq undef;
 
   while (<$fd>)
   {
