@@ -22,6 +22,8 @@ PERLBODY = \
 	util.pl.in \
 	network.pl.in \
 	boot.pl.in \
+	filesys.pl.in \
+	media.pl.in \
 	debug.pl.in \
 	print.pl.in 
 
