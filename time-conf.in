@@ -141,7 +141,7 @@ sub xml_parse_local_time
   {
     if    ($$tree[0] eq "year")     { $$hash{"year"} = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "month")    { $$hash{"month"} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "monthday") { $$hash{"mday"} = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "monthday") { $$hash{"monthday"} = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "hour")     { $$hash{"hour"} = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "minute")   { $$hash{"minute"} = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "second")   { $$hash{"second"} = &xst_xml_get_word($$tree[1]); }
@@ -249,7 +249,7 @@ sub time_get_local_time
 {
   my %h, $trash;
 
-  ($h{"year"}, $h{"month"}, $h{"monthday"}, $h{"hour"}, $h{"minute"}, $h{"second"},
+  ($h{"second"}, $h{"minute"}, $h{"hour"}, $h{"monthday"}, $h{"month"}, $h{"year"},
    $trash, $trash, $trash) = localtime (time);
 
   return \%h;
