@@ -1,9 +1,14 @@
 2004-07-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* replace.pl.in (gst_replace_line_first): add a \n after the line.
+	  fixes debian bug #258551
+
+2004-07-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* network.pl.in: made it to really restart all changed interfaces when
 	  applying data, not only the currently active ones. other silly stetic
 	  code improvements
-	* replace.in: Fixed an anyonning that corrupted smb.conf when the 
+	* replace.pl.in: Fixed an anyonning that corrupted smb.conf when the 
 	  winsserver tag was empty and didn't exist in the file
 
 2004-07-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>

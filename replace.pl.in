@@ -437,7 +437,7 @@ sub gst_replace_line_first
   &gst_report_leave ();
   return -1 if !$fd;
 
-  print $fd $value;
+  print $fd "$value\n";
   &gst_file_close ($fd);
   
   return 0;
