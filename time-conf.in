@@ -431,8 +431,8 @@ sub conf_get_parse_table
    "mandrake-9.1"    => "redhat-7.0",
 
    "debian-2.2"      => "debian-2.2",
-   "debian-woody"    => "debian-2.2",
-   "debian-sarge"    => "debian-2.2",
+   "debian-woody"    => "debian-woody",
+   "debian-sarge"    => "debian-woody",
 
    "suse-7.0"        => "suse-7.0",
 
@@ -503,6 +503,24 @@ sub conf_get_parse_table
               ]
                 },
 
+       "debian-woody" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_get_status, "ntpd" ],
+              [ "ntpinstalled", \&gst_service_sysv_installed, "ntp-simple" ],
+              ]
+                },
+
        "suse-7.0" =>
        {
          fn =>
@@ -569,8 +587,8 @@ sub conf_get_replace_table
    "mandrake-9.1"    => "redhat-7.0",
 
    "debian-2.2"      => "debian-2.2",
-   "debian-woody"    => "debian-2.2",
-   "debian-sarge"    => "debian-2.2",
+   "debian-woody"    => "debian-woody",
+   "debian-sarge"    => "debian-woody",
 
    "suse-7.0"        => "suse-7.0",
 
@@ -600,7 +618,7 @@ sub conf_get_replace_table
               [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",  \&time_set_local_time ],
               [ "sync",        \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active", \&gst_service_sysv_set_status, 90, "xntpd" ],
+              [ "sync_active", \&gst_service_sysv_set_status, 90, "xntpd", "%sync_active%" ],
               ]
                 },
 
@@ -617,7 +635,7 @@ sub conf_get_replace_table
               [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",   \&time_set_local_time ],
               [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&gst_service_sysv_set_status, 90, "ntpd" ],
+              [ "sync_active",  \&gst_service_sysv_set_status, 90, "ntpd", "%sync_active%" ],
               ]
                 },
 
@@ -634,7 +652,24 @@ sub conf_get_replace_table
               [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",  \&time_set_local_time ],
               [ "sync",        \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active", \&gst_service_sysv_set_status, 23, "ntp" ],
+              [ "sync_active", \&gst_service_sysv_set_status, 23, "ntp", "%sync_active%" ],
+              ]
+                },
+       
+       "debian-woody" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "local_time",  \&time_set_local_time ],
+              [ "sync",        \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active", \&gst_service_sysv_set_status, 23, "ntp-simple", "%sync_active%" ],
               ]
                 },
        
@@ -651,7 +686,7 @@ sub conf_get_replace_table
               [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",   \&time_set_local_time ],
               [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&gst_service_sysv_set_status, 90, "xntpd" ],
+              [ "sync_active",  \&gst_service_sysv_set_status, 90, "xntpd", "%sync_active%" ],
               ]
                 },
 
@@ -667,7 +702,7 @@ sub conf_get_replace_table
              [
               [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",   \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&gst_service_sysv_set_status, 90, "ntpd" ],
+              [ "sync_active",  \&gst_service_sysv_set_status, 90, "ntpd", "%sync_active%" ],
               ]
                 }
        );

@@ -1,3 +1,10 @@
+2003-10-30  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* time-conf.in: fixed the ntpd server for debian, it was "ntp-simple",
+	  not "ntpd"
+	* network.pl.in, time-conf.in: fixed ntp and smbd servers
+	  activation/deactivation
+
 2003-10-26  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network.pl.in: fixed XML generation when iwconfig is missing
