@@ -168,6 +168,7 @@ sub xst_report
      "file_buffer_load"         => ["info",  _("Loading file [%s] to buffer.")],
      "file_buffer_save"         => ["info",  _("Saving buffer to file [%s].")],
      "file_run"                 => ["info",  _("Running command [%s].")],
+     "file_remove"              => ["info",  _("Removing file [%s].")],
      "file_locate_tool_success" => ["info",  _("Found tool [%s].")],
      "file_locate_tool_failed"  => ["warn",  _("Couldn't find tool [%s].")],
      

@@ -1,3 +1,10 @@
+2001-05-29  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_replace_table): Remove RESOLV_CONF
+	in SuSE 7.0: it's created by SuSEconfig.
+
+	* file.pl.in (xst_file_remove): Removes a file.
+
 2001-05-29  Tambet Ingo  <tambet@ximian.com>
 
 	* users-conf.in (change_user_chfn): Implement. use chfn to set finger infromation.

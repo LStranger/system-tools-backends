@@ -1778,6 +1778,8 @@ sub xst_network_get_replace_table
 		    [ "domain",        \&xst_replace_sh_set_domain,    RC_CONFIG, FQHOSTNAME ],
 		    [ "nameserver",    \&xst_replace_sh_join,          RC_CONFIG, NAMESERVER, "[ \t]+" ],
 		    [ "searchdomain",  \&xst_replace_sh_join,          RC_CONFIG, SEARCHLIST, "[ \t]+" ],
+# Remove /etc/resolv.conf so SuSEconfig sets the new values.
+        [ "searchdomain",  \&xst_file_remove,              RESOLV_CONF ],
 # not sup [ "domainname",    \&xst_replace_trivial,                  "%domain%" ],
         [ "order",         \&xst_replace_join_first_array, HOST_CONF,    "order", "[ \t]+", ",[ \t]*" ],
         [ "hostmatch",     \&xst_replace_join_first_bool,  HOST_CONF,    "multi", "[ \t]+", "on", "off" ],

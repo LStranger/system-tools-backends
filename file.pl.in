@@ -327,6 +327,22 @@ sub xst_file_open_filter_write_from_names
 }
 
 
+sub xst_file_remove
+{
+  my ($name) = @_;
+
+  &xst_report_enter ();
+  &xst_report ("file_remove", $name);
+  
+  if (stat ($name))
+  {
+    &xst_file_backup ($name);
+  }
+
+  unlink $name;
+  &xst_report_leave ();
+}
+
 # --- Buffer operations --- #
 
 
