@@ -171,6 +171,122 @@ my $x3_sections = {
   },
 };
 
+my @x_colordepths = (8, 15, 16, 24);
+
+# Standard modelines (VESA plus couple extras)
+
+my $standard_modes = q (
+                        
+# 640x350 @ 85Hz (VESA) hsync: 37.9kHz
+ModeLine "640x350@85"    31.5  640  672  736  832    350  382  385  445 +hsync -vsync
+
+# 640x400 @ 85Hz (VESA) hsync: 37.9kHz
+ModeLine "640x400@85"    31.5  640  672  736  832    400  401  404  445 -hsync +vsync
+
+# 720x400 @ 85Hz (VESA) hsync: 37.9kHz
+ModeLine "720x400@85"    35.5  720  756  828  936    400  401  404  446 -hsync +vsync
+
+# 640x480 @ 60Hz (Industry standard) hsync: 31.5kHz
+ModeLine "640x480@60"    25.2  640  656  752  800    480  490  492  525 -hsync -vsync
+
+# 640x480 @ 72Hz (VESA) hsync: 37.9kHz
+ModeLine "640x480@72"    31.5  640  664  704  832    480  489  491  520 -hsync -vsync
+
+# 640x480 @ 75Hz (VESA) hsync: 37.5kHz
+ModeLine "640x480@75"    31.5  640  656  720  840    480  481  484  500 -hsync -vsync
+
+# 640x480 @ 85Hz (VESA) hsync: 43.3kHz
+ModeLine "640x480@85"    36.0  640  696  752  832    480  481  484  509 -hsync -vsync
+
+# 800x600 @ 56Hz (VESA) hsync: 35.2kHz
+ModeLine "800x600@56"    36.0  800  824  896 1024    600  601  603  625 +hsync +vsync
+
+# 800x600 @ 60Hz (VESA) hsync: 37.9kHz
+ModeLine "800x600@60"    40.0  800  840  968 1056    600  601  605  628 +hsync +vsync
+
+# 800x600 @ 72Hz (VESA) hsync: 48.1kHz
+ModeLine "800x600@72"    50.0  800  856  976 1040    600  637  643  666 +hsync +vsync
+
+# 800x600 @ 75Hz (VESA) hsync: 46.9kHz
+ModeLine "800x600@75"    49.5  800  816  896 1056    600  601  604  625 +hsync +vsync
+
+# 800x600 @ 85Hz (VESA) hsync: 53.7kHz
+ModeLine "800x600@85"    56.3  800  832  896 1048    600  601  604  631 +hsync +vsync
+
+# 1024x768i @ 43Hz (industry standard) hsync: 35.5kHz
+ModeLine "1024x768@43"   44.9 1024 1032 1208 1264    768  768  776  817 +hsync +vsync Interlace
+
+# 1024x768 @ 60Hz (VESA) hsync: 48.4kHz
+ModeLine "1024x768@60"   65.0 1024 1048 1184 1344    768  771  777  806 -hsync -vsync
+
+# 1024x768 @ 70Hz (VESA) hsync: 56.5kHz
+ModeLine "1024x768@70"   75.0 1024 1048 1184 1328    768  771  777  806 -hsync -vsync
+
+# 1024x768 @ 75Hz (VESA) hsync: 60.0kHz
+ModeLine "1024x768@75"   78.8 1024 1040 1136 1312    768  769  772  800 +hsync +vsync
+
+# 1024x768 @ 85Hz (VESA) hsync: 68.7kHz
+ModeLine "1024x768@85"   94.5 1024 1072 1168 1376    768  769  772  808 +hsync +vsync
+
+# 1152x864 @ 75Hz (VESA) hsync: 67.5kHz
+ModeLine "1152x864@75"  108.0 1152 1216 1344 1600    864  865  868  900 +hsync +vsync
+
+# 1280x960 @ 60Hz (VESA) hsync: 60.0kHz
+ModeLine "1280x960@60"  108.0 1280 1376 1488 1800    960  961  964 1000 +hsync +vsync
+
+# 1280x960 @ 85Hz (VESA) hsync: 85.9kHz
+ModeLine "1280x960@85"  148.5 1280 1344 1504 1728    960  961  964 1011 +hsync +vsync
+
+# 1280x1024 @ 60Hz (VESA) hsync: 64.0kHz
+ModeLine "1280x1024@60" 108.0 1280 1328 1440 1688   1024 1025 1028 1066 +hsync +vsync
+
+# 1280x1024 @ 75Hz (VESA) hsync: 80.0kHz
+ModeLine "1280x1024@75" 135.0 1280 1296 1440 1688   1024 1025 1028 1066 +hsync +vsync
+
+# 1280x1024 @ 85Hz (VESA) hsync: 91.1kHz
+ModeLine "1280x1024@85" 157.5 1280 1344 1504 1728   1024 1025 1028 1072 +hsync +vsync
+
+# 1400x1050 @ 60Hz (VESA GFT) hsync: 65.5kHz
+ModeLine "1400x1050@60" 122.0 1400 1488 1640 1880   1050 1052 1064 1082 +hsync +vsync
+
+# 1400x1050 @ 75Hz (VESA GFT) hsync: 82.2kHz
+ModeLine "1400x1050@75" 155.8 1400 1464 1784 1912   1050 1052 1064 1090 +hsync +vsync
+
+# 1600x1200 @ 60Hz (VESA) hsync: 75.0kHz
+ModeLine "1600x1200@60" 162.0 1600 1664 1856 2160   1200 1201 1204 1250 +hsync +vsync
+
+# 1600x1200 @ 65Hz (VESA) hsync: 81.3kHz
+ModeLine "1600x1200@65" 175.5 1600 1664 1856 2160   1200 1201 1204 1250 +hsync +vsync
+
+# 1600x1200 @ 70Hz (VESA) hsync: 87.5kHz
+ModeLine "1600x1200@70" 189.0 1600 1664 1856 2160   1200 1201 1204 1250 +hsync +vsync
+
+# 1600x1200 @ 75Hz (VESA) hsync: 93.8kHz
+ModeLine "1600x1200@75" 202.5 1600 1664 1856 2160   1200 1201 1204 1250 +hsync +vsync
+
+# 1600x1200 @ 85Hz (VESA) hsync: 106.3kHz
+ModeLine "1600x1200@85" 229.5 1600 1664 1856 2160   1200 1201 1204 1250 +hsync +vsync
+
+# 1792x1344 @ 60Hz (VESA) hsync: 83.6kHz
+ModeLine "1792x1344@60" 204.8 1792 1920 2120 2448   1344 1345 1348 1394 -hsync +vsync
+
+# 1792x1344 @ 75Hz (VESA) hsync: 106.3kHz
+ModeLine "1792x1344@75" 261.0 1792 1888 2104 2456   1344 1345 1348 1417 -hsync +vsync
+
+# 1856x1392 @ 60Hz (VESA) hsync: 86.3kHz
+ModeLine "1856x1392@60" 218.3 1856 1952 2176 2528   1392 1393 1396 1439 -hsync +vsync
+
+# 1856x1392 @ 75Hz (VESA) hsync: 112.5kHz
+ModeLine "1856x1392@75" 288.0 1856 1984 2208 2560   1392 1393 1396 1500 -hsync +vsync
+
+# 1920x1440 @ 60Hz (VESA) hsync: 90.0kHz
+ModeLine "1920x1440@60" 234.0 1920 2048 2256 2600   1440 1441 1444 1500 -hsync +vsync
+
+# 1920x1440 @ 75Hz (VESA) hsync: 112.5kHz
+ModeLine "1920x1440@75" 297.0 1920 2064 2288 2640   1440 1441 1444 1500 -hsync +vsync
+
+                        );
+
 
 
 sub x_version
@@ -855,6 +971,152 @@ sub x_xml_parse
   return $config;
 }
 
+# ---------------------------------------------------------------------------
+# Add value functions.
+
+# Internal
+sub x_add_scalar
+{
+  my ($val, $quote) = @_;
+
+  if (ref $val) {
+    # TODO: give error, wrong arguments.
+    return;
+  }
+
+  return $quote . $val . $quote;
+}
+
+# Internal
+sub x_add_array
+{
+  my ($val, $quote) = @_;
+
+  unless (ref $val) {
+    # TODO: give error, wrong arguments.
+    return;
+  }
+
+  my $value;
+  
+  foreach (@$val) {
+    $value .= $quote . $_ . $quote . ' ';
+  }
+  chop $value;
+
+  return $value;
+}
+
+# Internal
+sub x_add_modelines
+{
+  my ($fd, $modelines, $pre_space, $val_col, $quote) = @_;
+
+  unless (ref ($modelines) eq "XstXModeLines") {
+    # TODO: give error, wrong arguments.
+    return;
+  }
+
+  foreach my $val (@$modelines) {
+    my $value = $quote . $val->{'name'} . $quote;
+    $value .= " " . $val->{'dotclock'};
+    $value .= " " . $val->{'hdisp'};
+    $value .= " " . $val->{'hsyncstart'};
+    $value .= " " . $val->{'hsyncend'};
+    $value .= " " . $val->{'htotal'};
+    $value .= " " . $val->{'vdisp'};
+    $value .= " " . $val->{'vsyncstart'};
+    $value .= " " . $val->{'vsyncend'};
+    $value .= " " . $val->{'vtotal'};
+
+    foreach (@{$val->{'flags'}}) {
+      $value .= " " . $_;
+    }
+
+    print $fd " " x $pre_space, 'ModeLine';
+
+    my $spaces = ($val_col = length ('ModeLine'));
+    $spaces = 1 if $spaces <= 0;
+    print $fd " " x $spaces, $value . "\n";
+  }
+}
+
+# Internal
+sub x_add_values
+{
+  my ($fd, $section, $pre_space, $val_col, $section_list) = @_;
+
+  foreach my $key (keys %$section) {
+    my $quote;
+
+    if (exists $section_list->{'keywords'}{$key}) {
+      $quote = $section_list->{'keywords'}{$key}[2] ? "\"" : "";
+    }
+
+    my $type = ref ($section->{$key});
+    my $f;
+
+    if    (!$type)                       { $f = \&x_add_scalar; }
+    elsif ($type eq "XstXKeywordList")   { $f = \&x_add_array; }
+    elsif ($type eq "XstXDisplayMode")   { $f = \&x_add_array; }
+    elsif ($type eq "XstXRange")         { $f = \&x_add_array; }
+
+    elsif ($type eq "XstXModeLines")     {
+      &x_add_modelines ($fd, $section->{$key}, $pre_space, $val_col, $quote);
+    }
+
+    elsif ($type eq "XstXSubsection") {
+      &x_add_section ($fd, $section, $key, $pre_space + 8, $val_col + 8, $section_list, 1);
+    }
+
+    else {
+      #TODO: Give warning!
+      1;
+    } 
+    
+    if ($f) {
+      my $value = &$f ($section->{$key}, $quote);
+      print $fd " " x $pre_space, $key;
+
+      if ($value) {
+        my $spaces = ($val_col = length ($key));
+        $spaces = 1 if $spaces <= 0;
+        print $fd " " x $spaces, $value;
+      }
+
+      print $fd "\n";
+    }
+
+    delete $section->{$key};
+  }
+}
+
+# Internal
+sub x_add_section
+{
+  my ($fd, $config, $section_name, $pre_space, $val_col, $section_list, $sub_sec) = @_;
+
+  return unless $fd;
+
+  my $section_str;
+  if ($sub_sec) {
+    $section_str = "Subsection";
+  } else {
+    $section_str = "Section";
+  }
+
+  foreach my $section (@{$config->{$section_name}}) {
+    next unless $section;
+    
+    print $fd "\n$section_str \"$section_name\"\n";
+    &x_add_values ($fd, $section, $pre_space, $val_col, $section_list->{$section_name});
+    print $fd "End$section_str\n";
+  }
+
+  delete $config->{$section_name};
+}
+
+# -----------------------------------------------------------------------------------------
 # Update functions
 
 sub x_delete_section
@@ -973,8 +1235,6 @@ sub x_update_keyword
   if (exists ($new_section->{$kw})) {
     my $type = ref ($new_section->{$kw});
 
-    1;
-    
     if (!$type) {
       $line =~ s/$section->{$kw}/$new_section->{$kw}/;
     }
@@ -986,9 +1246,15 @@ sub x_update_keyword
     elsif ($type eq "XstXDisplayMode") {
       $line = &x_update_display_mode ($line, $section, $new_section, $kw, $quoted);
     }
+
+    elsif ($type eq "XstXModeLines") {
+      # TODO:
+      1;
+    }
     
     else {
       # TODO: Implement, give warning.
+      print STDERR "x_update_keyword: $type\n";
       1;
     }
 
@@ -996,75 +1262,11 @@ sub x_update_keyword
     return $line;
   }
   
-  # Known keyword, doesn't exist, let' remove.
+  # Known keyword, doesn't exist, let's remove.
   return "";
 }
 
-sub x_add_keyword
-{
-  my ($outfd, $new_section, $pre_space, $val_col, $section_list) = @_;
-  my ($key);
-
-  if (scalar keys %$new_section == 0) {
-    return;
-  }
-  
-  foreach $key (keys %$new_section) {
-    my $quote;    
-    if (exists $section_list->{'keywords'}{$key}) {
-      $quote = $section_list->{'keywords'}{$key}[2] ? "\"" : "";
-    }    
-
-    my ($kw, $val);
-    my $type = ref ($new_section->{$key});
-    
-    if (!$type) {
-      $kw = "$key";
-      $val = $quote . "$new_section->{$key}". $quote;
-    }
-
-    elsif ($type eq "XstXKeywordList" ||
-           $type eq "XstXDisplayMode") {
-      foreach (@{$new_section->{$key}}) {
-        $val .= $quote . $_ . $quote . " ";
-      }
-      chop $val;
-      $kw = "$key";
-    }
-
-    elsif ($type eq "XstXSubsection") {
-      my $sub_space = $pre_space . " " x 4;
-
-      foreach (@{$new_section->{$key}}) {
-        if (scalar keys %$_) {
-          print $outfd $pre_space, "Subsection \"$key\"\n";
-          &x_add_keyword ($outfd, $_, $sub_space, $val_col, $section_list->{$key});
-          print $outfd $pre_space, "EndSubsection\n";
-        }
-      }
-    }
-
-    else {
-      # TODO: give warning.
-      1;
-    }
-
-    if ($kw) {
-      delete $new_section->{$key};
-      print $outfd $pre_space, $kw;
-
-      if ($val) {
-        my $spaces = ($val_col - length ($kw));
-        $spaces = 1 if $spaces <= 0;
-        $spaces = " " x $spaces;
-        print $outfd $spaces, $val;
-      }
-
-      print $outfd "\n";
-    }
-  }
-}
-
+# Internal
 sub x_update_section
 {
   my ($infd, $outfd, $config, $xml_config, $section_name, $section_list, $sub_sec, $section_start) = @_;
@@ -1078,6 +1280,7 @@ sub x_update_section
   foreach (@{$xml_config->{$section_name}}) {
     if ($_->{$ident_str} eq $section->{$ident_str}) {
       $new_section = $_;
+      $_ = undef;
       last;
     }
   }
@@ -1087,12 +1290,17 @@ sub x_update_section
     return;
   }
 
+  # Remove empty old data structs
+  if ($#{$xml_config->{$section_name}} < 1) {
+    delete $xml_config->{$section_name};
+  }
+  
   print $outfd $section_start;
   
   while ($line = <$infd>) {
     if (&x_section_end ($line, $sub_sec)) {
       if (scalar keys %$new_section) {
-        &x_add_keyword ($outfd, $new_section, $pre_space, $val_col, $section_list->{$section_name});
+        &x_add_values ($outfd, $new_section, $pre_space, $val_col, $section_list->{$section_name});
       }
       
       print $outfd $line;
@@ -1103,17 +1311,17 @@ sub x_update_section
     
     if ($kw) {
 
-      $pre_space = $1;
+      $pre_space = length ($1);
       $val_col = length ($kw) + length ($3);
       
       # Keyword
-      if (exists $section_list->{$section_name}{'keywords'}{$kw}) {
-        my $quoted = $section_list->{$section_name}{'keywords'}{$kw}[2];
-        $line = &x_update_keyword ($line, $section, $new_section, $kw, $quoted);
+      if ($s = &xst_x_keyword_in_list ($kw, keys %{$section_list->{$section_name}{'keywords'}})) {
+        my $quoted = $section_list->{$section_name}{'keywords'}{$s}[2];
+        $line = &x_update_keyword ($line, $section, $new_section, $s, $quoted);
       }
-
+        
       # Option
-      elsif (exists $section_list->{$section_name}{'options'}{$kw}) {
+      elsif ($s = &xst_x_option_in_list ($kw, keys %{$section_list->{$section_name}{'options'}})) {
         # TODO: Implement.
         1;
       }
@@ -1124,7 +1332,11 @@ sub x_update_section
                            $s, $section_list->{$section_name}, 1, $line);
         next;
       }
-      
+
+      else {
+        #TODO: Give error;
+        print STDERR "x_update_section: $kw\n";
+      }
     }
     
     print $outfd $line;
@@ -1170,8 +1382,13 @@ sub x_config_set
     print $outfd $_;
   }
 
-  &xst_file_close ($infd);
-  &xst_file_close ($outfd);
+  # Add new sections
+  foreach my $key (keys %$xml_config) {
+    &x_add_section ($outfd, $xml_config, $key, 8, 24, $sections, 0);
+  }
+
+  close ($infd);
+  close ($outfd);
 }
 
 #-------------------------------------------------------
@@ -1289,6 +1506,221 @@ sub x_config_fix
   }
 }
 
+
+# -----------------------------------------------------------------------------------
+# Probe functions
+
+# Internal
+sub x_probe_get_modelines
+{
+  my $config = shift;
+  my $std_modelines;
+
+  return unless $config;
+
+  my @arr = split ('\n', $standard_modes);
+  foreach my $line (@arr) {
+    next if &xst_ignore_line ($line);
+
+    my @modeline = &quotewords('[ \t]+', 1, $line);    
+    my $ref = &parse_modeline (\@modeline);
+    push @$std_modelines, $ref;
+  }
+
+  return bless $std_modelines, 'XstXModeLines';
+}
+
+# Internal
+sub x_probe_get_screen
+{
+  my $config = shift;
+  my $screen;
+
+  return unless $config;
+
+  my $active_screen = $config->{'ServerLayout'}[0]{'Screen'}{'name'};
+  foreach my $screen (@{$config->{'Screen'}}) {
+    if ($screen->{'Identifier'} eq $active_screen) {
+      return $screen;
+    }
+  }
+
+  return undef;
+}
+
+# Internal
+sub x_probe_get_monitor
+{
+  my $config = shift;
+  my $screen = shift;
+  my $monitor;
+
+  return unless $config;
+  return unless $screen;
+
+  my $active_monitor = $screen->{'Monitor'};
+  foreach $monitor (@{$config->{'Monitor'}}) {
+    if ($monitor->{'Identifier'} eq $active_monitor) {
+      return $monitor;
+    }
+  }
+
+  return undef;
+}
+
+# Internal
+sub x_probe_add_monitor
+{
+  my $config = shift;
+  my $monitor = shift;
+  my $modes = shift;
+
+  return unless $config;
+  return unless $monitor;
+
+  my $new;
+  $new->{'Identifier'} = 'XstTestMonitor';
+  $new->{'HorizSync'} = $monitor->{'HorizSync'};
+  $new->{'VertRefresh'} = $monitor->{'VertRefresh'};
+  $new->{'ModeLine'} = ();
+  
+  foreach my $mode (@$modes) {
+    push @{$new->{'ModeLine'}}, $mode;
+  }
+
+  bless $new->{'ModeLine'}, 'XstXModeLines';
+  bless $new, 'XstXMonitor';
+  
+  push @{$config->{'Monitor'}}, $new;
+
+  return $new;
+}
+
+# Internal
+sub x_probe_add_screen
+{
+  my $config = shift;
+  my $screen = shift;
+  my $monitor = shift;
+
+  return unless $config;
+  return unless $screen;
+  return unless $monitor;
+
+  my $new;
+  $new->{'Identifier'} = 'XstTestScreen';
+  $new->{'Device'} = $screen->{'Device'};
+  $new->{'Monitor'} = 'XstTestMonitor';
+
+  foreach my $depth (@x_colordepths) {
+    my $display;    
+    
+    $display->{'Depth'} = $depth;
+    foreach my $mode (@{$monitor->{'ModeLine'}}) {
+      push @{$display->{'Modes'}}, $mode->{'name'};
+    }
+
+    bless $display->{'Modes'}, 'XstXKeywordList';
+    bless $display, 'XstXDisplay';
+    push @{$new->{'Display'}}, $display;
+  }
+
+  bless $new->{'Display'}, 'XstXSubsection';
+  bless $new, 'XstXScreen';
+  push @{$config->{'Screen'}}, $new;
+}
+
+# Internal
+sub x_probe_save
+{
+  my $orig_file = shift;
+  my $config = shift;
+
+  return unless $orig_file;
+  return unless $config;
+
+  my $cfg_fname = '/tmp/gewgv';
+  my $res = &xst_file_run ("cp $orig_file $cfg_fname");
+  my $orig_cfg = &x_parse ($cfg_fname);
+
+  &x_config_set ($cfg_fname, $orig_cfg, $config);
+  
+  return $cfg_fname;
+}
+
+# Internal
+sub x_probe_run
+{
+  my $cfg_file = shift;
+  my $modes = shift;
+
+  return unless $cfg_file;
+
+  my $list = {};
+  
+  my $command = &xst_file_locate_tool ("XFree86");
+  foreach my $depth (@x_colordepths) {
+    open (FD, "$command :9 -xf86config $cfg_file -probeonly -depth $depth -screen XstTestScreen -logfile log 2>&1 |");
+    if (FD) {
+      my @content = (<FD>);
+      close (FD);
+
+      my @lines = grep (/^\(\*\*\) \w+\(0\): Mode \"/, @content);      
+
+      foreach (@$modes) {
+        my $mode = $_;
+
+        foreach (@lines) {
+          my $modename = $1 if /\"(.+)\"/;
+
+          if ($modename eq $mode->{'name'}) {
+            push @{$list->{$depth}}, $mode;
+            last;
+          }
+        }
+      }
+    }
+  }
+
+  return $list;
+}
+
+# Internal
+sub x_probe_print_xml
+{
+  my $list = shift;
+
+  return unless $list;
+
+  foreach my $depth (keys %$list) {
+    &xst_xml_container_enter ("$depth");
+    &x_xml_print_modelines (0, $list->{$depth});
+    &xst_xml_container_leave ();
+
+  }
+}
+
+sub x_probe
+{
+  my $orig_file = shift;
+  my $config = shift;  
+
+  return unless $orig_file;
+  return unless $config;
+
+  my $modes = &x_probe_get_modelines ($config);
+  my $screen = &x_probe_get_screen ($config);
+  my $monitor = &x_probe_get_monitor ($config, $screen);
+  
+  $monitor = &x_probe_add_monitor ($config, $monitor, $modes);
+  &x_probe_add_screen ($config, $screen, $monitor);
+
+  my $cfg_file = &x_probe_save ($orig_file, $config);
+  my $list = &x_probe_run ($cfg_file, $modes);
+  # TODO: delete_file ($cfg_file);
+  
+  &x_probe_print_xml ($list);
+}
 
 
 1;
