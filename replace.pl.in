@@ -966,7 +966,7 @@ sub gst_replace_interfaces_get_next_option
   {
     $_ = $$buff[$$line_no];
     $_ = &gst_parse_interfaces_line_clean ($_);
-    
+
     if (!/^$/)
     {
       return [ split ("[ \t]+", $_, 2) ] if (! &gst_replace_interfaces_line_is_stanza ($_));
@@ -982,7 +982,6 @@ sub gst_replace_interfaces_get_next_option
   }
 
   $$line_no -= $empty_lines;
-
   return -1;
 }
 
@@ -1007,14 +1006,28 @@ sub gst_replace_interfaces_option_locate
 sub gst_replace_interfaces_iface_stanza_locate
 {
   my ($buff, $line_no, $iface) = @_;
+
+  return &gst_replace_interfaces_generic_stanza_locate ($buff, \$$line_no, $iface, "iface");
+}
+
+sub gst_replace_interfaces_auto_stanza_locate
+{
+  my ($buff, $line_no, $iface) = @_;
+
+  return &gst_replace_interfaces_generic_stanza_locate ($buff, \$$line_no, $iface, "auto");
+}
+
+sub gst_replace_interfaces_generic_stanza_locate
+{
+  my ($buff, $line_no, $iface, $stanza_name) = @_;
   my $stanza;
 
-  while (($stanza = &gst_replace_interfaces_get_next_stanza ($buff, $line_no, "iface")) != -1)
+  while (($stanza = &gst_replace_interfaces_get_next_stanza ($buff, \$$line_no, $stanza_name)) != -1)
   {
     return 1 if ($$stanza[0] eq $iface);
-    $$line_no ++;
+    $$line_no++;
   }
-  
+
   return 0;
 }
 
@@ -1048,13 +1061,20 @@ sub gst_replace_interfaces_iface_stanza_delete
   $line_no = 0;
 
   return -1 if (!&gst_replace_interfaces_iface_stanza_locate ($buff, \$line_no, $iface));
-  
-  $$buff[$line_no] = "";
+
+  delete $$buff[$line_no];
   $line_no ++;
+  
   while (&gst_replace_interfaces_get_next_option ($buff, \$line_no) != -1)
   {
-    $$buff[$line_no] = "";
+    delete $$buff[$line_no];
     $line_no ++;
+  }
+
+  $line_no = 0;
+  if (&gst_replace_interfaces_auto_stanza_locate ($buff, \$line_no, $iface))
+  {
+    delete $$buff[$line_no];
   }
   
   &gst_file_buffer_clean ($buff);
