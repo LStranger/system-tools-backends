@@ -29,6 +29,7 @@ require "___scriptsdir___/general.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
+require "___scriptsdir___/service.pl";
 
 
 # This code is not under the portable table style because it is supposed to

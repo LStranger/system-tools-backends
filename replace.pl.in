@@ -101,7 +101,10 @@ sub xst_replace_split
   my ($fd, @line, @res);
   my ($buff, $i);
   my ($pre_space, $post_comment);
-  my ($line_key, $val);
+  my ($line_key, $val, $ret);
+
+  &xst_report_enter ();
+  &xst_report ("replace_split", $key, $file);
 
   $buff = &xst_file_buffer_load ($file);
   
@@ -140,17 +143,21 @@ sub xst_replace_split
   }
 
   &xst_file_buffer_clean ($buff);
-  return &xst_file_buffer_save ($buff, $file);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  &xst_report_leave ();
+  return $ret;
 }
 
+# Replace all key/values in file with those in @$value,
+# deleting exceeding ones and appending those required.
 sub xst_replace_join_all
 {
   my ($file, $key, $re, $value) = @_;
-  my @a;
 
   return &xst_replace_split ($file, $key, $re, @$value);
 }
 
+# Find first $key value and replace with $value. Append if not found.
 sub xst_replace_join_first_str
 {
   my ($file, $key, $re, $value) = @_;
@@ -158,6 +165,8 @@ sub xst_replace_join_first_str
   return &xst_replace_split ($file, $key, $re, $value);
 }
 
+# Treat value as a bool value, using val_off and val_on as corresponding
+# boolean representations.
 sub xst_replace_join_first_bool
 {
   my ($file, $key, $re, $val_on, $val_off, $value) = @_;
@@ -168,6 +177,7 @@ sub xst_replace_join_first_bool
   return &xst_replace_split ($file, $key, $re, $value);
 }
 
+# Find first key in file, and set array join as value.
 sub xst_replace_join_first_array
 {
   my ($file, $key, $re1, $re2, $value) = @_;
@@ -175,16 +185,23 @@ sub xst_replace_join_first_array
   return &xst_replace_split ($file, $key, $re1, join (&xst_replace_regexp_to_separator ($re2), @$value));
 }
 
+# Escape value in /bin/sh way, find/append key and set escaped value.
 sub xst_replace_sh
 {
   my ($file, $key, $value) = @_;
+  my $ret;
 
   $value =~ s/([\"\'\`\&\$\|\*\?\[\]\{\}\(\)<>\\])/\\$1/g;
   $value = "\"$value\"" if ($value =~ /[ \t]/);
 
-  return &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);
+  &xst_report_enter ();
+  &xst_report ("replace_sh", $key, $file);
+  $ret = &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);
+  &xst_report_leave ();
+  return $ret;
 }
 
+# Treat value as a yes/no bool, replace in shell style.
 sub xst_replace_sh_bool
 {
   my ($file, $key, $value) = @_;
@@ -194,19 +211,29 @@ sub xst_replace_sh_bool
   return &xst_replace_sh ($file, $key, $value);
 }
 
+# Quick trick to set a keyword $key in $file.
 sub xst_replace_kw
 {
   my ($file, $key) = @_;
+  my $ret;
 
-  return &xst_replace_split ($file, $key, "\$", "");
+  &xst_report_enter ();
+  &xst_report ("replace_kw", $key, $file);
+  $ret = &xst_replace_split ($file, $key, "\$", "");
+  &xst_report_leave ();
+  return $ret;
 }
 
+# The kind of $file whose $value is its first line contents.
 sub xst_replace_line_first
 {
   my ($file, $value) = @_;
   my $fd;
 
+  &xst_report_enter ();
+  &xst_report ("replace_line_first", $file);
   $fd = &xst_file_open_write_from_names ($file);
+  &xst_report_leave ();
   return -1 if !$fd;
 
   print $fd $value;
@@ -215,6 +242,7 @@ sub xst_replace_line_first
   return 0;
 }
 
+# For every key in %$value, replace/append the corresponding key/value pair.
 sub xst_replace_join_hash
 {
   my ($file, $re1, $re2, $value) = @_;
@@ -232,11 +260,15 @@ sub xst_replace_join_hash
   return $res;
 }
 
+# Find $re matching send string and replace parenthesyzed
+# part of $re with $value. FIXME: apply meeks' more general impl.
 sub xst_replace_chat
 {
   my ($file, $re, $value) = @_;
-  my ($buff, $i, $bak, $found, $substr);
+  my ($buff, $i, $bak, $found, $substr, $ret);
 
+  &xst_report_enter ();
+  &xst_report ("replace_chat", $file);
   $buff = &xst_file_buffer_load ($file);
 
   SCAN: foreach $i (@$buff)
@@ -276,17 +308,23 @@ sub xst_replace_chat
     $i = $bak . "\n";
   }
 
-  return &xst_file_buffer_save ($buff, $file);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  &xst_report_leave ();
+  return $ret;
 }
 
 
+# Find/append $section in ini $file and replace/append
+# $var = $value pair. FIXME: should reimplement with
+# interfaces style. This is too large.
 sub xst_replace_ini
 {
   my ($file, $section, $var, $value) = @_;
-  my ($buff, $i, $found_flag);
+  my ($buff, $i, $found_flag, $ret);
   my ($pre_space, $post_comment, $sec_save);
 
-  &xst_debug_print_string ("\nreplace_ini: " . join (',', @_) . "\n");
+  &xst_report_enter ();
+  &xst_report ("replace_ini", $var, $section, $file);
 
   $buff = &xst_file_buffer_load ($file);
 
@@ -338,11 +376,17 @@ sub xst_replace_ini
 
   push @$buff, "\n[$section]\n" if (!$found_flag);
   push @$buff, "$var = $value\n" if ($found_flag < 2);
+
   
   &xst_file_buffer_clean ($buff);
-  return &xst_file_buffer_save ($buff, $file);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  &xst_report_leave ();
+  return $ret;
 }
 
+
+# Replace using boolean $value with a yes/no representation,
+# ini style.
 sub xst_replace_ini_bool
 {
   my ($file, $section, $var, $value) = @_;
@@ -352,6 +396,11 @@ sub xst_replace_ini_bool
   return &xst_replace_ini ($file, $section, $var, $value);
 }
 
+
+# From loaded buffer, starting at $line_no, find next debian
+# interfaces format stanza. Return array ref with all stanza args.
+# -1 if not found.
+# NOTE: $line_no is a scalar ref. and gives the position of next stanza.
 sub xst_replace_interfaces_get_next_stanza
 {
   my ($buff, $line_no) = @_;
@@ -372,6 +421,9 @@ sub xst_replace_interfaces_get_next_stanza
   return -1;
 }
 
+# Scan for next option. An option is something that is
+# not a stanza. Return key/value tuple ref, -1 if not found.
+# $$line_no will contain position.
 sub xst_replace_interfaces_get_next_option
 {
   my ($buff, $line_no) = @_;
@@ -403,6 +455,9 @@ sub xst_replace_interfaces_get_next_option
   return -1;
 }
 
+# Search buffer for option with key $key, starting
+# at $$line_no position. Return 1/0 found result.
+# $$line_no will show position.
 sub xst_replace_interfaces_option_locate
 {
   my ($buff, $line_no, $key) = @_;
@@ -417,6 +472,7 @@ sub xst_replace_interfaces_option_locate
   return 0;
 }
 
+# Locate stanza line for $iface in $buff, starting at $$line_no.
 sub xst_replace_interfaces_stanza_locate
 {
   my ($buff, $line_no, $iface) = @_;
@@ -431,6 +487,7 @@ sub xst_replace_interfaces_stanza_locate
   return 0;
 }
 
+# Append a stanza for $iface to buffer.
 sub xst_replace_interfaces_stanza_create
 {
   my ($buff, $iface) = @_;
@@ -439,6 +496,7 @@ sub xst_replace_interfaces_stanza_create
   push @$buff, "iface $iface inet static\n";
 }
 
+# Delete $iface stanza and all its option lines.
 sub xst_replace_interfaces_stanza_delete
 {
   my ($file, $iface) = @_;
@@ -461,7 +519,8 @@ sub xst_replace_interfaces_stanza_delete
   &xst_file_buffer_clean ($buff);
   return &xst_file_buffer_save ($buff, $file);
 }
-      
+
+# Find $iface stanza line and replace $pos value (ie the method).
 sub xst_replace_interface_stanza_value
 {
   my ($file, $iface, $pos, $value) = @_;
@@ -491,12 +550,16 @@ sub xst_replace_interface_stanza_value
   return &xst_file_buffer_save ($buff, $file);
 }
 
+# Find/append $key option in $iface stanza and set $value.
 sub xst_replace_interfaces_option_str
 {
   my ($file, $iface, $key, $value) = @_;
-  my ($buff, $line_no, $stanza);
+  my ($buff, $line_no, $stanza, $ret);
   my ($pre_space, $line, $line_arr);
 
+  &xst_report_enter ();
+  &xst_report ("replace_ifaces_str", $key, $iface);
+  
   $buff = &xst_file_buffer_load ($file);
   &xst_file_buffer_join_lines ($buff);
   $line_no = 0;
@@ -532,9 +595,12 @@ sub xst_replace_interfaces_option_str
   $$buff[$line_no] .= $value . "\n" if $value ne "";
   
   &xst_file_buffer_clean ($buff);
-  return &xst_file_buffer_save ($buff, $file);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  &xst_report_leave ();
+  return $ret;
 }
 
+# $key option is keyword. $value says if it should exist or not.
 sub xst_replace_interfaces_option_kw
 {
   my ($file, $iface, $key, $value) = @_;
@@ -542,6 +608,7 @@ sub xst_replace_interfaces_option_kw
   return &xst_replace_interfaces_option_str ($file, $iface, $key, $value? " ": "");
 }
 
+# !$value says if keyword should exist or not (ie noauto).
 sub xst_replace_interfaces_option_kw_not
 {
   my ($file, $iface, $key, $value) = @_;
