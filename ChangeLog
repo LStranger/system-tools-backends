@@ -1,5 +1,9 @@
 2003-08-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* services.pl.in: added verbose runlevel description
+
+2003-08-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* Makefile.am: removed some unused backends from installing, removed
 	  runlevel-conf.in and added services-conf.in
 	* services.pl.in: some changes to make it more services oriented

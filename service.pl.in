@@ -118,6 +118,65 @@ sub gst_service_sysv_get_runlevels
   return @$res;
 }
 
+sub gst_service_get_verbose_runlevels
+{
+  my (%dist_map, %runlevels, $desc, $distro);
+  %dist_map =
+    (
+     "redhat-5.2"     => "redhat-5.2",
+     "redhat-6.0"     => "redhat-5.2",
+     "redhat-6.1"     => "redhat-5.2",
+     "redhat-6.2"     => "redhat-5.2",
+     "redhat-7.0"     => "redhat-5.2",
+     "redhat-7.1"     => "redhat-5.2",
+     "redhat-7.2"     => "redhat-5.2",
+     "redhat-7.3"     => "redhat-5.2",
+     "redhat-8.0"     => "redhat-5.2",
+     "redhat-9"       => "redhat-5.2",
+     
+     "mandrake-7.1"   => "redhat-5.2",
+     "mandrake-7.2"   => "redhat-5.2",
+     "mandrake-9.1"   => "redhat-5.2",
+     
+     "debian-2.2"     => "debian-2.2",
+     "debian-woody"   => "debian-2.2",
+     "debian-sarge"   => "debian-2.2",
+     
+     "suse-7.0"       => "redhat-5.2",
+     
+     "turbolinux-7.0" => "redhat-5.2",
+     "pld-1.0"        => "redhat-5.2",
+    );
+
+  %runlevels=
+    (
+     "redhat-5.2" => {"0" => "Halting the system",
+                      "3" => "Text mode",
+                      "5" => "Graphical mode",
+                      "6" => "Rebooting the system"
+                     },
+     "debian-2.2" => {"0" => "Halting the system",
+                      "2" => "Graphical mode",
+                      "3" => "Text mode",
+                      "6" => "Rebooting the system"
+                     }
+    );
+
+  $distro = $dist_map{$gst_dist};
+  $desc = $runlevels{$distro};
+
+  return $runlevels{$distro};
+
+  $aaa = $runlevels{$distro};
+  $aaa = $desc;
+
+  print "---------------- $aaa{\"3\"} \n";
+
+  &gst_report ("service_sysv_unsupported", $gst_dist) if ($desc eq undef);
+  
+  return \%desc;
+}
+
 # --- Plain process utilities --- #
 
 # Get owner (login) of named process.
@@ -765,7 +824,7 @@ sub gst_service_sysv_set_service
 
 sub gst_service_sysv_set_services
 {
-	my ($services) = @_;
+	my ($services, $runlevel) = @_;
 
 	foreach $i (@$services)
 	{
@@ -776,8 +835,9 @@ sub gst_service_sysv_set_services
 # This is the function for storing the service settings from XML in file-rc
 sub gst_service_filerc_set_services
 {
-  my ($services) = @_;
+  my ($services, $runlevel) = @_;
   my ($buff, $lineno, $line, $file);
+  my ($rcd_path, $initd_path, $relative_path) = &gst_service_sysv_get_paths ();
 
   $file = "$gst_prefix/etc/runlevel.conf";
 
@@ -821,6 +881,19 @@ sub gst_service_filerc_set_services
       {
         push @stop, $$i{"number"};
       }
+
+      # find out if it's the current runlevel, in this case we should start/stop the service by hand
+#      if ($$i{"number"} eq $runlevel)
+#      {
+#        if ($$i{"action"} eq "start")
+#        {
+#          &gst_file_run ("$initd_path/$$service{\"script\"} start >/dev/null 2>/dev/null");
+#        }
+#        else
+#        {
+#          &gst_file_run ("$initd_path/$$service{\"script\"}  stop >/dev/null 2>/dev/null");
+#        }
+#      }
     }
 
     if ((scalar (@start) eq 0) && (scalar (@stop) eq 0))
@@ -864,30 +937,32 @@ sub gst_service_filerc_set_services
 
 sub gst_service_set_services
 {
-	my ($services) = @_;
+	my ($services, $runlevel) = @_;
 
   $type = &gst_get_init_type ();
 
   if ($type eq "sysv")
   {
-    &gst_service_sysv_set_services ($services);
+    &gst_service_sysv_set_services ($services, $runlevel);
   }
   elsif ($type eq "file-rc")
   {
-    &gst_service_filerc_set_services ($services);
+    &gst_service_filerc_set_services ($services, $runlevel);
   }
 }
 
 sub gst_service_set_conf
 {
   my ($hash) = @_;
-  my ($services);
+  my ($services, $runlevel);
   
   return unless $hash;
   $services = $$hash{"services"}[0]{"service"};
   return unless $services;
-  
-  &gst_service_set_services($services);
+  $runlevel = $$hash{"runlevel"};
+  return unless $runlevel;
+
+  &gst_service_set_services($services, $runlevel);
 }
 
 # gets the valid parameters for a service
