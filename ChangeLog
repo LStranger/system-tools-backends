@@ -1,5 +1,9 @@
 2003-06-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* network.pl.in: added the possibility of dialing to an external line
+
+2003-06-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* boot-grub.pl.in: made it not to remove the root parameter from 
 	the append data
 

@@ -368,7 +368,7 @@ sub gst_network_dialing_get
     }
     
     $ret{$hash{"name"}} = \%hash;
-    
+
     foreach $j (keys %vars)
     {
       $val = &gst_parse_ini ($file, $i, $j);
@@ -390,6 +390,13 @@ sub gst_network_dialing_get
     else
     {
       $hash{"volume"} = 3;
+    }
+
+    # add the external line access number
+    if ($hash{"phone"} =~ /(^.*)[wW]/)
+    {
+        $hash{"external_line"} = $1;
+        $hash{"phone"} =~ s/^.*[wW]//;
     }
 }
   
@@ -1213,6 +1220,13 @@ sub gst_network_dialing_set
       $hash {"init2"} .= "L$volume";
     }
     delete $hash {"volume"};
+
+    # join again the "external_line" and "phone" tags
+    if ($hash{"external_line"} ne undef)
+    {
+        $hash{"phone"} = $hash{"external_line"} . "W" . $hash{"phone"};
+        delete $hash{"external_line"};
+    }
 
     foreach $j (keys %hash)
     {
