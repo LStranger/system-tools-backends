@@ -1,3 +1,12 @@
+2004-03-27  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* parse.pl.in: little parse improvement, now it's able to parse things
+	  like "%one_tag%-%other_tag%"
+	* network.pl.in: (gst_network_suse70_ppp_iface_active): removed STDERR
+	  output. (gst_network_route_set_default_gw): fixed default gw setting.
+	  Various other slackware related fixings, now ppp ifaces should work
+	  like a charm
+
 2004-03-25  Gareth Owen  <gowen72@yahoo.com>
 
 	* configure.in: Added en_GB to ALL_LINGUAS

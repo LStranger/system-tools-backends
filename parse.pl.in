@@ -77,7 +77,7 @@ sub gst_parse_replace_hash_values
 
   foreach $j (@$cp)
   {
-    while ($j =~ /%(.*)%/)
+    while ($j =~ /%([^%]*)%/)
     {
       $replace_key = $1;
       if (exists $$hash{$replace_key}) 

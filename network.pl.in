@@ -97,7 +97,7 @@ sub gst_network_xml_parse_interface
   {
     $hash{$elem} = &gst_xml_get_pcdata (shift @$tree);
   }
-  
+
   $hash{"file"} = &gst_network_get_file (\%hash) if !exists $hash{"file"};
   $dev = $hash{"file"};
   $$interface{$dev} = \%hash;
@@ -937,7 +937,6 @@ sub gst_network_suse70_ppp_iface_activate
   if ($enabled)
   {
     &gst_debug_print_string ("\n\nifup ppp iface $name\n\n");
-    print STDERR ("\n\nifup ppp iface $name\n\n");
     return -1 if &gst_file_run_bg ("$wvdial_dod start \"$name\"");
   }
   else
@@ -945,7 +944,6 @@ sub gst_network_suse70_ppp_iface_activate
     # Hmm... you'd  better not have more than one ppp connection active:
     # this is the only SuSE way of doing it.
     &gst_debug_print_string ("\n\nifdown ppp iface $name\n\n");
-    print STDERR ("\n\nifdown ppp iface $name\n\n");
     return -1 if &gst_file_run ("$wvdial_dod stop");
   }
 
@@ -1027,6 +1025,8 @@ sub gst_network_slackware91_create_pppgo
     open FILE, ">$gst_prefix/$pppgo";
     print FILE $contents;
     close FILE;
+
+    chmod 0777, "$gst_prefix/$pppgo";
   }
 }
 
@@ -1169,18 +1169,6 @@ sub gst_network_suse70_get_file
   return $i;
 }
 
-sub gst_network_slackware91_get_file
-{
-  my ($i, $file);
-
-  $file = "$gst_prefix/etc/rc.d/rc.inet1.conf";
-
-  $i = 0;
-  $i++ while (&gst_parse_sh ($file, "IPADDR[$i]") ne "");
-
-  return $i;
-}
-
 sub gst_network_pld10_get_file
 {
   my ($iface) = @_;
@@ -1229,7 +1217,7 @@ sub gst_network_get_file
     "pld-1.1"      => \&gst_network_pld10_get_file,
     "pld-1.99"     => \&gst_network_pld10_get_file,
     "fedora-1"     => \&gst_network_rh72_get_file,
-    "slackware-9.1.0" => \&gst_network_slackware91_get_file,
+    "slackware-9.1.0" => \&gst_network_deb22_get_file,
 	  );
 
   $proc = $dist_map{$gst_dist};
@@ -1271,7 +1259,7 @@ sub gst_network_route_set_default_gw
       ($curr_gatewaydev ne $gatewaydev))
   {
     &gst_file_run ("route del default gw $curr_gateway");
-    &gst_file_run ("route add default gw $curr_gateway $gatewaydev");
+    &gst_file_run ("route add default gw $gateway $gatewaydev");
   }
 }
 
@@ -1513,11 +1501,6 @@ sub gst_network_slackware91_interface_activate
   if ($force || &gst_network_interface_changed ($hash, $old_hash))
   {
     &gst_network_slackware91_interface_activate_by_dev ($dev, $enabled);
-
-    if (exists $$hash{"gateway"})
-    {
-      &gst_file_run ("route add default gw $$hash{\"gateway\"} ");
-    }
   }
 }
 
@@ -3398,8 +3381,9 @@ sub gst_network_get_interface_parse_table
        [ "persist",            \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "persist" ]],
        [ "serial_escapechars", \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
        [ "serial_hwctl",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "crtscts" ]],
-       [ "phone_number",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd[^0-9]*([0-9, -]+)" ]],
-       [ "dial_command",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -]+" ]],
+       [ "external_line",      \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd[^0-9]*([0-9]*)[wW]" ]],
+       [ "phone_number",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd.*[ptw]([0-9, -]+)" ]],
+       [ "dial_command",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
        [ "volume",             \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_modem_volume, CHAT ]],
        ]
       }
@@ -3692,7 +3676,8 @@ sub gst_network_get_replace_table
        [ "winsserver",    \&gst_replace_ini,              SMB_CONF,    "global", "wins server" ],
        [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
        [ "smbuse",        \&gst_service_bsd_set_status,   "/etc/rc.d/rc.samba" ],
-       [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ]
+       [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ],
+       [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
       ]
     }
 
@@ -4146,8 +4131,9 @@ sub gst_network_get_interface_replace_table
       [ "serial_escapechars", \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_join_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
       [ "password",           \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_pap_passwd, PAP, "%login%" ]],
       [ "password",           \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_pap_passwd, CHAP, "%login%" ]],
-      [ "dial_command",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "(atd[tp])[0-9, -]+" ]],
-      [ "phone_number",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "atd[^0-9]*([0-9, -]+)" ]],
+      [ "dial_command",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "(atd[tp])[0-9w, -]+" ]],
+      [ "phone_number",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "atd[tp]([0-9w]+)" ]],
+      [ "external_line",      \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "atd[tp]([0-9w, -]+)", "%external_line%W%phone_number%" ]],
       [ "volume",             \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_modem_volume, CHAT ]],
      ]
    }
