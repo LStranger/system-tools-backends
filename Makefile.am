@@ -59,9 +59,9 @@ EXTRA_DIST = \
 	NEWS
 
 CLEANFILES = $(backends) $(perl_libs) \
-	intltool-extract.in \
-	intltool-merge.in \
-	intltool-update.in
+	intltool-extract 	\
+	intltool-merge		\
+	intltool-update
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = system-tools-backends.pc

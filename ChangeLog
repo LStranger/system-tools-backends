@@ -1,3 +1,7 @@
+2004-10-25  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* Makefile.am: delete the correct intltool-* files when making clean
+
 2004-10-25  Mohammad DAMT  <mdamt@bisnisweb.com>
 
 	* configure.in: Added "id" (Indonesian) to ALL_LINGUAS
