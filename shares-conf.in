@@ -974,7 +974,7 @@ sub xml_parse
 {
   # Scan XML to tree.
 
-  $tree = be_xml_scan;
+  $tree = &be_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the toplevel tag.
