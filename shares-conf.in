@@ -1429,7 +1429,24 @@ sub get_host_mounts
     }
   }
   close(PING_HD);
-  
+
+  if ($#hosts == -1)
+  {
+    # If nothing was found, make a second attempt, this time with fewer
+    # options. Eliminate those that ping might not understand.
+
+    open(PING_HD, "$ping_tool -c 2 -n $broadcast_ip 2>/dev/null |");
+    while (<PING_HD>)
+    {
+      if (/bytes from/)
+      {
+        $ip = join('.', ($_ =~ /from ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/));
+        be_push_unique(\@hosts, $ip);
+      }
+    }
+    close(PING_HD);
+  }
+
   if ($be_verbose) { print STDERR "Subnet ping found ", $#hosts + 1, " hosts.\n"; }
   be_print_progress ();
 
