@@ -659,6 +659,31 @@ sub be_locate_tool
 }
 
 
+# be_rotate_backups
+#
+# Given a name (full path) to a file, rotates its backups (up to 9), called
+# name.xstsave.[1-9]. 9 is the oldest backup (which will be rotated out), and
+# 1 is the most recent backup, which will be created on a call to this
+# function.
+
+sub be_rotate_backups
+{
+  my ($name, $i);
+
+  $name = @_[0];
+
+  for ($i = 8; $i; $i--)
+  {
+    if (stat("$name.xstsave.$i"))
+    {
+      be_run("cp $name.xstsave.$i $name.xstsave." . ($i+1));
+    }
+  }
+
+  be_run("cp $name $name.xstsave.1");
+}
+
+
 sub be_open_read_from_names
 {
   local *FILE;
@@ -732,18 +757,12 @@ sub be_open_write_from_names
       {
 	# NOTE: Might not work everywhere. Might be unsafe if the user is allowed
 	# to specify a $name list somehow, in the future.
-	
-	system("cp $name $name.confsave >/dev/null 2>/dev/null");
+
+        &be_rotate_backups($name);
       }
-    
+
     # Truncate and return filehandle.
 
-    print STDERR $name . "\n";
-    print STDERR $name . "\n";
-    print STDERR $name . "\n";
-    print STDERR $name . "\n";
-    print STDERR $name . "\n";
-    
     if (!open(FILE, ">$name"))
       {
 	&be_report_error(99, "Failed to write to \[$name\]");
@@ -802,14 +821,14 @@ sub be_open_filter_write_from_names
 	# NOTE: Might not work everywhere. Might be unsafe if the user is allowed
 	# to specify a $name list somehow, in the future.
 	
-	system("cp $name $name.confsave >/dev/null 2>/dev/null");
+	&be_rotate_backups($name);
       }
     
     # Return filehandles. Backup file is used as filter input. It might be
     # invalid, in which case the caller should just write to OUTFILE without
     # bothering with INFILE filtering.
     
-    open(INFILE, "$name.confsave");
+    open(INFILE, "$name.xstsave.1");
     
     if (!open(OUTFILE, ">$name"))
       {

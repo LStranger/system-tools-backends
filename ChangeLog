@@ -1,3 +1,8 @@
+2001-01-28  Hans Petter Jansson  <hpj@ximian.com>
+
+	* be.pl.in: Added disaster recovery, with 9 rotated backups.
+	  Removed some bogus debug output someone left behind.
+
 2001-01-26  Arturo Espinosa  <arturo@ximian.com>
 
 	* network-conf.in: parsing now follows the new hash structure.
