@@ -1,3 +1,18 @@
+2001-11-23  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* boot-grub.pl.in: s/image/entry/, for a more consistent
+	notation.
+
+	* boot-conf.in: same.
+
+	* boot.pl.in: same.
+
+	* network.pl.in (xst_network_interfaces_get) use parse_expand
+	now.
+
+	* parse.pl.in (xst_parse_expand): Abstracted from a network.pl
+	routine.
+
 2001-11-22  Hans Petter Jansson  <hpj@ximian.com>
 
 	* time-conf.in (xml_parse_time): Pass ref to master hash to

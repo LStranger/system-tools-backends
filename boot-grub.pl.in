@@ -40,7 +40,7 @@ require "$SCRIPTSDIR/replace.pl$DOTIN";
 # Grub device notation converters.
 sub xst_boot_grub_linux2grub
 {
-  my ($grubdir, $dev) = @_;
+  my ($device_map, $dev) = @_;
   my ($fd, $line, $res, $path, $drive, $part);
 
   if ($dev =~ /(.*\/)?(fd[0-9]|hd|sd|scd)([a-z]*)([0-9]*)/)
@@ -56,7 +56,7 @@ sub xst_boot_grub_linux2grub
     return undef;
   }
   
-  $fd = &xst_file_open_read_from_names ("$grubdir/device.map");
+  $fd = &xst_file_open_read_from_names ("$device_map");
   $res = undef;
   
   while ($line = <$fd>)
@@ -82,11 +82,11 @@ sub xst_boot_grub_linux2grub
 
 sub xst_boot_grub_grub2linux
 {
-  my ($grubdir, $grubdev) = @_;
+  my ($device_map, $grubdev) = @_;
   
   ($drive, $part, @add) = split (',', $grubdev);
   
-  $dev = &xst_parse_split_first_str ("$grubdir/device.map", "\\($drive\\)", "[ \t]+");
+  $dev = &xst_parse_split_first_str ("$device_map", "\\($drive\\)", "[ \t]+");
 
   $dev .= $part + 1 if $part ne undef;
   return $dev;

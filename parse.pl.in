@@ -45,6 +45,30 @@ require "$SCRIPTSDIR/debug.pl$DOTIN";
 # Always return a scalar. If you need to return an array or a hash,
 # return a ref to it.
 
+# First some helper functions for the whole process.
+# Expand substrings of the form #$substr# to the $value in
+# the string or recursively in the array $strarr.
+
+sub xst_parse_expand
+{
+  my ($strarr, $substr, $value) = @_;
+
+  if (ref $strarr eq "ARRAY")
+  {
+    my ($i);
+
+    foreach $i (@$strarr)
+    {
+      $i = &xst_parse_expand ($i, $substr, $value);
+    }
+
+    return $strarr;
+  }
+  
+  $strarr =~ s/\#$substr\#/$value/;
+  return $strarr;
+}
+
 sub xst_parse_replace_hash_values
 {
   my ($cp, $hash) = @_;
@@ -139,6 +163,8 @@ sub xst_parse_run_entry
   $$hash{$key} = &$proc (@$cp);
   return $$hash{$key};
 }
+
+# OK, this is the good stuff:
 
 # xst_parse_from_table takes a file mapping and a parse table.
 #

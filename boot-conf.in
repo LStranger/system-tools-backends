@@ -112,7 +112,7 @@ sub xml_parse_boot
 {
   my $tree = $_[0];
   my $hash = $_[1];
-  my @images;
+  my @entries;
 
   shift @$tree;  # Skip attributes.
 
@@ -123,19 +123,19 @@ sub xml_parse_boot
     elsif ($$tree[0] eq "timeout") { $$hash{"timeout"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "default") { $$hash{"default"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "append") { $$hash{"append"} = &xst_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "entry") { &xml_parse_image ($$tree[1], \@images); }
+    elsif ($$tree[0] eq "entry") { &xml_parse_entry ($$tree[1], \@entries); }
 
     shift @$tree;
     shift @$tree;
   }
 
-  $$hash{"images"} = \@images; # unless scalar keys %image == 0;
+  $$hash{"entry"} = \@entries unless scalar @entries == 0;
 }
 
 
-sub xml_parse_image
+sub xml_parse_entry
 {
-  my ($tree, $images) = @_;
+  my ($tree, $entries) = @_;
   my %hash;
   my $buf;
 
@@ -149,7 +149,7 @@ sub xml_parse_image
     shift @$tree;
   }
 
-  push @$images, \%hash;
+  push @$entries, \%hash;
 }
 		   
 
@@ -167,12 +167,12 @@ sub xml_print_global_kws
 }
 
 
-sub xml_print_images
+sub xml_print_entries
 {
-  my ($h, $image) = @_;
+  my ($h) = @_;
   my ($i, $val, $array, $entry, %tmp);
 
-  $array = $$h{$image};
+  $array = $$h{"entry"};
 
   foreach $entry (@$array)
   {
@@ -212,7 +212,7 @@ sub xml_print
 
   &xml_print_global_kws ($h);
   &xst_xml_print_scalars ($h, @scalars);
-  &xml_print_images ($h, 'images');
+  &xml_print_entries ($h);
 
   &xst_xml_print_end ();
 }
