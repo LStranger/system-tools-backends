@@ -1,5 +1,10 @@
 2003-04-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* network.pl.in: made it to bring down and up an interface when
+	changing it. closes bug #111038.
+
+2003-04-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* network.pl.in: fixed modem autodetection, now it works before and
 	after a ppp session
 

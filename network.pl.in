@@ -1209,14 +1209,12 @@ sub gst_network_rh62_interface_activate_by_dev
   {
     &gst_report ("network_iface_activate", $dev);
     &gst_debug_print_string ("\n\nifup $dev\n\n");
-    print STDERR ("\n\nifup $dev\n\n");
     return -1 if &gst_file_run_bg ("ifup $dev");
   }
   else
   {
     &gst_report ("network_iface_deactivate", $dev);
     &gst_debug_print_string ("\n\nifdown $dev\n\n");
-    print STDERR ("\n\nifdown $dev\n\n");
     return -1 if &gst_file_run ("ifdown $dev");
   }
   
@@ -1405,7 +1403,7 @@ sub gst_network_interface_changed
     return 0;
 }
 
-sub gst_network_interfaces_down_changed
+sub gst_network_interfaces_down_and_up_changed
 {
   my ($proc_iface_set, $old_hash, $values_hash) = @_;
 
@@ -1415,6 +1413,7 @@ sub gst_network_interfaces_down_changed
     if (&gst_network_interface_changed ($$values_hash{$i}, $$old_hash{$i}))
     {
       &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 0, 1);
+      &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 1, 1);
     }
   }
 }
@@ -1462,7 +1461,7 @@ sub gst_network_interfaces_set
   $old_hash = $$old_hash{"interface"};
 
   $proc = $dist_attrib{"iface_set"};
-  &gst_network_interfaces_down_changed ($proc, $old_hash, $values_hash);
+  &gst_network_interfaces_down_and_up_changed ($proc, $old_hash, $values_hash);
 
   # Delete all old interfaces that are not in the hash.
   $proc = $dist_attrib{"iface_delete"};
@@ -2910,7 +2909,6 @@ sub gst_network_get_interface_replace_table
              },
 
     # Basicly the same as debian-2.2, but the "auto" option changes.
-    # Other stuff may be later found to be different.
     "debian-woody" =>
 	  {
       iface_set    => \&gst_network_rh62_interface_activate, # They use the same ifup/ifdown cmds.
