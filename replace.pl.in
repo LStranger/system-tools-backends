@@ -215,7 +215,7 @@ sub xst_replace_sh_bool
 # and set the hostname part. e.g.: suse70's /etc/rc.config's FQHOSTNAME.
 sub xst_replace_sh_set_hostname
 {
-  my ($file, $key, $value);
+  my ($file, $key, $value) = @_;
   my ($domain);
 
   $domain = &xst_parse_sh_get_domain ($file, $key);
@@ -226,7 +226,7 @@ sub xst_replace_sh_set_hostname
 # and set the domain part. e.g.: suse70's /etc/rc.config's FQHOSTNAME.
 sub xst_replace_sh_set_domain
 {
-  my ($file, $key);
+  my ($file, $key, $value) = @_;
   my ($hostname);
 
   $hostname = &xst_parse_sh_get_hostname ($file, $key);

@@ -438,10 +438,10 @@ sub xst_parse_sh_split
 # and extract the hostname from there. e.g.: suse70's /etc/rc.config's FQHOSTNAME.
 sub xst_parse_sh_get_hostname
 {
-  my ($file, $key);
+  my ($file, $key) = @_;
   my ($val);
 
-  $val = &xst_paprse_sh_split ($file, $key, "\\.");
+  $val = &xst_parse_sh_split ($file, $key, "\\.");
 
   return $$val[0];
 }
@@ -450,7 +450,7 @@ sub xst_parse_sh_get_hostname
 # and extract the domain from there. e.g.: suse70's /etc/rc.config's FQHOSTNAME.
 sub xst_parse_sh_get_domain
 {
-  my ($file, $key);
+  my ($file, $key) = @_;
   my ($val);
 
   $val = &xst_parse_sh_split ($file, $key, "\\.");

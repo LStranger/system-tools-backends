@@ -1,5 +1,28 @@
 2001-05-18  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* replace.pl.in (xst_replace_sh_set_hostname): Wasn't
+	receiving @_ values.
+	(xst_replace_sh_set_domain): same.
+
+	* parse.pl.in (xst_parse_sh_get_domain): Wasn't receiving
+	@_ values. duh.
+	(xst_parse_sh_get_hostname): same, and a typo.
+
+	* network.pl.in (xst_network_suse70_active_interfaces_get):
+	translate from SuSE interface numbers to actual devices.
+	(xst_network_interface_active): Comparison was numerical.
+	Changed to string cmp.
+	(xst_network_suse70_parse_iface_sh): Interpolation wasn't
+	working fine here. Added explicit braces.
+	(xst_network_suse70_replace_iface_sh): same.
+	(xst_network_suse70_get_ifconfig_arg): Returned value was
+	1/undef, and not $1, as thought. Fixed.
+	(xst_network_suse70_set_ifconfig_arg): Precedence bug.
+	(xst_network_suse70_set_ifconfig_ip): same.
+	Using a more flexible regexp for HOST_CONF order parsing.
+
+	* network-conf.in: Added suse-7.0 to @platforms.
+
 	* users-conf.in: Added suse-7.0
 
 	* service.pl.in (xst_service_sysv_get_paths): an
