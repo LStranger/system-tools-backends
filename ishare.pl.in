@@ -25,7 +25,8 @@ require "___scriptsdir___/file.pl";
 require "___scriptsdir___/service.pl";
 require "___scriptsdir___/network.pl";
 
-sub xst_ishare_get_linux22_support_active
+
+sub xst_ishare_get_linux22_forward_support_active
 {
   my ($hash) = @_;
   my $forward_file = "/proc/sys/net/ipv4/ip_forward";
@@ -39,7 +40,7 @@ sub xst_ishare_get_linux22_support_active
 }
   
 
-sub xst_ishare_get_linux22_support
+sub xst_ishare_get_linux22_forward_support
 {
   my ($hash) = @_;
   my ($forward_file, $masq_file) =
@@ -56,6 +57,7 @@ sub xst_ishare_fwrules_get_ipchains
   my (%hash, $fd, $val);
 
   $hash{"tools"} = &xst_file_tool_installed ("ipchains");
+  $$hash{"kerneltool"} = (-f "/proc/sys/net/ip_fwchains")? 1: 0;
 
   if ($hash{"tools"})
   {
@@ -68,19 +70,51 @@ sub xst_ishare_fwrules_get_ipchains
     }
   }
 
-  &xst_ishare_get_linux22_support (\%hash);
-  &xst_ishare_get_linux22_support_active (\%hash) if ($hash{"configured"});
+  &xst_ishare_get_linux22_forward_support (\%hash);
+  &xst_ishare_get_linux22_forward_support_active (\%hash) if ($hash{"configured"});
 
   return \%hash;
 }
 
 
-sub xst_ishare_fwrules_set_ipchains
+sub xst_ishare_ipchains_save
 {
   my ($ipchains_conf, $interface, $values_hash) = @_;
-  my ($fd, $val);
-
+  my ($fd, $dev, $landev, $landevs, $network, $netmask);
+  my (@buff, $line);
   
+  $fd = &xst_file_fun_pipe_read ("ipchains-save");
+  @buff = (<$fd>);
+  close $fd;
+
+  foreach $line (@buff)
+  {
+    $line = "" if $line =~ /^-A forward.*MASQ$/;
+  }
+
+  $landevs = $$values_hash{"landev"};
+  foreach $landev (@$landevs)
+  {
+    $dev = $$interface{$landev};
+    $netmask = $$dev{"netmask"};
+    $network = &xst_network_ipv4_calc_subnet ($$dev{"address"}, $netmask);
+    push @buff, "-A forward -s $network/$netmask -d 0.0.0.0/0.0.0.0 -j MASQ\n";
+  }
+
+  &xst_file_buffer_clean (\@buff);
+  &xst_file_buffer_save (\@buff, $ipchains_conf);
+}
+
+
+sub xst_ishare_fwrules_set_ipchains
+{
+  my ($ipchains_conf, $priority, $interface, $values_hash) = @_;
+
+  &xst_ishare_ipchains_save ($ipchains_conf, $interface, $values_hash);
+  &xst_service_sysv_set_status ($priority, "ipchains", $$values_hash{"active"});
+
+  &xst_file_run ("echo " . $$values_hash{"active"} . " > /proc/sys/net/ipv4/ip_forward");
+  &xst_replace_sh_bool ("/etc/sysconfig/network", "FORWARD_IPV4", $$values_hash{"active"});
 }
 
 
@@ -92,8 +126,80 @@ sub xst_ishare_dhcp_isc_get
   $hash{"installed"}  = &xst_service_sysv_installed ("dhcpd");
   $hash{"configured"} = ((-f "/etc/dhcpd.conf")? 1: 0)         if $hash{"installed"};
   $hash{"active"}     = &xst_service_sysv_get_status ("dhcpd") if $hash{"configured"};
+  $hash{"dev"}        = &xst_parse_split_first_array ("/etc/conf.linuxconf", "DHCP.interface",
+                                                      "[ \t]+", "[ \t]+");
   
   return \%hash;
+}
+
+
+sub xst_ishare_dhcp_conf_add_interface
+{
+  my ($buff, $address, $netmask, $hwaddr) = @_;
+  my ($network, $broadcast, $min, $max, $hostname);
+
+  $hostname = &xst_file_run_backtick ("hostname");
+  chomp $hostname;
+  $hostname = "server" if $hostname eq "";
+
+  $min = $network   = &xst_network_ipv4_calc_subnet ($address, $netmask);
+  $max = $broadcast = &xst_network_ipv4_calc_bcast  ($address, $netmask);
+
+  $max =~ s/([0-9]+)$//;
+  $max .= $1 - 1;
+                   
+  $min =~ s/([0-9]+)$//;
+  $min .= $1 + 1;
+                   
+  push @$buff, "subnet $network netmask $netmask {\n\n";
+  push @$buff, "\toption routers       $address;\n";
+  push @$buff, "\toption subnet-mask   $netmask;\n\n";
+  push @$buff, "\trange  dynamic-bootp $min $max\n\n";
+  push @$buff, "\tdefault-lease-time 21600\n";
+  push @$buff, "\tmax-lease-time     43200\n\n";
+  push @$buff, "\thost $hostname {\n";
+  push @$buff, "\t\thardware ethernet $hwaddr;\n";
+  push @$buff, "\t\tfixed-address $address;\n";
+  push @$buff, "\t}\n";
+  push @$buff, "}\n\n";
+}
+
+
+sub xst_ishare_dhcp_isc_save
+{
+  my ($dhcpd_conf, $interface, $values_hash) = @_;
+  my ($dev, $devs, $iface);
+  my (@buff, $info);
+
+  $info = &xst_network_active_interfaces_get_info ();
+  $devs = $$values_hash{"dev"};
+  
+  foreach $dev (@$devs)
+  {
+    $iface = $$interface{$dev};
+
+    &xst_ishare_dhcp_conf_add_interface (\@buff, $$iface{"address"}, $$iface{"netmask"},
+                                         $$info{$$iface{"dev"}});
+  }
+
+  &xst_file_buffer_clean (\@buff);
+  &xst_file_buffer_save (\@buff, $dhcpd_conf);
+}
+
+
+sub xst_ishare_dhcp_isc_set
+{
+  my ($dhcpd_conf, $priority, $interface, $values_hash) = @_;
+
+  if ($$values_hash{"overwrite"})
+  {
+    # This is compatible with linuxconf's format.
+    &xst_replace_join_first_array ("/etc/conf.linuxconf", "DHCP.interface", " ", " ", $$values_hash{"dev"});
+
+    &xst_ishare_dhcp_isc_save ($dhcpd_conf, $interface, $values_hash);
+  }
+  
+  &xst_service_sysv_set_status ($priority, "ipchains", $$values_hash{"active"});
 }
 
 
@@ -121,6 +227,7 @@ sub xst_ishare_conf_set
   $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
                                   $values_hash, $old_hash);
 
+  &xst_service_sysv_set_status ($priority, "ipchains", $$values_hash{"active"});
   return $res;
 }
 
@@ -179,8 +286,8 @@ sub xst_ishare_conf_get_replace_table
          table =>
              [
               [ "interface", \&xst_network_interfaces_set,      OLD_HASH ],
-              [ "fwrules",   \&xst_ishare_fwrules_set_ipchains, IPCHAINS_CONF, "%interface%" ],
-              [ "dhcp",      \&xst_ishare_dhcp_isc_set,         DHCPD_CONF,    "%interface%" ],
+              [ "fwrules",   \&xst_ishare_fwrules_set_ipchains, IPCHAINS_CONF, 8,  "%interface%" ],
+              [ "dhcp",      \&xst_ishare_dhcp_isc_set,         DHCPD_CONF,    65, "%interface%" ],
               ]
                 },
        );

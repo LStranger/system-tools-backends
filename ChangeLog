@@ -1,3 +1,42 @@
+2001-08-07  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* internetsharing-conf.in (xml_parse_dhcp): Support
+	for "overwrite" tag.
+
+	* ishare.pl.in (xst_ishare_dhcp_isc_save): Overwrite
+	dhcp.conf with our own configuration, generated from
+	the given XML.
+	(xst_ishare_dhcp_conf_add_interface): Adds a subnet
+	section to a buffer with the contents of the new
+	dhcp.conf.
+	(xst_ishare_dhcp_isc_set): Sets up dhcp configuration
+	and activates if required.
+
+	* file.pl.in (xst_file_run_backtick): New function
+	that takes advantage of the path search functionality,
+	and behaves just like ``.
+
+	* service.pl.in (xst_service_sysv_get_status): Use
+	xst_run_backtick to get pidof.
+
+	* network.pl.in (xst_network_active_interfaces_get_info): Added
+	hwaddr support.
+
+	* xml.pl.in (xst_xml_print_array): Don't do anything
+	if array is empty.
+
+	* ishare.pl.in (xst_ishare_ipchains_save): Replace
+	current ipchains state MASQ rules with those
+	required for network masquerading for each landev.
+	(xst_ishare_fwrules_set_ipchains): save ipchains
+	rules and start/stop service, setup init.d links.
+
+	* internetsharing-conf.in (xml_parse_fwrules): Parse
+	the new tag.
+
+	* ishare.pl.in (xst_ishare_fwrules_get_ipchains): Check
+	for kernel ipchains support. New "kerneltool" tag.
+
 2001-08-06  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* xml.pl.in (xst_xml_print_array): Another print

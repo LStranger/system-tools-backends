@@ -361,7 +361,7 @@ sub xst_network_active_interfaces_get_info
   &xst_report ("network_iface_active_get");
 
   $fd = &xst_file_run_pipe_read ("ifconfig");
-  return \%ifaces if $fd eq undef;
+  return {} if $fd eq undef;
   
   while (<$fd>)
   {
@@ -369,9 +369,10 @@ sub xst_network_active_interfaces_get_info
     $dev = $1 if /^([^ \t:]+)/;
     if ($dev)
     {
-      $ {$ifaces{$dev}}{"addr"}  = $1 if /addr:([^ \t]+)/i;
-      $ {$ifaces{$dev}}{"mask"}  = $1 if /mask:([^ \t]+)/i;
-      $ {$ifaces{$dev}}{"bcast"} = $1 if /bcast:([^ \t]+)/i;
+      $ {$ifaces{$dev}}{"hwaddr"}  = $1 if /HWaddr[ \t]+([^ \t]+)/i;
+      $ {$ifaces{$dev}}{"addr"}    = $1 if /addr:([^ \t]+)/i;
+      $ {$ifaces{$dev}}{"mask"}    = $1 if /mask:([^ \t]+)/i;
+      $ {$ifaces{$dev}}{"bcast"}   = $1 if /bcast:([^ \t]+)/i;
     }
   }
   close $fd;

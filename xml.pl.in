@@ -188,6 +188,8 @@ sub xst_xml_print_array
   my ($array, $key) = @_;
   my ($i, $val);
 
+  return if (scalar @$array <= 0);
+
   &xst_xml_print_vspace ();
   foreach $i (@$array)
   {

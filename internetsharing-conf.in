@@ -103,6 +103,7 @@ sub xml_parse_fwrules
   while ($elem = shift @$tree)
   {
       if    ($elem eq "tools")        { $$hash{"tools"}        = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "kerneltool")   { $$hash{"kerneltool"}   = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "configured")   { $$hash{"configured"}   = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "forwarding")   { $$hash{"forwarding"}   = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "masquerading") { $$hash{"masquerading"} = &xst_xml_get_pcdata (shift @$tree); }
@@ -120,18 +121,23 @@ sub xml_parse_fwrules
 sub xml_parse_dhcp
 {
   my ($tree) = @_;
-  my ($elem, $hash);
+  my ($elem, $hash, $devs);
 
   $hash = {};
+  $devs = [];
   shift @$tree;  # Skip attributes.
 
   while ($elem = shift @$tree)
   {
       if    ($elem eq "installed")    { $$hash{"installed"}  = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "configured")   { $$hash{"configured"} = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "overwrite")    { $$hash{"overwrite"}  = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "active")       { $$hash{"active"}     = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "dev")          { push @$devs, &xst_xml_get_pcdata (shift @$tree); }
       else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
+
+  $$hash{"dev"} = $devs;
 
   return $hash;
 }

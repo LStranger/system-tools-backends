@@ -119,7 +119,7 @@ sub xst_service_sysv_get_status
 
   # Stolen from RedHat's /etc/rc.d/init.d/functions:status
   # FIXME: portable to other UNIXES?
-  $pid = `pidof -o %PPID -x $service`;
+  $pid = &xst_run_backtick ("pidof -o %PPID -x $service");
   chomp $pid;
 
   if ($pid)
@@ -303,9 +303,9 @@ sub xst_service_sysv_restart
 # links accordingly.
 sub xst_service_sysv_set_status
 {
-  my ($pri, $service, $active) = @_;
+  my ($priority, $service, $active) = @_;
 
-  &xst_service_sysv_set_links ($pri, $service, $active);
+  &xst_service_sysv_set_links ($priority, $service, $active);
   
   $status = &xst_service_sysv_get_status ($service);
   if ($status)

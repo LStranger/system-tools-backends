@@ -446,6 +446,19 @@ sub xst_file_run_pipe_write
 }
 
 
+sub xst_file_run_backtick
+{
+  my ($cmd) = @_;
+  my ($fd, $res);
+
+  $fd = &xst_file_run_pipe_read ($cmd);
+  $res = join ('', <$fd>);
+  close $fd;
+
+  return $res;
+}
+
+
 sub xst_file_remove
 {
   my ($name) = @_;
