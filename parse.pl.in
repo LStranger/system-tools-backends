@@ -28,6 +28,16 @@ require "___scriptsdir___/file.pl";
 require "___scriptsdir___/debug.pl";
 
 
+# The concept of keyword (kw) here is a key, normaly in its own line, whose
+# boolean representation is its own existence.
+
+# Every final parsing function to be used by a table must handle one key
+# at a time, but maybe parse several values from there and return a
+# ref to array or hash.
+#
+# Always return a scalar. If you need to return an array or a hash,
+# return a ref to it.
+
 sub xst_parse_replace_hash_values
 {
   my ($cp, $hash) = @_;
@@ -75,6 +85,19 @@ sub xst_parse_replace_files
   return @ret;
 }
 
+# xst_parse_from_table takes a file mapping and a parse table.
+#
+# The functions in the replace tables, most of which are coded in
+# this file, receive the mapped files of the first argument, and then
+# a set of values.
+
+# The value the parse function returns is set into a hash,
+# using as key the first item of the parse table entry. This is done
+# only if the $hash{$key} is empty, which allows us to try with
+# several parse methods to try to get a value, where our parse functions
+# can return undef if they failed to get the requested value.
+#
+# A ref to the hash with all the fetched values is returned.
 sub xst_parse_from_table
 {
   my ($fn, $table) = @_;
@@ -120,6 +143,9 @@ sub xst_parse_trivial
   return \@res;
 }
 
+# Try to read a line from $fd and remove any leading or
+# trailing white spaces. Return ref to read $line or
+# -1 if eof.
 sub xst_parse_chomp_line_std
 {
   my ($fd) = @_;
@@ -135,6 +161,8 @@ sub xst_parse_chomp_line_std
   return \$line;
 }
 
+# Assuming $line is a line read from a shell file,
+# remove comments.
 sub xst_parse_process_sh_line
 {
   my ($line) = @_;
@@ -152,6 +180,9 @@ sub xst_parse_process_sh_line
   return $line;
 }
 
+# Same as xst_parse_chomp_line_std, but apply
+# the sh line processing before returning.
+# -1 if eof, ref to read $line if success.
 sub xst_parse_chomp_line_hash_comment
 {
   my ($fd) = @_;
@@ -165,6 +196,7 @@ sub xst_parse_chomp_line_hash_comment
   return \$line;
 }
 
+# Get an sh line, and remove the export keyword, if any.
 sub xst_parse_chomp_line_sh_export
 {
   my ($fd) = @_;
@@ -304,6 +336,9 @@ sub xst_parse_split_first_array
   return \@ret;
 }
 
+# Do an xst_parse_split_first_array and then make
+# the array elements unique. This is to fix broken
+# searchdomain entries in /etc/resolv.conf, for example.
 sub xst_parse_split_first_array_unique
 {
   my ($file, $key, $re, $sep, $line_read_proc) = @_;
@@ -322,6 +357,12 @@ sub xst_parse_split_first_array_unique
   return \@res;
 }
 
+# For all keys in $file, sepparated from its values
+# by $key_re, sepparate its values using $value_re
+# and assign to a newly created hash. Use ONLY when
+# you don't know what keys you are going to parse
+# (i.e. /etc/hosts). Any other application will not
+# be very portable and should be avoided.
 sub xst_parse_split_hash
 {
   my ($file, $key_re, $value_re) = @_;
@@ -351,6 +392,7 @@ sub xst_parse_split_hash
   return \%res;
 }
 
+# Same as above, but join lines that end with '\'.
 sub xst_parse_split_hash_with_continuation
 {
   my ($file, $key_re, $value_re) = @_;
@@ -381,6 +423,7 @@ sub xst_parse_split_hash_with_continuation
   return \%res;
 }
 
+# Remove escape sequences in a shell value.
 sub xst_parse_shell_unescape
 {
   my $ret = $_[0];
@@ -402,8 +445,8 @@ sub xst_parse_shell_escape
 {
   my ($value) = @_;
   
-  $value =~ s/([\"\'\`\&\$\|\*\?\[\]\{\}\(\)<>\\])/\\$1/g;
-  $value = "\"$value\"" if ($value =~ /[ \t]/);
+  $value =~ s/([\"\`\$\\])/\\$1/g;
+  $value = "\"$value\"" if ($value =~ /[ \t\'&|*?\[\]\{\}\{\}<>]/);
 
   return $value;
 }
@@ -576,6 +619,8 @@ sub xst_parse_chat
   return undef;
 }
 
+# Clean an ini line of comments and leading or
+# trailing spaces.
 sub xst_parse_ini_line_clean
 {
   $_ = $_[0];
@@ -589,6 +634,8 @@ sub xst_parse_ini_line_clean
   return $_;
 }
 
+# Read an ini line, which may have to be joined
+# with the next one if it ends with '\'.
 sub xst_parse_ini_line_read
 {
   my $fd = $_[0];
@@ -607,6 +654,7 @@ sub xst_parse_ini_line_read
   return \$l;
 }
 
+# Return an array of all found sections in $file.
 sub xst_parse_ini_sections
 {
   my ($file) = @_;
@@ -626,6 +674,7 @@ sub xst_parse_ini_sections
   return @sections;
 }
 
+# Get the value of a $var in a $section from $file.
 sub xst_parse_ini
 {
   my ($file, $section, $var) = @_;
@@ -661,6 +710,7 @@ sub xst_parse_ini
   return $res;
 }
 
+# Same, but treat value as bool and return 1/0.
 sub xst_parse_ini_bool
 {
   my ($file, $section, $var) = @_;
@@ -842,6 +892,7 @@ sub xst_parse_interfaces_option_str
 
   return undef;
 }
+
 
 # Implementing pump(8) pump.conf file format parser.
 # May be useful for dhcpd too.

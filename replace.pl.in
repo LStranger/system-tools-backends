@@ -30,9 +30,36 @@ require "___scriptsdir___/file.pl";
 require "___scriptsdir___/parse.pl";
 
 
-# General rules: all replacing is in-line. Respect unsupported values, and even comments.
-# Return 0 if success, and -1 for failure.
+# General rules: all replacing is in-line. Respect unsupported values, comments
+# and as many spacing as possible.
 
+# The concept of keyword (kw) here is a key, normaly in its own line, whose
+# boolean representation is its own existence.
+
+# A $re is a regular expression. In most functions here, regular expressions
+# are converted to simple separators, by using xst_replace_regexp_to_separator.
+# This makes it easier to convert a parse table into a replace table.
+
+# Every final replacing function to be used by a table must handle one key
+# at a time, but may replace several values from there.
+#
+# Return 0 for success, and -1 for failure.
+#
+# Most of these functions have a parsing counterpart. The convention is
+# that parse becomes replace and split becomes join:
+# xst_parse_split_first_str -> xst_replace_join_first_str
+
+# xst_replace_from_table takes a file mapping, a replace table, a hash
+# of values, probably made from XML parsing, and whose keys are
+# the same keys the table handles.
+#
+# Table entries whose keys are not present in the values_hash
+# will not be processed. More than one entry may process the same key.
+#
+# The functions in the replace tables, most of which are coded in
+# this file, receive the mapped files of the first argument, and then
+# a set of values. The last argument is the value of the $values_hash
+# for the corresponding key of the entry.
 sub xst_replace_from_table
 {
   my ($fn, $table, $values_hash, $old_hash) = @_;
@@ -82,7 +109,7 @@ sub is_array_ref
   return 1 if (ref ($val) eq "ARRAY");
   return 0 if (ref ($val) eq undef);
 
-  &xst_debug_print_line ("Error: We shouldn't be here!");
+  &xst_debug_print_line ("is_array_ref: We shouldn't be here!");
 
   return 0;
 }
@@ -187,7 +214,7 @@ sub xst_replace_join_first_array
   return &xst_replace_split ($file, $key, $re1, join (&xst_replace_regexp_to_separator ($re2), @$value));
 }
 
-# Escape value in /bin/sh way, find/append key and set escaped value.
+# Escape $value in /bin/sh way, find/append key and set escaped value.
 sub xst_replace_sh
 {
   my ($file, $key, $value) = @_;
@@ -244,6 +271,8 @@ sub xst_replace_sh_set_domain
   return &xst_replace_sh ($file, $key, "$hostname.$value");
 }
 
+# Join the array pointed by $value with the corresponding $re separator
+# and assign that to the $key shell variable in $file.
 sub xst_replace_sh_join
 {
   my ($file, $key, $re, $value) = @_;
@@ -252,7 +281,7 @@ sub xst_replace_sh_join
                           join (&xst_replace_regexp_to_separator ($re), @$value));
 }
 
-# Quick trick to set a keyword $key in $file.
+# Quick trick to set a keyword $key in $file. (think /etc/lilo.conf keywords).
 sub xst_replace_kw
 {
   my ($file, $key) = @_;
@@ -266,6 +295,7 @@ sub xst_replace_kw
 }
 
 # The kind of $file whose $value is its first line contents.
+# (/etc/hostname)
 sub xst_replace_line_first
 {
   my ($file, $value) = @_;
@@ -284,6 +314,7 @@ sub xst_replace_line_first
 }
 
 # For every key in %$value, replace/append the corresponding key/value pair.
+# The separator for $re1 
 sub xst_replace_join_hash
 {
   my ($file, $re1, $re2, $value) = @_;
@@ -353,7 +384,6 @@ sub xst_replace_chat
   &xst_report_leave ();
   return $ret;
 }
-
 
 # Find/append $section in ini $file and replace/append
 # $var = $value pair. FIXME: should reimplement with
@@ -431,6 +461,7 @@ sub xst_replace_ini
   return $ret;
 }
 
+# Well, removes a $section from an ini type $file.
 sub xst_replace_remove_ini_section
 {
   my ($file, $section) = @_;
@@ -483,6 +514,7 @@ sub xst_replace_remove_ini_section
   return $ret;
 }
 
+# Removes a $var in $section of a ini type $file.
 sub xst_replace_remove_ini_var
 {
   my ($file, $section, $var) = @_;
@@ -500,6 +532,8 @@ sub xst_replace_ini_bool
   return &xst_replace_ini ($file, $section, $var, $value);
 }
 
+
+# Debian /etc/network/interfaces in-line replacing methods.
 
 # From loaded buffer, starting at $line_no, find next debian
 # interfaces format stanza. Return array ref with all stanza args.
@@ -599,6 +633,8 @@ sub xst_replace_interfaces_iface_stanza_locate
   return 0;
 }
 
+# Create a Debian Woody stanza, type auto, with the requested
+# @ifaces as values.
 sub xst_replace_interfaces_auto_stanza_create
 {
   my ($buff, @ifaces) = @_;
@@ -736,8 +772,13 @@ sub xst_replace_interfaces_option_kw_not
   return &xst_replace_interfaces_option_kw ($file, $iface, $key, !$value);
 }
 
+
 # Implementing pump(8) pump.conf file format replacer.
 # May be useful for dhcpd too.
+
+# Try to find the next option, returning an array ref
+# with the found key and the rest of the options in
+# two items, or -1 if not found.
 sub xst_replace_pump_get_next_option
 {
   my ($buff, $line_no) = @_;
@@ -757,6 +798,9 @@ sub xst_replace_pump_get_next_option
   return -1;
 }
 
+# Iterate with get_next_option, starting at $line_no
+# until the option with $key is found, or eof.
+# Return 0/1 as found.
 sub xst_replace_pump_option_locate
 {
   my ($buff, $line_no, $key) = @_;
@@ -773,6 +817,8 @@ sub xst_replace_pump_option_locate
   return 0;
 }
 
+# Try to find a "device" option whose interface is $iface,
+# starting at $$line_no. Return 0/1 as found.
 sub xst_replace_pump_get_device
 {
   my ($buff, $line_no, $iface) = @_;
@@ -792,6 +838,7 @@ sub xst_replace_pump_get_device
   return 0;
 }
 
+# Add a device entry for $iface at the end of $buff.
 sub xst_replace_pump_add_device
 {
   my ($buff, $iface) = @_;
@@ -802,6 +849,8 @@ sub xst_replace_pump_add_device
   push @$buff, "}\n";
 }
 
+# Find a "device" section for $iface and
+# replace/add/delete the $key option inside the section.
 sub xst_replace_pump_iface_option_str
 {
   my ($file, $iface, $key, $value) = @_;
@@ -851,6 +900,7 @@ sub xst_replace_pump_iface_option_str
   return $ret;
 }
 
+# Same as function above, except $key is a keyword.
 sub xst_replace_pump_iface_kw
 {
   my ($file, $iface, $key, $value) = @_;
@@ -858,6 +908,7 @@ sub xst_replace_pump_iface_kw
   return &xst_replace_pump_iface_option_str ($file, $iface, $key, $value? " ": "");
 }
 
+# Same, but use the negative of $value (i.e. nodns)
 sub xst_replace_pump_iface_kw_not
 {
   my ($file, $iface, $key, $value) = @_;
