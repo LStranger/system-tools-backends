@@ -661,31 +661,6 @@ sub save_profiles
 
 # --- XML parsing --- #
 
-sub xml_scan
-{
-  my $doc; my @tree; my $i;
-
-  if ($xst_input_file eq "") 
-  {
-    $doc .= $i while ($i = <STDIN>);
-  }
-  else
-  {
-    open INPUT_FILE, $xst_input_file;
-    $doc .= $i while ($i = <INPUT_FILE>);
-    close INPUT_FILE;
-  }
-
-  &xst_debug_print_string_to_file ("in.xml", $doc);
-  $xml_doc_copy = $doc;
-
-  @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
-  $tree = &xst_xml_scan_recurse;
-    
-  return $tree;
-}
-
-
 # Scan XML from standard input to an internal tree.
 
 sub xml_parse
@@ -694,7 +669,7 @@ sub xml_parse
 	
   # Scan XML to tree.
 
-  $parse_tree = $tree = &xml_scan;
+  $parse_tree = $tree = &xst_xml_scan;
 
   # Save profiles
 

@@ -1,3 +1,11 @@
+2001-06-29  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* xml.pl.in (xst_xml_read_stdin): Like, a precedence bug.
+
+	* users-conf.in (xml_parse): Use standard xst_xml_scan.
+	This bug comes since the no-shared-code days! It slipped!
+	(xml_scan): This should have been removed ages ago.
+
 2001-06-29  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_config_set): Give up if something is wrong.

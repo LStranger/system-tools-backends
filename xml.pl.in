@@ -347,7 +347,7 @@ sub xst_xml_read_stdin
 {
   my ($i, $doc);
   
-  while (! $i =~ /^<!-- XST: end of request -->$/)
+  while (! ($i =~ /^<!-- XST: end of request -->$/))
   {
     $doc .= $i;
     $i = <STDIN>;
