@@ -1,9 +1,9 @@
 # Danish translation of Gnome Setup Tools.
-# Copyright (C) 2000, 01, 02, 03 Free Software Foundation, Inc.
+# Copyright (C) 2000, 01, 02, 03, 04 Free Software Foundation, Inc.
 # Kjartan Maraas <kmaraas@gnome.org>, 2000.
 # Keld Simonsen <keld@dkuug.dk>, 2000.
 # Kenneth Christiansen <kenneth@gnu.org>, 2000, 2001.
-# Ole Laursen <olau@hardworking.dk>, 2001, 02, 03.
+# Ole Laursen <olau@hardworking.dk>, 2001, 02, 03, 04.
 #
 # Konventioner:
 #
@@ -32,14 +32,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backend\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-12-31 15:43+0100\n"
-"PO-Revision-Date: 2003-12-31 15:56+0100\n"
+"POT-Creation-Date: 2004-02-01 00:46+0100\n"
+"PO-Revision-Date: 2004-02-01 00:45+0100\n"
 "Last-Translator: Ole Laursen <olau@hardworking.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. please, keep this list sorted
+#. service => [long_name, description]
 #: service-list.pl.in:36
 msgid "Advanced Linux Sound Architecture"
 msgstr "Advanced Linux Sound Architecture"
@@ -51,7 +53,9 @@ msgstr "Webserver"
 #: service-list.pl.in:37 service-list.pl.in:61
 msgid ""
 "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
-msgstr "Apache er en World Wide Web-server. Den bruges til at give adgang til HTML-filer og CGI."
+msgstr ""
+"Apache er en World Wide Web-server. Den bruges til at give adgang til HTML-"
+"filer og CGI."
 
 #: service-list.pl.in:38
 msgid "Run missed scheduled jobs at startup"
@@ -87,7 +91,7 @@ msgstr "BinFormat-understøttelse"
 
 #: service-list.pl.in:41
 msgid "Support for running non ELF binaries on Linux"
-msgstr ""
+msgstr "Understøttelse for at køre ikke-ELF-kørbare på Linux"
 
 #: service-list.pl.in:42
 msgid ""
@@ -139,16 +143,16 @@ msgid ""
 msgstr ""
 
 #: service-list.pl.in:49 service-list.pl.in:50
-msgid "Dinamic DNS Client"
-msgstr ""
+msgid "Dynamic DNS Client"
+msgstr "Dynamisk DNS-klient"
 
 #: service-list.pl.in:49
-msgid "A Dinamic DNS Name service from www.dyndns.org"
-msgstr ""
+msgid "A Dynamic DNS Name service from www.dyndns.org"
+msgstr "En dynamisk DNS-navnetjeneste fra www.dyndns.org"
 
 #: service-list.pl.in:50
-msgid "A Dinamic DNS Name service from www.dhis.org"
-msgstr ""
+msgid "A Dynamic DNS Name service from www.dhis.org"
+msgstr "En dynamisk DNS-navnetjeneste fra www.dhis.org"
 
 #: service-list.pl.in:51
 msgid "Dict Dictionary Server"
@@ -180,36 +184,36 @@ msgstr ""
 
 #: service-list.pl.in:57
 msgid "Mail Fetcher"
-msgstr ""
+msgstr "Posthenter"
 
 #: service-list.pl.in:57
 msgid "A Mail Fetcher from external Servers"
-msgstr ""
+msgstr "En posthenter fra eksterne servere"
 
 #: service-list.pl.in:58
 msgid "IPv6 Tunnel Broker"
-msgstr ""
+msgstr "IPv6-tunnelopsætter"
 
 #: service-list.pl.in:58
-msgid "A IPv6 Dinamic Tunnel Broker"
-msgstr ""
+msgid "A IPv6 Dynamic Tunnel Broker"
+msgstr "En dynamisk IPv6-tunnelopsætter"
 
 #: service-list.pl.in:59
 msgid "GNOME Display Manager"
-msgstr ""
+msgstr "GNOME Display Manager"
 
 #: service-list.pl.in:59
 msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
-msgstr ""
+msgstr "GDM giver Gnome-ækvivalenten til en \"login:\"-prompt"
 
 #: service-list.pl.in:60
 msgid "console mouse support"
-msgstr ""
+msgstr "Konsolmuseunderstøttelse"
 
 #: service-list.pl.in:60
 msgid ""
 "GPM adds mouse support to text-based Linux applications such the Midnight "
-"Commander. Is also allows mouse-based console cut-and-paste operations, and "
+"Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
 msgstr ""
 
@@ -235,7 +239,7 @@ msgstr ""
 
 #: service-list.pl.in:64
 msgid "IrDA stack for Linux"
-msgstr ""
+msgstr "IrDA-stak til Linux"
 
 #: service-list.pl.in:65
 msgid "The Internet Key Exchange protocol"
@@ -267,7 +271,9 @@ msgid ""
 msgstr ""
 
 #: service-list.pl.in:70 service-list.pl.in:71
-msgid "LIRC is a package that allows you to decode and send"
+msgid ""
+"LIRC is a package that allows you to decode and send infra-red signals of "
+"many commonly used remote controls"
 msgstr ""
 
 #: service-list.pl.in:72
@@ -278,11 +284,11 @@ msgstr ""
 
 #: service-list.pl.in:73
 msgid "Syslog Replacement"
-msgstr ""
+msgstr "Syslog-erstatning"
 
 #: service-list.pl.in:73
 msgid "Modern logging daemon"
-msgstr ""
+msgstr "Moderne logdæmon"
 
 #: service-list.pl.in:74
 msgid "tools for managing Linux kernel modules"
@@ -458,7 +464,7 @@ msgstr ""
 
 #: service-list.pl.in:103 service-list.pl.in:104
 msgid "OpenSSH SSH server"
-msgstr ""
+msgstr "OpenSSH SSH-server"
 
 #: service-list.pl.in:103
 msgid ""
@@ -468,7 +474,7 @@ msgstr ""
 
 #: service-list.pl.in:104
 msgid "OpenSSH server daemon"
-msgstr ""
+msgstr "OpenSSH-serverdæmon"
 
 #: service-list.pl.in:105
 msgid "Linux system logging utilities"
@@ -555,18 +561,18 @@ msgid ""
 "can be started, among other things."
 msgstr ""
 
-#: service.pl.in:166 service.pl.in:171
+#: service.pl.in:175 service.pl.in:180
 msgid "Halting the system"
 msgstr "Slukker systemet"
 
-#: service.pl.in:167 service.pl.in:173
+#: service.pl.in:176 service.pl.in:182
 msgid "Text mode"
 msgstr "Teksttilstand"
 
-#: service.pl.in:168 service.pl.in:172 service.pl.in:176
+#: service.pl.in:177 service.pl.in:181 service.pl.in:185
 msgid "Graphical mode"
 msgstr "Grafisk tilstand"
 
-#: service.pl.in:169 service.pl.in:174
+#: service.pl.in:178 service.pl.in:183
 msgid "Rebooting the system"
 msgstr "Genstarter systemet"
