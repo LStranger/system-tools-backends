@@ -386,7 +386,7 @@ sub get_zone
   # a diff for every file, only for file with the correct size. This speeds
   # up loading 
   $size_search = (stat("/etc/localtime"))[7];
-  
+
   while (<TZLIST>)
   {
     if (/#/) { next; }                     # Skip comments.
@@ -395,11 +395,12 @@ sub get_zone
 
 
     # See if this zone file matches the installed one.
-    &be_report_info(9, "Scanning timezones : $zone");
+    &be_report_info(9, "Scanning timezones: $zone");
+    &be_print_progress();
 
-   $size_test = (stat("/usr/share/zoneinfo/$zone"))[7];
-   if ($size_test eq $size_search)
-   {
+    $size_test = (stat("/usr/share/zoneinfo/$zone"))[7];
+    if ($size_test eq $size_search)
+    {
       if (!system "$diff_tool /usr/share/zoneinfo/$zone /etc/localtime >/dev/null 2>/dev/null")
       {
         # Found a match.
@@ -408,7 +409,6 @@ sub get_zone
     }
     
     $zone = "";
-    &be_print_progress();
   }
   
   $cf_timezone = $zone;
