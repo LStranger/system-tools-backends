@@ -5,8 +5,10 @@ hardware-conf
 memory-conf
 nameresolution-conf
 networking-conf
+network-conf
 shares-conf
 time-conf
 users-conf
+
 
 
