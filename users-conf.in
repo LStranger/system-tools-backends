@@ -88,7 +88,7 @@ $cmd_groupdel = &xst_file_locate_tool ("groupdel");
 $cmd_groupadd = &xst_file_locate_tool ("groupadd");
 $cmd_groupmod = &xst_file_locate_tool ("groupmod");
 $cmd_gpasswd  = &xst_file_locate_tool ("gpasswd");	
-
+$cmd_chfn     = &xst_file_locate_tool ("chfn");
 
 # --- Internal configuration variables --- #
 
@@ -523,18 +523,43 @@ sub del_user
 	&my_system ($command);
 }
 
+sub change_user_chfn
+{
+  my ($comment, $username) = @_;
+  my ($fname, $office, $office_phone, $home_phone);
+  my $command, @line;
+
+  return if !$username;
+  
+  @line = split /\,/, $comment;
+  
+  $fname =        shift @line;
+  $office =       shift @line;
+  $office_phone = shift @line;
+  $home_phone =   shift @line;
+
+  $fname = "\'" . $fname . "\'";
+  $office = "\'" . $office . "\'";
+  $office_phone = "\'" . $office_phone . "\'";
+  $home_phone = "\'" . $home_phone . "\'";
+  
+  $command = "$cmd_chfn -f $fname -o $office -p $office_phone -h $home_phone $username";
+  &my_system ($command);
+}
+
 sub add_user
 {
 	my $data = $_[0];
 	
-	$command = "$cmd_useradd -c \'" . $$data[$users_prop_map{"comment"}] . 
-	  "\' -d \'" . $$data[$users_prop_map{"home"}] .
+  $command = "$cmd_useradd" . " -d \'" . $$data[$users_prop_map{"home"}] .
 	  "\' -g \'" . $$data[$users_prop_map{"gid"}] .
 	  "\' -m -p \'" . $$data[$users_prop_map{"password"}] .
 	  "\' -s \'" . $$data[$users_prop_map{"shell"}] .
 	  "\' -u \'" . $$data[$users_prop_map{"uid"}] .
 	  "\' \'" . $$data[$users_prop_map{"login"}] . "\'";
 	&my_system ($command);
+
+  &change_user_chfn ($$data[$users_prop_map{"comment"}], $$data[$users_prop_map{"login"}]);
 }
 
 sub change_user
@@ -542,8 +567,7 @@ sub change_user
 	my $old_data = $_[0];
 	my $new_data = $_[1];
 	
-	$command = "$cmd_usermod -c \'" . $$new_data[$users_prop_map{"comment"}] . 
-	  "\' -d \'" . $$new_data[$users_prop_map{"home"}] .
+  $command = "$cmd_usermod" . " -d \'" . $$new_data[$users_prop_map{"home"}] .
 	  "\' -g \'" . $$new_data[$users_prop_map{"gid"}] .
 	  "\' -l \'" . $$new_data[$users_prop_map{"login"}] .
 	  "\' -p \'" . $$new_data[$users_prop_map{"password"}] .
@@ -551,6 +575,8 @@ sub change_user
 	  "\' -u \'" . $$new_data[$users_prop_map{"uid"}] .
 	  "\' \'" . $$old_data[$users_prop_map{"login"}] . "\'";
 	&my_system ($command);
+
+  &change_user_chfn ($$new_data[$users_prop_map{"comment"}], $$new_data[$users_prop_map{"login"}]);
 }
 
 sub del_group
