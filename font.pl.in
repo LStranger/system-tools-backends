@@ -550,7 +550,10 @@ sub font_check_t1
 {
   my $file = shift;
 
-  if ($file =~ /\.pfb$/i)
+  if ($file =~ /\.pfb$/i ||
+      $file =~ /\.afm$/i ||
+      $file =~ /\.pfa$/i ||
+      $file =~ /\.pfm$/i)
   {
     return { 'type' => 't1' };
   }
@@ -587,12 +590,35 @@ sub font_xml_parse_install
   my $entry = {};
 
   my $file = &xst_xml_get_attribute ($xml, 'file');
-  if ($file)
+  unless ($file)
+  {
+    # TODO: add reporing.
+    &xst_debug_print_line ("font_xml_parse_install: missing xml tag.");
+    return;
+  }
+
+  $config->{'install'} = [] unless exists $config->{'install'};
+
+  if (-f $file)
   {
     my $font;
-    $config->{'install'} = [] unless exists $config->{'install'};
-
     push @{$config->{'install'}}, $font if $font = &font_check_install ($file);
+  }
+  elsif (-d $file)
+  {
+    opendir (DIR, $file);
+    while (defined (my $f = readdir (DIR)))
+    {
+      next if $f =~ /^\.+$/;
+      my $font;
+      push @{$config->{'install'}}, $font if $font = &font_check_install ("$file/$f");
+    }
+    closedir(DIR);
+  }
+  else
+  {
+    # TODO: add reporing.
+    &xst_debug_print_line ("font_xml_parse_install: '$file' doesn\'t exist.");
   }
 }
 
@@ -618,12 +644,34 @@ sub font_xml_parse_remove
   my $entry = {};
 
   my $file = &xst_xml_get_attribute ($xml, 'file');
-  if ($file)
+  unless ($file)
+  {
+    # TODO: add reporting.
+    &xst_debug_print_line ("font_xml_parse_remove: missing xml tag.");
+    return;
+  }
+
+  $config->{'remove'} = [] unless exists $config->{'remove'};
+
+  if (-f $file)
   {
     my $font;
-    $config->{'remove'} = [] unless exists $config->{'remove'};
-
     push @{$config->{'remove'}}, $font if $font = &font_check_remove ($file);
+  }
+  elsif (-d $file)
+  {
+    opendir (DIR, $file);
+    while (defined (my $f = readdir (DIR)))
+    {
+      next if $f =~ /^\.+$/;
+      my $font;
+      push @{$config->{'remove'}}, $font if $font = &font_check_remove ($f);
+    }
+  }
+  else
+  {
+    # TODO: add reporting.
+    &xst_debug_print_line ("font_xml_parse_remove: '$file' doesn't exist.");
   }
 }
 
@@ -663,6 +711,8 @@ sub font_xml_parse
 sub font_add
 {
   my $config = shift;
+
+  return unless exists $config->{'install'};
   my @install = @{$config->{'install'}};
 
   foreach my $entry (@install)
@@ -699,6 +749,8 @@ sub font_add
 sub font_remove
 {
   my $config = shift;
+
+  return unless exists $config->{'remove'};
   my @remove = @{$config->{'remove'}};
 
   foreach my $entry (@remove)
@@ -719,7 +771,7 @@ sub font_update_fontdir
       'mkfontdir' => "$ttf_dir",
     },
     $t1_dir => {
-      'type1inst' => "-q -d $t1_dir",
+      'type1inst' => "-nolog -q -d $t1_dir",
     }
   };
 
