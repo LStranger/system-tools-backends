@@ -64,6 +64,7 @@ sub gst_service_sysv_get_paths
        "mandrake-7.2" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        "mandrake-9.0" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        "mandrake-9.1" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "mandrake-9.2" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
        "debian-2.2"   => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
        "debian-3.0" => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
@@ -106,6 +107,7 @@ sub gst_service_sysv_get_runlevels
        "mandrake-7.2"   => [3, 5],
        "mandrake-9.0"   => [3, 5],
        "mandrake-9.1"   => [3, 5],
+       "mandrake-9.2"   => [3, 5],
 
        "debian-2.2"     => [2, 3],
        "debian-3.0"   => [2, 3],
@@ -147,6 +149,7 @@ sub gst_service_get_verbose_runlevels
      "mandrake-7.2"   => "redhat-5.2",
      "mandrake-9.0"   => "redhat-5.2",
      "mandrake-9.1"   => "redhat-5.2",
+     "mandrake-9.2"   => "redhat-5.2",
      
      "debian-2.2"     => "debian-2.2",
      "debian-3.0"   => "debian-2.2",

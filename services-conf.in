@@ -46,7 +46,7 @@ $version = "@VERSION@";
               "redhat-7.2", "redhat-7.3", "redhat-8.0", "redhat-9",
               "openna-1.0",
               
-              "mandrake-7.1", "mandrake-7.2", "mandrake-9.0", "mandrake-9.1",
+              "mandrake-7.1", "mandrake-7.2", "mandrake-9.0", "mandrake-9.1", "mandrake-9.2",
 
               "debian-2.2", "debian-3.0", "debian-sarge",
 

@@ -1,5 +1,10 @@
 2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* services-conf.in, services.pl.in, time-conf.in, users-conf.in,
+	  network-conf.in, network.pl.in: added support for mandrake 9.2
+
+2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* network.pl.in: (gst_network_slackware91_interface_activate_by_dev), 
 	  (gst_network_slackware91_interface_activate): added functions to
 	  activate and deactivate interfaces in slackware
