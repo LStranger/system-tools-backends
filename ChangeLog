@@ -1,3 +1,19 @@
+2001-12-14  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* users-conf.in: Added redhat-7.2 to logindefs_dist_map.
+
+	* runlevel-conf.in: Added redhat-7.2 as a supported platform.
+
+	* network.pl.in (xst_network_xml_parse_interface): modernized.
+	Also, pass the whole hash to network_get_file.
+	(xst_network_get_broadcast_ping_cmd): redhat-7.2 was missing.
+	(xst_network_rh72_get_file): Red Hat 7.2 version.
+
+	* network-conf.in (xml_parse): modernized parse routines.
+	(xml_parse_network): same.
+	(xml_parse_statichost): same.
+	(xml_parse_dialing): same.
+
 2001-12-11  Israel Escalante <israel@ximian.com>
 
 	* Release 0.10.0.

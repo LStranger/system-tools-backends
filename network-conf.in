@@ -88,7 +88,7 @@ $progress_max = 10;
 
 sub xml_parse
 {
-  my ($tree, %hash);
+  my ($tree, %hash, $elem);
   # Scan XML to tree.
 
   $tree = &xst_xml_scan ();
@@ -96,12 +96,10 @@ sub xml_parse
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "network" tag.
 
-  while (@$tree)
+  while ($elem = shift @$tree)
   {
-    if ($$tree[0] eq "network") { &xml_parse_network ($$tree[1], \%hash); }
-
-    shift @$tree;
-    shift @$tree;
+    if ($elem eq "network") { &xml_parse_network (shift @tree, \%hash); }
+    else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   return(\%hash);
@@ -124,34 +122,32 @@ sub push_unique
 
 sub xml_parse_network
 {
-  my $tree = $_[0];
-  my $hash = $_[1];
+  my ($tree, $hash) = @_;
+  my ($elem);
   my (@searchdomain, @nameserver, @order, %statichost, %interface, %dialing);
 
   shift @$tree;  # Skip attributes.
 
-  while (@$tree)
+  while ($elem = shift @$tree)
   {
-       if ($$tree[0] eq "auto")            { $$hash{"auto"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "gateway")         { $$hash{"gateway"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "gatewaydev")      { $$hash{"gatewaydev"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "nameserver")      { &push_unique (\@nameserver, &xst_xml_get_pcdata ($$tree[1])); }
-    elsif ($$tree[0] eq "searchdomain")    { &push_unique (\@searchdomain, &xst_xml_get_pcdata ($$tree[1])); }
-    elsif ($$tree[0] eq "order")           { push (@order, &xst_xml_get_pcdata ($$tree[1])); }
-    elsif ($$tree[0] eq "hostmatch")       { $$hash{"hostmatch"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "statichost")      { &xml_parse_statichost ($$tree[1], \%statichost); }
-    elsif ($$tree[0] eq "workgroup")       { $$hash{"workgroup"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "description")     { $$hash{"description"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "winsuse")         { $$hash{"winsuse"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "smbuse")          { $$hash{"smbuse"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "interface")       { &xst_network_xml_parse_interface ($$tree[1], \%interface); }
-    elsif ($$tree[0] eq "dialing")         { &xml_parse_dialing ($$tree[1], \%dialing); }
-
-    shift @$tree;
-    shift @$tree;
+       if ($elem eq "auto")         { $$hash{"auto"} =        &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "hostname")     { $$hash{"hostname"} =    &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "gateway")      { $$hash{"gateway"} =     &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "gatewaydev")   { $$hash{"gatewaydev"} =  &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "domain")       { $$hash{"domain"} =      &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "workgroup")    { $$hash{"workgroup"} =   &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "description")  { $$hash{"description"} = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "winsserver")   { $$hash{"winsserver"} =  &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "winsuse")      { $$hash{"winsuse"} =     &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "smbuse")       { $$hash{"smbuse"} =      &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "hostmatch")    { $$hash{"hostmatch"} =   &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "nameserver")   { &push_unique (\@nameserver, &xst_xml_get_pcdata (shift @$tree)); }
+    elsif ($elem eq "searchdomain") { &push_unique (\@searchdomain, &xst_xml_get_pcdata (shift @$tree)); }
+    elsif ($elem eq "order")        { push (@order, &xst_xml_get_pcdata (shift @$tree)); }
+    elsif ($elem eq "statichost")   { &xml_parse_statichost (shift @$tree, \%statichost); }
+    elsif ($elem eq "interface")    { &xst_network_xml_parse_interface (shift @$tree, \%interface); }
+    elsif ($elem eq "dialing")      { &xml_parse_dialing (shift @$tree, \%dialing); }
+    else                            { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"order"} = \@order unless $#order < 0;
@@ -166,20 +162,16 @@ sub xml_parse_network
 
 sub xml_parse_statichost
 {
-  my $tree = $_[0];
-  my $statichost = $_[1];
-  my $ip;
-  my @alias;
+  my ($tree, $statichost) = @_;
+  my ($ip, @alias, $elem);
 
   shift @$tree;
 
-  while (@$tree)
+  while ($elem = shift @$tree)
   {
-    if    ($$tree[0] eq "ip")    { $ip = &xst_xml_get_pcdata($$tree[1]); }
-    elsif ($$tree[0] eq "alias") { push(@alias, &xst_xml_get_pcdata($$tree[1])); }
-
-    shift @$tree;
-    shift @$tree;
+    if    ($elem eq "ip")    { $ip = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "alias") { push(@alias, &xst_xml_get_pcdata (shift @$tree)); }
+    else                     { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   if ($ip =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
@@ -190,19 +182,14 @@ sub xml_parse_statichost
 
 sub xml_parse_dialing
 {
-  my $tree = $_[0];
-  my $dialing = $_[1];
-  my %hash;
-  my $name;
+  my ($tree, $dialing) = @_;
+  my (%hash, $name, $elem);
 
   shift @$tree;
   
-  while (@$tree)
+  while ($elem = shift @$tree)
   {
-    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
-
-    shift @$tree;
-    shift @$tree;
+    $hash{$elem} = &xst_xml_get_pcdata (shift @$tree);
   }
 
   $name = $hash{"name"};

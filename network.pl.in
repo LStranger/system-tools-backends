@@ -45,22 +45,17 @@ require "$SCRIPTSDIR/xml.pl$DOTIN";
 # Parse <interface>...</interface>. Put here so it can be shared with internetsharing.
 sub xst_network_xml_parse_interface
 {
-  my $tree = $_[0];
-  my $interface = $_[1];
-  my %hash;
-  my $dev;
+  my ($tree, $interface) = @_;
+  my (%hash, $dev, $elem);
 
   shift @$tree;
   
-  while (@$tree)
+  while ($elem = shift @$tree)
   {
-    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
-
-    shift @$tree;
-    shift @$tree;
+    $hash{$elem} = &xst_xml_get_pcdata (shift @$tree);
   }
 
-  $hash{"file"} = &xst_network_get_file ($hash{"dev"}) if !exists $hash{"file"};
+  $hash{"file"} = &xst_network_get_file (\%hash) if !exists $hash{"file"};
   $dev = $hash{"file"};
   $$interface{$dev} = \%hash;
 }
@@ -141,6 +136,7 @@ sub xst_network_get_broadcast_ping_cmd
        "redhat-6.2"   => "redhat-6.2",
        "redhat-7.0"   => "redhat-6.2",
        "redhat-7.1"   => "redhat-6.2",
+       "redhat-7.2"   => "redhat-6.2",
        "debian-2.2"   => "debian-2.2",
        "debian-woody" => "debian-2.2",
        "mandrake-7.1" => "debian-2.2",
@@ -885,7 +881,7 @@ sub xst_network_interfaces_get
   my ($dist, $value, $file, $proc);
   my ($i, $j);
 
-  %dist_attrib = &xst_network_get_interfaces_parse_table ();
+  %dist_attrib = &xst_network_get_interface_parse_table ();
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"ifaces_get"};
   @ifaces = &$proc ();
@@ -935,10 +931,10 @@ sub xst_network_rh_get_smb_desc
 
 sub xst_network_rh62_get_file
 {
-  my $dev = $_[0];
-  my $pre;
-  my $i;
+  my ($iface) = @_;
+  my ($pre, $i, $dev);
 
+  $dev = $$iface{"dev"};
   $pre = "$xst_prefix/etc/sysconfig/network-scripts/ifcfg-";
   
   return $dev if ! -e "$pre$dev";
@@ -951,17 +947,36 @@ sub xst_network_rh62_get_file
   return "$dev$i";
 }
 
+sub xst_network_rh72_get_file
+{
+  my ($iface) = @_;
+  my ($pre, $i, $dev);
+
+  $dev = $$iface{"name"};
+  $dev =~ s/[^\w]//g;
+  $dev = $$iface{"dev"} if $dev eq "";
+  $pre = "$xst_prefix/etc/sysconfig/networking/devices/ifcfg-";
+  
+  return $dev if ! -e "$pre$dev";
+  
+  $i = 0;
+  $i ++ while (-e "$pre$dev.$i");
+  
+  return "$dev.$i";
+}
+
 sub xst_network_deb22_get_file
 {
-  my $dev = $_[0];
+  my ($iface) = @_;
   
-  return $dev;
+  return $$iface{"dev"};
 }
 
 sub xst_network_suse70_get_file
 {
-  my $file = "$xst_prefix/etc/rc.config";
-  my ($i);
+  my ($i, $file);
+
+  $file = "$xst_prefix/etc/rc.config";
 
   $i = 0;
   $i ++ while (&xst_parse_sh ($file, "NETDEV_$i") ne "");
@@ -971,7 +986,7 @@ sub xst_network_suse70_get_file
 
 sub xst_network_get_file
 {
-  my $dev = $_[0];
+  my ($iface) = @_;
   my $proc;
 
   my %dist_map =
@@ -981,6 +996,7 @@ sub xst_network_get_file
 	  "redhat-6.2"   => \&xst_network_rh62_get_file,
 	  "redhat-7.0"   => \&xst_network_rh62_get_file,
 	  "redhat-7.1"   => \&xst_network_rh62_get_file,
+	  "redhat-7.2"   => \&xst_network_rh72_get_file,
 	  "mandrake-7.2" => \&xst_network_rh62_get_file,
 		"mandrake-7.1" => \&xst_network_rh62_get_file,
     "debian-2.2"   => \&xst_network_deb22_get_file,
@@ -991,7 +1007,7 @@ sub xst_network_get_file
 
   $proc = $dist_map{$xst_dist};
 
-  return &$proc ($dev) if $proc;
+  return &$proc ($iface) if $proc;
 
   # FIXME: should make us bail.
   &xst_debug_print_string ("\n\nWarning: No network_get_file proc for dist $xst_dist.\n\n");
@@ -1845,6 +1861,7 @@ sub xst_network_ensure_loopback_interface
 	  "redhat-6.2"   => "lo",
 	  "redhat-7.0"   => "lo",
 	  "redhat-7.1"   => "lo",
+	  "redhat-7.2"   => "lo",
 	  "mandrake-7.1" => "lo",
 	  "mandrake-7.2" => "lo",
 	  "debian-2.2"   => "lo",
@@ -2152,7 +2169,7 @@ sub xst_network_get_parse_table
   return undef;
 }
 
-sub xst_network_get_interfaces_parse_table
+sub xst_network_get_interface_parse_table
 {
   my %dist_map =
 	 (

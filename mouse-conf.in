@@ -55,7 +55,7 @@ BEGIN {
 $name = "mouse";
 $version = "___version___";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", 
-	      "redhat-7.0", "redhat-7.1", "turbolinux-7.0");
+              "redhat-7.0", "redhat-7.1", "redhat-7.2", "turbolinux-7.0");
 
 $description =<<"end_of_desc;";
        Configures Pointing Tool Device

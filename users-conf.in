@@ -220,6 +220,7 @@ my $logindefs_dist_map = {
   'redhat-6.2'     => $rh_logindefs_defaults,
   'redhat-7.0'     => $rh_logindefs_defaults,
   'redhat-7.1'     => $rh_logindefs_defaults,
+  'redhat-7.2'     => $rh_logindefs_defaults,
   'mandrake-7.1'   => $rh_logindefs_defaults,
   'mandrake-7.2'   => $rh_logindefs_defaults,
 
