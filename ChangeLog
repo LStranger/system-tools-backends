@@ -1,5 +1,8 @@
 2001-09-24  Tambet Ingo  <tambet@ximian.com>
 
+	* x.pl.in (x_parse_serverlayout_screen): Rewrote.
+	Fixes bug #10790.
+
 	* users-conf.in: Added missing report keywords. Moved one
 	here from report.pl.in.
 

@@ -744,25 +744,68 @@ sub x_parse_serverlayout_screen
   my $config = shift;
   my $buf = shift;
   my $kw = shift;
+  my ($hash, $token, $tmp);
 
   # Format example: 'Screen  screen-num "screen-id" position-information'
 
-  # TODO: Supports screen identifier only, screen_num and
-  # screen_position are missing.
+  # Screen number
+  $token = &x_peek_token ($buf);
+  goto ERROR unless defined ($token);
+  $hash->{'num'} = &x_get_token ($buf) if ($token =~ /^\d+$/);
 
-  my $screen_num = &x_get_token ($buf);
-  goto ERROR unless defined ($screen_num);
+  # Screen id
+  $token = &x_peek_token ($buf);
+  goto ERROR unless defined ($token);
+  $hash->{'id'} = &x_get_token ($buf) if ($token =~ /^\".+\"$/);
+  $hash->{'id'} =~ s/\"//g;
 
-  my $screen_id = &x_get_token ($buf);
-  goto ERROR unless defined ($screen_id);
+  # Position
+  my $pos = {};
+  my @known_pos_xy = qw (Absolute Relative);
+  my @known_pos_id = qw (RightOf LeftOf Above Below);
 
-  my $pos1 = &x_get_token ($buf);
-  goto ERROR unless defined ($pos1);
-  my $pos2 = &x_get_token ($buf);
-  goto ERROR unless defined ($pos2);
+  $token = &x_peek_token ($buf);
+  goto ERROR unless defined ($token);
 
-  $screen_id =~ s/\"//g;
-  $config->{$kw} = $screen_id;
+  if ($tmp = &x_keyword_in_list ($token, @known_pos_xy)) {
+    &x_get_token ($buf);
+    $pos->{'name'} = $tmp;
+
+    foreach my $i (1, 2) {
+      $token = &x_peek_token ($buf);
+      goto ERROR unless (defined ($token) || $token =~ /^\d+$/);
+
+      $pos->{"val$i"} = &x_get_token ($buf);
+    }
+    $hash->{'pos'} = $pos;
+  }
+
+  elsif ($tmp = &x_keyword_in_list ($token, @known_pos_id)) {
+    &x_get_token ($buf);
+    $pos->{'name'} = $tmp;
+
+    $token = &x_peek_token ($buf);
+    goto ERROR unless (defined ($token) || $token =~ /^\".+\"$/);
+
+    $pos->{'val1'} = &x_get_token ($buf);
+    $pos->{'val1'} =~ s/\"//g;
+    $hash->{'pos'} = $pos;
+  }
+
+  elsif ($token =~ /^\d+$/) {
+    $pos->{'name'} = 'Absolute';
+
+    foreach my $i (1, 2) {
+      $token = &x_peek_token ($buf);
+      goto ERROR unless (defined ($token) || $token =~ /^\d+$/);
+
+      $pos->{"val$i"} = &x_get_token ($buf);
+    }
+    $hash->{'pos'} = $pos;
+  }
+
+  # We currently care about id only.
+  $config->{$kw} = $hash->{'id'};
   return;
 
  ERROR:
@@ -773,6 +816,7 @@ sub x_parse_serverlayout_screen
 sub x_xml_print_serverlayout_screen
 {
   my ($key, $val) = @_;
+
   &xst_xml_print_pcdata ($key, $val);
 }
 
@@ -781,7 +825,6 @@ sub x_update_serverlayout_screen
   my ($buf, $ptr, $old_val, $new_val) = @_;
 
   my $screen_num = &x_update_get_token ($buf, $ptr);
-  
 
   if ($old_val ne $new_val) {
     &x_update_unique_string ($buf, $ptr, $old_val, $new_val);
