@@ -1,5 +1,10 @@
 2004-08-29  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* network-conf.in, platform.pl.in, service.pl.in, services-conf.in,
+	time-conf.in, users-conf.in: Added support for SuSE 9.1
+
+2004-08-29  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* network.pl.in: added support for WEP keys, this isn't reflected
 	in the frontends still
 
