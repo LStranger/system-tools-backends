@@ -470,8 +470,12 @@ sub x_parse_unique_string
   my $val = &x_get_token ($buf);
   goto ERROR unless defined ($val);
   goto ERROR unless $val =~ /^\".*\"$/;
-  
+
   $val =~ s/\"//g;
+  &xst_debug_print_line ("x_parse_unique_string: warning: '$kw' is unique but" .
+                         "already has value '$config->{$kw}'.")
+      if exists ($config->{$kw});
+
   $config->{$kw} = $val;
   return;
 
@@ -535,6 +539,10 @@ sub x_parse_unique_int
   my $val = &x_get_token ($buf);
   goto ERROR unless defined ($val);
   goto ERROR unless $val =~ /^[0-9]+$/;
+
+  &xst_debug_print_line ("x_parse_unique_string: warning: '$kw' is unique but" .
+                         "already has value '$config->{$kw}'.")
+      if exists ($config->{$kw});
 
   $config->{$kw} = $val;
   return;

@@ -5,7 +5,10 @@
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
-# Authors: Hans Petter Jansson <hpj@ximian.com> and Arturo Espinosa <arturo@ximian.com>
+# Authors: Hans Petter Jansson <hpj@ximian.com>,
+#          Arturo Espinosa <arturo@ximian.com>,
+#          Tambet Ingo <tambet@ximian.com>.
+#
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -321,6 +324,7 @@ sub logindefs_add_defaults
       $logindefs->{$key} = $dist_specific->{$key};
     }
   }
+  return $logindefs;
 }
 
 sub read_logindefs
@@ -330,7 +334,8 @@ sub read_logindefs
 
   unless ($logindefs)
   {
-    push @$profiledb, &logindefs_add_defaults ();
+    $logindefs = &logindefs_add_defaults ();
+    push @$profiledb, $logindefs;
   }
 
   # Get new data in case someone has changed login_defs manually.

@@ -1,5 +1,12 @@
 2001-10-03  Tambet Ingo  <tambet@ximian.com>
 
+	* users-conf.in (logindefs_add_defaults): Return the hash we fill :)
+	(read_logindefs): assign the return value to something, don't just
+	pretend you're interested in it! :)
+
+	* x.pl.in (x_parse_unique_int): Added check for uniqueness.
+	(x_parse_unique_string): Ditto.
+
 	* users-conf.in: Override new values found from logindefs
 	and not in profiles. Removed xst_progress remains.
 	Added reporting. Backups all files it (remotely) touches.
