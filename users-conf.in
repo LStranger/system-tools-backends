@@ -139,7 +139,7 @@ $parse_tree = 0;
   "CREATE_HOME" , "create_home", 
 	"", "");
 
-for ($i = 0; $login_defs_array[$i] neq ""; $i += 2)
+for ($i = 0; $login_defs_array[$i] ne ""; $i += 2)
 {
   $login_defs_map {$login_defs_array[$i]} = $login_defs_array[$i + 1];
   $login_defs_map {$login_defs_array[$i + 1]} = $login_defs_array[$i];
@@ -251,7 +251,10 @@ sub xml_parse_login_defs
 	
 	while (@$tree)
 	{
-		if (@$tree[0] eq "var") { print;}
+		if (@$tree[0] eq "var") 
+		{
+		  print;
+		}
 	}
 }	
 

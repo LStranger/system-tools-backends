@@ -34,7 +34,7 @@ $be_progress = 0;
 $be_do_immediate = 1;
 
 # for debugging (perl -d) purposes. set to "" for normal operation:
-$be_input_file = "aaa";
+$be_input_file = "";
 
 
 # --- Progress printing --- #
