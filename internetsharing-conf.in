@@ -107,6 +107,7 @@ sub xml_parse_fwrules
       elsif ($elem eq "configured")   { $$hash{"configured"}   = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "forwarding")   { $$hash{"forwarding"}   = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "masquerading") { $$hash{"masquerading"} = &xst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "overwrite")    { $$hash{"overwrite"}    = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "active")       { $$hash{"active"}       = &xst_xml_get_pcdata (shift @$tree); }
       elsif ($elem eq "landev")       { push @$landevs, &xst_xml_get_pcdata (shift @$tree); }
       else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }

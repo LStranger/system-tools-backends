@@ -1,9 +1,14 @@
 2001-08-09  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* internetsharing-conf.in (xml_parse_fwrules): "overwrite"
+	tag support for ipchains too.
+
 	* ishare.pl.in (xst_ishare_dhcp_isc_save): Oops. The
 	required argument is the hwaddr, only.
 	(xst_ishare_dhcp_isc_set): Activate the dhcpd service:
 	not ipchains (here).
+	(xst_ishare_fwrules_set_ipchains): "overwrite" tag
+	support for ipchains too.
 
 	* service.pl.in (xst_service_sysv_get_status): little
 	typo here.

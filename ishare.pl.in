@@ -110,7 +110,11 @@ sub xst_ishare_fwrules_set_ipchains
 {
   my ($ipchains_conf, $priority, $interface, $values_hash) = @_;
 
-  &xst_ishare_ipchains_save ($ipchains_conf, $interface, $values_hash);
+  if ($$values_hash{"overwrite"})
+  {
+    &xst_ishare_ipchains_save ($ipchains_conf, $interface, $values_hash);
+  }
+  
   &xst_service_sysv_set_status ($priority, "ipchains", $$values_hash{"active"});
 
   &xst_file_run ("echo " . $$values_hash{"active"} . " > /proc/sys/net/ipv4/ip_forward");
