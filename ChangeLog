@@ -1,3 +1,8 @@
+2001-02-19  Arturo Espinosa  <arturo@ximian.com>
+
+	* network.pl: Ensure local host entry, by checking the internal
+	  structures before writing. Run hostname.
+
 2001-02-16  Hans Petter Jansson  <hpj@ximian.com>
 
 	* report.pl.in: Make sure the same progress int is not printed twice.
