@@ -8,6 +8,7 @@
 # Authors: Hans Petter Jansson <hpj@ximian.com>,
 #          Arturo Espinosa <arturo@ximian.com>,
 #          Tambet Ingo <tambet@ximian.com>.
+#          Grzegorz Golawski <grzegol@pld.org.pl> (PLD Support)
 #
 #
 # This program is free software; you can redistribute it and/or modify
@@ -69,18 +70,13 @@ $name = "users";
 $version = "___version___";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0", "redhat-7.1",
               "redhat-7.2", "redhat-7.3", "redhat-8.0",
-
               "mandrake-7.1", "mandrake-7.2",
-
               "debian-2.2", "debian-woody", "debian-sarge",
-
               "suse-7.0", "turbolinux-7.0",
-
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0",
-
               "freebsd-4", "freebsd-5",
-	      
-	      "gentoo");
+              "gentoo",
+              "pld-1.0");
 
 $description =<<"end_of_description;";
        Manages system users.
@@ -231,11 +227,12 @@ my $logindefs_dist_map = {
   'redhat-8.0'      => $rh_logindefs_defaults,
   'mandrake-7.1'    => $rh_logindefs_defaults,
   'mandrake-7.2'    => $rh_logindefs_defaults,
-
-  # FIXME: I don't know about those, so using RH values for now.
+  'pld-1.0'         => $rh_logindefs_defaults,
   'debian-2.2'      => $rh_logindefs_defaults,
   'debian-woody'    => $rh_logindefs_defaults,
   'debian-sarge'    => $rh_logindefs_defaults,
+
+  # FIXME: I don't know about those, so using RH values for now.
   'suse-7.0'        => $rh_logindefs_defaults,
   'turbolinux-7.0'  => $rh_logindefs_defaults,
   'slackware-8.0.0' => $rh_logindefs_defaults,
@@ -243,7 +240,7 @@ my $logindefs_dist_map = {
   'slackware-9.0'   => $rh_logindefs_defaults,
   'freebsd-4'       => $rh_logindefs_defaults,
   'freebsd-5'       => $rh_logindefs_defaults,
-  'gentoo'	    => $rh_logindefs_defaults,
+  'gentoo'	        => $rh_logindefs_defaults,
 };
 
 

@@ -9,6 +9,7 @@
 #          Arturo Espinosa <arturo@ximian.com>
 #          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
 #          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
+#          Grzegorz Golawski <grzegol@pld.org.pl> - PLD support
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -162,7 +163,8 @@ sub gst_network_get_broadcast_ping_cmd
        "debian-sarge" => "debian-2.2",
        "mandrake-7.1" => "debian-2.2",
        "mandrake-7.2" => "debian-2.2",
-       "suse-7.0"     => "debian-2.2" # FIXME: assumed that only redhat distros use -b.
+       "suse-7.0"     => "debian-2.2", # FIXME: assumed that only redhat distros use -b.
+       "pld-1.0"      => "redhat-6.2"
        );
 
   return $cmd_map{$dist_map{$gst_dist}};
@@ -596,6 +598,11 @@ sub gst_network_suse70_ifaces_get_existing
   return @ret;
 }
 
+sub gst_network_sysconfig_pld10_ifaces_get_existing
+{
+  return @{&gst_network_sysconfig_dir_ifaces_get_existing ("/etc/sysconfig/interfaces")};
+}
+
 sub gst_network_suse70_parse_iface_num
 {
   my ($file, $dev) = @_;
@@ -1018,6 +1025,24 @@ sub gst_network_suse70_get_file
   return $i;
 }
 
+sub gst_network_pld10_get_file
+{
+  my ($iface) = @_;
+  my ($pre, $i, $dev);
+                                                                                
+  $dev = $$iface{"dev"};
+  $pre = "$gst_prefix/etc/sysconfig/interfaces/ifcfg-";
+                                                                                
+  return $dev if ! -e "$pre$dev";
+                                                                                
+  $dev =~ s/[0-9]*$//;
+                                                                                
+  $i = 0;
+  $i ++ while (-e "$pre$dev$i");
+                                                                                
+  return "$dev$i";
+}
+
 sub gst_network_get_file
 {
   my ($iface) = @_;
@@ -1038,7 +1063,8 @@ sub gst_network_get_file
     "debian-woody" => \&gst_network_deb22_get_file,
     "debian-sarge" => \&gst_network_deb22_get_file,
     "suse-7.0"     => \&gst_network_suse70_get_file,
-	  "turbolinux-7.0"   => \&gst_network_rh62_get_file
+	  "turbolinux-7.0"   => \&gst_network_rh62_get_file,
+    "pld-1.0"      => \&gst_network_pld10_get_file
 	  );
 
   $proc = $dist_map{$gst_dist};
@@ -1382,6 +1408,25 @@ sub gst_network_suse70_interface_delete
   &gst_replace_sh ($file, "IPADDR_$dev", "");
   &gst_replace_sh ($file, "NETDEV_$dev", "");
   &gst_replace_sh ($file, "IFCONFIG_$dev", "");
+}
+
+sub gst_network_pld10_interface_delete
+{
+  my ($old_hash) = @_;
+  my $dev = $$old_hash{"file"};
+  my $file = "$gst_prefix/etc/sysconfig/interfaces/ifcfg-$dev";
+  my $login;
+                                                                                
+  &gst_network_rh62_interface_activate_by_dev ($dev, 0);
+                                                                                
+  $login = $old_hash{"login"};
+  if ($login ne "")
+  {
+    &gst_network_remove_pap_entry ("/etc/ppp/pap-secrets", $login);
+    &gst_network_remove_pap_entry ("/etc/ppp/chap-secrets", $login);
+  }
+                                                                                
+  unlink ($file);
 }
 
 sub gst_network_interface_changed
@@ -1790,6 +1835,42 @@ sub gst_network_suse70_replace_bootproto
   return &gst_network_suse70_replace_iface_sh ($file, $iface, "IFCONFIG", $val);
 }
 
+sub gst_network_pld10_parse_bootproto
+{
+  my ($file, $key) = @_;
+  my %pld10_to_proto_name =
+    (
+     "bootp" => "bootp",
+     "dhcp"  => "dhcp",
+     "pump"  => "pump",
+     "none"  => "none"
+    );
+  my $ret;
+
+  $ret = &gst_parse_sh ($file, $key);
+  
+  if (!exists $pld10_to_proto_name{$ret})
+  {
+    &gst_report ("network_bootproto_unsup", $file, $ret);
+    $ret = "none";
+  }
+  return $pld10_to_proto_name{$ret};
+}
+
+sub gst_network_pld10_replace_bootproto
+{
+  my ($file, $key, $value) = @_;
+  my %proto_name_to_pld10 =
+    (
+     "bootp"    => "bootp",
+     "dhcp"     => "dhcp",
+     "pump"     => "pump",
+     "none"     => "none"
+    );
+
+  return &gst_replace_sh ($file, $key, $proto_name_to_pld10{$value});
+}
+
 sub gst_network_pump_iface_supported
 {
   my ($iface) = @_;
@@ -1931,6 +2012,81 @@ sub gst_network_debian_woody_set_auto
   return &gst_file_buffer_save ($buff, $file);
 }
 
+# Return IP address or netmask, depending on $what
+sub gst_network_pld10_get_ipaddr
+{
+  my ($file, $key, $what) = @_;
+  my ($ipaddr, $netmask, $ret, $i);
+	my @netmask_prefixes = (0, 128, 192, 224, 240, 248, 252, 254, 255);
+  
+  $ipaddr = &gst_parse_sh($file, $key);
+  return undef if $ipaddr eq "";
+  
+  if($ipaddr =~ /([^\/]*)\/([[:digit:]]*)/)
+  {
+    $netmask = $2;
+    return undef if $netmask eq "";
+
+    if($what eq "address")
+    {
+      return $1;
+    }
+
+    for($i = 0; $i < int($netmask/8); $i++)
+    {
+      $ret .= "255.";
+    }
+
+    $ret .= "$netmask_prefixes[$b%8]." if $netmask < 32;
+
+    for($i = int($netmask/8) + 1; $i < 4; $i++)
+    {
+      $ret .= "0.";
+    }
+
+    chop($ret);
+    return $ret;
+  }
+  return undef;
+}
+
+# Writes IP address or netmask, depending in $what, to $file
+sub gst_network_pld10_set_ipaddr
+{
+  my ($file, $key, $what, $value) = @_;
+  my %prefixes =
+  (
+    "0"   => 0,
+    "128" => 1,
+    "192" => 2,
+    "224" => 3,
+    "240" => 4,
+    "248" => 5,
+    "252" => 6,
+    "254" => 7,
+    "255" => 8
+  );
+  my ($ipaddr, $netmask);
+
+  $ipaddr = &gst_parse_sh($file, $key);
+  return undef if $ipaddr eq "";
+
+  if($what eq "address")
+  {
+    $ipaddr =~ s/.*\//$value\//;
+  }
+	else
+  {
+    if($value =~ /([[:digit:]]*).([[:digit:]]*).([[:digit:]]*).([[:digit:]]*)/)
+    {
+      $netmask = $prefixes{$1} + $prefixes{$2} + $prefixes{$3} + $prefixes{$4};
+      $ipaddr =~ s/\/[[:digit:]]*/\/$netmask/;
+    }
+  }
+
+  return &gst_replace_sh($file, $key, $ipaddr);
+}
+
 # Set dist_map for your distro to "" if you don't want
 # loopback ensuring. See suse-7.0 entry for example.
 sub gst_network_ensure_loopback_interface
@@ -1953,7 +2109,8 @@ sub gst_network_ensure_loopback_interface
     "debian-woody" => "lo",
     "debian-sarge" => "lo",
     "suse-7.0"     => "",
-	  "turbolinux-7.0"   => "lo"
+	  "turbolinux-7.0"   => "lo",
+    "pld-1.0"      => "lo"
 	  );
 
   $dev = $dist_map {$gst_dist};
@@ -2052,7 +2209,8 @@ sub gst_network_get_parse_table
     "debian-woody" => "debian-2.2",
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
-	  "turbolinux-7.0"   => "redhat-7.0"
+	  "turbolinux-7.0"   => "redhat-7.0",
+    "pld-1.0"      =>  "pld-1.0"
 	  );
 
   my %dist_tables =
@@ -2246,6 +2404,42 @@ sub gst_network_get_parse_table
 		    [ "interface_tmp", \&gst_network_interfaces_get ],
         [ "interface",     \&gst_network_suse70_get_ppp,         "%dialing%", "%interface_tmp%" ],
 		    ]
+			 },
+
+	  "pld-1.0" =>
+	  {
+	    fn =>
+	    {
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/smb/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf"
+      },
+	    table =>
+		   [
+		    [ "hostname",      \&gst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
+        [ "gateway",       \&gst_parse_sh,                SYSCONFIG_NW, GATEWAY ],
+        [ "gatewaydev",    \&gst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV ],
+        [ "userifacectl",  \&gst_parse_trivial,           1 ],
+		    [ "nameserver",    \&gst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
+		    [ "searchdomain",  \&gst_parse_split_first_array_unique, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+		    [ "domain",        \&gst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+		    [ "order",         \&gst_parse_split_first_array, HOST_CONF,    "order", "[ \t]+", ",[ \t]*" ],
+		    [ "hostmatch",     \&gst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
+		    [ "statichost",    \&gst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+		    [ "workgroup",     \&gst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+		    [ "description",   \&gst_network_rh_get_smb_desc, SMB_CONF,   "global", "server string", "%hostname%" ],
+		    [ "winsserver",    \&gst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+		    [ "winsuse",       \&gst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+        [ "smbuse",        \&gst_service_sysv_get_status_any, "smbd", "nmbd" ],
+        [ "smbinstalled",  \&gst_service_sysv_installed,  "smb" ],
+        [ "smartdhcpcd",   \&gst_file_tool_installed,     "pump" ],
+        [ "dialinstalled", \&gst_file_tool_installed,     "wvdial" ],
+		    [ "dialing",       \&gst_network_dialing_get,     WVDIAL ],
+		    [ "interface",     \&gst_network_interfaces_get ]
+		    ]
 			 }
 
 	  );
@@ -2275,7 +2469,8 @@ sub gst_network_get_interface_parse_table
     "debian-woody" => "debian-woody",
     "debian-sarge" => "debian-woody",
     "suse-7.0"     => "suse-7.0",
-	  "turbolinux-7.0"   => "redhat-6.2"
+	  "turbolinux-7.0"   => "redhat-6.2",
+    "pld-1.0"      => "pld-1.0"
 	  );
   
   my %dist_tables =
@@ -2516,6 +2711,55 @@ sub gst_network_get_interface_parse_table
                                                                 \&gst_network_suse70_active_interfaces_get ],
            [ "enabled",            \&gst_parse_trivial,                   0 ]
            ]
+             },
+
+	  "pld-1.0" =>
+	  {
+	    ifaces_get => \&gst_network_sysconfig_pld10_ifaces_get_existing,
+	    fn =>
+	    {
+        IFCFG => "/etc/sysconfig/interfaces/ifcfg-#iface#",
+        CHAT  => "/etc/sysconfig/interfaces/data/chat-#iface#",
+        IFACE => "#iface#",
+        PAP   => "/etc/ppp/pap-secrets",
+        CHAP  => "/etc/ppp/chap-secrets",
+        PUMP  => "/etc/pump.conf"
+      },
+	    table =>
+          [
+           [ "bootproto",          \&gst_network_pld10_parse_bootproto, IFCFG, BOOTPROTO ],
+           [ "auto",               \&gst_parse_sh_bool, IFCFG, ONBOOT ],
+           [ "user",               \&gst_parse_sh_bool, IFCFG, USERCTL ],
+           [ "name",               \&gst_parse_sh,      IFCFG, DEVICE ],
+           [ "dev",                \&gst_parse_sh,      IFCFG, DEVICE ],
+           [ "address",            \&gst_network_pld10_get_ipaddr, IFCFG, IPADDR, "address" ],
+           [ "netmask",            \&gst_network_pld10_get_ipaddr, IFCFG, IPADDR, "netmask" ],
+#           [ "broadcast",          \&gst_parse_sh,      IFCFG, BROADCAST ],
+#           [ "network",            \&gst_parse_sh,      IFCFG, NETWORK ],
+           [ "gateway",            \&gst_parse_sh,      IFCFG, GATEWAY ],
+#           [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&gst_parse_sh_bool, IFCFG, PEERDNS ],
+#           [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
+#           [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
+           [ "mtu",                \&gst_parse_sh,      IFCFG, MTU ],
+           [ "mru",                \&gst_parse_sh,      IFCFG, MRU ],
+           [ "remote_address",     \&gst_parse_sh,      IFCFG, REMIP ],
+           [ "login",              \&gst_parse_sh,      IFCFG, PAPNAME ],
+           [ "password",           \&gst_network_get_pap_passwd, PAP,  "%login%" ],
+           [ "password",           \&gst_network_get_pap_passwd, CHAP, "%login%" ],
+           [ "serial_port",        \&gst_parse_sh,      IFCFG, MODEMPORT ],
+           [ "serial_speed",       \&gst_parse_sh,      IFCFG, LINESPEED ],
+           [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
+#           [ "wvsection",          \&gst_parse_sh,      IFCFG, WVDIALSECT ],
+           [ "set_default_gw",     \&gst_parse_sh_bool, IFCFG, DEFROUTE ],
+           [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
+           [ "persist",            \&gst_parse_sh_bool, IFCFG, PERSIST ],
+           [ "serial_escapechars", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+           [ "serial_hwctl",       \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+           [ "phone_number",       \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           [ "enabled",            \&gst_network_interface_active, IFACE, \&gst_network_active_interfaces_get ],
+           [ "enabled",            \&gst_parse_trivial, 0 ]
+           ]
              }
 	  );
   
@@ -2544,7 +2788,8 @@ sub gst_network_get_replace_table
     "debian-woody" => "debian-2.2",
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
-	  "turbolinux-7.0"   => "redhat-7.0"
+	  "turbolinux-7.0"   => "redhat-7.0",
+    "pld-1.0"      => "pld-1.0"
 	  );
 
   my %dist_tables =
@@ -2732,7 +2977,43 @@ sub gst_network_get_replace_table
         [ "interface",     \&gst_network_interfaces_set,	 OLD_HASH ],
         [ "_always_",      \&gst_file_run,                 SUSECONFIG ],
 		    ]
-			 }
+			 },
+
+	  "pld-1.0" =>
+	  {
+	    fn =>
+	    {
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/smb/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf"
+      },
+	    table =>
+          [
+           [ "auto",          \&gst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+           [ "hostname",      \&gst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+           [ "hostname",      \&gst_network_run_hostname ],
+           [ "gateway",       \&gst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+           [ "gatewaydev",    \&gst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+#           [ "domain",        \&gst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+           [ "domain",        \&gst_replace_join_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+           [ "nameserver",    \&gst_replace_join_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
+           [ "searchdomain",  \&gst_replace_join_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+           [ "order",         \&gst_replace_join_first_array, HOST_CONF,    "order", "[ \t]+", ",[ \t]*" ],
+           [ "hostmatch",     \&gst_replace_join_first_bool,  HOST_CONF,    "multi", "[ \t]+", "on", "off" ],
+           [ "statichost",    \&gst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+           [ "workgroup",     \&gst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
+           [ "description",   \&gst_replace_ini,              SMB_CONF,     "global", "server string" ],
+           [ "winsserver",    \&gst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+           [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
+           [ "smbuse",        \&gst_service_sysv_set_status,  91, "smb" ],
+           [ "dialing",       \&gst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
+           [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ],
+           [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
+           ]
+             }
 	  );
   
   my $dist = $dist_map{$gst_dist};
@@ -2760,7 +3041,8 @@ sub gst_network_get_interface_replace_table
     "debian-woody" => "debian-woody",
     "debian-sarge" => "debian-woody",
     "suse-7.0"     => "suse-7.0",
-	  "turbolinux-7.0"   => "redhat-6.2"
+	  "turbolinux-7.0"   => "redhat-6.2",
+    "pld-1.0"      => "pld-1.0"
 	  );
 
   my %dist_tables =
@@ -2986,7 +3268,54 @@ sub gst_network_get_interface_replace_table
            [ "remote_address",     \&gst_network_suse70_set_ifconfig_arg,   [IFCFG, IFACE], pointopoint ],
            [ "update_dns",         \&gst_replace_kw,                        PPP_OPTIONS, "usepeerdns" ]
       ]
+    },
+
+    "pld-1.0" =>
+	  {
+      iface_set    => \&gst_network_rh62_interface_activate,
+      iface_delete => \&gst_network_pld10_interface_delete,
+      ifaces_get   => \&gst_network_sysconfig_pld10_ifaces_get_existing,
+      fn =>
+	    {
+        IFCFG  => "/etc/sysconfig/interfaces/ifcfg-#iface#",
+        CHAT   => "/etc/sysconfig/interfaces/data/chat-#iface#",
+        IFACE  => "#iface#",
+        WVDIAL => "/etc/wvdial.conf",
+        PUMP   => "/etc/pump.conf"
+      },
+      table =>
+       [
+        [ "bootproto",          \&gst_network_pld10_replace_bootproto, IFCFG, BOOTPROTO ],
+        [ "auto",               \&gst_replace_sh_bool, IFCFG, ONBOOT ],
+        [ "user",               \&gst_replace_sh_bool, IFCFG, USERCTL ],
+#        [ "name",               \&gst_replace_sh,      IFCFG, NAME ],
+        [ "dev",                \&gst_replace_sh,      IFCFG, DEVICE ],
+        [ "address",            \&gst_network_pld10_set_ipaddr, IFCFG, IPADDR, "address" ],
+        [ "netmask",            \&gst_network_pld10_set_ipaddr, IFCFG, IPADDR, "netmask" ],
+#        [ "broadcast",          \&gst_replace_sh,      IFCFG, BROADCAST ],
+#        [ "network",            \&gst_replace_sh,      IFCFG, NETWORK ],
+        [ "gateway",            \&gst_replace_sh,      IFCFG, GATEWAY ],
+#        [ "update_dns",         \&gst_network_pump_set_nodns, PUMP, "%dev%", "%bootproto%" ],
+        [ "update_dns",         \&gst_replace_sh_bool, IFCFG, PEERDNS ],
+#        [ "dns1",               \&gst_replace_sh,      IFCFG, DNS1 ],
+#        [ "dns2",               \&gst_replace_sh,      IFCFG, DNS2 ],
+        [ "mtu",                \&gst_replace_sh,      IFCFG, MTU ],
+        [ "mru",                \&gst_replace_sh,      IFCFG, MRU ],
+        [ "remote_address",     \&gst_replace_sh,      IFCFG, REMIP ],
+        [ "login",              \&gst_replace_sh,      IFCFG, PAPNAME ],
+        [ "serial_port",        \&gst_replace_sh,      IFCFG, MODEMPORT ],
+        [ "serial_speed",       \&gst_replace_sh,      IFCFG, LINESPEED ],
+        [ "ppp_options",        \&gst_replace_sh,      IFCFG, PPPOPTIONS ],
+#        [ "wvsection",          \&gst_replace_sh,      IFCFG, WVDIALSECT ],
+        [ "set_default_gw",     \&gst_replace_sh_bool, IFCFG, DEFROUTE ],
+        [ "debug",              \&gst_replace_sh_bool, IFCFG, DEBUG ],
+        [ "persist",            \&gst_replace_sh_bool, IFCFG, PERSIST ],
+        [ "serial_escapechars", \&gst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+        [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+        [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+      ]
     }
+
   );
   
   my $dist = $dist_map{$gst_dist};

@@ -8,6 +8,7 @@
 # Authors: Hans Petter Jansson <hpj@ximian.com>
 #          Michael Vogt <mvo@debian.org> (Debian Support)
 #          Arturo Espinosa <arturo@ximian.com>
+#          Grzegorz Golawski <grzegol@pld.org.pl> (PLD Support)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -73,7 +74,7 @@ $version = "___version___";
               
               "debian-2.2", "debian-woody", "debian-sarge",
               
-              "suse-7.0", "turbolinux-7.0");
+              "suse-7.0", "turbolinux-7.0", "pld-1.0");
 
 $description =<<"end_of_description;";
        Configures all network parameters and interfaces.

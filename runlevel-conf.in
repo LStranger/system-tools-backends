@@ -6,6 +6,7 @@
 # Copyright (C) 2002 Ximian, Inc.
 #
 # Authors: Carlos Garnacho Parro <garparr@teleline.es>
+#          Grzegorz Golawski <grzegol@pld.org.pl> (PLD Support)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -48,7 +49,7 @@ $version = "___version___";
 
               "debian-2.2", "debian-woody", "debian-sarge",
 
-              "suse-7.0", "turbolinux-7.0");
+              "suse-7.0", "turbolinux-7.0", "pld-1.0");
 
 $description =<<"end_of_description;";
        Configures which services are to be started or stopped at which runlevels

@@ -67,7 +67,9 @@ sub gst_service_sysv_get_paths
 
        "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d", "../"],
 
-       "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"]
+       "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+
+       "pld-1.0"      => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"]
        );
   my $res;
 
@@ -101,7 +103,9 @@ sub gst_service_sysv_get_runlevels
 
        "suse-7.0"       => [3, 5],
 
-       "turbolinux-7.0" => [3, 5]
+       "turbolinux-7.0" => [3, 5],
+
+       "pld-1.0"        => [3, 5]
        );
   my $res;
 

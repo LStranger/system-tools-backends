@@ -1,3 +1,11 @@
+2003-05-01  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* boot-conf.in: removed @platform, this isn't neccesary
+	* network-conf.in, network.pl.in, platform.pl.in, runlevel-conf.in,
+	service.pl.in, time-conf.in, users-conf.in: applied patch from 
+	Grzegorz Golawski <grzegol@pld.org.pl>, this adds support for the PLD
+	distribution
+
 2003-04-25  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* boot-grub.pl.in, boot-lilo.pl.in, boot.pl.in: added support for
