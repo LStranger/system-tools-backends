@@ -30,6 +30,7 @@ AC_SUBST(scriptsdir)
 
 AC_OUTPUT([
 Makefile
+files/Makefile
 ])
 
 

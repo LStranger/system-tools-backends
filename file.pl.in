@@ -36,7 +36,7 @@ $XST_FILE_WRITE = 2;
 
 sub xst_file_get_base_path
 {
-  return "/var/cache/ximian-setup-tools";
+  return "/var/cache/setup-tool-backends";
 }
 
 
