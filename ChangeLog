@@ -1,3 +1,8 @@
+2004-04-20  Carlos García Campos <elkalmail@yahoo.es>
+
+	* disks-conf.in: declare @tracks variable with "my" to set local scope
+	for it
+	
 2004-04-20  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* service.pl.in: added support for saving services config in

@@ -1437,7 +1437,9 @@ sub get_cdrom_disc_info
    } else {
       ($start, $end) = unpack "CC", $tochdr;
    }
-  
+
+   my @tracks;
+
    for (my $i = $start; $i <= $end; $i++ ) {
       push @tracks, $i;
    }
