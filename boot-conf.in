@@ -273,7 +273,7 @@ sub set
   
   &xst_begin ();
 
-  $xst_input_file = "aaa";
+# $xst_input_file = "aaa";
   $hash = &xml_parse ();
 
   &xst_boot_conf_set ($hash);
