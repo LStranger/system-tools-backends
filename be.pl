@@ -3,7 +3,7 @@
 
 # Common stuff for the helix-setup-tools backends.
 #
-# Copyright (C) 2000 Helix Code, Inc.
+# Copyright (C) 2000-2001 Ximian, Inc.
 #
 # Authors: Hans Petter Jansson <hpj@helixcode.com>
 #          Arturo Espinosa <arturo@helixcode.com>
