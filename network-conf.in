@@ -49,7 +49,7 @@ require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/network.pl";
 
 
-$xst_prefix = "/tmp/y";
+#$xst_prefix = "/tmp/y";
 
 # --- Tool information --- #
 
