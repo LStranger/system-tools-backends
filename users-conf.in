@@ -54,7 +54,7 @@ require "___scriptsdir___/replace.pl";
 
 $progress_max = 4;
 
-$DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
+$DEBUG = 3; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
 $TEST_NIS = 0;
 
 # --- Tool information --- #
@@ -412,7 +412,7 @@ sub write_logindefs
 
   if ($file eq "") 
   { 
-    &xst_report_warning (99, "Could not read \[@login_defs_names\]");
+    &xst_report ("file_open_read_failed", join (", ", @login_defs_names));
     return;
   }
   
