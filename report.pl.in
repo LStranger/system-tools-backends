@@ -125,14 +125,32 @@ sub xst_report_leave
 }
 
 
+# Escapes a report using the report line format.
+sub xst_report_escape
+{
+  my ($args) = @_;
+  my ($arg);
+
+  foreach $arg (@$args)
+  {
+    $arg =~ s/\\/\\\\/g;
+    $arg =~ s/::/\\::/g;
+  }
+}
+
+
 $xst_report_level = 0;
 $xst_report_started = 0;
 
 sub xst_report
 {
-  my ($key, @args) = @_;
-  my ($major, $minor, $str, $format, $res);
+  my (@args) = @_;
+  my ($key, $major, $minor, $str, $format, $res);
   my $report_message = &xst_report_table ();
+
+  &xst_report_escape (\@args);
+
+  $key = shift @args;
 
   if (! (exists $$report_message{$key}))
   {

@@ -472,6 +472,27 @@ sub xst_directive_fail
   &xst_debug_close_all ();
 }
 
+# This sepparates a line in args by the directive line format,
+# doing the necessary escape sequence manipulations.
+sub xst_directive_parse_line
+{
+  my ($line) = @_;
+  my ($arg, @args);
+  
+  chomp $line;
+  $line =~ s/\\\\/___escape\\___/g;
+  $line =~ s/\\::/___escape2:___/g;
+  @args = split ("::", $line);
+  
+  foreach $arg (@args)
+  {
+    $arg =~ s/___escape2:___/::/g;
+    $arg =~ s/___escape\\___/\\/g;
+  }
+
+  return @args;
+}
+
 # Normal use for the direcives hash in the backends is:
 #
 # "name" => [ \&sub, [ "arg1", "arg2", "arg3",... "argN" ], "comment" ]
@@ -510,12 +531,13 @@ sub xst_directive_fail
 #  <var-arguments>morefiles</var-arguments>
 # </directive>
 
+
 sub xst_directive_run
 {
   my ($tool, $line) = @_;
   my ($key, @args, $directives, $proc, $reqargs);
 
-  ($key, @args) = split ("::", $line);
+  ($key, @args) = &xst_directive_parse_line ($line);
   $directives = $$tool{"directives"};
 
   &xst_report_begin ();
@@ -581,7 +603,6 @@ sub xst_run
 
   while ($line = <STDIN>)
   {
-    chomp $line;
     &xst_directive_run ($tool, $line);
   }
 }

@@ -253,6 +253,13 @@ sub xst_platform_guess
                );
   my $plat;
 
+  # Fool-the-backend hack.
+  if (exists $ENV{"XST_DIST"})
+  {
+    $$tool{"platform"} = $xst_dist = $ENV{"XST_DIST"};
+    return;
+  }
+
   foreach $plat (keys %check)
   {
     if ($$tool{"system"} =~ /$plat/)

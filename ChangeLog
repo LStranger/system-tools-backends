@@ -1,5 +1,14 @@
 2001-10-16  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* platform.pl.in (xst_platform_guess): Take the distro from the
+	environment.
+
+	* report.pl.in (xst_report_escape): Escapes a report using the report
+	line format.
+
+	* general.pl.in (xst_directive_parse_line): This sepparates a line
+	in args by the directive line format.
+
 	* report.pl.in (xst_report): removed platform_list report.
 	Changed platform_success format.
 
