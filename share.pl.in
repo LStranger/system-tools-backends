@@ -326,4 +326,40 @@ sub xst_share_parse_nfs_exports
   return $table;
 }
 
+# --- Replacing --- #
+
+sub xst_share_replace_nfs_exports
+{
+  my ($file, $table) = @_;
+  my $outfd;
+
+  # Find the file.
+
+  $outfd = &xst_file_open_write_from_names($file);
+  if (not $outfd) { return; }
+
+  # We rewrite everything, as we have complete command of the things to go
+  # in this file.
+
+  for $export (@$table)
+  {
+    print $outfd &xst_share_nfs_info_get_point ($export);
+
+    my $client_table = &xst_share_nfs_info_get_client_table ($export);
+    for $client (@$client_table)
+    {
+      print $outfd " " . &xst_share_nfs_client_info_get_pattern ($client);
+
+      if (&xst_share_nfs_client_info_get_write ($client))
+      {
+        print $outfd "(rw)";
+      }
+
+      print $outfd "\n";
+    }
+  }
+  
+  close $outfd;
+}
+
 1;

@@ -1,5 +1,9 @@
 2001-05-15  Hans Petter Jansson  <hpj@ximian.com>
 
+	* share.pl.in (xst_share_replace_nfs_exports): Implement.
+
+2001-05-15  Hans Petter Jansson  <hpj@ximian.com>
+
 	* share.pl.in (xst_share_smb_info_new): Implement.
 	  (xst_share_smb_info_set): Implement.
 	  (xst_share_smb_info_get_point): Implement.
