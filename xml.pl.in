@@ -185,8 +185,8 @@ sub xst_xml_quote
     
     for (@xe = @xst_xml_entities; @xe && !$joined; )
     {
-	 if ($xe[1] eq $clist[0]) { $out = join('', $out, $xe[0]); $joined = 1; }
-	 shift @xe; shift @xe;
+      if ($xe[1] eq $clist[0]) { $out = join('', $out, $xe[0]); $joined = 1; }
+      shift @xe; shift @xe;
     }
 	
     if (!$joined) { $out = join('', $out, $clist[0]); }
