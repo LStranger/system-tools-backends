@@ -1,5 +1,5 @@
 # Norwegian translations for setup-tools-backends package.
-# Copyright (C) 2004 THE PACKAGE'S COPYRIGHT HOLDER
+# Copyright (C) 2004
 # This file is distributed under the same license as the setup-tools-backends package.
 # Kjartan Maraas <kmaraas@gnome.org>, 2004.
 #
@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: system-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-01-14 09:28+0100\n"
-"PO-Revision-Date: 2004-01-14 17:45+0100\n"
+"POT-Creation-Date: 2004-07-31 10:54+0200\n"
+"PO-Revision-Date: 2004-07-31 11:05+0200\n"
 "Last-Translator: Kjartan Maraas <kmaraas@gnome.org>\n"
 "Language-Team: no_NO <i18n-nb@lister.ping.uio.no>\n"
 "MIME-Version: 1.0\n"
@@ -16,31 +16,44 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
+#. please, keep this list sorted
+#. service => [long_name, description]
 #: service-list.pl.in:36
+msgid "ACPI event handler"
+msgstr "Håndterer for ACPI-hendelser"
+
+#: service-list.pl.in:36
+msgid ""
+"Notifies user-space programs of ACPI events: executes arbitrary commands in "
+"response to ACPI events such as power buttons."
+msgstr ""
+
+#: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
 msgstr "Avansert Linux lydarkitektur"
 
-#: service-list.pl.in:37 service-list.pl.in:61
+#: service-list.pl.in:38 service-list.pl.in:70
 msgid "web server"
 msgstr "webtjener"
 
-#: service-list.pl.in:37 service-list.pl.in:61
-msgid "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+#: service-list.pl.in:38 service-list.pl.in:70
+msgid ""
+"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr "Apache er en webtjener. Den brukes til å tilby HTML-filer og CGI."
 
-#: service-list.pl.in:38
+#: service-list.pl.in:39
 msgid "Run missed scheduled jobs at startup"
 msgstr "Kjør planlagte jobber som ikke har kjørt ved oppstart"
 
-#: service-list.pl.in:38
+#: service-list.pl.in:39
 msgid "Run cron jobs that were left out due to downtime"
 msgstr "Kjør cron-jobber som ble utelatt pga nedetid"
 
-#: service-list.pl.in:39
+#: service-list.pl.in:40
 msgid "Automatic power management daemon"
 msgstr "Daemon for automatisk strømstyring"
 
-#: service-list.pl.in:39
+#: service-list.pl.in:40
 msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
@@ -48,26 +61,44 @@ msgstr ""
 "apmd bruks til å overvåke batteristatus og logger denne via syslog(8). Den "
 "kan også brukes til å stenge ned maskinen når batterinivået er lavt."
 
-#: service-list.pl.in:40
+#: service-list.pl.in:41
 msgid "Runs a command at a given time"
 msgstr "Kjører en kommando ved en gitt tid"
 
-#: service-list.pl.in:40
+#: service-list.pl.in:41
 #, fuzzy
 msgid ""
 "Runs commands scheduled by the at command at the time specified when at was "
 "run, and runs batch commands when the load average is low enough."
 msgstr "ganger tid og er."
 
-#: service-list.pl.in:41
+#: service-list.pl.in:42
+msgid "Audio mixer"
+msgstr "Lydmikser"
+
+#: service-list.pl.in:42
+msgid "This program adjusts the settings of an audio mixing device"
+msgstr ""
+
+#: service-list.pl.in:43
 msgid "BinFormat Support"
 msgstr "BinFormat-støtte"
 
-#: service-list.pl.in:41
+#: service-list.pl.in:43
 msgid "Support for running non ELF binaries on Linux"
 msgstr "Støtte for å kjøre binærfiler av andre format enn ELF på Linux"
 
-#: service-list.pl.in:42
+#: service-list.pl.in:44
+msgid "Boot messages recorder"
+msgstr ""
+
+#: service-list.pl.in:44
+msgid ""
+"Runs in the background and copies all strings sent to the /dev/console "
+"device to a logfile"
+msgstr ""
+
+#: service-list.pl.in:45
 #, fuzzy
 msgid ""
 "An xinetd internal service which generate characters. The xinetd internal "
@@ -76,7 +107,7 @@ msgid ""
 "service."
 msgstr "til er er."
 
-#: service-list.pl.in:43
+#: service-list.pl.in:46
 #, fuzzy
 msgid ""
 "An xinetd internal service which generate characters. The xinetd internal "
@@ -85,16 +116,26 @@ msgid ""
 "service."
 msgstr "til er er."
 
-#: service-list.pl.in:44
-#, fuzzy
-msgid "daemon to execute scheduled commands"
-msgstr "kjør"
+#: service-list.pl.in:47
+msgid "CPU frequency monitor"
+msgstr ""
 
-#: service-list.pl.in:45
+#: service-list.pl.in:47
+msgid ""
+"cpufreqd is used to monitor the status of the battery and adjust the "
+"frequency of the CPU accordingly in order to preserve battery power while "
+"providing optimal performance"
+msgstr ""
+
+#: service-list.pl.in:48 service-list.pl.in:130
+msgid "daemon to execute scheduled commands"
+msgstr "daemon som kjører planlagte oppgaver"
+
+#: service-list.pl.in:49
 msgid "Run scheduled jobs"
 msgstr "Kjør planlagte jobber"
 
-#: service-list.pl.in:45
+#: service-list.pl.in:49
 #, fuzzy
 msgid ""
 "cron is a standard UNIX program that runs user-specified programs at "
@@ -102,11 +143,15 @@ msgid ""
 "UNIX cron, including better security and more powerful configuration options."
 msgstr "er a program a tall av og."
 
-#: service-list.pl.in:46
+#: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
 msgstr "Common Unix Printing System"
 
-#: service-list.pl.in:47
+#: service-list.pl.in:50 service-list.pl.in:51
+msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
+msgstr ""
+
+#: service-list.pl.in:52
 #, fuzzy
 msgid ""
 "An internal xinetd service which gets the current system time then prints it "
@@ -114,7 +159,7 @@ msgid ""
 "version. You must enable xinetd to use this service."
 msgstr "tid tm a er."
 
-#: service-list.pl.in:48
+#: service-list.pl.in:53
 #, fuzzy
 msgid ""
 "An internal xinetd service which gets the current system time then prints it "
@@ -122,83 +167,94 @@ msgid ""
 "version. You must enable xinetd to use this service."
 msgstr "tid tm a er."
 
-#: service-list.pl.in:49 service-list.pl.in:50
+#: service-list.pl.in:54 service-list.pl.in:55
 msgid "Dynamic DNS Client"
 msgstr "Dynamisk DNS-klient"
 
-#: service-list.pl.in:49
-#, fuzzy
+#: service-list.pl.in:54
 msgid "A Dynamic DNS Name service from www.dyndns.org"
-msgstr "A DNS Navn fra"
+msgstr "En dynamisk DNS-navnetjeneste fra www.dyndns.org"
 
-#: service-list.pl.in:50
-#, fuzzy
+#: service-list.pl.in:55
 msgid "A Dynamic DNS Name service from www.dhis.org"
-msgstr "A DNS Navn fra"
+msgstr "En dynamisk DNS-navnetjeneste fra www.dhis.org"
 
-#: service-list.pl.in:51
+#: service-list.pl.in:56
 msgid "Dict Dictionary Server"
 msgstr "Dict ordbok Tjener"
 
-#: service-list.pl.in:52
+#: service-list.pl.in:57
 #, fuzzy
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr "tilbake er."
 
-#: service-list.pl.in:53
+#: service-list.pl.in:58
 #, fuzzy
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr "tilbake er."
 
-#: service-list.pl.in:54
+#: service-list.pl.in:59
+msgid "Sound mixing server"
+msgstr "Tjener for miksing av lyd"
+
+#: service-list.pl.in:59
+msgid "The Enlightened Sound Daemon"
+msgstr "Enlightened Sound Daemon"
+
+#: service-list.pl.in:60
 msgid "Exim SMTP Server"
 msgstr "Exim SMTP-tjener"
 
-#: service-list.pl.in:55
+#: service-list.pl.in:61
 msgid "file alteration monitor"
 msgstr "filendringsmonitor"
 
-#: service-list.pl.in:56
-#, fuzzy
+#: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
-msgstr "er a program på første tid"
+msgstr "Firstboot er en veiviser som kjøres første gang maskinen startes"
 
-#: service-list.pl.in:57
+#: service-list.pl.in:63
+msgid "Text-to-speech system"
+msgstr "Tekst til tale system"
+
+#: service-list.pl.in:63
+msgid "Festival is a general purpose text-to-speech system"
+msgstr "Festival er et generelt tekst-til-tale system"
+
+#: service-list.pl.in:64
 msgid "Mail Fetcher"
 msgstr "E-posthenter"
 
-#: service-list.pl.in:57
-#, fuzzy
+#: service-list.pl.in:64
 msgid "A Mail Fetcher from external Servers"
-msgstr "A E-post fra Tjenere"
+msgstr "Program som henter e-post fra eksterne tjenere"
 
-#: service-list.pl.in:58
+#: service-list.pl.in:65
 msgid "IPv6 Tunnel Broker"
-msgstr ""
+msgstr "Program som forhandler IPv6-tunneler"
 
-#: service-list.pl.in:58
+#: service-list.pl.in:65
 #, fuzzy
 msgid "A IPv6 Dynamic Tunnel Broker"
 msgstr "A"
 
-#: service-list.pl.in:59
+#: service-list.pl.in:66
 msgid "GNOME Display Manager"
 msgstr "GNOME skjermhåndterer"
 
-#: service-list.pl.in:59
-#, fuzzy
+#: service-list.pl.in:66
 msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
-msgstr "GNOME av a."
+msgstr "GDM er GNOME's versjon av et påloggingsvindu."
 
-#: service-list.pl.in:60
+#: service-list.pl.in:67
 msgid "console mouse support"
 msgstr "musstøtte på konsollet"
 
-#: service-list.pl.in:60
+#: service-list.pl.in:67
 #, fuzzy
 msgid ""
 "GPM adds mouse support to text-based Linux applications such the Midnight "
@@ -206,48 +262,78 @@ msgid ""
 "includes support for pop-up menus on the console."
 msgstr "tekst Linux Midnatt klipp ut og lim inn og for opp på."
 
-#: service-list.pl.in:62
+#: service-list.pl.in:68
+msgid "Set hard disk parameters"
+msgstr "Sett parametere for harddisker"
+
+#: service-list.pl.in:68
+msgid ""
+"Provides a interface to various hard disk ioctls supported by the stock "
+"Linux ATA/IDE device driver subsystem."
+msgstr ""
+
+#: service-list.pl.in:69
+msgid "Linux hotplugging support"
+msgstr ""
+
+#: service-list.pl.in:69
+msgid ""
+"hotplug is a program which is used by the kernel to notify user mode "
+"software when some significant (usually hardware-related) events take place. "
+"An example is when a USB or Cardbus device has just been plugged in."
+msgstr ""
+
+#: service-list.pl.in:71
 msgid "internet superserver"
 msgstr ""
 
-#: service-list.pl.in:62
+#: service-list.pl.in:71
 #, fuzzy
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
 msgstr "på."
 
-#: service-list.pl.in:63
-#, fuzzy
+#: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
-msgstr "for og"
+msgstr "administrasjonsverktøy for IPv4 pakkefiltrering og NAT"
 
-#: service-list.pl.in:63
+#: service-list.pl.in:72
 #, fuzzy
 msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
 msgstr "er opp og av IP tm Linux."
 
-#: service-list.pl.in:64
+#: service-list.pl.in:73
 msgid "IrDA stack for Linux"
 msgstr "IrDA-driver for Linux"
 
-#: service-list.pl.in:65
-#, fuzzy
+#: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol"
-msgstr "Internett Nøkkel"
+msgstr "Protokoll for nøkkelutveksling over Internett"
 
-#: service-list.pl.in:65
+#: service-list.pl.in:74
 #, fuzzy
 msgid "The Internet Key Exchange protocol openbsd implementation"
 msgstr "Internett Nøkkel"
 
-#: service-list.pl.in:66
+#: service-list.pl.in:75
 msgid "start and stop ISDN services"
 msgstr "start og stopp ISDN-tjenester"
 
-#: service-list.pl.in:67
+#: service-list.pl.in:76
+msgid "Check and fix joystick device nodes"
+msgstr "Sjekk og fiks enhetsnoder for joystick"
+
+#: service-list.pl.in:76
+msgid ""
+"Runs joystick-device-check.  joystick-device-check is a program which "
+"ensures that the /dev/js* device nodes are correct for the kernel version in "
+"use."
+msgstr ""
+
+#: service-list.pl.in:77
 #, fuzzy
 msgid ""
 "This package loads the selected keyboard map as set in /etc/sysconfig/"
@@ -255,69 +341,100 @@ msgid ""
 "leave this enabled for most machines."
 msgstr "tastatur tm tastatur for."
 
-#: service-list.pl.in:68
+#: service-list.pl.in:78
+msgid "Kernel Log Daemon"
+msgstr "Loggdaemon for kjernen"
+
+#: service-list.pl.in:78
 #, fuzzy
-msgid "klogd is a system daemon which intercepts and logs Linux kernel messages."
+msgid ""
+"klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr "er a og Linux."
 
-#: service-list.pl.in:69
+#: service-list.pl.in:79
 #, fuzzy
-msgid "This runs the hardware probe, and optionally configures changed hardware."
+msgid ""
+"This runs the hardware probe, and optionally configures changed hardware."
 msgstr "og."
 
-#: service-list.pl.in:70 service-list.pl.in:71
+#: service-list.pl.in:80 service-list.pl.in:81
 #, fuzzy
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
 msgstr "er a og rød av"
 
-#: service-list.pl.in:72
+#: service-list.pl.in:82
+msgid "Starts misc programs that should be started"
+msgstr "Starter forskjellige programmer som skal startes"
+
+#: service-list.pl.in:83
 #, fuzzy
 msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr "er skriv ut for lpr er a skriv ut."
 
-#: service-list.pl.in:73
+#: service-list.pl.in:84
+msgid "Create devices"
+msgstr "Opprett enheter"
+
+#: service-list.pl.in:84
+msgid ""
+"Script that will create the devices in /dev used to interface with drivers "
+"in the kernel"
+msgstr ""
+
+#: service-list.pl.in:85
 msgid "Syslog Replacement"
 msgstr "Syslog-erstatning"
 
-#: service-list.pl.in:73
+#: service-list.pl.in:85
 msgid "Modern logging daemon"
 msgstr "Moderne loggdaemon"
 
-#: service-list.pl.in:74
-#, fuzzy
-msgid "tools for managing Linux kernel modules"
-msgstr "for Linux"
+#: service-list.pl.in:86
+msgid "Load kernel modules"
+msgstr ""
 
-#: service-list.pl.in:75
+#: service-list.pl.in:87
+msgid "tools for managing Linux kernel modules"
+msgstr "verktøy for håndtering av kjernemoduler for Linux"
+
+#: service-list.pl.in:88 service-list.pl.in:105
+msgid "database server"
+msgstr "databasetjener"
+
+#: service-list.pl.in:88
+msgid "MySQL, a SQL-based relational database daemon"
+msgstr ""
+
+#: service-list.pl.in:89
 msgid "dns server"
 msgstr "DNS-tjener"
 
-#: service-list.pl.in:75
+#: service-list.pl.in:89
 #, fuzzy
 msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr "BIND er a Domene Navn Tjener DNS er vert IP."
 
-#: service-list.pl.in:76
+#: service-list.pl.in:90
 #, fuzzy
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr "og alle Nettverk Fil System NFS SMB Leder Vinduer og."
 
-#: service-list.pl.in:77
+#: service-list.pl.in:91
 #, fuzzy
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
 msgstr "alle tid."
 
-#: service-list.pl.in:78
+#: service-list.pl.in:92
 #, fuzzy
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
@@ -325,41 +442,71 @@ msgid ""
 "exports file."
 msgstr "NFS er a for fil IP NFS er fil."
 
-#: service-list.pl.in:79
+#: service-list.pl.in:93
 #, fuzzy
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS file locking functionality."
 msgstr "NFS er a for fil IP NFS fil."
 
-#: service-list.pl.in:80
-#, fuzzy
-msgid "ntpd is the NTPv4 daemon."
-msgstr "er."
+#: service-list.pl.in:94
+msgid "Name service cache daemon"
+msgstr ""
 
-#: service-list.pl.in:81
+#: service-list.pl.in:94
+msgid "Daemon that provides a cache for the most common name service requests."
+msgstr ""
+
+#: service-list.pl.in:95
+msgid "Network Time Protocol daemon"
+msgstr "Network Time Protocol-daemon"
+
+#: service-list.pl.in:95
+msgid "ntpd is the NTPv4 daemon."
+msgstr "ntpd er en NTPv4-daemon."
+
+#: service-list.pl.in:96 service-list.pl.in:97
+msgid "Update the system time over the network"
+msgstr "Oppdater systemklokken over nettverket"
+
+#: service-list.pl.in:96 service-list.pl.in:97
+msgid ""
+"Checks the time from a Network Time Protocol (ntp) server and adjusts the "
+"system time accordingly."
+msgstr ""
+
+#: service-list.pl.in:98
+msgid "Network Time Protocol (NTP) server"
+msgstr "Network Time Protocol (NTP)-tjener"
+
+#: service-list.pl.in:98
+msgid ""
+"Daemon which sets and maintains the system time-of-day in synchronism with "
+"Internet standard time servers"
+msgstr ""
+
+#: service-list.pl.in:99
 msgid "HTTP caching proxy"
 msgstr "HTTP-proxy som mellomlagrer data"
 
-#: service-list.pl.in:82
+#: service-list.pl.in:100
 msgid "PCMCIA Services"
 msgstr "PCMCIA-tjenester"
 
-#: service-list.pl.in:83
-#, fuzzy
+#: service-list.pl.in:101
 msgid "Caching-Only DNS Server"
-msgstr "DNS Tjener"
+msgstr "Caching DNS Tjener"
 
-#: service-list.pl.in:84
+#: service-list.pl.in:102
 msgid "IPsec tunnel implementation"
-msgstr ""
+msgstr "IPsec tunnel implementasjon"
 
-#: service-list.pl.in:85
+#: service-list.pl.in:103
 #, fuzzy
 msgid "DARPA port to RPC program number mapper"
 msgstr "program tall"
 
-#: service-list.pl.in:85
+#: service-list.pl.in:103
 #, fuzzy
 msgid ""
 "The portmapper manages RPC connections, which are used by protocols such as "
@@ -367,39 +514,34 @@ msgid ""
 "servers for protocols which make use of the RPC mechanism."
 msgstr "ganger NFS og NIS på for av."
 
-#: service-list.pl.in:86
+#: service-list.pl.in:104
 msgid "Mail Transport Agent"
 msgstr "Tjener for transport av e-post"
 
-#: service-list.pl.in:87
-msgid "database server"
-msgstr "databasetjener"
-
-#: service-list.pl.in:88
-#, fuzzy
+#: service-list.pl.in:106
 msgid "Point to Point Protocol daemon"
-msgstr "Punkt Punkt Protokoll"
+msgstr "Daemon for punkt-til-punkt protokoll"
 
-#: service-list.pl.in:88
+#: service-list.pl.in:106
 #, fuzzy
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
 msgstr "Punkt Punkt Protokoll PPP a for serienummer."
 
-#: service-list.pl.in:89
+#: service-list.pl.in:107
 #, fuzzy
 msgid "Privacy enhancing HTTP Proxy"
 msgstr "Personvern HTTP"
 
-#: service-list.pl.in:90
+#: service-list.pl.in:108
 #, fuzzy
 msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
 msgstr "og for tall."
 
-#: service-list.pl.in:91
+#: service-list.pl.in:109
 #, fuzzy
 msgid ""
 "This scripts assignes raw devices to block devices (such as hard drive "
@@ -408,7 +550,7 @@ msgid ""
 "rawdevices."
 msgstr "er for av opp ganger fil."
 
-#: service-list.pl.in:92
+#: service-list.pl.in:110
 #, fuzzy
 msgid ""
 "This is a daemon which handles the task of connecting periodically to the "
@@ -417,132 +559,145 @@ msgid ""
 "subscribed for."
 msgstr "er a av Rød Nettverk for og er for."
 
-#: service-list.pl.in:93
+#: service-list.pl.in:111 service-list.pl.in:112
 #, fuzzy
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr "er a am."
 
-#: service-list.pl.in:94
+#: service-list.pl.in:112
+msgid "Faster, flexible replacement for rcp"
+msgstr "Raskere og mer fleksibel erstatning for rcp"
+
+#: service-list.pl.in:113
+msgid "A Windows SMB/CIFS fileserver for UNIX"
+msgstr ""
+
+#: service-list.pl.in:113
+msgid ""
+"The Samba software suite is a collection of programs that implements the "
+"Server Message Block protocol for UNIX systems."
+msgstr ""
+
+#: service-list.pl.in:114
 #, fuzzy
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr "er a autentisering på av."
 
-#: service-list.pl.in:95
+#: service-list.pl.in:115
 #, fuzzy
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr "Sendmail er a E-post er program e-post fra."
 
-#: service-list.pl.in:96
+#: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
 
-#: service-list.pl.in:97
+#: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
 msgstr ""
 
-#: service-list.pl.in:98
-#, fuzzy
+#: service-list.pl.in:118
 msgid "get/set serial port information"
-msgstr "serienummer"
+msgstr "hent/sett serieportinformasjon"
 
-#: service-list.pl.in:98
+#: service-list.pl.in:118
 #, fuzzy
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
 msgstr "er a program og med a serienummer."
 
-#: service-list.pl.in:99
+#: service-list.pl.in:119
 #, fuzzy
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr "er a fil."
 
-#: service-list.pl.in:100
+#: service-list.pl.in:120
 #, fuzzy
 msgid "control and monitor storage systems using S.M.A.R.T."
 msgstr "control og S M A R T."
 
-#: service-list.pl.in:101
-#, fuzzy
+#: service-list.pl.in:121
 msgid "Perl-based spam filter using text analysis"
-msgstr "Perl tekst"
+msgstr "Perl-basert filter for søppelpost som bruker tekstanalyse"
 
-#: service-list.pl.in:102
+#: service-list.pl.in:122
 #, fuzzy
 msgid "Simple Network Management Protocol (SNMP) Daemon"
 msgstr "Enkel Nettverk Protokoll"
 
-#: service-list.pl.in:103 service-list.pl.in:104
-#, fuzzy
+#: service-list.pl.in:123 service-list.pl.in:124
 msgid "OpenSSH SSH server"
-msgstr "SSH"
+msgstr "OpenSSH SSH-tjener"
 
-#: service-list.pl.in:103
+#: service-list.pl.in:123
 #, fuzzy
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
 msgstr "er a program for a og for på a."
 
-#: service-list.pl.in:104
+#: service-list.pl.in:124
 msgid "OpenSSH server daemon"
-msgstr ""
+msgstr "OpenSSH-tjener daemon"
 
-#: service-list.pl.in:105
+#: service-list.pl.in:125
 #, fuzzy
 msgid "Linux system logging utilities"
 msgstr "Linux"
 
-#: service-list.pl.in:105
+#: service-list.pl.in:125
 #, fuzzy
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr "for og melding."
 
-#: service-list.pl.in:106
+#: service-list.pl.in:126
 #, fuzzy
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr "Syslog er ganger er a."
 
-#: service-list.pl.in:107
+#: service-list.pl.in:127
 #, fuzzy
 msgid ""
 "An RFC 868 time server. This protocol provides a site-independent, machine "
 "readable date and time. The Time service sends back to the originating "
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
-msgstr "tid a nettsted dato og tid Tid tilbake tid tm sekunder på Januar første er."
+msgstr ""
+"tid a nettsted dato og tid Tid tilbake tid tm sekunder på Januar første er."
 
-#: service-list.pl.in:108
+#: service-list.pl.in:128
 #, fuzzy
 msgid ""
 "An RFC 868 time server. This protocol provides a site-independent, machine "
 "readable date and time. The Time service sends back to the originating "
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
-msgstr "tid a nettsted dato og tid Tid tilbake tid tm sekunder på Januar første er."
+msgstr ""
+"tid a nettsted dato og tid Tid tilbake tid tm sekunder på Januar første er."
 
-#: service-list.pl.in:109
+#: service-list.pl.in:129
 #, fuzzy
 msgid "kernel random number source devices"
 msgstr "tall"
 
-#: service-list.pl.in:109
+#: service-list.pl.in:129
 #, fuzzy
 msgid ""
 "The  random  number  generator  gathers environmental noise from device "
@@ -550,46 +705,57 @@ msgid ""
 "random numbers are created."
 msgstr "tall fra og Fra."
 
-#: service-list.pl.in:110
+#: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
 msgstr "Intel(TM) x86(TM)-basert virtuell maskin"
 
-#: service-list.pl.in:110
+#: service-list.pl.in:131
 msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
 
-#: service-list.pl.in:111
-#, fuzzy
+#: service-list.pl.in:132
 msgid "Web-based administration toolkit"
-msgstr "Nett"
+msgstr "Web-basert administrasjonsverktøy"
 
-#: service-list.pl.in:112
+#: service-list.pl.in:133
+msgid "Name Service Switch daemon for resolving names from NT servers"
+msgstr ""
+
+#: service-list.pl.in:133
 #, fuzzy
 msgid "Starts and stops the Samba winbind daemon"
 msgstr "og Samba"
 
-#: service-list.pl.in:113
+#: service-list.pl.in:134
 #, fuzzy
 msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr "Vinduer ganger på fil"
 
-#: service-list.pl.in:114
-#, fuzzy
-msgid "X font server"
-msgstr "X"
+#: service-list.pl.in:135
+msgid "X Display Manager"
+msgstr "Skjermhåndterer for X"
 
-#: service-list.pl.in:114
+#: service-list.pl.in:135
+#, fuzzy
+msgid "Provides the X equivalent of a \"login:\" prompt."
+msgstr "GNOME av a."
+
+#: service-list.pl.in:136
+msgid "X font server"
+msgstr "Skrifttjener for X"
+
+#: service-list.pl.in:136
 #, fuzzy
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
 msgstr "er X Vindu System X Vindu System."
 
-#: service-list.pl.in:115
+#: service-list.pl.in:137
 #, fuzzy
 msgid ""
 "xinetd is a powerful replacement for inetd. xinetd has access control "
@@ -598,19 +764,30 @@ msgid ""
 "can be started, among other things."
 msgstr "er a for control på tid og på tall av."
 
-#: service.pl.in:169 service.pl.in:174
+#: service.pl.in:208 service.pl.in:213
 msgid "Halting the system"
 msgstr "Stopper systemet"
 
-#: service.pl.in:170 service.pl.in:176
+#: service.pl.in:209 service.pl.in:215
 msgid "Text mode"
 msgstr "Tekstmodus"
 
-#: service.pl.in:171 service.pl.in:175 service.pl.in:179
+#: service.pl.in:210 service.pl.in:214 service.pl.in:223
 msgid "Graphical mode"
 msgstr "Grafisk modus"
 
-#: service.pl.in:172 service.pl.in:177
+#: service.pl.in:211 service.pl.in:216
 msgid "Rebooting the system"
 msgstr "Starter systemet på nytt"
 
+#: service.pl.in:218
+msgid "Starts all system neccesary services"
+msgstr ""
+
+#: service.pl.in:219
+msgid "Default runlevel"
+msgstr ""
+
+#: service.pl.in:220
+msgid "Networkless runlevel"
+msgstr ""
