@@ -5,6 +5,8 @@ dnl ==============================================================
 AC_INIT(system-tools-backends,0.31.0, http://bugzilla.gnome.org/enter_bug.cgi?product=GNOME%20System%20Tools)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
+AC_CONFIG_AUX_DIR([.])
+
 AC_PROG_INTLTOOL([0.21])
 
 dnl ==============================================================
