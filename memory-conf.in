@@ -1,4 +1,5 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
+#-*-perl-*-
 
 # Memory configurator. 
 # Designed to be architecture- and distribution independent.
@@ -30,6 +31,13 @@
 # Running programs affected/used:
 #
 # /sbin/swapon /sbin/swapoff /sbin/mkswap /sbin/fdisk
+
+# --- Common stuff --- #
+
+
+
+require "___scriptsdir___/be.pl";
+
 
 
 # --- Usage text --- #
@@ -86,9 +94,6 @@ End_of_Usage;
 
 $version = "0.1.0";
 
-$progress_max = 3;
-
-
 # --- System config file locations --- #
 
 # We list each config file type with as many alternate locations as possible.
@@ -104,451 +109,8 @@ $progress_max = 3;
 @cf_partition = ();
 @cf_memory = ();
 
-# --- Operation modifying variables --- #
-
-# Variables are set to their default value, which may be overridden by user. Note
-# that a $prefix of "" will cause the configurator to use '/' as the base path,
-# and disables creation of directories and writing of previously non-existent
-# files.
-
-$prefix = "";
-$verbose = 0;
-$progress = 0;
-$do_immediate = 1;
-
-
-# --- Progress printing --- #
-
-
-sub print_progress
-{
-  if ($progress) { print "."; }
-}
-
-# --- XML print formatting  --- #
-
-# enter: Call after entering a block. Increases indent level.
-# leave: Call before leaving a block. Decreases indent level.
-# indent: Call before printing a line. Indents to current level. 
-# vspace: Ensures there is a vertical space of one and only one line.
-
-$indent_level = 0;
-$have_vspace = 0;
-
-sub enter  { $indent_level += 2; }
-sub leave  { $indent_level -= 2; }
-sub indent { for ($i = 0; $i < $indent_level; $i++) { print " "; } $have_vspace = 0; }
-sub vspace { if (not $have_vspace) { print "\n"; $have_vspace = 1; } }
-
 
 # --- XML scanning --- #
-
-# This code tries to replace XML::Parser scanning from stdin in tree mode.
-
-
-@xml_scan_list;
-
-
-sub xml_scan_make_kid_array
-  {
-    my %hash = {};
-    my @sublist;
-    
-    @attr = @_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z]+)/g;
-    %hash = @attr;
-    
-    push(@sublist, \%hash);
-    return(\@sublist);
-  }
-
-
-sub xml_scan_recurse;
-
-sub xml_scan_recurse
-  {
-    my @list;
-    if (@_) { @list = @_[0]->[0]; }
-    
-    while (@xml_scan_list)
-      {
-	$el = @xml_scan_list[0]; shift @xml_scan_list;
-	
-	if ((not $el) || $el =~ /^\<[!?].*\>$/s) { next; } # Empty strings, PI and DTD must go.
-	
-	if ($el =~ /^\<.*\/\>$/s) # Empty.
-	  {
-	    $el =~ /^\<([a-zA-Z]+).*\/\>$/s;
-	    push(@list, $1);
-	    push(@list, xml_scan_make_kid_array($el));
-	  }
-	elsif ($el =~ /^\<\/.*\>$/s) # End.
-	  {
-	    last;
-	  }
-	elsif ($el =~ /^\<.*\>$/s) # Start.
-	  {
-	    $el =~ /^\<([a-zA-Z]+).*\>$/s;
-	    push(@list, $1);
-	    $sublist = xml_scan_make_kid_array($el);
-	    push(@list, xml_scan_recurse($sublist));
-	    next;
-	  }
-	elsif ($el ne "")	# PCDATA.
-	  {
-	    push(@list, 0);
-	    push(@list, "$el");
-	  }
-      }
-    
-    return(\@list);
-  }
-
-
-sub xml_scan
-  {
-    my $doc; my @tree;
-    read STDIN, $doc, 512000;	# Read in document (FIXME: ugly).
-print STDERR $doc if $verbose;
-    @xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
-    
-    $tree = xml_scan_recurse;
-    
-    return($tree);
-    
-    #  $" = "\n";
-    #  print "@list\n";
-  }
-
-
-@xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"' );
-
-sub xml_entities_to_plain
-  {
-    my $in = @_[0];
-    my $out = "";
-    my @xe;
-    
-    $in = $$in;
-    
-    my @elist = ($in =~ /([^&]*)(\&[a-zA-Z]+\;)?/mg); # text, entity, text, entity, ...
-    
-    while (@elist)
-      {
-	# Join text.
-	
-	$out = join('', $out, @elist[0]);
-	shift @elist;
-	
-	# Find entity and join its text equivalent.
-	# Unknown entities are simply removed.
-	
-	for (@xe = @xml_entities; @xe; )
-	  {
-	    if (@xe[0] eq @elist[0]) { $out = join('', $out, @xe[1]); last; }
-	    shift @xe; shift @xe;
-	  }
-	
-	shift @elist;
-      }
-    
-    return($out);
-  }
-
-
-sub xml_plain_to_entities
-  {
-    my $in = @_[0];
-    my $out = "";
-    my @xe;
-    my $joined = 0;
-    
-    $in = $$in;
-    
-    my @clist = split(//, $in);
-    
-    while (@clist)
-      {
-	# Find character and join its entity equivalent.
-	# If none found, simply join the character.
-	
-	$joined = 0;		# Cumbersome.
-	
-	for (@xe = @xml_entities; @xe && !$joined; )
-	  {
-	    if (@xe[1] eq @clist[0]) { $out = join('', $out, @xe[0]); $joined = 1; }
-	    shift @xe; shift @xe;
-	  }
-	
-	if (!$joined) { $out = join('', $out, @clist[0]); }
-	shift @clist;
-      }
-    
-    return($out);
-  }
-
-
-# --- String and array manipulation --- #
-
-# Boolean/strings conversion.
-
-sub read_boolean
-  {
-    if (@_[0] eq "true") { return(1); }
-    elsif (@_[0] eq "yes") { return(1); }
-    return(0);
-  }
-
-sub print_boolean_yesno
-  {
-    if (@_[0] == 1) { return("yes"); }
-    return("no");
-  }
-
-sub print_boolean_truefalse
-  {
-    if (@_[0] == 1) { return("true"); }
-    return("false");
-  }
-
-
-# Pushes a value to an array, only if it's not already in there.
-# I'm sure there's a smarter way to do this. Should only be used for small lists,
-# as it's O(N^2). Larger lists with unique members should use a hash.
-
-sub push_unique
-  {
-    my $arr = @_[0];
-    my $found;
-    my $i;
-    
-    # Go through all elements in pushed list.
-    
-    for ($i = 1; @_[$i]; $i++)
-      {
-	# Compare against all elements in destination array.
-	
-	$found = "";
-	for $elem (@$arr)
-	  {
-	    if ($elem eq @_[$i]) { $found = $elem; last; }
-	  }
-	
-	if ($found eq "") { push(@$arr, @_[$i]); }
-      }
-  }
-
-
-sub is_line_comment_start
-  {
-    if (@_[0] =~ /^\#/) { return(1); }
-    return(0);
-  }
-
-
-# --- File operations --- #
-
-
-sub open_read_from_names
-  {
-    local *FILE;
-    my $fname = "";
-    
-    for $name (@_)
-      {
-	if (open(FILE, "$prefix/$name")) { $fname = $name; last; }
-      }
-    
-    if ($verbose)
-      {
-	(my $fullname = "$prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
-
-	if ($fname ne "") 
-	  { 
-	    print STDERR "Reading options from \"$fullname\".\n"; 
-	  }
-	else 
-	  { 
-	    print STDERR "Could not read \[@_\].\n"; 
-	  }
-      }
-    
-    return *FILE;
-  }
-
-
-sub open_write_from_names
-  {
-    local *FILE;
-    my $name;
-    my $fullname;
-    
-    # Find out where it lives.
-    
-    for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
-    
-    if ($name eq "")
-      {
-	# If we couldn't locate the file, and have no prefix, give up.
-	
-	# If we have a prefix, but couldn't locate the file relative to '/',
-	# take the first name in the array and let that be created in $prefix.
-	
-	if ($prefix eq "")
-	  {
-	    if ($verbose) { print STDERR "No file to replace: \[@_\].\n"; }
-	    return(0);
-	  }
-	else
-	  {
-	    $name = @_[0];
-	    if ($verbose)
-	      {
-		(my $fullname = "$prefix/$name") =~ tr/\//\//s;
-		print STDERR "Could not find \[@_\]. Writing to \"$fullname\".\n";
-	      }
-	  }
-      }
-    elsif ($verbose)
-      {
-	(my $fullname = "$prefix/$name") =~ tr/\//\//s;
-	print STDERR "Found \"$name\". Writing to \"$fullname\".\n";
-      }
-    
-    ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-      create_path($name);
-    
-    # Make a backup if the file already exists - if the user specified a prefix,
-    # it might not.
-    
-    if (stat($name))
-      {
-	# NOTE: Might not work everywhere. Might be unsafe if the user is allowed
-	# to specify a $name list somehow, in the future.
-	
-	system("cp $name $name.confsave >/dev/null 2>/dev/null");
-      }
-    
-    # Truncate and return filehandle.
-    
-    if (!open(FILE, ">$name") && $verbose)
-      {
-	print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
-      }
-    
-    return *FILE;
-  }
-
-
-sub open_filter_write_from_names
-  {
-    local *INFILE;
-    local *OUTFILE;
-    my $name;
-    
-    # Find out where it lives.
-    
-    for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
-    
-    if ($name eq "")
-      {
-	# If we couldn't locate the file, and have no prefix, give up.
-	
-	# If we have a prefix, but couldn't locate the file relative to '/',
-	# take the first name in the array and let that be created in $prefix.
-	
-	if ($prefix eq "")
-	  {
-	    if ($verbose) { print STDERR "No file to patch: \[@_\].\n"; }
-	    return(0, 0);
-	  }
-	else
-	  {
-	    $name = @_[0];
-	    if ($verbose)
-	      {
-		(my $fullname = "$prefix/$name") =~ tr/\//\//s;
-		print STDERR "Could not find \[@_\]. Patching \"$fullname\".\n";
-	      }
-	  }
-      }
-    elsif ($verbose)
-      {
-	(my $fullname = "$prefix/$name") =~ tr/\//\//s;
-	print STDERR "Found \"$name\". Patching \"$fullname\".\n";
-      }
-    
-    ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-      create_path($name);
-    
-    # Make a backup if the file already exists - if the user specified a prefix,
-    # it might not.
-    
-    if (stat($name))
-      {
-	# NOTE: Might not work everywhere. Might be unsafe if the user is allowed
-	# to specify a $name list somehow, in the future.
-	
-	system("cp $name $name.confsave >/dev/null 2>/dev/null");
-      }
-    
-    # Return filehandles. Backup file is used as filter input. It might be
-    # invalid, in which case the caller should just write to OUTFILE without
-    # bothering with INFILE filtering.
-    
-    open(INFILE, "$name.confsave");
-    
-    if (!open(OUTFILE, ">$name") && $verbose)
-      {
-	print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
-      }
-    
-    return(*INFILE, *OUTFILE);
-  }
-
-
-sub create_path
-  {
-    my $path;
-    
-    $path = @_[0];
-    my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
-    
-    for ($path = ""; @pelem; shift @pelem)
-      {
-	if (@pelem[1] ne "")
-	  {
-	    $path = "$path@pelem[0]";
-	    mkdir($path, 0770);
-	    $path = "$path/";
-	  }
-      }
-  }
-
-
-# --- XML parsing --- #
-
-
-# Scan XML from standard input to an internal tree.
-
-sub xml_parse
-  {
-    # Scan XML to tree.
-    
-    $tree = xml_scan;
-    
-    # Walk the tree recursively and extract configuration parameters.
-    # This is the top level - find and enter the "memory" tag.
-    
-    while (@$tree)
-      {
-	if (@$tree[0] eq "memory") { xml_parse_memory(@$tree[1]); }
-	
-	shift @$tree;
-	shift @$tree;
-      }
-    
-    return($tree);
-  }
 
 sub xml_parse_memory
   {
@@ -560,7 +122,7 @@ sub xml_parse_memory
       {
 	if (@$tree[0] eq "swapdev") 
 	  { 
-	    push @cf_swapinfo, xml_parse_swapinfo (@$tree[1]); 
+	    push @cf_swapinfo, be_xml_parse_swapinfo (@$tree[1]); 
 	  }
 	
 	shift @$tree;
@@ -583,7 +145,7 @@ sub xml_parse_swapinfo
       {
 	if (@$tree[0] eq 'device') 
 	  { 
-	    $entry->{device} = xml_get_word (@$tree[1]);
+	    $entry->{device} = be_xml_get_word (@$tree[1]);
 	  }
 	elsif (@$tree[0] eq 'enabled') 
 	  {
@@ -592,11 +154,11 @@ sub xml_parse_swapinfo
 	  }
 	elsif (@$tree[0] eq 'priority') 
 	  { 
-	    $entry->{priority} = xml_get_word (@$tree[1]);
+	    $entry->{priority} = be_xml_get_word (@$tree[1]);
 	  }
 	elsif (@$tree[0] eq 'size') 
 	  { 
-	    $entry->{size} = xml_get_size (@$tree[1]);
+	    $entry->{size} = be_xml_get_size (@$tree[1]);
 	  }
 	elsif (@$tree[0] eq 'isfile') 
 	  { 
@@ -615,85 +177,6 @@ sub xml_parse_swapinfo
 
     return $entry;
   }
-
-# Compresses node into a word and returns it.
-
-sub xml_get_word
-  {
-    my $tree = @_[0];
-    
-    shift @$tree;		# Skip attributes.
-    
-    while (@$tree)
-      {
-	if (@$tree[0] == 0)
-	  {
-	    my $retval;
-	    
-	    ($retval = @$tree[1]) =~ tr/ \n\r\t\f//d;
-	    $retval = xml_entities_to_plain(\$retval);
-	    return($retval);
-	  }
-	
-	shift @$tree;
-	shift @$tree;
-      }
-    
-    return("");
-  }
-
-# Compresses node into a size and returns it.
-
-sub xml_get_size
-  {
-    my $tree = @_[0];
-
-    shift @$tree;		# Skip attributes.
-
-    while (@$tree)
-      {
-        if (@$tree[0] == 0)
-          {
-            my $retval;
-
-            ($retval = @$tree[1]) =~ tr/ \n\r\t\f//d;
-            $retval = xml_entities_to_plain(\$retval);
-            if ($retval =~ /Mb$/)
-              {
-                $retval =~ tr/ Mb//d; 
-                $retval *= 1024; }
-            return($retval);
-          }
-
-        shift @$tree;
-        shift @$tree;
-      }
-
-    return("");
-  }
-
-# Replaces misc. whitespace with spaces and returns text.
-
-sub xml_get_text
-  {
-    my $tree = @_[0];
-    
-    shift @$tree;		# Skip attributes.
-    
-    while (@$tree)
-      {
-	if (@$tree[0] = 0)
-	  {
-	    ($retval = @$tree[1]) =~ tr/\n\r\t\f/    /;
-	    $retval = xml_entities_to_plain(\$retval);
-	    return($retval);
-	  }
-	
-	shift @$tree;
-	shift @$tree;
-      }
-  }
-
 
 # --- XML printing --- #
 
@@ -727,15 +210,15 @@ sub xml_print
       indent; print "<swapdev>\n";
       indent; indent; print "<device>$entry->{device}</device>\n";
       indent; indent; print "<enabled state='", 
-                            print_boolean_yesno ($entry->{enabled}), 
+                            be_print_boolean_yesno ($entry->{enabled}), 
                             "'/>\n";
       indent; indent; print "<priority>$entry->{priority}</priority>\n";
       indent; indent; print "<isfile state='",
-                            print_boolean_truefalse ($entry->{is_file}),
+                            be_print_boolean_truefalse ($entry->{is_file}),
                             "'/>\n";
       indent; indent; print "<size>$entry->{size}</size>\n";
       indent; indent; print "<isnew state='",
-                            print_boolean_truefalse ($entry->{is_new}),
+                            be_print_boolean_truefalse ($entry->{is_new}),
                             "'/>\n";
       indent; print "</swapdev>\n\n";
     }
@@ -800,7 +283,7 @@ sub get_fdisk
   {
     my $disk, $device, $point, $fs, $options, $check, $size, $bootable;
     
-    if ($verbose) { print STDERR "Looking for partitions on $dev.\n"; }
+    if ($be_verbose) { print STDERR "Looking for partitions on $dev.\n"; }
 
     open(FDISK_HD, "$fdisk_tool -l $dev 2>/dev/null |");
     while (<FDISK_HD>)
@@ -832,7 +315,7 @@ sub get_fdisk
     }
     close(FDISK_HD);
 
-    if ($verbose) { print STDERR "Querying size of $dev.\n"; }
+    if ($be_verbose) { print STDERR "Querying size of $dev.\n"; }
 
 #    open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
 #    ($size) = (<FDISK_HD> =~ /([0-9]+)/);
@@ -879,7 +362,7 @@ sub get_swap_entries
   {
     local *FSTAB_FILE;
 
-    *FSTAB_FILE = open_read_from_names (@fstab_names);
+    *FSTAB_FILE = be_open_read_from_names (@fstab_names);
 
     if (not FSTAB_FILE) 
       {
@@ -899,7 +382,7 @@ sub get_swap_entries
 
 	next if $type ne 'swap';
 
-	if ($verbose) { print STDERR "Found swap entry:\n$_"; }
+	if ($be_verbose) { print STDERR "Found swap entry:\n$_"; }
 
 	if ($device =~ /^#(.*)/)
 	  {
@@ -939,21 +422,21 @@ sub get_swap_entries
 
 sub get
 {
-    if ($progress) { $| = 1; print $progress_max . "\n"; }
+    if ($be_progress) { $| = 1; print $progress_max . "\n"; }
 
-    if ($verbose) 
+    if ($be_verbose) 
       { 
 	print STDERR "Getting system configuration, generating XML output.\n";
       }
     
-    if ($verbose) { print STDERR "Getting swap entries.\n"; }
+    if ($be_verbose) { print STDERR "Getting swap entries.\n"; }
 
     get_memory; print_progress;
     get_fdisk;  print_progress;
     get_swap_entries; print_progress;
     
-    if ($verbose) { print STDERR "Printing XML.\n"; }
-    if ($progress) { print "\n"; }
+    if ($be_verbose) { print STDERR "Printing XML.\n"; }
+    if ($be_progress) { print "\n"; }
     xml_print;
   }
 
@@ -1044,17 +527,17 @@ sub set_swap_entries
 
 sub set
   {
-    if ($verbose) 
+    if ($be_verbose) 
       { 
 	print STDERR "Setting system configuration from XML input.\n"; 
       }
 
-    if ($verbose) { print STDERR "Parsing XML.\n"; }
-    xml_parse;
+    if ($be_verbose) { print STDERR "Parsing XML.\n"; }
+    be_xml_parse;
     
-    if ($do_immediate)
+    if ($be_do_immediate)
       {
-	if ($verbose) 
+	if ($be_verbose) 
 	  { 
 	    print STDERR 
 	      "Changing running configuration via local utilities.\n"; 
@@ -1070,49 +553,33 @@ sub set
 
 sub filter
   {
-    xml_parse;
+    be_xml_parse;
     xml_print;
   }
 
 
 # --- Main --- #
 
-$operation = "";		# Major operation user wants to perform. [get | set | filter]
-
-
-sub set_operation
-  {
-    if ($operation ne "")
-      {
-	print STDERR "Error: You may specify only one major operation.\n\n";
-	print STDERR $Usage;
-	exit(1);
-      }
-    
-    $operation = @_[0];
-  }
-
-
 # Process options.
 
 while (@ARGV)
   {
-    if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { set_operation("get"); }
-    elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { set_operation("set"); }
-    elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { set_operation("filter"); }
+    if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { be_set_operation("get"); }
+    elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { be_set_operation("set"); }
+    elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { be_set_operation("filter"); }
     elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
     elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
     elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
       {
-	if ($prefix ne "")
+	if ($be_prefix ne "")
 	  {
 	    print STDERR "Error: You may specify --prefix only once.\n\n";
 	    print STDERR $Usage; exit(1);
 	  }
 	
-	$prefix = @ARGV[1];
+	$be_prefix = @ARGV[1];
 	
-	if ($prefix eq "")
+	if ($be_prefix eq "")
 	  {
 	    print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
 	    print STDERR $Usage; exit(1);
@@ -1120,9 +587,9 @@ while (@ARGV)
 	
 	shift @ARGV;		# For the argument.
       }
-    elsif (@ARGV[0] eq "--disable-immediate")           { $do_immediate = 0; }
-    elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $verbose = 1; }
-    elsif (@ARGV[0] eq "--progress")                    { $progress = 1; }
+    elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+    elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
+    elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
     else
       {
 	print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
@@ -1135,9 +602,9 @@ while (@ARGV)
 
 # Do our thing.
 
-if    ($operation eq "get")    { get; }
-elsif ($operation eq "set")    { set; }
-elsif ($operation eq "filter") { filter; }
+if    ($be_operation eq "get")    { get; }
+elsif ($be_operation eq "set")    { set; }
+elsif ($be_operation eq "filter") { filter; }
 else
   {
     print STDERR "Error: No operation specified.\n\n";

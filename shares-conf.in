@@ -1,0 +1,716 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+
+# Simple shares configurator. Designed to be architecture- and distribution independent.
+#
+# Version 0.1.0 - copyright (C) 2000 Helix Code, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@helixcode.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# WARNING: Works with Red Hat (and probably most derivates) and SuSE.
+# You need to have Samba installed. We're more than happy to receive patches
+# for other distributions.
+
+# Configuration files affected:
+#
+# /etc/sysconfig/network
+# /etc/sysconfig/network-scripts/ifcfg-*
+# /etc/rc.config
+# /etc/fstab
+# /etc/smb.conf
+
+# Running programs affected/used:
+#
+# ifconfig
+# ping
+# showmount
+# nmblookup
+# smbclient
+
+
+
+require "___scriptsdir___/be.pl";
+
+
+
+# --- Usage text --- #
+
+my $Usage =<<"End_of_Usage;";
+Usage: shares-conf <--get | --set | --filter | --help>
+                   [--prefix <location>] [--disable-immediate]
+                   [--verbose] [--progress]
+
+       Major operations (specify one of these):
+
+       -g --get      Prints the current shares configuration to
+                     standard output, as as standalone XML document. The
+                     configuration is read from the host\'s system config
+                     files.
+
+       -s --set      Updates the system shares configuration from
+                     a standalone XML document read from standard input.
+                     The format is the same as for the document generated
+                     with --get.
+
+       -f --filter   Reads XML configuration from standard input, parses it,
+                     and writes the configurator\'s impression of it back to
+                     standard output. Good for debugging and parsing tests.
+
+       -h --help     Prints this page to standard output.
+
+          --version  Prints version information to standard output.
+
+       Modifiers (specify any combination of these):
+
+       -p --prefix <location>  Specifies a directory prefix where the
+                     configuration is looked for or stored. When storing
+                     (with --set), directories and files may be created.
+
+          --disable-immediate  With --set, prevents the configurator from
+                     running any commands that make immediate changes to
+                     the system configuration. Use with --prefix to make a
+                     dry run that won\'t affect your configuration.
+
+                     With --get, suppresses running of non-vital external
+                     programs that might take a long time to finish.
+
+       -v --verbose  Turns on diagnostic messages to standard error.
+
+          --progress Prints progress information suitable for interactive
+                     frontends to standard output. The progress information
+                     is printed before any XML, and consists of a decimal
+                     number saying how many dots to expect, followed by a
+                     newline, and a running line of dots as the operation
+                     progresses, followed by a newline after the last dot.
+                     The dots generated can be more or less than the
+                     number indicated on the first line.
+
+End_of_Usage;
+
+$version = "0.1.0";
+
+$progress_max = 8;
+
+
+# --- System config file locations --- #
+
+# We list each config file type with as many alternate locations as possible.
+# They are tried in array order. First found = used.
+
+# Right now there's only one entry per array, as I couldn't find any
+# typical deviations.
+
+@sysconfig_network_names = ( "/etc/sysconfig/network" );
+@rc_config_names =         ( "/etc/rc.config" );
+@fstab_names =             ( "/etc/fstab" );
+@exports_names =           ( "/etc/exports" );
+@smb_conf_names =          ( "/etc/smb.conf" );
+
+
+# --- Internal configuration variables --- #
+
+# Configuration is parsed/read to, and printed/written from, these temporary variables.
+
+$cf_hostip = "";
+$cf_netmask = "";
+$cf_workgroup = "";
+@cf_shares_list = ();
+@cf_exports_list = ();
+
+$cf_interface = "";
+$cf_netmask = "";
+$cf_hostip = "";
+
+
+# --- XML printing --- #
+
+
+sub xml_print
+{
+  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+  print "<!DOCTYPE shares []>\n\n";
+  print "<shares>\n";
+  enter;
+
+  vspace;
+  indent; print "<!-- Configuration starts here -->\n";
+  vspace;
+  indent; print "<!-- Imports, listed and potentials -->\n";
+  vspace;
+
+  my @shares = @cf_shares_list;
+
+  while (@shares)
+  {
+    if (@shares[0] ne "")
+    {
+      vspace;
+      indent; print "<import type='@shares[5]'>\n";
+      enter;
+
+      @shares[0] = be_xml_plain_to_entities(\@shares[0]);
+      @shares[1] = be_xml_plain_to_entities(\@shares[1]);
+      @shares[2] = be_xml_plain_to_entities(\@shares[2]);
+      @shares[6] = be_xml_plain_to_entities(\@shares[6]);
+      @shares[7] = be_xml_plain_to_entities(\@shares[7]);
+
+      indent; print "<host>@shares[0]</host>\n";
+      indent; print "<path>@shares[1]</path>\n";
+      if (@shares[6] ne "") { indent; print "<user>@shares[6]</user>\n"; }
+      if (@shares[7] ne "") { indent; print "<password>@shares[7]</password>\n"; }
+      if (@shares[2] ne "") { indent; print "<comment>@shares[2]</comment>\n"; }
+      if (@shares[8] ne "") { indent; print "<point>@shares[8]</point>\n"; }
+
+      indent;
+
+      print "<mounted state='";
+      print be_print_boolean_truefalse(@shares[3]);
+      print "'/>";
+
+      print "<listed state='";
+      print be_print_boolean_truefalse(@shares[10]);
+      print "'/>";
+
+      print "<detected state='";
+      print be_print_boolean_truefalse(@shares[4]);
+      print "'/>\n";
+
+      leave;
+      indent; print "</import>\n";
+    }
+    
+    shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
+    shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
+    shift @shares;
+  }
+
+  vspace;
+  indent; print "<!-- Exports -->\n";
+  vspace;
+  
+  my @shares = @cf_exports_list;
+  
+  while (@shares)
+  {
+    if (@shares[0] ne "")
+    {
+      vspace;
+      indent; print "<export type='@shares[0]'>\n";
+      enter;
+
+      indent; print "<path>@shares[1]</path>\n";
+
+      if (@shares[0] eq "smb")
+      {
+        indent; print "<name>@shares[2]</name>\n";
+        if (@shares[3] ne "") { indent; print "<comment>@shares[3]</comment>\n"; }
+
+        indent;
+        print "<enabled state='", be_print_boolean_truefalse(@shares[4]), "'/>";
+        print "<browse state='", be_print_boolean_truefalse(@shares[5]), "'/>";
+        print "<public state='", be_print_boolean_truefalse(@shares[6]), "'/>\n";
+        indent;
+        print "<write state='", be_print_boolean_truefalse(@shares[7]), "'/>\n";
+
+        shift @shares; shift @shares; shift @shares; shift @shares;
+        shift @shares; shift @shares; shift @shares; shift @shares;
+      }
+      elsif (@shares[0] eq "nfs")
+      {
+        my $clients = @shares[2];
+        while (@$clients)
+        {
+          if (@$clients[0] ne "")
+          {
+            indent; print "<allow><pattern>@$clients[0]</pattern><write state='";
+            print be_print_boolean_truefalse(@$clients[1]);
+            print "'/></allow>\n";
+          }
+          shift @$clients; shift @$clients;
+        }
+
+        shift @shares; shift @shares; shift @shares;
+      }
+
+      leave;
+      indent; print "</export>\n";
+    }
+    
+  }
+  
+  vspace;
+  indent; print "<!-- End of configuration -->\n";
+  vspace;
+
+  leave;
+  print "</shares>\n";
+}
+
+
+# --- IP calculation --- #
+
+# Both functions take two arguments: IP and netmask.
+
+
+sub ip_calc_network
+{
+  my @ip_reg1;
+  my @ip_reg2;
+
+  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  
+  @ip_reg1[0] = (@ip_reg1[0] * 1) & (@ip_reg2[0] * 1);
+  @ip_reg1[1] = (@ip_reg1[1] * 1) & (@ip_reg2[1] * 1);
+  @ip_reg1[2] = (@ip_reg1[2] * 1) & (@ip_reg2[2] * 1);
+  @ip_reg1[3] = (@ip_reg1[3] * 1) & (@ip_reg2[3] * 1);
+  
+  return(join('.', @ip_reg1));
+}
+
+
+sub ip_calc_broadcast
+{
+  my @ip_reg1;
+  my @ip_reg2;
+
+  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  
+  @ip_reg1 = ($cf_hostip =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+
+  @ip_reg1[0] = (@ip_reg1[0] * 1) | (~(@ip_reg2[0] * 1) & 255);
+  @ip_reg1[1] = (@ip_reg1[1] * 1) | (~(@ip_reg2[1] * 1) & 255);
+  @ip_reg1[2] = (@ip_reg1[2] * 1) | (~(@ip_reg2[2] * 1) & 255);
+  @ip_reg1[3] = (@ip_reg1[3] * 1) | (~(@ip_reg2[3] * 1) & 255);
+
+  return(join('.', @ip_reg1));
+}
+
+
+# --- Get (read) config --- #
+
+
+sub get_interfaces
+{
+  my $if_cmd;
+  my $iftext;
+  my @list;
+
+  # Get a list of all interfaces, both configured and unconfigured.
+  # Should work on both GNU and Solaris.
+
+  $if_cmd = be_locate_tool("ifconfig");
+  $iftext = `$if_cmd -a 2>/dev/null`;
+
+  @list = ($iftext =~ /^([a-z0-9]+)[ :\t].*/mg);
+
+  if (not @list)
+  {
+    if ($be_verbose) { print STDERR "Warning: Couldn't find any network devices.\n"; }
+    return(0);
+  }
+  
+  # Remove loopback and dummy interfaces from the list.
+  
+  for $elem (@list)
+  {
+    if (!($elem =~ /^(lo)|(dummy).*/)) { push(@cf_interface_list, $elem); }
+  }
+}
+
+
+sub get_host_mounts
+{
+  my $ping_tool, $showmount_tool, $nmblookup_tool, $smbclient_tool;
+  my @hosts;
+  my $i, $j;
+
+  $ping_tool = be_locate_tool("ping");
+  $showmount_tool = be_locate_tool("showmount");
+  $nmblookup_tool = be_locate_tool("nmblookup");
+  $smbclient_tool = be_locate_tool("smbclient");
+
+  $broadcast_ip = ip_calc_broadcast($cf_hostip, $cf_netmask);
+
+  # Map subnet.
+
+  open(PING_HD, "$ping_tool -b -c 2 -n $broadcast_ip 2>/dev/null |");
+  while (<PING_HD>)
+  {
+    if (/bytes from/)
+    {
+      $ip = join('.', ($_ =~ /from ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/));
+      be_push_unique(\@hosts, $ip);
+    }
+  }
+  close(PING_HD);
+  
+  if ($be_verbose) { print STDERR "Subnet ping found ", $#hosts + 1, " hosts.\n"; }
+  be_print_progress;
+
+  # List NFS shares.
+
+  $i = 0; $j = 0;
+  for $host (@hosts)
+  {
+    if ($host eq $cf_hostip) { next; }
+    open(MOUNTS_HD, "$showmount_tool --directories --no-headers $host 2>/dev/null |");
+    while (<MOUNTS_HD>)
+    {
+      push(@cf_shares_list, $host);                          # Host
+      push(@cf_shares_list, ($_ =~ /[ \t]*([^ \t\n\r]+)/));  # Path
+      push(@cf_shares_list, "");                             # Comment
+      push(@cf_shares_list, 0);                              # Mounted
+      push(@cf_shares_list, 1);                              # Detected
+      push(@cf_shares_list, "nfs");                          # Type
+      push(@cf_shares_list, "");                             # User
+      push(@cf_shares_list, "");                             # Password
+      push(@cf_shares_list, "");                             # Mount point
+      push(@cf_shares_list, 0);                              # Flag: Printed.
+      push(@cf_shares_list, 0);                              # Listed.
+      
+      $j++;
+    }
+    close(MOUNTS_HD);
+
+    $i++;
+  }
+
+  if ($be_verbose) { print STDERR "Found $j NFS exports on $i hosts.\n"; }
+  be_print_progress;
+
+  # List SMB shares if applicable.
+
+  if ($cf_workgroup ne "")
+  {
+    my $smb_master_ip, $smb_master_name;
+    my @smb_hosts;
+    
+    if ($be_verbose) { print STDERR "Doing SMB detection in workgroup $cf_workgroup.\n"; }
+
+    # Find the workgroup master.
+  
+    open(FD, "$nmblookup_tool -M -S $cf_workgroup |");
+    while (<FD>)
+    {
+      if (/^[a-zA-Z0-9.]+ $cf_workgroup</)
+      {
+        ($smb_master_ip) = ($_ =~ /(^[a-zA-Z0-9.]+)/);
+      }
+      elsif (/^[ \t]+[A-Za-z0-9]+[ \t]+</)
+      {
+        ($smb_master_name) = ($_ =~ /^[ \t]+([A-Za-z0-9]+)/);
+        last;
+      }
+    }
+    close(FD);
+
+    if ($be_verbose)
+    {
+      if ($smb_master_name ne "") { print STDERR "Workgroup master is $smb_master_name ($smb_master_ip).\n"; }
+      else { print STDERR "No workgroup master found.\n"; }
+    }
+
+    be_print_progress;
+
+    # List computers.
+
+    open(FD, "$smbclient_tool -N -U % -L $smb_master_name -I $smb_master_ip |");
+    while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
+
+    while (<FD>)
+    {
+      if ($_ eq "" || $_ eq "\n") { last; }
+      elsif (/^[ \t]+[^ \t-]+/)
+      {
+        be_push_unique(\@smb_hosts, ($_ =~ /^[ \t]+([^ \t-]+)/));
+      }
+    }
+    close(FD);
+
+    if ($be_verbose)
+    {
+      if ($#smb_hosts + 1) { print STDERR "Master reported ", $#smb_hosts + 1, " hosts in workgroup.\n"; }
+      else { print STDERR "No hosts reported by master - asking others.\n"; }
+    }
+
+    if (!@smb_hosts)
+    {
+      # The master browser didn't list any hosts for some reason.
+      # This happens fairly often (but randomly) on my network, so we work
+      # around it by asking some other hosts to make sure.
+
+      for $host (@hosts)
+      {
+        if ($host eq $smb_master_ip) { next; }  # Already asked the fucker.
+
+        # Typically only Unix machines (samba) will understand these requests,
+        # since they have service entries for their own IPs, whereas Windows
+        # boxen don't.
+        
+        if ($be_verbose) { print STDERR "Asking $host for host list"; }
+
+        open(FD, "$smbclient_tool -N -U % -L $host -I $host |");
+        while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
+        
+        while (<FD>)
+        {
+          if ($_ eq "" || $_ eq "\n") { last; }
+          elsif (/^[ \t]+[^ \t-]+/)
+          {
+            be_push_unique(\@smb_hosts, ($_ =~ /^[ \t]+([^ \t-]+)/));
+          }
+        }
+        close(FD);
+
+        if (@smb_hosts)
+        {
+          if ($be_verbose) { print STDERR " - got ", $#smb_hosts + 1, " hosts.\n"; }
+          last;
+        }
+        elsif ($be_verbose) { print STDERR " - failed.\n"; }
+      }
+    }
+
+    # List shares on each computer.
+
+    $i = 0; $j = 0;
+    while (@smb_hosts)
+    {
+      open(FD, "$smbclient_tool -N -U % -L @smb_hosts[0] |");
+      while (<FD>) { if (/^[ \t]+Sharename[ \t]+Type[ \t]+Comment/) { last; } }
+      while (<FD>)
+      {
+        if ($_ eq "" || $_ eq "\n") { last; }
+        elsif (/^[ \t]+[^ \t-]+[ \t]+Disk/)
+        {
+          ($path) = ($_ =~ /^[ \t]+([^ \t-]+)/);  # Path
+          $path = "/\L$path";
+          @smb_hosts[0] = "\L@smb_hosts[0]";
+
+          push(@cf_shares_list, @smb_hosts[0]);                # Host
+          push(@cf_shares_list, $path);                        # Path
+          push(@cf_shares_list, ($_ =~ /^[ \t]+[^ \t-]+[ \t]+Disk[ \t]+(.*)$/));  # Comment
+          push(@cf_shares_list, 0);                            # Mounted
+          push(@cf_shares_list, 1);                            # Detected
+          push(@cf_shares_list, "smb");                        # Type
+          push(@cf_shares_list, "");                           # User
+          push(@cf_shares_list, "");                           # Password
+          push(@cf_shares_list, "");                           # Mount point
+          push(@cf_shares_list, 0);                            # Flag: Printed
+          push(@cf_shares_list, 0);                            # Listed
+          
+          $j++;
+        }
+      }
+      close(FD);
+
+      shift @smb_hosts;
+      $i++;
+    }
+    
+    if ($be_verbose) { print STDERR "Found $j SMB exports on $i hosts.\n"; }
+    be_print_progress;
+  }
+  elsif ($be_verbose) { print STDERR "No workgroup configured - SMB scan skipped.\n"; }
+}
+
+
+sub get
+{
+  if ($be_progress) { $| = 1; print $progress_max . "\n"; }
+
+  if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
+  if ($be_verbose) { print STDERR "Finding interfaces.\n"; }
+
+  get_interfaces; be_print_progress;          # Needed for primary interface detection.
+  read_rc_config;                          # Ditto.
+  read_sysconfig_network;                  # Ditto.
+  read_primary_interface;                  # IP subnet information.
+  read_smb_conf; be_print_progress;           # SMB workgroup.
+  get_host_mounts; be_print_progress;
+  read_fstab;
+  read_exports; be_print_progress;
+
+  if ($be_verbose) { print STDERR "Printing XML.\n"; }
+  if ($be_progress) { print "\n"; }
+  xml_print;
+}
+
+
+# --- Set (write) config --- #
+
+
+sub set_immediate
+{
+  my $exportfs_tool;
+  my $mount_tool;
+  my $umount_tool;
+
+  $exportfs_tool = be_locate_tool("exportfs");
+  $mount_tool = be_locate_tool("mount");
+  $umount_tool = be_locate_tool("umount");
+
+  # Update exports.
+
+  if (-f "/etc/rc.d/init.d/smb")
+  {
+    if ($be_verbose) { print STDERR "Warning: SMB configuration reload failed.\n"; }
+    if (system "/etc/rc.d/init.d/smb reload >/dev/null 2>/dev/null")
+    {
+      if ($be_verbose) { print STDERR "Warning: SMB restart failed.\n"; }
+    }
+    elsif ($be_verbose)
+    {
+      print STDERR "SMB restarted with new configuration.\n";
+    }
+  }
+  elsif ($be_verbose)
+  {
+    print STDERR "Warning: Could not find a way to restart SMB services.\n";
+  }
+
+  if ($exportfs_tool eq "")
+  {
+    if ($be_verbose) { print STDERR "Warning: Could not reload NFS export tables.\n"; }
+  }
+  else
+  {
+    system "$exportfs_tool -a >/dev/null 2>/dev/null";
+    if ($be_verbose) { print STDERR "NFS export tables reloaded.\n"; }
+  }
+
+  # Update imports.
+
+  if (($mount_tool ne "") && ($umount_tool ne ""))
+  {
+    my @shares = @cf_shares_list;
+
+    while (@shares)
+    {
+      if (@shares[0] ne "" && @shares[8] ne "")
+      {
+        if (@shares[3])
+        {
+          if ($be_verbose) { print STDERR "Mounting @shares[8].\n"; }
+          system "$mount_tool @shares[8] >/dev/null 2>/dev/null";
+        }
+        else
+        {
+          if ($be_verbose) { print STDERR "Unmounting @shares[8].\n"; }
+          system "$umount_tool @shares[8] >/dev/null 2>/dev/null";
+        }
+      }
+
+      shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
+      shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
+      shift @shares;
+    }
+  }
+  else
+  {
+    if ($be_verbose) { print STDERR "Warning: Could not find mount tools. No mounting done.\n"; }
+  }
+  
+}
+
+
+sub set
+{
+  if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
+
+  if ($be_verbose) { print STDERR "Parsing XML.\n"; }
+  be_xml_parse;
+
+  write_fstab;
+  write_exports;
+  write_smb_conf;
+
+  if ($be_do_immediate)
+  {
+    if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
+    set_immediate;
+  }
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+{
+  be_xml_parse;
+  xml_print;
+}
+
+
+# --- Main --- #
+
+# Process options.
+
+while (@ARGV)
+{
+  if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { be_set_operation("get"); }
+  elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { be_set_operation("set"); }
+  elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { be_set_operation("filter"); }
+  elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+  elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+  {
+    if ($be_prefix ne "")
+    {
+      print STDERR "Error: You may specify --prefix only once.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    $be_prefix = @ARGV[1];
+
+    if ($be_prefix eq "")
+    {
+      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    shift @ARGV;  # For the argument.
+  }
+  elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
+  elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
+  else
+  {
+    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR $Usage; exit(1);
+  }
+
+  shift @ARGV;
+}
+
+
+# Do our thing.
+
+if    ($be_operation eq "get")    { get; }
+elsif ($be_operation eq "set")    { set; }
+elsif ($be_operation eq "filter") { filter; }
+else
+{
+  print STDERR "Error: No operation specified.\n\n";
+  print STDERR $Usage; exit(1);
+}
+

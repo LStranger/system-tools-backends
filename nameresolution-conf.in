@@ -1,0 +1,454 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+
+# Name resolution configurator. Designed to be architecture- and distribution independent.
+#
+# Copyright (C) 2000 Helix Code, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@helixcode.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/resolv.conf
+# /etc/host.conf
+# /etc/hosts
+# /etc/sysconfig/network
+# /etc/rc.config
+# /etc/smb.conf
+
+# Running programs affected:
+#
+# smbd
+# nmbd
+
+
+
+require "___scriptsdir___/be.pl";
+
+
+
+# --- Usage text --- #
+
+my $Usage =<<"End_of_Usage;";
+Usage: nameresolution-conf <--get | --set | --filter | --help>
+                           [--prefix <location>] [--disable-immediate]
+                           [--verbose] [--progress]
+
+       Major operations (specify one of these):
+
+       -g --get      Prints the current name resolution configuration to
+                     standard output, as as standalone XML document. The
+                     configuration is read from the host\'s system config
+                     files.
+
+       -s --set      Updates the system name resolution configuration from
+                     a standalone XML document read from standard input.
+                     The format is the same as for the document generated
+                     with --get.
+
+       -f --filter   Reads XML configuration from standard input, parses it,
+                     and writes the configurator\'s impression of it back to
+                     standard output. Good for debugging and parsing tests.
+
+       -h --help     Prints this page to standard output.
+
+          --version  Prints version information to standard output.
+
+       Modifiers (specify any combination of these):
+
+       -p --prefix <location>  Specifies a directory prefix where the
+                     configuration is looked for or stored. When storing
+                     (with --set), directories and files may be created.
+
+          --disable-immediate  With --set, prevents the configurator from
+                     running any commands that make immediate changes to
+                     the system configuration. Use with --prefix to make a
+                     dry run that won\'t affect your configuration.
+
+                     With --get, suppresses running of non-vital external
+                     programs that might take a long time to finish.
+
+       -v --verbose  Turns on diagnostic messages to standard error.
+
+          --progress Prints progress information suitable for interactive
+                     frontends to standard output. The progress information
+                     is printed before any XML, and consists of a decimal
+                     number saying how many dots to expect, followed by a
+                     newline, and a running line of dots as the operation
+                     progresses, followed by a newline after the last dot.
+                     The dots generated can be more or less than the
+                     number indicated on the first line.
+
+
+End_of_Usage;
+
+$version = "0.1.0";
+
+$progress_max = 7;
+
+# --- System config file locations --- #
+
+# We list each config file type with as many alternate locations as possible.
+# They are tried in array order. First found = used.
+
+# Right now there's only one entry per array, as I couldn't find any
+# typical deviations.
+
+@resolv_conf_names =       ( "/etc/resolv.conf" );
+@host_conf_names =         ( "/etc/host.conf" );
+@hosts_names =             ( "/etc/hosts" );
+@sysconfig_network_names = ( "/etc/sysconfig/network" );
+@rc_config_names =         ( "/etc/rc.config" );
+@smb_conf_names =          ( "/etc/smb.conf" );
+
+
+# --- Internal configuration variables --- #
+
+# Configuration is parsed/read to, and printed/written from, these temporary variables.
+
+$cf_hostname = "";
+$cf_domain = "";
+$cf_workgroup = "";
+$cf_description = "";
+
+$cf_hostname_reverse = "";
+$cf_domain_reverse = "";
+
+@cf_searchdomains = ();
+@cf_nameservers = ();
+@cf_statichosts = ();
+
+$cf_winsserver = "";
+
+@cf_order = ();
+$cf_hostmatch = 0;  # 0 = all, 1 = first
+
+
+# --- XML printing --- #
+
+
+sub xml_print
+{
+  my $cfl_hostname = be_xml_plain_to_entities(\$cf_hostname);
+  my $cfl_domain = be_xml_plain_to_entities(\$cf_domain);
+  my $cfl_workgroup = be_xml_plain_to_entities(\$cf_workgroup);
+  my $cfl_description = be_xml_plain_to_entities(\$cf_description);
+  my $cfl_winsserver = be_xml_plain_to_entities(\$cf_winsserver);
+  my $cfl_hostname_reverse = be_xml_plain_to_entities(\$cf_hostname_reverse);
+  my $cfl_domain_reverse = be_xml_plain_to_entities(\$cf_domain_reverse);
+
+  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+  print "<!DOCTYPE nameresolution []>\n\n";
+  print "<nameresolution>\n";
+  enter;
+
+  vspace;
+  indent; print "<!-- Configuration starts here -->\n";
+  vspace;
+
+  # Hostname, domain, search domains, nameservers.
+
+  if ($cfl_hostname ne "") { indent; print "<hostname>$cfl_hostname</hostname>\n"; }
+  if ($cfl_domain ne "") { indent; print "<domain>$cfl_domain</domain>\n"; }
+  if ($cfl_workgroup ne "") { indent; print "<workgroup>$cfl_workgroup</workgroup>\n"; }
+  if ($cfl_description ne "") { indent; print "<description>$cfl_description</description>\n"; }
+  vspace;
+  if ($cfl_winsserver ne "") { indent; print "<winsserver>$cfl_winsserver</winsserver>\n"; }
+  vspace;
+
+  for $elem (@cf_searchdomains)
+  {
+    $elem = be_xml_plain_to_entities(\$elem);
+    indent; print "<searchdomain>$elem</searchdomain>\n";
+  }
+
+  vspace;
+
+  for $elem (@cf_nameservers)
+  {
+    $elem = be_xml_plain_to_entities(\$elem);
+    indent; print "<nameserver>$elem</nameserver>\n";
+  }
+
+  # Static hosts.
+
+  my @iplist = @cf_statichosts;
+  while (@iplist)
+  {
+    if (@iplist[0] ne "")
+    {
+      vspace;
+      indent; print "<statichost>\n";
+      enter;
+
+      @iplist[0] = be_xml_plain_to_entities(\@iplist[0]);
+
+      indent; print "<ip>@iplist[0]</ip>\n";
+
+      my $aliaslist = @iplist[1];
+      for $alias (@$aliaslist)
+      {
+        $alias = be_xml_plain_to_entities(\$alias);
+        indent; print "<alias>$alias</alias>\n";
+      }
+
+      leave;
+      indent; print "</statichost>\n";
+    }
+
+    shift @iplist;
+    shift @iplist;
+  }
+
+  vspace;
+  indent; print "<!-- You shouldn't have to modify anything below this line -->\n";
+  vspace;
+
+  # Search order and host matches (multi).
+
+  indent; print "<order>";
+  for $elem (@cf_order) { print "<$elem/>"; }
+  print "</order>\n";
+
+  indent;
+  if ($cf_hostmatch) { print "<hostmatch return='first'/>\n"; }
+  else               { print "<hostmatch return='all'/>\n"; }
+
+  vspace;
+  indent; print "<!-- You cannot modify anything below this line -->\n";
+  vspace;
+
+  if ($cfl_hostname_reverse ne "")
+  {
+    indent; print "<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n";
+  }
+
+  if ($cfl_domain_reverse ne "")
+  {
+    indent; print "<domainreverse>$cfl_domain_reverse</domainreverse>\n";
+  }
+
+  vspace;
+  indent; print "<!-- End of configuration -->\n";
+  vspace;
+
+  leave;
+  print "</nameresolution>\n";
+}
+
+
+# --- Get (read) config --- #
+
+
+sub get_immediate
+{
+  # This is rather unethical. Have to find some reasonable defaults on non-(GNU/Linux)
+  # systems. It'll have to do for now.
+
+  # If any of this fails, the worst that can happen is that the reverse names
+  # get set to empty strings, which is the expected action when they're unknown.
+
+  my $ip = `ifconfig eth0 2>/dev/null`;
+  if ($ip eq "") { $ip = `ifconfig ppp0 2>/dev/null`; }
+
+  $ip =~ /^.*addr:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/m;
+  $ip = $1;
+
+  if ($ip eq "")
+  {
+    if ($be_verbose) { print STDERR "Warning: Couldn't find a configured network device.\n"; }
+    return(0);
+  }
+
+  # Succeeds only if we get an FQDN. This is probably the right thing to do.
+
+  $cf_hostname_reverse = `nslookup -timeout=1 -retry=2 $ip 2>/dev/null`;
+  $cf_hostname_reverse =~ /^Name:[ \t]+([a-zA-Z0-9]+)\.([a-zA-Z0-9.]+)$/mg;
+  $cf_hostname_reverse = $1;
+  $cf_domain_reverse = $2;
+
+  if (($cf_domain_reverse eq "" || $cf_hostname_reverse eq "") && $be_verbose)
+  {
+    print STDERR "Warning: Couldn't get reverse names for this host.\n";
+  }
+}
+
+
+sub get
+{
+  if ($be_progress) { $| = 1; print $progress_max . "\n"; }
+
+  if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
+
+  read_host_conf; be_print_progress;
+  read_hosts; be_print_progress;
+  read_resolv_conf; be_print_progress;
+  read_sysconfig_network; be_print_progress;
+  read_rc_config; be_print_progress;
+  read_smb_conf; be_print_progress;
+
+  if ($be_verbose) { print STDERR "Getting reverse names.\n"; }
+  get_immediate; be_print_progress;
+
+  if ($be_verbose) { print STDERR "Printing XML.\n"; }
+  if ($be_progress) { print "\n"; }
+  xml_print;
+}
+
+
+# --- Set (write) config --- #
+
+
+sub set_immediate
+{
+  # Set hostname via utility, in case the config files aren't enough.
+
+  if (!system "which hostname >/dev/null 2>/dev/null")
+  {
+    # Found hostname command.
+
+    if ($cf_hostname ne "")
+    {
+      if (system "hostname $cf_hostname >/dev/null 2>/dev/null")
+      {
+	if ($be_verbose) { print STDERR "Warning: Failed to set runtime hostname. Are you root?\n"; }
+      }
+      elsif ($be_verbose)
+      {
+        print STDERR "Runtime hostname set.\n";
+      }
+    }
+    elsif ($be_verbose)
+    {
+      print STDERR "Warning: No hostname specified; runtime hostname not set.\n";
+    }
+  }
+  elsif ($be_verbose)
+  {
+    print STDERR "Warning: No hostname command found; runtime hostname not set.\n";
+  }
+
+  # Reload SMB configuration.
+
+  if (-f "/etc/rc.d/init.d/smb")
+  {
+    if (system "/etc/rc.d/init.d/smb reload >/dev/null 2>/dev/null")
+    {
+      if ($be_verbose) { print STDERR "Warning: SMB configuration reload failed.\n"; }
+      if (system "/etc/rc.d/init.d/smb restart >/dev/null 2>/dev/null")
+      {
+        if ($be_verbose) { print STDERR "Warning: SMB restart failed.\n"; }
+      }
+    }
+    elsif ($be_verbose)
+    {
+      print STDERR "SMB told to reload its configuration.\n";
+    }
+  }
+  elsif ($be_verbose)
+  {
+    print STDERR "Warning: Could not find a way to restart SMB services.\n";
+  }
+}
+
+
+sub set
+{
+  if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
+
+  if ($be_verbose) { print STDERR "Parsing XML.\n"; }
+  be_xml_parse;
+
+  write_smb_conf;
+  write_rc_config;
+  write_sysconfig_network;
+  write_resolv_conf;
+  write_hosts;
+  write_host_conf;
+
+  if ($be_do_immediate)
+  {
+    if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
+    set_immediate;
+  }
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+{
+  be_xml_parse;
+  xml_print;
+}
+
+
+# --- Main --- #
+
+# Process options.
+
+while (@ARGV)
+{
+  if    (@ARGV[0] eq "--get"     || @ARGV[0] eq "-g") { be_set_operation("get"); }
+  elsif (@ARGV[0] eq "--set"     || @ARGV[0] eq "-s") { be_set_operation("set"); }
+  elsif (@ARGV[0] eq "--filter"  || @ARGV[0] eq "-f") { be_set_operation("filter"); }
+  elsif (@ARGV[0] eq "--help"    || @ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif (@ARGV[0] eq "--version")                     { print "$version\n"; exit(0); }
+  elsif (@ARGV[0] eq "--prefix"  || @ARGV[0] eq "-p")
+  {
+    if ($be_prefix ne "")
+    {
+      print STDERR "Error: You may specify --prefix only once.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    $be_prefix = @ARGV[1];
+
+    if ($be_prefix eq "")
+    {
+      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    shift @ARGV;  # For the argument.
+  }
+  elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
+  elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
+  else
+  {
+    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR $Usage; exit(1);
+  }
+
+  shift @ARGV;
+}
+
+
+# Do our thing.
+
+if    ($be_operation eq "get")    { get; }
+elsif ($be_operation eq "set")    { set; }
+elsif ($be_operation eq "filter") { filter; }
+else
+{
+  print STDERR "Error: No operation specified.\n\n";
+  print STDERR $Usage; exit(1);
+}
