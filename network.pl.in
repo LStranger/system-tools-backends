@@ -881,20 +881,21 @@ sub xst_network_suse70_activate_ppp
 
 sub xst_network_interfaces_expand_iface
 {
-  my ($value) = @_;
-  my ($i);
+  my ($value, $iface) = @_;
 
   if (ref $value eq "ARRAY")
   {
+    my ($i);
+
     foreach $i (@$value)
     {
-      $i = &xst_network_interfaces_expand_iface ($i);
+      $i = &xst_network_interfaces_expand_iface ($i, $iface);
     }
 
     return $value;
   }
   
-  $value =~ s/\#iface\#/$i/;
+  $value =~ s/\#iface\#/$iface/;
   return $value;
 }
 
@@ -914,7 +915,7 @@ sub xst_network_interfaces_get
   {
     foreach $j (keys (%fn))
     {
-      $ {$dist_attrib{"fn"}}{$j} = &xst_network_interfaces_expand_iface ($fn{$j});
+      $ {$dist_attrib{"fn"}}{$j} = &xst_network_interfaces_expand_iface ($fn{$j}, $i);
     }
 
     $iface = &xst_parse_from_table ($dist_attrib{"fn"},

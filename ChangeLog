@@ -1,6 +1,7 @@
 2001-11-06  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_interfaces_expand_iface): bug fix.
+	(xst_network_interfaces_get): Pass the interface.
 
 	* util.pl.in (xst_arr_merge): Merges scr array into dest array.
 
