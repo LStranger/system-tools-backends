@@ -4,20 +4,22 @@
 # This file is distributed under the same license as the setup-tools-backends package.
 # Punjab Linux Technology <punjablinux@netscape.net>, 2004.
 # Amanpreet Singh Alam <aalam@redhat.com>, 2004.
+# Amanpreet Singh Alam <amanpreetalam@yahoo.com>, 2005.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: setup-tools-backends.HEAD.pa\n"
+"Project-Id-Version: pa\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-18 04:19+0200\n"
-"PO-Revision-Date: 2004-08-18 13:12+0530\n"
-"Last-Translator: Amanpreet Singh Alam <aalam@redhat.com>\n"
+"POT-Creation-Date: 2005-03-02 07:28+0100\n"
+"PO-Revision-Date: 2005-03-02 15:56+0530\n"
+"Last-Translator: Amanpreet Singh Alam <amanpreetalam@yahoo.com>\n"
 "Language-Team: Punjabi <fedora-trans-pa@redhat.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.3.1\n"
-"Plural-Forms: Plural-Forms: nplurals=2; plural=(n != 1);\n\n"
+"X-Generator: KBabel 1.9.1\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"\n"
 "\n"
 
 #. please, keep this list sorted
@@ -31,8 +33,8 @@ msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
-"ACPI ਘਟਨਾ ਲਈ ਉਪਭੋਗਤਾ ਕਾਰਜ ਥਾਂ ਸੂਚਨਾ:ACPI ਘਟਨਾ ਦੇ ਜਵਾਬ ਵਿੱਚ ਕਮਾਂਡਾਂ ਚਲਾਓ, "
-"ਜਿਵੇਂ ਕਿ ਊਰਜਾ ਬਟਨ|"
+"ACPI ਘਟਨਾ ਲਈ ਉਪਭੋਗਤਾ ਕਾਰਜ ਥਾਂ ਸੂਚਨਾ:ACPI ਘਟਨਾ ਦੇ ਜਵਾਬ ਵਿੱਚ ਕਮਾਂਡਾਂ ਚਲਾਓ, ਜਿਵੇਂ ਕਿ "
+"ਊਰਜਾ ਬਟਨ|"
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
@@ -303,9 +305,9 @@ msgid ""
 "software when some significant (usually hardware-related) events take place. "
 "An example is when a USB or Cardbus device has just been plugged in."
 msgstr ""
-"ਹਾਟਪਲੱਗ ਇੱਕ ਕਾਰਜ ਹੈ, ਜਿਸ ਨੂੰ ਕਰਨਲ ਵਰਤਦਾ ਹੈ, ਜੋ ਕਿ ਉਪਭੋਗਤਾ ਪੱਧਰ ਸਾਫਟਵੇਅਰ "
-"ਨੂੰ ਕੁਝ ਮਹੱਤਵਪੂਰਨ ਘਟਨਾ ਦੀ ਸੂਚਨਾ ਲਈ ਹੈ, ਆਮ ਤੌਰ ਤੇ ਹਾਰਡਵੇਅਰ ਦੇ ਪੱਧਰ ਦੀ "
-"ਉਦਾਹਰਨ ਲਈ ਜਦੋਂ ਵੀ USB ਜਾਂ Cardbus ਜੰਤਰ ਲਗਾਏ ਜਾਦੇ ਹਨ"
+"ਹਾਟਪਲੱਗ ਇੱਕ ਕਾਰਜ ਹੈ, ਜਿਸ ਨੂੰ ਕਰਨਲ ਵਰਤਦਾ ਹੈ, ਜੋ ਕਿ ਉਪਭੋਗਤਾ ਪੱਧਰ ਸਾਫਟਵੇਅਰ ਨੂੰ ਕੁਝ ਮਹੱਤਵਪੂਰਨ "
+"ਘਟਨਾ ਦੀ ਸੂਚਨਾ ਲਈ ਹੈ, ਆਮ ਤੌਰ ਤੇ ਹਾਰਡਵੇਅਰ ਦੇ ਪੱਧਰ ਦੀ ਉਦਾਹਰਨ ਲਈ ਜਦੋਂ ਵੀ USB ਜਾਂ Cardbus "
+"ਜੰਤਰ ਲਗਾਏ ਜਾਦੇ ਹਨ"
 
 #: service-list.pl.in:71
 msgid "internet superserver"
@@ -541,8 +543,8 @@ msgid ""
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
 "portmapper manages RPC ਕੁਨੈਕਸ਼ਨ, ਜੋ ਕਿ NFS ਅਤੇ NIS ਪਰੋਟੋਕੋਲਾਂ ਦੁਆਰਾ ਵਰਤੇ ਜਾਦੇ ਹਨ "
-"portmapper ਸਰਵਰ ਉਹਨਾਂ ਮਸ਼ੀਨ ਤੇ ਚੱਲਣਾ ਲਾਜ਼ਮੀ ਹੈ, ਜੋ ਕਿ ਪਰੋਟੋਕੋਲ ਸਰਵਰ ਦੇ ਤੌਰ ਕੰਮ "
-"ਕਰਦੇ ਹਨ ਅਤੇ RPC ਢੰਗ ਨੂੰ ਵਰਤਦੇ ਹਨ"
+"portmapper ਸਰਵਰ ਉਹਨਾਂ ਮਸ਼ੀਨ ਤੇ ਚੱਲਣਾ ਲਾਜ਼ਮੀ ਹੈ, ਜੋ ਕਿ ਪਰੋਟੋਕੋਲ ਸਰਵਰ ਦੇ ਤੌਰ ਕੰਮ ਕਰਦੇ ਹਨ ਅਤੇ "
+"RPC ਢੰਗ ਨੂੰ ਵਰਤਦੇ ਹਨ"
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
@@ -557,8 +559,8 @@ msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
 msgstr ""
-"ਇਹ Point-to-Point Protocol (PPP) ਸੀਰੀਅਲ point-to-point ਸੰਬੰਧ ਤੇ "
-"ਡਾਟਾਗਰਾਮ ਭੇਜਣ ਲਈ ਢੰਗ ਹੈ"
+"ਇਹ Point-to-Point Protocol (PPP) ਸੀਰੀਅਲ point-to-point ਸੰਬੰਧ ਤੇ ਡਾਟਾਗਰਾਮ ਭੇਜਣ ਲਈ "
+"ਢੰਗ ਹੈ"
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
@@ -579,10 +581,9 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
-"ਇਹ ਸਕ੍ਰਿਪਟ raw ਜੰਤਰ ਬਲਾੱਕ ਜੰਤਰ ਨੂੰ ਭੇਜਦੀ ਹੈ( ਜਿਵੇਂ ਕਿ ਹਾਰਡ ਡਰਾਇਵ ਭਾਗ) "
-"ਇਹ ਕਈ ਕਾਰਜ ਲਈ ਸਹਾਇਕ ਹੈ, ਜਿਵੇਂ ਕਿ ਓਰੇਕਲ| ਤੁਹਾਨੂੰ /etc/sysconfig/ "
-"rawdevices ਫਾਇਲ ਨੂੰ ਸੋਧ ਕੇ raw ਜੰਤਰ ਬਲਾੱਕ ਜੰਤਰ ਨਾਲ ਮਿਲਾ ਦੇਣੇ ਚਾਹੀਦੇ "
-" ਹਨ"
+"ਇਹ ਸਕ੍ਰਿਪਟ raw ਜੰਤਰ ਬਲਾੱਕ ਜੰਤਰ ਨੂੰ ਭੇਜਦੀ ਹੈ( ਜਿਵੇਂ ਕਿ ਹਾਰਡ ਡਰਾਇਵ ਭਾਗ) ਇਹ ਕਈ ਕਾਰਜ ਲਈ "
+"ਸਹਾਇਕ ਹੈ, ਜਿਵੇਂ ਕਿ ਓਰੇਕਲ| ਤੁਹਾਨੂੰ /etc/sysconfig/ rawdevices ਫਾਇਲ ਨੂੰ ਸੋਧ ਕੇ raw ਜੰਤਰ "
+"ਬਲਾੱਕ ਜੰਤਰ ਨਾਲ ਮਿਲਾ ਦੇਣੇ ਚਾਹੀਦੇ  ਹਨ"
 
 #: service-list.pl.in:110
 msgid ""
@@ -591,18 +592,17 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
-"ਇਹ ਪੇਸ਼ਕਾਰ ਆਵਿਰਤੀ ਤੌਰ ਤੇ Red Hat Network ਸਰਵਰਾਂ ਨਾਲ ਨਵੀਨੀਕਰਨ ਦੀ "
-"ਜਾਂਚ ਲਈ, ਸੂਚਨਾ ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਸਿਸਟਮ ਜਾਂਚ ਕੰਮ ਉਸ ਸੇਵਾਂ ਦੇ ਪੱਧਰ ਤੇ ਵਰਤਣ "
-"ਲਈ ਜਿਸ ਲਈ ਤੁਸੀਂ ਮੈਂਬਰ ਹੋ,ਵਰਤਣ ਲ਼ਈ ਸਹਾਈ ਹੈ"
+"ਇਹ ਪੇਸ਼ਕਾਰ ਆਵਿਰਤੀ ਤੌਰ ਤੇ Red Hat Network ਸਰਵਰਾਂ ਨਾਲ ਨਵੀਨੀਕਰਨ ਦੀ ਜਾਂਚ ਲਈ, ਸੂਚਨਾ "
+"ਪ੍ਰਾਪਤ ਕਰਨ ਅਤੇ ਸਿਸਟਮ ਜਾਂਚ ਕੰਮ ਉਸ ਸੇਵਾਂ ਦੇ ਪੱਧਰ ਤੇ ਵਰਤਣ ਲਈ ਜਿਸ ਲਈ ਤੁਸੀਂ ਮੈਂਬਰ ਹੋ,ਵਰਤਣ ਲ਼ਈ "
+"ਸਹਾਈ ਹੈ"
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
-"rsync ਇੱਕ ਵਧੀਆਂ ਹਾਲਾਤ am ftp ਸਰਵਰ ਲਈ ਹੈ, ਕਿਉਕਿ ਇਹ crc "
-"checksumming ਆਦਿ ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ ਹੈ ਇਹ ਸੇਵਾ ਵਰਤਣ ਲ਼ਈ  xinetd ਨੂੰ "
-"ਯੋਗ ਕਰਨਾ ਲਾਜ਼ਮੀ ਹੈ"
+"rsync ਇੱਕ ਵਧੀਆਂ ਹਾਲਾਤ am ftp ਸਰਵਰ ਲਈ ਹੈ, ਕਿਉਕਿ ਇਹ crc checksumming ਆਦਿ ਉਪਲੱਬਧ "
+"ਕਰਵਾਉਦਾ ਹੈ ਇਹ ਸੇਵਾ ਵਰਤਣ ਲ਼ਈ  xinetd ਨੂੰ ਯੋਗ ਕਰਨਾ ਲਾਜ਼ਮੀ ਹੈ"
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
@@ -616,41 +616,39 @@ msgstr "UNIX ਲਈ Windows SMB/CIFS ਫਾਇਲ ਸਰਵਰ"
 msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
-msgstr ""
-"UNIX ਸਿਸਟਮ ਲਈ ਸਰਵਰ ਸੁਨੇਹਾ ਬਲਾਕ ਪਰੋਟੋਕੋਲ ਦੇ ਸਥਾਪਨ ਲਈ ਸਾਂਬਾ ਸਾਫਟਵੇਅਰ "
-"ਇੱਕ ਕਾਰਜ ਸਮੂਹ ਹੈ"
+msgstr "UNIX ਸਿਸਟਮ ਲਈ ਸਰਵਰ ਸੁਨੇਹਾ ਬਲਾਕ ਪਰੋਟੋਕੋਲ ਦੇ ਸਥਾਪਨ ਲਈ ਸਾਂਬਾ ਸਾਫਟਵੇਅਰ ਇੱਕ ਕਾਰਜ ਸਮੂਹ ਹੈ"
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
-"saslauthd ਇੱਕ ਸਰਵਰ ਅਧਾਰਿਤ ਕਾਰਜ ਹੈ, ਜੋ ਕਿ cyrus-sasl ਲਾਇਬ੍ਰੇਰੀ ਦੇ ਆਧਾਰ ਤੇ "
-"ਸਧਾਰਨ-ਪਾਠ ਪ੍ਰਮਾਣਿਕਤਾ ਵਰਤਦਾ ਹੈ"
+"saslauthd ਇੱਕ ਸਰਵਰ ਅਧਾਰਿਤ ਕਾਰਜ ਹੈ, ਜੋ ਕਿ cyrus-sasl ਲਾਇਬ੍ਰੇਰੀ ਦੇ ਆਧਾਰ ਤੇ ਸਧਾਰਨ-ਪਾਠ "
+"ਪ੍ਰਮਾਣਿਕਤਾ ਵਰਤਦਾ ਹੈ"
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
-"Sendmail ਇੱਕ ਪੱਤਰ ਤਬਦੀਲੀ ਏਜੰਟ ਹੈ, ਜੋ ਕਿ ਕਾਰਜ ਹੈ, ਜੋ ਪੱਤਰ ਨੂੰ ਇੱਕ ਮਸ਼ੀਨ ਤੋਂ ਦੂਜੀ "
-"ਮਸ਼ੀਨ ਤੇ ਭੇਜਦਾ ਹੈ"
+"Sendmail ਇੱਕ ਪੱਤਰ ਤਬਦੀਲੀ ਏਜੰਟ ਹੈ, ਜੋ ਕਿ ਕਾਰਜ ਹੈ, ਜੋ ਪੱਤਰ ਨੂੰ ਇੱਕ ਮਸ਼ੀਨ ਤੋਂ ਦੂਜੀ ਮਸ਼ੀਨ ਤੇ ਭੇਜਦਾ "
+"ਹੈ"
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
-"ਅੰਦਰੂਨੀ xinetd ਸੇਵਾ, ਜੋ ਸਰਗਰਮ ਸਰਵਰਾਂ ਨੂੰ ਸੂਚੀਬੱਧ ਕਰਦੀ ਹੈ| ਤੁਹਾਨੂੰ xinetd ਵਰਤਣ ਲਈ "
-"ਇਸ ਸੇਵਾ ਨੂੰ ਯੋਗ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ"
+"ਅੰਦਰੂਨੀ xinetd ਸੇਵਾ, ਜੋ ਸਰਗਰਮ ਸਰਵਰਾਂ ਨੂੰ ਸੂਚੀਬੱਧ ਕਰਦੀ ਹੈ| ਤੁਹਾਨੂੰ xinetd ਵਰਤਣ ਲਈ ਇਸ ਸੇਵਾ ਨੂੰ "
+"ਯੋਗ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ"
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
 msgstr ""
-"ਅੰਦਰੂਨੀ xinetd ਸੇਵਾ, ਜੋ ਸਰਗਰਮ ਸੇਵਾਵਾਂ ਨੂੰ ਸੂਚੀਬੱਧ ਕਰਦੀ ਹੈ| ਤੁਹਾਨੂੰ xinetd ਵਰਤਣ ਲਈ "
-"ਇਸ ਸੇਵਾ ਨੂੰ ਯੋਗ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ"
+"ਅੰਦਰੂਨੀ xinetd ਸੇਵਾ, ਜੋ ਸਰਗਰਮ ਸੇਵਾਵਾਂ ਨੂੰ ਸੂਚੀਬੱਧ ਕਰਦੀ ਹੈ| ਤੁਹਾਨੂੰ xinetd ਵਰਤਣ ਲਈ ਇਸ ਸੇਵਾ ਨੂੰ "
+"ਯੋਗ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ"
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
@@ -669,8 +667,8 @@ msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
-"FAM ਇੱਕ ਫਾਇਲ਼ ਜਾਂਚ ਪੇਸ਼ਕਾਰ ਹੈ| ਇਸ ਨੂੰ ਫਾਇਲ ਤਬਦੀਲੀਆਂ ਬਾਰੇ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ "
-"ਲਈ ਵਰਤਿਆ ਜਾਦਾ ਹੈ, ਤੁਹਾਨੂੰ ਇਸ ਨੂੰ ਵਰਤਣ ਲਈ xinetd ਚਾਲੂ ਕਰਨਾ ਪਵੇਗਾ"
+"FAM ਇੱਕ ਫਾਇਲ਼ ਜਾਂਚ ਪੇਸ਼ਕਾਰ ਹੈ| ਇਸ ਨੂੰ ਫਾਇਲ ਤਬਦੀਲੀਆਂ ਬਾਰੇ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰਨ ਲਈ ਵਰਤਿਆ "
+"ਜਾਦਾ ਹੈ, ਤੁਹਾਨੂੰ ਇਸ ਨੂੰ ਵਰਤਣ ਲਈ xinetd ਚਾਲੂ ਕਰਨਾ ਪਵੇਗਾ"
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
@@ -692,9 +690,7 @@ msgstr "OpenSSH SSH ਸਰਵਰ"
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
-msgstr ""
-"ssh ਇੱਕ ਕਾਰਜ ਹੈ, ਜੋ ਕਿ ਰਿਮੋਟ ਮਸ਼ੀਨਾਂ ਤੇ ਲਾਗਆਨ ਕਰਨ ਅਤੇ ਉਹਨਾਂ ਤੇ ਕਮਾਂਡਾਂ ਚਲਾਉਣ "
-"ਦੇ ਕੰਮ ਆਉਦਾ ਹੈ"
+msgstr "ssh ਇੱਕ ਕਾਰਜ ਹੈ, ਜੋ ਕਿ ਰਿਮੋਟ ਮਸ਼ੀਨਾਂ ਤੇ ਲਾਗਆਨ ਕਰਨ ਅਤੇ ਉਹਨਾਂ ਤੇ ਕਮਾਂਡਾਂ ਚਲਾਉਣ ਦੇ ਕੰਮ ਆਉਦਾ ਹੈ"
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
@@ -702,23 +698,23 @@ msgstr "OpenSSH ਸਰਵਰ ਪੇਸ਼ਕਾਰ"
 
 #: service-list.pl.in:125
 msgid "Linux system logging utilities"
-msgstr "ਲੀਨਕਸ ਸਿਸਟਮ ਲਾਗਿੰਗ ਉਪਯੋਗਤਾ"
+msgstr "ਲੀਨਕਸ ਸਿਸਟਮ ਲਾਗਿੰਗ ਸਹੂਲਤਾਂ"
 
 #: service-list.pl.in:125
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr ""
-"Sysklogd ਦੋ ਸਿਸਟਮ ਪੱਧਰ ਦੀਆਂ ਸਹੂਲਤਾਂ ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ ਹੈ ਇੱਕ ਸਿਸਟਮ ਲਾੱਗਆਨ "
-"ਅਤੇ ਕਰਨਲ ਸੁਨੇਹਾ ਪ੍ਰਾਪਤੀ"
+"Sysklogd ਦੋ ਸਿਸਟਮ ਪੱਧਰ ਦੀਆਂ ਸਹੂਲਤਾਂ ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ ਹੈ ਇੱਕ ਸਿਸਟਮ ਲਾੱਗਆਨ ਅਤੇ ਕਰਨਲ ਸੁਨੇਹਾ "
+"ਪ੍ਰਾਪਤੀ"
 
 #: service-list.pl.in:126
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
-"Syslog ਇੱਕ ਉਪਯੋਗਤਾ ਹੈ, ਜੋ ਕਿ ਕਈ ਪੇਸ਼ਕਾਰੀਆਂ ਲਈ ਕਈ ਸਿਸਟਮ ਲਾੱਗ ਫਾਇਲਾਂ ਉਪਲੱਬਧ "
-"ਕਰਵਾਉਦੀ ਹੈ| syslog ਨੂੰ ਚਲਾਉਣਾ ਹਮੇਸਾ ਲਾਭਦਾਇਕ ਹੀ ਹੈ"
+"Syslog ਇੱਕ ਉਪਯੋਗਤਾ ਹੈ, ਜੋ ਕਿ ਕਈ ਪੇਸ਼ਕਾਰੀਆਂ ਲਈ ਕਈ ਸਿਸਟਮ ਲਾੱਗ ਫਾਇਲਾਂ ਉਪਲੱਬਧ ਕਰਵਾਉਦੀ ਹੈ| "
+"syslog ਨੂੰ ਚਲਾਉਣਾ ਹਮੇਸਾ ਲਾਭਦਾਇਕ ਹੀ ਹੈ"
 
 #: service-list.pl.in:127
 msgid ""
@@ -727,9 +723,9 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
-"RFC 868 ਇੱਕ ਸਮਾਂ ਸਰਵਰ ਹੈ, ਇਹ ਸਾਇਟ ਤੇ ਨਾ-ਨਿਰਭਰ, ਮਸ਼ੀਨ ਦੇ ਪੜਨ ਯੋਗ ਮਿਤੀ ਤੇ ਸਮਾਂ "
-"ਪਰੋਟੋਕੋਲ ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ ਹੈ| ਸਮਾਂ ਸੇਵਾ ੧੯੦੦ ਦੀ ਪਹਿਲੀਂ ਜਨਵਰੀ ਦੀ ਅੱਧੀ ਰਾਤ ਤੋਂ ਸਮਾਂ "
-"ਸਰੋਤ ਨੂੰ ਵਾਪਿਸ ਭੇਜਦੀ ਹੈ| ਇਹ tcp ਵਰਜਨ ਹੈ| ਤੁਹਾਨੂੰ ਇਸ ਨੂੰ ਵਰਤਣ ਲਈ xinetd ਨੂੰ ਯੋਗ ਕਰਨਾ ਹੋਵੇਗਾ"
+"RFC 868 ਇੱਕ ਸਮਾਂ ਸਰਵਰ ਹੈ, ਇਹ ਸਾਇਟ ਤੇ ਨਾ-ਨਿਰਭਰ, ਮਸ਼ੀਨ ਦੇ ਪੜਨ ਯੋਗ ਮਿਤੀ ਤੇ ਸਮਾਂ ਪਰੋਟੋਕੋਲ "
+"ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ ਹੈ| ਸਮਾਂ ਸੇਵਾ ੧੯੦੦ ਦੀ ਪਹਿਲੀਂ ਜਨਵਰੀ ਦੀ ਅੱਧੀ ਰਾਤ ਤੋਂ ਸਮਾਂ ਸਰੋਤ ਨੂੰ ਵਾਪਿਸ "
+"ਭੇਜਦੀ ਹੈ| ਇਹ tcp ਵਰਜਨ ਹੈ| ਤੁਹਾਨੂੰ ਇਸ ਨੂੰ ਵਰਤਣ ਲਈ xinetd ਨੂੰ ਯੋਗ ਕਰਨਾ ਹੋਵੇਗਾ"
 
 #: service-list.pl.in:128
 msgid ""
@@ -738,9 +734,9 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
-"RFC 868 ਇੱਕ ਸਮਾਂ ਸਰਵਰ ਹੈ, ਇਹ ਸਾਇਟ ਤੇ ਨਾ-ਨਿਰਭਰ, ਮਸ਼ੀਨ ਦੇ ਪੜਨ ਯੋਗ ਮਿਤੀ ਤੇ ਸਮਾਂ "
-"ਪਰੋਟੋਕੋਲ ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ ਹੈ| ਸਮਾਂ ਸੇਵਾ ੧੯੦੦ ਦੀ ਪਹਿਲੀਂ ਜਨਵਰੀ ਦੀ ਅੱਧੀ ਰਾਤ ਤੋਂ ਸਮਾਂ "
-"ਸਰੋਤ ਨੂੰ ਵਾਪਿਸ ਭੇਜਦੀ ਹੈ| ਇਹ udp ਵਰਜਨ ਹੈ| ਤੁਹਾਨੂੰ ਇਸ ਨੂੰ ਵਰਤਣ ਲਈ xinetd ਨੂੰ ਯੋਗ ਕਰਨਾ ਹੋਵੇਗਾ"
+"RFC 868 ਇੱਕ ਸਮਾਂ ਸਰਵਰ ਹੈ, ਇਹ ਸਾਇਟ ਤੇ ਨਾ-ਨਿਰਭਰ, ਮਸ਼ੀਨ ਦੇ ਪੜਨ ਯੋਗ ਮਿਤੀ ਤੇ ਸਮਾਂ ਪਰੋਟੋਕੋਲ "
+"ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ ਹੈ| ਸਮਾਂ ਸੇਵਾ ੧੯੦੦ ਦੀ ਪਹਿਲੀਂ ਜਨਵਰੀ ਦੀ ਅੱਧੀ ਰਾਤ ਤੋਂ ਸਮਾਂ ਸਰੋਤ ਨੂੰ ਵਾਪਿਸ "
+"ਭੇਜਦੀ ਹੈ| ਇਹ udp ਵਰਜਨ ਹੈ| ਤੁਹਾਨੂੰ ਇਸ ਨੂੰ ਵਰਤਣ ਲਈ xinetd ਨੂੰ ਯੋਗ ਕਰਨਾ ਹੋਵੇਗਾ"
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
@@ -752,9 +748,8 @@ msgid ""
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
-"ਰਲਵੇਂ ਅੰਕ ਜਰਨੇਟਰ ਜੰਤਰ ਡਰਾਇਵਰਾਂ ਅਤੇ ਹੋਰ ਸਰੋਤਾਂ ਤੋਂ ਨੋਵਾਇਸ ਪ੍ਰਾਪਤ ਕਰਕੇ "
-"ਇੰਟਰੋਪੀ ਪੂਲ ਵਿੱਚ ਭੇਜਦਾ ਹੈ| ਇਸ ਪੂਲ ਵਿੱਚ ਮੁੜ ਰਲਵੇਂ ਅੰਕ ਪੈਦਾ ਕੀਤੇ "
-"ਜਾਦੇ ਹਨ"
+"ਰਲਵੇਂ ਅੰਕ ਜਰਨੇਟਰ ਜੰਤਰ ਡਰਾਇਵਰਾਂ ਅਤੇ ਹੋਰ ਸਰੋਤਾਂ ਤੋਂ ਨੋਵਾਇਸ ਪ੍ਰਾਪਤ ਕਰਕੇ ਇੰਟਰੋਪੀ ਪੂਲ ਵਿੱਚ ਭੇਜਦਾ ਹੈ| "
+"ਇਸ ਪੂਲ ਵਿੱਚ ਮੁੜ ਰਲਵੇਂ ਅੰਕ ਪੈਦਾ ਕੀਤੇ ਜਾਦੇ ਹਨ"
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -765,8 +760,8 @@ msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
-"vmware ਇੱਕ Intel X86-ਆਧਾਰਿਤ ਫਰਜ਼ੀ ਮਸ਼ੀਨ ਚਾਲੂ ਕਰਦੀ ਹੈ ਇਹ ਸਕ੍ਰਿਪਟ"
-"VMware ਸਾਫਟਵੇਅਰ ਨੂੰ ਚਾਲੂ ਕਰਨ ਵਾਲੀਆਂ ਸੇਵਾਵਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਦੀ ਹੈ"
+"vmware ਇੱਕ Intel X86-ਆਧਾਰਿਤ ਫਰਜ਼ੀ ਮਸ਼ੀਨ ਚਾਲੂ ਕਰਦੀ ਹੈ ਇਹ ਸਕ੍ਰਿਪਟVMware ਸਾਫਟਵੇਅਰ ਨੂੰ "
+"ਚਾਲੂ ਕਰਨ ਵਾਲੀਆਂ ਸੇਵਾਵਾਂ ਦਾ ਪ੍ਰਬੰਧਨ ਕਰਦੀ ਹੈ"
 
 #: service-list.pl.in:132
 msgid "Web-based administration toolkit"
@@ -785,8 +780,8 @@ msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
-"ਉਪਭੋਗਤਾਵਾਂ ਨੂੰ Windows(tm) ਕਾਰਜਾਂ ਨੂੰ ਸਿਰਫ ਇੱਕ ਵਾਰ ਕਲਿੱਕ ਕਰਕੇ ਚਲਾਉਣ ਲ਼ਈ( \\ "
-"./file.exe ਲਿਖਣ ਨਾਲ)"
+"ਉਪਭੋਗਤਾਵਾਂ ਨੂੰ Windows(tm) ਕਾਰਜਾਂ ਨੂੰ ਸਿਰਫ ਇੱਕ ਵਾਰ ਕਲਿੱਕ ਕਰਕੇ ਚਲਾਉਣ ਲ਼ਈ( \\ ./file.exe "
+"ਲਿਖਣ ਨਾਲ)"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
@@ -794,7 +789,7 @@ msgstr "X ਦਰਿਸ਼ ਪ੍ਰਬੰਧਕ"
 
 #: service-list.pl.in:135
 msgid "Provides the X equivalent of a \"login:\" prompt."
-msgstr "\"ਲਾੱਗਆਨ:\" ਪਰਾਉਟ ਦਾ X ਅਨੁਸਾਰੀ"
+msgstr "\"ਲਾੱਗਆਨ:\" ਪ੍ਰਾਉਟ ਦਾ X ਅਨੁਸਾਰੀ"
 
 #: service-list.pl.in:136
 msgid "X font server"
@@ -805,8 +800,8 @@ msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
 msgstr ""
-"Xfs ਇੱਕ X ਝਰੋਖਾ ਸਿਸਟਮ ਫੋਂਟ ਸਰਵਰ ਹੈ| ਇਹ X ਝਰੋਖਾ ਸਿਸਟਮ ਦਰਿਸ਼ ਸਰਵਰ ਲਈ ਫੋਂਟ "
-"ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ ਹੈ"
+"Xfs ਇੱਕ X ਝਰੋਖਾ ਸਿਸਟਮ ਫੋਂਟ ਸਰਵਰ ਹੈ| ਇਹ X ਝਰੋਖਾ ਸਿਸਟਮ ਦਰਿਸ਼ ਸਰਵਰ ਲਈ ਫੋਂਟ ਉਪਲੱਬਧ ਕਰਵਾਉਦਾ "
+"ਹੈ"
 
 #: service-list.pl.in:137
 msgid ""
@@ -815,36 +810,83 @@ msgid ""
 "available based on time, and can place limits on the number of servers that "
 "can be started, among other things."
 msgstr ""
-"xinetd, inetd ਦਾ ਇੱਕ ਸ਼ਕਤੀਸ਼ਾਲੀ ਬਦਲ ਹੈ xinetd ਵਿੱਚ ਪਹੁੰਚ ਕੰਟਰੋਲ ਪ੍ਰਬੰਧਨ, "
-"ਲਾੱਗਇਨ ਸਹੂਲਤਾਂ, ਸਮੇਂ ਤੇ ਸੇਵਾਂ ਉਪਲੱਬਧ ਕਰਵਾਉਣ ਲਈ ਅਤੇ ਸਰਵਰ, "
-"ਜੋ ਕਿ ਹੋਰਾਂ ਤੋਂ ਇਲਾਵਾ ਸ਼ੁਰੂ ਹੋ ਸਕਦੇ ਹਨ, ਦੀ ਗਿਣਤੀ ਸੀਮਾ ਅੰਦਰ ਰੱਖਣ "
-"ਸਹਾਇਕ ਹਨ"
+"xinetd, inetd ਦਾ ਇੱਕ ਸ਼ਕਤੀਸ਼ਾਲੀ ਬਦਲ ਹੈ xinetd ਵਿੱਚ ਪਹੁੰਚ ਕੰਟਰੋਲ ਪ੍ਰਬੰਧਨ, ਲਾੱਗਇਨ ਸਹੂਲਤਾਂ, "
+"ਸਮੇਂ ਤੇ ਸੇਵਾਂ ਉਪਲੱਬਧ ਕਰਵਾਉਣ ਲਈ ਅਤੇ ਸਰਵਰ, ਜੋ ਕਿ ਹੋਰਾਂ ਤੋਂ ਇਲਾਵਾ ਸ਼ੁਰੂ ਹੋ ਸਕਦੇ ਹਨ, ਦੀ ਗਿਣਤੀ "
+"ਸੀਮਾ ਅੰਦਰ ਰੱਖਣ ਸਹਾਇਕ ਹਨ।"
 
-#: service.pl.in:208 service.pl.in:213
+#: service.pl.in:229 service.pl.in:234
 msgid "Halting the system"
 msgstr "ਸਿਸਟਮ ਬੰਦ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
-#: service.pl.in:209 service.pl.in:215
+#: service.pl.in:230 service.pl.in:236
 msgid "Text mode"
 msgstr "ਪਾਠ ਮੋਡ"
 
-#: service.pl.in:210 service.pl.in:214 service.pl.in:223
+#: service.pl.in:231 service.pl.in:235 service.pl.in:244
 msgid "Graphical mode"
 msgstr "ਗਰਾਫਿਕਲ ਮੋਡ"
 
-#: service.pl.in:211 service.pl.in:216
+#: service.pl.in:232 service.pl.in:237
 msgid "Rebooting the system"
 msgstr "ਸਿਸਟਮ ਨੂੰ ਮੁਡ਼ ਚਾਲੂ ਕੀਤਾ ਜਾ ਰਿਹਾ ਹੈ"
 
-#: service.pl.in:218
+#: service.pl.in:239
 msgid "Starts all system neccesary services"
 msgstr "ਸਾਰੀਂ ਸਿਸਟਮ ਸੇਵਾਵਾਂ ਸ਼ੁਰੂ ਕਰੋ"
 
-#: service.pl.in:219
+#: service.pl.in:240
 msgid "Default runlevel"
 msgstr "ਮੂਲ ਰਨਲੈਵਲ"
 
-#: service.pl.in:220
+#: service.pl.in:241
 msgid "Networkless runlevel"
 msgstr "ਬਿਨਾਂ- ਨੈੱਟਵਰਕ ਰਨਲੈਵਲ"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "ਸਿਸਟਮ ਲਾਗ ਨਿਗਰਾਨੀ"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "ਆਡੀਓ ਜੰਤਰ ਬਣਾਓ"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "CD-ROM ਡਰਾਇਵ ਲਈ ਪਹੁੰਚ"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "ਮਾਡਮ ਜੰਤਰਾਂ ਲਈ ਪਹੁੰਚ"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "ਮਾਡਮ ਜੰਤਰ ਰਾਹੀਂ ਇੰਟਰਨੈੱਟ ਨਾਲ ਜੁੜੋ"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "ਫੈਕਸਾਂ ਭੇਜੋ ਅਤੇ ਪ੍ਰਾਪਤ ਕਰੋ"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "ਫਲਾਪੀ ਡਰਾਇਵ ਤੇ ਪਹੁੰਚ"
+
+#: users-conf.in:186
+msgid "Enable access to external storage devices automatically"
+msgstr "ਬਾਹਰੀ ਸਟੋਰੇਜ਼ ਜੰਤਰਾਂ ਤੇ ਸਵੈ-ਚਾਲਤ ਹੀ ਪਹੁੰਚ ਪ੍ਰਾਪਤ ਯੋਗ"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "ਟੇਪ ਡਰਾਇਵ ਲਈ ਪਹੁੰਚ"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "ਪ੍ਰਬੰਧਕੀ ਅਧਿਕਾਰ ਪ੍ਰਾਪਤ ਕਰਨ ਯੋਗ ਬਣੋ"
+
+#: users-conf.in:492
+msgid "Default"
+msgstr "ਮੂਲ"
+
+#: users-conf.in:493
+msgid "Default profile"
+msgstr "ਮੂਲ ਪ੍ਰੋਫਾਇਲ"
 
