@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
 
-require "be.pl";
 require "media.pl";
 require "network.pl";
+require "parse.pl";
 require "debug.pl";
 
 
-@platforms = ( "redhat-6.2" );
+@platforms = ( "redhat-6.2", "redhat-7.0" );
 
 
 &xst_init ("test", "0.0.0", "Test script.", @ARGV);
@@ -92,8 +92,13 @@ sub test_interfaces
 
 # ---
 
-&test_interfaces();
+@arr = &xst_parse_fstab ("/etc/fstab");
 
+print @arr[0] . "\n";
+
+&xst_debug_print_struct (@arr);
+
+# &test_interfaces();
 # &test_media();
 
 # be_service_enable(90, "-d pekk", "samba", "smbd", "smb", "httpd");
