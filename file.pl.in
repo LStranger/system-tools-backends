@@ -120,18 +120,7 @@ sub xst_file_backup_rotate_dirs
     my $i;
 
     $xst_file_backup_dir_rotation_was_made = 1;
-    if (stat ("$backup_tool_dir/9") && !stat ("$backup_tool_dir/First"))
-    {
-      # The first rotated-up backup is the beginning of history. It is kept forever.
-
-      &xst_file_run ("mv $backup_tool_dir/9 $backup_tool_dir/First");
-    }
-    else
-    {
-      # FIXME: rm -Rf might not work on all systems.
-
-      &xst_file_run ("rm -Rf $backup_tool_dir/9");
-    }
+    &xst_file_run ("rm -Rf $backup_tool_dir/9");
 
     for ($i = 8; $i; $i--)
     {
@@ -140,8 +129,17 @@ sub xst_file_backup_rotate_dirs
         &xst_file_run ("mv $backup_tool_dir/$i $backup_tool_dir/" . ($i+1));
       }
     }
-    
-    &xst_file_create_path_for_file ("$backup_tool_dir/1/");
+
+    if (!stat ("$backup_tool_dir/First"))
+    {
+      &xst_file_create_path ("$backup_tool_dir/First");
+      &xst_file_run ("ln -s First $backup_tool_dir/1");
+    }
+    else
+    {
+      &xst_file_create_path_for_file ("$backup_tool_dir/1/");
+    }
+
     &xst_report ("file_backup_rotate", $backup_tool_dir);
   }
   
