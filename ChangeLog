@@ -2,6 +2,8 @@
 
 	* network.pl.in (xst_network_suse70_interface_activate): Fixed
 	bug that prevented ifaces from activation/deactivation in suse70.
+	(xst_network_interface_set): Force activation setup of interfaces.
+	Implemented force macanism in other activation functions.
 
 	* parse.pl.in (xst_parse_replace_files): return () if $values
 	is undef.

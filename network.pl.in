@@ -510,7 +510,7 @@ sub xst_network_rh62_interface_activate_by_dev
 
 sub xst_network_rh62_interface_activate
 {
-  my ($hash, $old_hash, $enabled) = @_;
+  my ($hash, $old_hash, $enabled, $force) = @_;
   my $dev;
 
   if ($enabled)
@@ -521,12 +521,12 @@ sub xst_network_rh62_interface_activate
     }
     else
     {
-      $dev = $$hash{"file"} if (!$old_hash || !$$old_hash{"enabled"});
+      $dev = $$hash{"file"} if (!$old_hash || !$$old_hash{"enabled"} || $force);
     }
   }
   else
   {
-    $dev = $$hash{"file"} if ($old_hash && $$old_hash{"enabled"});
+    $dev = $$hash{"file"} if ($old_hash && $$old_hash{"enabled"} || $force);
   }
 
   if ($dev)
@@ -564,12 +564,12 @@ sub xst_network_suse70_interface_activate_by_dev
 
 sub xst_network_suse70_interface_activate
 {
-  my ($hash, $old_hash, $enabled) = @_;
+  my ($hash, $old_hash, $enabled, $force) = @_;
   my $dev;
 
   if ($old_hash)
   {
-    $dev = $$hash{"dev"} if ($enabled != $$old_hash{"enabled"});
+    $dev = $$hash{"dev"} if ($enabled != $$old_hash{"enabled"} || $force);
   }
   else
   {
@@ -672,7 +672,7 @@ sub xst_network_interfaces_down_changed
   {
     if (!&xst_util_struct_eq ($$values_hash{$i}, $$old_hash{$i}))
     {
-      &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 0);
+      &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 0, 1);
     }
   }
 }
@@ -700,7 +700,7 @@ sub xst_network_interface_set
                                   $values_hash, $old_hash);
   
   # if success saving the settings for the interface, set up immediatly.
-  &$proc ($values_hash, $old_hash, $$values_hash{"enabled"}) if !$res;
+  &$proc ($values_hash, $old_hash, $$values_hash{"enabled"}, 1) if !$res;
 
   &xst_report_leave ();
 
