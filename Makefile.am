@@ -1,18 +1,19 @@
 SUBDIRS = files
 
 backends = \
-	disks-conf \
-	memory-conf \
-	network-conf \
-	shares-conf \
-	time-conf \
-	users-conf \
-	boot-conf \
-	print-conf \
+	boot-conf            \
+	disks-conf           \
+	display-conf         \
 	internetsharing-conf \
-	mouse-conf \
-	package-conf \
-	display-conf
+	memory-conf          \
+	mouse-conf           \
+	network-conf         \
+	package-conf         \
+	print-conf           \
+	shares-conf          \
+	sysv-conf            \
+	time-conf            \
+	users-conf
 
 PERLBODY = \
 	boot.pl.in     \

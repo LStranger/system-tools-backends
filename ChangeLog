@@ -1,5 +1,7 @@
 Tue Sep 11 20:48:25 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* Makefile.am (backends): added sysv-conf backend.
+
 	* report.pl.in (xst_report): Added report for unsupported
 	platforms for sysv init scripts.
 
