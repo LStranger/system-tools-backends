@@ -69,7 +69,7 @@ $version = "___version___";
 
               "suse-7.0", "turbolinux-7.0",
 	      
-              "slackware-8.0.0", "slackware-8.1", "slackware-9.0",
+              "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0",
 
               "gentoo", "pld-1.0");
 
@@ -439,7 +439,7 @@ sub conf_get_parse_table
    
    "slackware-8.0.0" => "debian-2.2",
    "slackware-8.1"   => "debian-2.2",
-   "slackware-9.0"   => "debian-2.2",
+   "slackware-9.0.0" => "debian-2.2",
 
    "gentoo"          => "redhat-7.0",
 
@@ -573,7 +573,7 @@ sub conf_get_replace_table
    "turbolinux-7.0"  => "redhat-7.0",
    
    "slackware-8.0.0" => "debian-2.2",
-   "slackware-9.0"   => "debian-2.2",
+   "slackware-9.0.0" => "debian-2.2",
 
    "pld-1.0"         => "pld-1.0"
    );

@@ -1,3 +1,8 @@
+2003-05-19  Ken Stanley  <kstanley@teamzx.com>
+
+	* platform.pl.in, time-conf.in, users-conf.in: slackware 9 version is
+	9.0.0, not 9.0. Fixed
+
 2003-05-18  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network-conf.in: added support for network profiles
@@ -157,10 +162,10 @@
 
          * time-conf.in: Added Slackware 9.0,
          (conf_get_replace_table, conf_get_parse_table): in dist_map
-         slackware-9.0 is like debian-2.2
+         slackware-9.0.0 is like debian-2.2
 
          * users-conf.in: Added Slackware 9.0,
-         (logindefs_dist_map): slackware-9.0 uses rh_logindefs_defaults
+         (logindefs_dist_map): slackware-9.0.0 uses rh_logindefs_defaults
 
          * boot-conf.in: Added Slackware 9.0
 
