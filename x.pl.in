@@ -955,6 +955,7 @@ sub x_update_display_mode
         $i++;
       }
 
+      chop $new_line; # It has always extra space at the end.
       return $new_line . "\n";
     }
   }

@@ -270,7 +270,7 @@ sub xst_boot_conf_find_image
   my ($buff, $lineno) = @_;
   my $i;
 
-  for (;$lineno <= $#$buff; $lineno++)
+  for (; $lineno <= $#$buff; $lineno++)
   {
     $i = $$buff[$lineno];
 
@@ -286,20 +286,19 @@ sub xst_boot_conf_find_image
 sub xst_boot_conf_is_image
 {
   my ($image, @buff) = @_;
-  my ($name, $key, $i, $label);
-  
-  $name = 0;
-  $name = 'image' if exists $$image{'image'};
-  $name = 'other' if exists $$image{'other'};
+  my ($key, $i, $label);
 
-  return -1 if (!$name);
+  my $name = 'image' if exists $image->{'image'};
+  $name =    'other' if (!$name && exists $image->{'other'});
 
-  $key = $$image{$name};
-  $label = $$image{'label'};
+  return -1 unless $name;
+
+  $key = $image->{$name};
+  $label = $image->{'label'};
 
   $i = $buff[0];
   # image line isn't the one we are looking for.
-  return -1 if (!($i =~ /^[ \t]*$name[ \t]*=[ \t]*$key\s+/));
+  return -1 unless ($i =~ /^[ \t]*$name[ \t]*=[ \t]*$key\s+/);
   
   foreach $i (@buff)
   {
@@ -307,7 +306,11 @@ sub xst_boot_conf_is_image
     return 1 if ($i =~ /^[ \t]*label[ \t]*=[ \t]*$label\s+/);
   }
 
-  # Couldn't find label line.
+  # Couldn't find label line, let's try default one.
+  my $tmp_label = $1 if ($key =~ /\S+\/(\S+)$/);
+  return 1 if ($tmp_label =~ /$label/);
+
+  # Nope, not the one.
   return -1;
 }
 
@@ -320,10 +323,7 @@ sub xst_boot_conf_delete_image
   my ($end, $i);
 
   $end = &xst_boot_conf_find_image ($buff, $lineno + 1);
-  if ($end < 0)
-  {
-    $end = $#$buff;
-  }
+  $end = scalar @$buff if ($end < 0);
 
   for ($i = $lineno; $i < $end; $i++)
   {
@@ -338,14 +338,11 @@ sub xst_boot_conf_delete_image
 sub xst_boot_conf_edit_image
 {
   my ($image, $buff, $lineno) = @_;
-  my ($end, $i, $found, $line, $key);
+  my ($i, $found, $line, $key);
   my ($pre_space, $post_comment, $value);
 
-  $end = &xst_boot_conf_find_image ($buff, $lineno + 1);
-  if ($end < 0)
-  {
-    $end = $#$buff + 1;
-  }
+  my $end = &xst_boot_conf_find_image ($buff, $lineno + 1);
+  $end = scalar @$buff if ($end < 0);
 
   for ($lineno; $lineno < $end; $lineno++)
   {
@@ -365,6 +362,7 @@ sub xst_boot_conf_edit_image
         $found++;
         $value = $$image{$key};
         $value = "\"$value\"" if ($value =~ /[ \t]/ && (! ($value =~ /^\".+\"$/)));
+        $value = "\"$value\"" if ($value =~ /\=/ && (!($value =~ /^\".+\"$/)));
 
         $$line = $pre_space . $key . $1 . "=" . $2 . $value . $post_comment . "\n";
         $$line = "# " . $$line if $key eq "XstPartitionType";
@@ -388,6 +386,7 @@ sub xst_boot_conf_edit_image
   {
     $value = $$image{$key};
     $value = "\"$value\"" if ($value =~ /[ \t]/ && (! ($value =~ /^\".+\"$/)));
+    $value = "\"$value\"" if ($value =~ /\=/ && (!($value =~ /^\".+\"$/)));
     
     $line = "";
     $line = "# " if $key eq "XstPartitionType";
@@ -424,7 +423,8 @@ sub xst_boot_conf_add_image
   foreach $key (keys %$image)
   {
     $value = $$image{$key};
-    $value = "\"$value\"" if ($value =~ /[ \t]/ && (! ($value =~ /^\".+\"$/)));
+    $value = "\"$value\"" if ($value =~ /[ \t]/ && (!($value =~ /^\".+\"$/)));
+    $value = "\"$value\"" if ($value =~ /\=/&& (!($value =~ /^\".+\"$/)));
 
     $line = "";
     $line = "# " if $key eq "XstPartitionType";
@@ -443,7 +443,7 @@ sub xst_boot_conf_set_images
   my ($file, $key, $images) = @_;
   my ($buff, $lineno, $found, $image);
 
-  return if ($#$images <= 0);
+  return if (scalar @$images <= 0);
   
   $buff = &xst_file_buffer_load ($file);
   &xst_file_buffer_join_lines ($buff);
@@ -454,6 +454,8 @@ sub xst_boot_conf_set_images
     $found = 0;
     foreach $image (@$images)
     {
+      next unless $image;
+      
       $found = &xst_boot_conf_is_image ($image, @$buff[$lineno .. $#$buff]);
       if ($found > 0)
       {
@@ -466,7 +468,7 @@ sub xst_boot_conf_set_images
     }
 
     # Found image wasn't in our @images list: delete.
-    $buff = &xst_boot_conf_delete_image ($buff, $lineno) if ($found < 0);
+    $buff = &xst_boot_conf_delete_image ($buff, $lineno) if ($found <= 0);
 
     # Search new image line.
     $lineno = &xst_boot_conf_find_image ($buff, $lineno + 1);
@@ -619,4 +621,46 @@ sub xst_boot_conf_get
   
   return &xst_parse_from_table ($ {$dist_tables{$table}}{"fn"},
                                 $ {$dist_tables{$table}}{"table"});
+}
+
+# ----------------------------------------------------------------------------
+# Fix functions.
+#
+# The main reason for these functions is to add default values to xml so the
+# frontend doesn't have to know anything about lilo or its defaults.
+
+# Internal
+sub _lilo_fix_images
+{
+  my $hash = shift;
+  return unless $hash;
+
+  my $images = $hash->{'images'};
+  return unless $images;
+
+  foreach my $image (@$images)
+  {
+    my $name = $image->{'image'} if exists $image->{'image'};
+    $name = $image->{'other'} if (!$name && exists $image->{'other'});
+    
+    # Remove images without image identifier 'image' or 'other'.
+    unless ($name) {
+      undef $image;
+      next;
+    }
+
+    # Add 'label' field which is optional in lilo.conf
+    unless (exists $image->{'label'})
+    {
+      $image->{'label'} = $1 if ($name =~ /\S+\/(\S+)$/);
+    }
+  }
+}
+
+sub xst_boot_conf_fix
+{
+  my $hash = shift;
+  return unless $hash;
+
+  &_lilo_fix_images ($hash);
 }

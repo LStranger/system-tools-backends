@@ -1,3 +1,20 @@
+2001-07-28  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_update_display_mode): Chop off additional space.
+
+	* boot.pl.in (xst_boot_conf_is_image): Try default label also.
+	(xst_boot_conf_delete_image): Fixed bug of deletion of last image.
+	(xst_boot_conf_edit_image): Quote values which have '=' mark.
+	(xst_boot_conf_add_image): Ditto.
+	(_lilo_fix_images): New. Add 'label' field if it's missing.
+	(xst_boot_conf_fix): New.
+
+	* boot-conf.in (set): Don't flush conf file if XML was invalid or missing.
+
+2001-07-26  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_update_display_mode): Remove extra space from we added before.
+
 2001-07-26  Hans Petter Jansson  <hpj@ximian.com>
 
 	* display-conf.in: Add debian-2.2 to supported platforms. Tested and

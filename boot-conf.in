@@ -216,12 +216,10 @@ sub xml_print
 # Top-level actions.
 sub get
 {
-  my $hash;
-
-  # Get information from .conf file
-  $hash = &xst_boot_conf_get ();
-
-  &xst_end();
+  my $hash = &xst_boot_conf_get;
+  &xst_boot_conf_fix ($hash);
+  
+  &xst_end;
   &xml_print ($hash);
 }
 
@@ -231,20 +229,27 @@ sub set
 {
   my $hash = &xml_parse ();
 
-  &xst_boot_conf_set ($hash);
-  &xst_file_run ($tool_lilo);
+  if ($hash)
+  {
+    &xst_boot_conf_set ($hash);
+    &xst_file_run ($tool_lilo);
+  }
+  else
+  {
+    # TODO: report error.
+    1;
+  }
   
-  &xst_end ();
+  &xst_end;
 }
 
 
 # --- Filter config: XML in, XML out --- #
 sub filter
 {
-  my $hash;
-  
-  $hash = &xml_parse ();
-  &xst_end ();
+  my $hash = &xml_parse;
+
+  &xst_end;
   &xml_print ($hash);
 }
 
