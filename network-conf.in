@@ -95,8 +95,8 @@ $cf_winsserver = "";
 @cf_order = ();
 $cf_hostmatch = 0;  # 0 = all, 1 = first
 
-$cf_nw_interfaces = 0; # For interfaces and global networking params.
-$cf_nw_global = 0;     # These will hold refferences to hashes.
+$cf_nw_interfaces = {}; # For interfaces and global networking params.
+$cf_nw_global = {};     # These will hold references to hashes.
 
 
 # --- Configuration file manipulation --- #
@@ -857,11 +857,11 @@ sub xml_parse
   $tree = &be_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
-  # This is the top level - find and enter the "resolving" tag.
+  # This is the top level - find and enter the "network" tag.
 
   while (@$tree)
   {
-    if ($$tree[0] eq "network") { xml_parse_resolving($$tree[1]); }
+    if ($$tree[0] eq "network") { xml_parse_network ($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -870,9 +870,9 @@ sub xml_parse
   return($tree);
 }
 
-# <resolving>...</resolving>
+# <network>...</network>
 
-sub xml_parse_resolving
+sub xml_parse_network
 {
   my $tree = $_[0];
 
@@ -892,6 +892,7 @@ sub xml_parse_resolving
     elsif ($$tree[0] eq "statichost")      { xml_parse_statichost($$tree[1]); }
     elsif ($$tree[0] eq "order")           { xml_parse_order($$tree[1]); }
     elsif ($$tree[0] eq "hostmatch")       { xml_parse_hostmatch($$tree[1]); }
+    elsif ($$tree[0] eq "interface")       { xml_parse_interface($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -899,7 +900,7 @@ sub xml_parse_resolving
 }
 
 
-# <resolving><statichost>...</statichost></resolving>
+# <network><statichost>...</statichost></network>
 
 sub xml_parse_statichost
 {
@@ -931,7 +932,7 @@ sub xml_parse_statichost
 }
 
 
-# <resolving><order>...</order></resolving>
+# <network><order>...</order></network>
 
 sub xml_parse_order
 {
@@ -950,7 +951,7 @@ sub xml_parse_order
 }
 
 
-# <resolving><hostmatch return=... /></resolving>
+# <network><hostmatch return=... /></network>
 
 sub xml_parse_hostmatch
 {
@@ -960,6 +961,30 @@ sub xml_parse_hostmatch
 
   if ($$tree[0]->{return} eq "all") { $cf_hostmatch = 0; }
   else { $cf_hostmatch = 1; }
+}
+
+
+# <interface>...</interface>
+
+sub xml_parse_interface
+{
+  my $tree = $_[0];
+  my %interface;
+  my $dev;
+
+  shift @$tree;
+  
+  while (@$tree)
+  {
+    $interface{$$tree[0]} = be_xml_get_word ($$tree[1]);
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  $dev = $interface{"dev"};
+  delete $interface{"dev"};
+  $$cf_nw_interfaces{$dev} = { %interface };
 }
 
 
@@ -1100,6 +1125,26 @@ sub xml_print
 # --- Get (read) config --- #
 
 
+sub get_active_interfaces
+{
+  my $dev;
+  my $interface;
+
+  open IFCONFIG, "ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
+	 open IFCONFIG, "ifconfig | sed 's/:* .*//;/^\$/D' |";
+  # another possibility, instead of sed: awk '/^[a-z]/{print $1}'
+
+  while (<IFCONFIG>)
+  {
+    chomp;
+    $dev = $_;
+    $interface = $$cf_nw_interfaces{$dev};
+    $$interface{"enabled"} = 1;
+  }
+
+  close IFCONFIG;
+}
+
 sub get_immediate
 {
   # This is rather unethical. Have to find some reasonable defaults on non-(GNU/Linux)
@@ -1134,6 +1179,8 @@ sub get_immediate
   {
     be_report_warning(02, "Couldn't get reverse names for this host");
   }
+
+  &get_active_interfaces ()
 }
 
 
@@ -1148,10 +1195,11 @@ sub get
   read_defaultdomain (); be_print_progress ();
   read_hostname (); be_print_progress ();
   read_smb_conf (); be_print_progress ();
-  get_immediate (); be_print_progress ();
 
   # network interface stuff
   read_interfaces (); be_print_progress ();
+  
+  get_immediate (); be_print_progress ();
   
   be_end();
   xml_print ();
@@ -1160,6 +1208,54 @@ sub get
 
 # --- Set (write) config --- #
 
+
+sub set_interface_up
+{
+  my $dev = $_[0];
+
+  # RedHat
+
+  system ("ifup $dev");
+}
+
+sub set_interface_down
+{
+  my $dev = $_[0];
+
+  system ("ifconfig $dev down");
+}
+
+sub set_active_interfaces
+{
+  my (%ifaces, %interface, $elem);
+  
+  open IFCONFIG, "ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
+	 open IFCONFIG, "ifconfig | sed 's/:* .*//;/^\$/D' |";
+  # another possibility, instead of sed: awk '/^[a-z]/{print $1}'
+
+  while (<IFCONFIG>)
+  {
+    chomp;
+    $ifaces{$_} = 1;
+  }
+
+  close IFCONFIG;
+
+  foreach $elem (keys (%{$cf_nw_interfaces}))
+  {
+    %interface = %{$ { $cf_nw_interfaces}{$elem}};
+    if ($ifaces{$elem} && ! $$interface{"enabled"})
+    {
+	 set_interface_down ($elem);
+	 next;
+    }
+
+    if (!$ifaces{$elem} && $$interface{"enabled"})
+    {
+	 set_interface_up ($elem);
+    }
+  }
+}
 
 sub set_immediate
 {
@@ -1184,6 +1280,10 @@ sub set_immediate
   # Reload SMB configuration.
   
   be_service_restart(80, "-D", "samba", "smb", "smbd");
+
+  # Activate or deactivate network interfaces
+
+  &set_active_interfaces ();
 }
 
 
