@@ -1,5 +1,9 @@
 2001-02-09  Hans Petter Jansson  <hpj@ximian.com>
 
+	* platform.pl.in: (xst_platform_ensure_supported): Implement.
+
+2001-02-09  Hans Petter Jansson  <hpj@ximian.com>
+
 	* *.in: Removed -*-perl-*- lines that were confusing Emacs.
 
 2001-02-09  Arturo Espinosa <arturo@ximian.com>

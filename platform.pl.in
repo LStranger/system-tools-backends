@@ -187,4 +187,36 @@ sub xst_platform_guess
   }
 }
 
+
+# xst_platform_ensure_supported
+#
+# Takes a list of supported platforms and sees if the one detected is found in
+# this list. If not, will report a list of supported platforms and fail.
+
+sub xst_platform_ensure_supported
+{
+  my @supported = @_;
+
+  for $platform (@supported)
+  {
+    if ($platform eq $xst_dist) { return; }
+  }
+
+  # Not supported. Now list the ones we do support, and die.
+
+  for $platform (@supported)
+  {
+    &xst_report_info (97, "Supported: [$platform]");
+  }
+
+  &xst_report_fatal (98, "Your platform is not supported");
+  if (!$xst_reporting && !$xst_verbose)
+  {
+    print STDERR "Fatal error: Your platform is not supported.\n";
+  }
+
+  &xst_end ();
+  exit (2);
+}
+
 1;
