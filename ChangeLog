@@ -1,3 +1,25 @@
+2001-07-18  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* users-conf.in (set): Call write_profiles.
+	(xml_parse): Call xml_parse_profiles.
+	(xml_parse_profiles): Get "profiles" tag contents from read
+	xml document and set it in "profiles" key of data hash.
+	(write_profiles): If $$hash{"profiles"} is not empty,
+	save it to profiles.xml location.
+
+	* xml.pl.in (xst_xml_scan_recurse): Removed use of global
+	array xst_xml_scan_list.
+	(xst_xml_scan): Now optionally receives a tool structure.
+	The read document is stored inside the tool structure.
+
+	* users-conf.in (add_user): mkdir -p the parent directories
+	of the new user.
+	(get): receive tool as argument. This structure is passed
+	to all directive handlers by xml_run_directive as the first
+	argument.
+	(set): same. Pass it to xml_parse.
+	(filter): same.
+	
 2001-07-18  Hans Petter Jansson  <hpj@ximian.com>
 
 	* replace.pl.in (xst_replace_alchemist): Implement. Top-level function

@@ -365,12 +365,13 @@ sub xst_xml_scan_make_kid_array
 
 sub xst_xml_scan_recurse
 {
+  my ($xst_xml_scan_list, $list_arg) = @_;
   my @list;
-  if (@_) { @list = $_[0]->[0]; }
+  if ($list_arg ne undef) { @list = $$list_arg[0]; }
   
-  while (@xst_xml_scan_list)
+  while (@$xst_xml_scan_list)
   {
-    $el = $xst_xml_scan_list[0]; shift @xst_xml_scan_list;
+    $el = shift @$xst_xml_scan_list;
 
     if (($el eq "") || $el =~ /^\<[!?].*\>$/s) { next; }  # Empty strings, PI and DTD must go.
     if ($el =~ /^\<.*\/\>$/s)  # Empty.
@@ -388,7 +389,7 @@ sub xst_xml_scan_recurse
       $el =~ /^\<([a-zA-Z0-9_-]+).*\>$/s;
       push (@list, $1);
       $sublist = &xst_xml_scan_make_kid_array ($el);
-      push (@list, &xst_xml_scan_recurse ($sublist));
+      push (@list, &xst_xml_scan_recurse ($xst_xml_scan_list, $sublist));
       next;
     }
     elsif ($el ne "")  # PCDATA.
@@ -452,11 +453,13 @@ sub xst_xml_read_stdin
   return $doc;
 }
 
-
-sub xst_xml_scan  # (file) If no file specified, reads stdin.
+# (file, tool) If no file specified, reads stdin.
+# If tool is an xst_tool, stores the read buffer in
+# $$tool{"xml_doc"}.
+sub xst_xml_scan  
 {
-  my ($file) = @_;
-  my ($doc, @tree);
+  my ($file, $tool) = @_;
+  my ($doc, @tree, @xst_xml_scan_list);
 
   $file = $xst_input_file if $file eq undef;
 
@@ -471,8 +474,10 @@ sub xst_xml_scan  # (file) If no file specified, reads stdin.
 
   &xst_debug_print_log_to_file ("in.xml", $doc);
 
+  $$tool{"xml_doc"} = $doc if (&xst_is_tool ($tool));
+
   @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
-  $tree = &xst_xml_scan_recurse;
+  $tree = &xst_xml_scan_recurse (\@xst_xml_scan_list);
 
   return $tree;
 }

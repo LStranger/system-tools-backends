@@ -671,15 +671,17 @@ sub change_group
 	}	
 }
 
-sub save_profiles
+sub write_profiles
 {
-  if ($xml_doc_copy =~ /<profiles>(.*)<\/profiles>/ms)
+  my ($hash) = @_;
+
+  if ($$hash{"profiles"} ne undef)
   {
     my $path;
 
     $path = &xst_file_get_data_path . "/users/profiles.xml"; 
-    &xst_file_buffer_save ($1, $path);
-  }
+    &xst_file_buffer_save ($$hash{"profiles"}, $path);
+  }    
 }
 
 
@@ -689,22 +691,20 @@ sub save_profiles
 
 sub xml_parse
 {
+  my ($tool) = @_;
   my ($tree, %hash);
 	
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan ();
+  $tree = &xst_xml_scan (undef, $tool);
 
   $hash{"users"} = [];
   $hash{"users_hash"} = {};
   $hash{"groups"} = [];
   $hash{"groups_hash"} = {};
-
-  # Save profiles
-
-  # this should be named write_profiles and probably called from the set sub.
-  &save_profiles ();
   
+  &xml_parse_profiles ($tool, $hash);
+
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "users" tag.
 
@@ -717,6 +717,16 @@ sub xml_parse
   }
 
   return (\%hash);
+}
+
+sub xml_parse_profiles
+{
+  my ($tool, $hash);
+
+  if ($$tool{"xml_doc"} =~ /<profiles>(.*)<\/profiles>/ms)
+  {
+    $$hash{"profiles"} = $1;
+  }
 }
 
 sub xml_parse_users
@@ -1134,6 +1144,7 @@ sub xml_print
 
 sub get
 {
+  my ($tool) = @_;
   my ($hash);
   
   $hash = &read ();
@@ -1143,14 +1154,16 @@ sub get
 
 sub set
 {
+  my ($tool) = @_;
   my ($hash);
 
-  $hash = &xml_parse ();
+  $hash = &xml_parse ($tool);
 
   if ($xst_do_immediate)
   {
     &write_group_passwd ($hash);
     &write_logindefs ($hash);
+    &write_profiles ($hash);
   }
 
   &xst_end ();
@@ -1162,9 +1175,10 @@ sub set
 
 sub filter
 {
+  my ($tool) = @_;
   my ($hash);
   
-  $hash = &xml_parse ();
+  $hash = &xml_parse ($tool);
   &xst_end();
   &xml_print ($hash);
 }

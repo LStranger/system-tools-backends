@@ -283,6 +283,20 @@ sub xst_merge_std_directives
   }
 }
 
+sub xst_is_tool
+{
+  my ($tool) = @_;
+
+  if ((ref $tool eq "HASH") &&
+      (exists $$tool{"is_tool"}) &&
+      ($$tool{"is_tool"} == 1))
+  {
+    return 1;
+  }
+
+  return 0;
+}
+
 sub xst_init
 {
   my ($name, $version, $description, $directives, @args) = @_;
@@ -291,6 +305,8 @@ sub xst_init
   # Set the output autoflush.
   $| = 1;
   
+  $tool{"is_tool"} = 1;
+
   # Set backend descriptors.
 
   $tool{"name"} = $xst_name = $name;
