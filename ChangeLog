@@ -1,5 +1,9 @@
 2001-02-23  Arturo Espinosa  <arturo@ximian.com>
 
+	* replace.pl.in (xst_replace_sh): surround by quotes after escaping.
+	
+2001-02-23  Arturo Espinosa  <arturo@ximian.com>
+
 	* network-conf.in (xml_parse-dialing): minor naming change.
 	* network.pl.in (xst_network_dialing_set): "Stupid mode" corresponding tag
 	  is "stupid", not "mode". This was causing the "= 0" bug.
