@@ -56,7 +56,8 @@ sub xst_parse_expand
   if (ref $strarr eq "ARRAY")
   {
     my ($i);
-
+    
+    $strarr = [ @$strarr ];
     foreach $i (@$strarr)
     {
       $i = &xst_parse_expand ($i, $substr, $value);

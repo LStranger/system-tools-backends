@@ -489,12 +489,7 @@ sub xst_network_sysconfig_dir_ifaces_get_existing
   {
     foreach $i (readdir (IFACE_DIR))
     {
-      if ($i =~ /^ifcfg-[a-z0-9]+$/)
-      {
-        $name = $i;
-        $name =~ s/ifcfg-//;
-        push @ret, $name;
-      }
+      push @ret, $1 if ($i =~ /^ifcfg-(.+)$/);
     }
 
     closedir (IFACE_DIR);

@@ -1,5 +1,11 @@
 2001-12-14  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* parse.pl.in (xst_parse_expand): Copy the array before expanding
+	into it.
+
+	* network.pl.in (xst_network_sysconfig_dir_ifaces_get_existing): More
+	flexible ifcfg-* file matching.
+
 	* users-conf.in: Added redhat-7.2 to logindefs_dist_map.
 
 	* runlevel-conf.in: Added redhat-7.2 as a supported platform.
