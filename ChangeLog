@@ -1,3 +1,8 @@
+2004-11-14  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* Makefile.am: moved the intltool-* files to DISTCLEANFILES.
+	Fixes #158213
+
 2004-11-12  Christophe Merlet  <redfox@redfoxcenter.org>
 
 	* configure.in: Added "fr" (French) to ALL_LINGUAS.

@@ -58,7 +58,9 @@ EXTRA_DIST = \
 	AUTHORS \
 	NEWS
 
-CLEANFILES = $(backends) $(perl_libs) \
+CLEANFILES = $(backends) $(perl_libs)
+
+DISTCLEANFILES =	\
 	intltool-extract 	\
 	intltool-merge		\
 	intltool-update
