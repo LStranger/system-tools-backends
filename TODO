@@ -1,3 +1,8 @@
+All:
+
+  - Test returned filehandles from be_open_*() and be_write_*() in the correct
+    manner (assign to $fh, test that, and assign to FILE if non-null).
+
 * users-conf.in: 
 
   - Yellow pages support.
