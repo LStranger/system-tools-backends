@@ -1,5 +1,10 @@
 2001-02-23  Hans Petter Jansson  <hpj@ximian.com>
 
+	* file.pl.in (xst_backup_file): Add permanent archival of first-ever
+	  backup made.
+
+2001-02-23  Hans Petter Jansson  <hpj@ximian.com>
+
 	* file.pl.in (xst_rotate_backups): Remove.
 	  (xst_backup_file): Implement.
 	  (xst_create_path): Implement.

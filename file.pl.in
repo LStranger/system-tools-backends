@@ -86,9 +86,18 @@ sub xst_backup_file
   {
     my $i;
 
-    # FIXME: rm -Rf might not work on all systems.
+    if (stat ("$backup_tool_dir/9") && !stat ("$backup_tool_dir/First"))
+    {
+      # The first rotated-up backup is the beginning of history. It is kept forever.
 
-    &xst_run ("rm -Rf $backup_tool_dir/9");
+      &xst_run ("mv $backup_tool_dir/9 $backup_tool_dir/First");
+    }
+    else
+    {
+      # FIXME: rm -Rf might not work on all systems.
+
+      &xst_run ("rm -Rf $backup_tool_dir/9");
+    }
 
     for ($i = 8; $i; $i--)
     {
