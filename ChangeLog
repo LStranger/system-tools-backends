@@ -1,3 +1,8 @@
+2004-08-29  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: added support for WEP keys, this isn't reflected
+	in the frontends still
+
 2004-08-28  Akagic Amila  <bono@linux.org.ba>
 
         * configure.in: Added 'bs' to ALL_LINGUAS.
