@@ -1,3 +1,11 @@
+2001-02-22  Arturo Espinosa  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_pap_passwd): get the pap password from a pap-secrets file.
+	  The tag name for dialing dialers passwords is now password, not passwd.
+	* parse.pl.in: don't use @_ to pass arguments: it's difficult to know the required args
+	  for the function. xst_parse_sh now unquotes the value.
+	* replace.pl.in (xst_replace_sh): quote value and surround by quotes if required, before replacing.
+	
 2001-02-22  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_scan_recurse) (xst_xml_scan_make_kid_array):

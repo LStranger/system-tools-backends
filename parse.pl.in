@@ -27,6 +27,28 @@ require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 
 
+sub xst_parse_replace_hash_values
+{
+  my ($cp, $hash) = @_;
+  my ($j, $replace_key);
+
+  foreach $j (@$cp)
+  {
+    if ($j =~ /^%(.*)/)
+    {
+      $replace_key = $1;
+      if (exists $$hash{$replace_key}) 
+      {
+        $j = $$hash{$replace_key}
+      }
+      else
+      {
+        print STDERR "Warning: xst_parse_replace_hash_values: hash key $replace_key doesn't exist.\n";
+      }
+    }
+  }
+}
+
 sub xst_parse_from_table
 {
   my ($fn, $table) = @_;
@@ -41,6 +63,7 @@ sub xst_parse_from_table
     $proc = shift (@cp);
     $cp[0] = $$fn{$cp[0]};
 
+    &xst_parse_replace_hash_values (\@cp, \%hash);
     $hash{$key} = &$proc (@cp) if ($hash{$key} eq undef);
   }
 
@@ -92,7 +115,10 @@ sub xst_parse_split
 # is what we want. (ie search a.com\nsearch b.com\nsearch c.com)
 sub xst_parse_split_all
 {
-  my @a = &xst_parse_split (@_, 1);
+  my ($file, $key, $re) = @_;
+  my @a;
+
+  @a = &xst_parse_split ($file, $key, $re, 1);
 
   return \@a;
 }
@@ -100,27 +126,30 @@ sub xst_parse_split_all
 # Same, but for $all = 0. (ie nameserver 10.0.0.1)
 sub xst_parse_split_first_str
 {
-  return &xst_parse_split (@_, 0);
+  my ($file, $key, $re) = @_;
+
+  return &xst_parse_split ($file, $key, $re, 0);
 }
 
 # Interpret the result as a boolean. (ie multi on)
 sub xst_parse_split_first_bool
 {
+  my ($file, $key, $re) = @_;
   my $ret;
 
-  $ret = &xst_parse_split_first_str (@_);
+  $ret = &xst_parse_split_first_str ($file, $key, $re);
 
   return undef if ($ret eq undef);
   return (&xst_read_boolean ($ret)? 1: 0);
 }
 
-# After getting the first field, split that with $sep matching separators. (ie order hosts,bind)
+# After getting the first field, split the result with $sep matching separators. (ie order hosts,bind)
 sub xst_parse_split_first_array
 {
-  my $sep = pop (@_);
+  my ($file, $key, $re, $sep) = @_;
   my @ret;
   
-  @ret = split ($sep, &xst_parse_split (@_, 0));
+  @ret = split ($sep, &xst_parse_split ($file, $key, $re, 0));
 
   return \@ret;
 }
@@ -128,15 +157,28 @@ sub xst_parse_split_first_array
 # For files which are a list of /bin/sh shell variable declarations. (ie GATEWAY=10.10.10.1)
 sub xst_parse_sh
 {
-  return &xst_parse_split_first_str (@_, "[ \t]*=[ \t]*");
+  my ($file, $key) = @_;
+  my $ret;
+
+  $ret = &xst_parse_split_first_str ($file, $key, "[ \t]*=[ \t]*");
+  $ret =~ s/\\\"/\\_/g;
+  $ret =~ s/\"//g;
+  $ret =~ s/\\_/\"/g;
+  $ret =~ s/\\\'/\\_/g;
+  $ret =~ s/\'//g;
+  $ret =~ s/\\_/\'/g;
+  $ret =~ s/\\(.)/\1/g;
+
+  return $ret;
 }
 
 # Same, but interpret the returing value as a bool. (ie NETWORKING=yes)
 sub xst_parse_sh_bool
 {
+  my ($file, $key) = @_;
   my $ret;
 
-  $ret = &xst_parse_sh (@_);
+  $ret = &xst_parse_sh ($file, $key);
 
   return undef if ($ret eq undef);
   return (&xst_read_boolean ($ret)? 1: 0);

@@ -43,7 +43,7 @@ sub xst_network_dialing_get
        "Init2" => "init2",
        "Phone" => "phone",
        "Username" => "login",
-       "Password" => "passwd",
+       "Password" => "password",
        "Dial Command" => "dialcmd",
        "SetVolume" => "setvol",
        "Stupid mode" => "stupid",
@@ -205,7 +205,7 @@ sub xst_network_dialing_set
 	  "init2" => "Init2",
 	  "phone" => "Phone",
 	  "login" => "Username",
-	  "passwd" => "Password",
+	  "password" => "Password",
 	  "dialcmd" => "Dial Command",
 	  "setvol" => "SetVolume",
 	  "mode" => "Stupid mode",
@@ -351,6 +351,16 @@ sub xst_network_conf_set
   return $res;
 }
 
+sub xst_network_get_pap_passwd
+{
+  my ($file, $login) = @_;
+  my @arr;
+
+  $arr = &xst_parse_split_first_array ($file, $login, "[ \t]+", "[ \t]+");
+
+  return $$arr[1];
+}
+
 sub xst_network_rh62_parse_bootproto
 {
   my $ret;
@@ -476,7 +486,8 @@ sub xst_network_get_interfaces_parse_table
 	    {
         IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
         CHAT => "/etc/sysconfig/network-scripts/chat-#iface#",
-        IFACE => "#iface#" },
+        IFACE => "#iface#",
+        PAP => "/etc/ppp/pap-secrets" },
 	    table =>
           [
            [ name,               \&xst_parse_sh,      IFCFG, NAME ],
@@ -493,6 +504,7 @@ sub xst_network_get_interfaces_parse_table
            [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
            [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
            [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
+           [ password,           \&xst_network_get_pap_passwd, PAP, "%login" ],
            [ disconnect_timeout, \&xst_parse_sh,      IFCFG, DISCONNECTTIMEOUT ],
            [ retry_timeout,      \&xst_parse_sh,      IFCFG, RETRYTIMEOUT ],
            [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
