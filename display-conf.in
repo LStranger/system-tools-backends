@@ -163,6 +163,7 @@ sub test
   
   my $config = &x_parse ($tmp_file);
   my $xml_config = &xml_parse ();
+  &x_config_fix ($xml_config, 0);
   
   &x_config_set ($tmp_file, $config, $xml_config);
 

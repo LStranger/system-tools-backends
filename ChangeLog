@@ -1,5 +1,7 @@
 2001-07-26  Tambet Ingo  <tambet@ximian.com>
 
+	* display-conf.in (test): Oops, forogt that.
+
 	* x.pl.in (x_config_fix): Support XFree86 v3 also.
 
 	* display-conf.in (xml_print): ditto.
