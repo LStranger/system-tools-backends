@@ -397,7 +397,8 @@ sub conf_get_parse_table
 
    "redhat-7.0"   => "redhat-7.0",
    "redhat-7.1"   => "redhat-7.0",
-
+   "redhat-7.2"   => "redhat-7.0",
+   
    "mandrake-7.1" => "redhat-7.0",
    "mandrake-7.2" => "redhat-7.0",
 

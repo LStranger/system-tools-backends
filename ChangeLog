@@ -1,3 +1,8 @@
+2001-11-15  israel  <chema@celorio.com>
+
+	* time-conf.in (conf_get_parse_table): Added redhat 7.2 support
+	identical to 7.1
+
 2001-11-14  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* display-conf.in: Added redhat-7.2 support: identical to 7.1.
