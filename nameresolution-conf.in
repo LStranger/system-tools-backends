@@ -156,34 +156,34 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE nameresolution []>\n\n";
   print "<nameresolution>\n";
-  enter;
+  be_xml_enter;
 
-  vspace;
-  indent; print "<!-- Configuration starts here -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- Configuration starts here -->\n";
+  be_xml_vspace;
 
   # Hostname, domain, search domains, nameservers.
 
-  if ($cfl_hostname ne "") { indent; print "<hostname>$cfl_hostname</hostname>\n"; }
-  if ($cfl_domain ne "") { indent; print "<domain>$cfl_domain</domain>\n"; }
-  if ($cfl_workgroup ne "") { indent; print "<workgroup>$cfl_workgroup</workgroup>\n"; }
-  if ($cfl_description ne "") { indent; print "<description>$cfl_description</description>\n"; }
-  vspace;
-  if ($cfl_winsserver ne "") { indent; print "<winsserver>$cfl_winsserver</winsserver>\n"; }
-  vspace;
+  if ($cfl_hostname ne "") { be_xml_indent; print "<hostname>$cfl_hostname</hostname>\n"; }
+  if ($cfl_domain ne "") { be_xml_indent; print "<domain>$cfl_domain</domain>\n"; }
+  if ($cfl_workgroup ne "") { be_xml_indent; print "<workgroup>$cfl_workgroup</workgroup>\n"; }
+  if ($cfl_description ne "") { be_xml_indent; print "<description>$cfl_description</description>\n"; }
+  be_xml_vspace;
+  if ($cfl_winsserver ne "") { be_xml_indent; print "<winsserver>$cfl_winsserver</winsserver>\n"; }
+  be_xml_vspace;
 
   for $elem (@cf_searchdomains)
   {
     $elem = be_xml_plain_to_entities(\$elem);
-    indent; print "<searchdomain>$elem</searchdomain>\n";
+    be_xml_indent; print "<searchdomain>$elem</searchdomain>\n";
   }
 
-  vspace;
+  be_xml_vspace;
 
   for $elem (@cf_nameservers)
   {
     $elem = be_xml_plain_to_entities(\$elem);
-    indent; print "<nameserver>$elem</nameserver>\n";
+    be_xml_indent; print "<nameserver>$elem</nameserver>\n";
   }
 
   # Static hosts.
@@ -193,62 +193,62 @@ sub xml_print
   {
     if (@iplist[0] ne "")
     {
-      vspace;
-      indent; print "<statichost>\n";
-      enter;
+      be_xml_vspace;
+      be_xml_indent; print "<statichost>\n";
+      be_xml_enter;
 
       @iplist[0] = be_xml_plain_to_entities(\@iplist[0]);
 
-      indent; print "<ip>@iplist[0]</ip>\n";
+      be_xml_indent; print "<ip>@iplist[0]</ip>\n";
 
       my $aliaslist = @iplist[1];
       for $alias (@$aliaslist)
       {
         $alias = be_xml_plain_to_entities(\$alias);
-        indent; print "<alias>$alias</alias>\n";
+        be_xml_indent; print "<alias>$alias</alias>\n";
       }
 
-      leave;
-      indent; print "</statichost>\n";
+      be_xml_leave;
+      be_xml_indent; print "</statichost>\n";
     }
 
     shift @iplist;
     shift @iplist;
   }
 
-  vspace;
-  indent; print "<!-- You shouldn't have to modify anything below this line -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- You shouldn't have to modify anything below this line -->\n";
+  be_xml_vspace;
 
   # Search order and host matches (multi).
 
-  indent; print "<order>";
+  be_xml_indent; print "<order>";
   for $elem (@cf_order) { print "<$elem/>"; }
   print "</order>\n";
 
-  indent;
+  be_xml_indent;
   if ($cf_hostmatch) { print "<hostmatch return='first'/>\n"; }
   else               { print "<hostmatch return='all'/>\n"; }
 
-  vspace;
-  indent; print "<!-- You cannot modify anything below this line -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- You cannot modify anything below this line -->\n";
+  be_xml_vspace;
 
   if ($cfl_hostname_reverse ne "")
   {
-    indent; print "<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n";
+    be_xml_indent; print "<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n";
   }
 
   if ($cfl_domain_reverse ne "")
   {
-    indent; print "<domainreverse>$cfl_domain_reverse</domainreverse>\n";
+    be_xml_indent; print "<domainreverse>$cfl_domain_reverse</domainreverse>\n";
   }
 
-  vspace;
-  indent; print "<!-- End of configuration -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- End of configuration -->\n";
+  be_xml_vspace;
 
-  leave;
+  be_xml_leave;
   print "</nameresolution>\n";
 }
 
@@ -406,12 +406,12 @@ sub filter
 
 while (@ARGV)
 {
-  if    (@ARGV[0] eq "--get"     || @ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif (@ARGV[0] eq "--set"     || @ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif (@ARGV[0] eq "--filter"  || @ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif (@ARGV[0] eq "--help"    || @ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif (@ARGV[0] eq "--version")                     { print "$version\n"; exit(0); }
-  elsif (@ARGV[0] eq "--prefix"  || @ARGV[0] eq "-p")
+  if    ($ARGV[0] eq "--get"     || $ARGV[0] eq "-g") { be_set_operation("get"); }
+  elsif ($ARGV[0] eq "--set"     || $ARGV[0] eq "-s") { be_set_operation("set"); }
+  elsif ($ARGV[0] eq "--filter"  || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+  elsif ($ARGV[0] eq "--help"    || $ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif ($ARGV[0] eq "--version")                     { print "$version\n"; exit(0); }
+  elsif ($ARGV[0] eq "--prefix"  || $ARGV[0] eq "-p")
   {
     if ($be_prefix ne "")
     {
@@ -419,7 +419,7 @@ while (@ARGV)
       print STDERR $Usage; exit(1);
     }
 
-    $be_prefix = @ARGV[1];
+    $be_prefix = $ARGV[1];
 
     if ($be_prefix eq "")
     {
@@ -429,12 +429,12 @@ while (@ARGV)
 
     shift @ARGV;  # For the argument.
   }
-  elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
+  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
+  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
   else
   {
-    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
     print STDERR $Usage; exit(1);
   }
 

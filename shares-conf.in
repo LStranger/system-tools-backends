@@ -146,13 +146,13 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE shares []>\n\n";
   print "<shares>\n";
-  enter;
+  be_xml_enter;
 
-  vspace;
-  indent; print "<!-- Configuration starts here -->\n";
-  vspace;
-  indent; print "<!-- Imports, listed and potentials -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- Configuration starts here -->\n";
+  be_xml_vspace;
+  be_xml_indent; print "<!-- Imports, listed and potentials -->\n";
+  be_xml_vspace;
 
   my @shares = @cf_shares_list;
 
@@ -160,9 +160,9 @@ sub xml_print
   {
     if (@shares[0] ne "")
     {
-      vspace;
-      indent; print "<import type='@shares[5]'>\n";
-      enter;
+      be_xml_vspace;
+      be_xml_indent; print "<import type='@shares[5]'>\n";
+      be_xml_enter;
 
       @shares[0] = be_xml_plain_to_entities(\@shares[0]);
       @shares[1] = be_xml_plain_to_entities(\@shares[1]);
@@ -170,14 +170,14 @@ sub xml_print
       @shares[6] = be_xml_plain_to_entities(\@shares[6]);
       @shares[7] = be_xml_plain_to_entities(\@shares[7]);
 
-      indent; print "<host>@shares[0]</host>\n";
-      indent; print "<path>@shares[1]</path>\n";
-      if (@shares[6] ne "") { indent; print "<user>@shares[6]</user>\n"; }
-      if (@shares[7] ne "") { indent; print "<password>@shares[7]</password>\n"; }
-      if (@shares[2] ne "") { indent; print "<comment>@shares[2]</comment>\n"; }
-      if (@shares[8] ne "") { indent; print "<point>@shares[8]</point>\n"; }
+      be_xml_indent; print "<host>@shares[0]</host>\n";
+      be_xml_indent; print "<path>@shares[1]</path>\n";
+      if (@shares[6] ne "") { be_xml_indent; print "<user>@shares[6]</user>\n"; }
+      if (@shares[7] ne "") { be_xml_indent; print "<password>@shares[7]</password>\n"; }
+      if (@shares[2] ne "") { be_xml_indent; print "<comment>@shares[2]</comment>\n"; }
+      if (@shares[8] ne "") { be_xml_indent; print "<point>@shares[8]</point>\n"; }
 
-      indent;
+      be_xml_indent;
 
       print "<mounted state='";
       print be_print_boolean_truefalse(@shares[3]);
@@ -191,8 +191,8 @@ sub xml_print
       print be_print_boolean_truefalse(@shares[4]);
       print "'/>\n";
 
-      leave;
-      indent; print "</import>\n";
+      be_xml_leave;
+      be_xml_indent; print "</import>\n";
     }
     
     shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
@@ -200,9 +200,9 @@ sub xml_print
     shift @shares;
   }
 
-  vspace;
-  indent; print "<!-- Exports -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- Exports -->\n";
+  be_xml_vspace;
   
   my @shares = @cf_exports_list;
   
@@ -210,22 +210,22 @@ sub xml_print
   {
     if (@shares[0] ne "")
     {
-      vspace;
-      indent; print "<export type='@shares[0]'>\n";
-      enter;
+      be_xml_vspace;
+      be_xml_indent; print "<export type='@shares[0]'>\n";
+      be_xml_enter;
 
-      indent; print "<path>@shares[1]</path>\n";
+      be_xml_indent; print "<path>@shares[1]</path>\n";
 
       if (@shares[0] eq "smb")
       {
-        indent; print "<name>@shares[2]</name>\n";
-        if (@shares[3] ne "") { indent; print "<comment>@shares[3]</comment>\n"; }
+        be_xml_indent; print "<name>@shares[2]</name>\n";
+        if (@shares[3] ne "") { be_xml_indent; print "<comment>@shares[3]</comment>\n"; }
 
-        indent;
+        be_xml_indent;
         print "<enabled state='", be_print_boolean_truefalse(@shares[4]), "'/>";
         print "<browse state='", be_print_boolean_truefalse(@shares[5]), "'/>";
         print "<public state='", be_print_boolean_truefalse(@shares[6]), "'/>\n";
-        indent;
+        be_xml_indent;
         print "<write state='", be_print_boolean_truefalse(@shares[7]), "'/>\n";
 
         shift @shares; shift @shares; shift @shares; shift @shares;
@@ -238,7 +238,7 @@ sub xml_print
         {
           if (@$clients[0] ne "")
           {
-            indent; print "<allow><pattern>@$clients[0]</pattern><write state='";
+            be_xml_indent; print "<allow><pattern>@$clients[0]</pattern><write state='";
             print be_print_boolean_truefalse(@$clients[1]);
             print "'/></allow>\n";
           }
@@ -248,17 +248,17 @@ sub xml_print
         shift @shares; shift @shares; shift @shares;
       }
 
-      leave;
-      indent; print "</export>\n";
+      be_xml_leave;
+      be_xml_indent; print "</export>\n";
     }
     
   }
   
-  vspace;
-  indent; print "<!-- End of configuration -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- End of configuration -->\n";
+  be_xml_vspace;
 
-  leave;
+  be_xml_leave;
   print "</shares>\n";
 }
 
@@ -667,12 +667,12 @@ sub filter
 
 while (@ARGV)
 {
-  if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-  elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
+  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
+  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
   {
     if ($be_prefix ne "")
     {
@@ -680,7 +680,7 @@ while (@ARGV)
       print STDERR $Usage; exit(1);
     }
 
-    $be_prefix = @ARGV[1];
+    $be_prefix = $ARGV[1];
 
     if ($be_prefix eq "")
     {
@@ -690,12 +690,12 @@ while (@ARGV)
 
     shift @ARGV;  # For the argument.
   }
-  elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
+  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
+  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
   else
   {
-    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
     print STDERR $Usage; exit(1);
   }
 

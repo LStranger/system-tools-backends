@@ -189,15 +189,15 @@ sub xml_print
     print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
     print "<!DOCTYPE memory []>\n\n";
     print "<hardware>\n";
-    enter;
+    be_xml_enter;
 
-    vspace;
-    indent; print "<!-- Configuration starts here -->\n";
-    vspace;
+    be_xml_vspace;
+    be_xml_indent; print "<!-- Configuration starts here -->\n";
+    be_xml_vspace;
 
     foreach $entry (@cf_hardware)
       {
-	indent; print "<device id='$entry->{id}'>\n";
+	be_xml_indent; print "<device id='$entry->{id}'>\n";
 
       LOOP: while (($key, $value) = each %$entry)
 	  {
@@ -211,7 +211,7 @@ sub xml_print
 		{
 		  foreach $range (@$value)
 		    {
-		      indent; indent; print "<io low='$range->{low}' high='$range->{high}'/>\n";
+		      be_xml_indent; be_xml_indent; print "<io low='$range->{low}' high='$range->{high}'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -219,7 +219,7 @@ sub xml_print
 		{
 		  foreach $number (@$value)
 		    {
-		      indent; indent; print "<interrupt number='$number'/>\n";
+		      be_xml_indent; be_xml_indent; print "<interrupt number='$number'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -227,7 +227,7 @@ sub xml_print
 		{
 		  foreach $channel (@$value)
 		    {
-		      indent; indent; print "<dma channel='$channel'/>\n";
+		      be_xml_indent; be_xml_indent; print "<dma channel='$channel'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -235,24 +235,24 @@ sub xml_print
 		{
 		  foreach $mode (@$value)
 		    {
-		      indent; indent; print "<mode>$mode</mode>\n";
+		      be_xml_indent; be_xml_indent; print "<mode>$mode</mode>\n";
 		    }
 		  last SWITCH;
 		};
 	      (/^id/ || /^io/ || /^irq/) && next LOOP;
 
-	      indent; indent; print "<$key>$value</$key>\n";
+	      be_xml_indent; be_xml_indent; print "<$key>$value</$key>\n";
 	    }
 	  }
 
-	indent; print "</device>\n";
-	vspace;
+	be_xml_indent; print "</device>\n";
+	be_xml_vspace;
       }
 
-    indent; print "<!-- End of configuration -->\n";
-    vspace;
+    be_xml_indent; print "<!-- End of configuration -->\n";
+    be_xml_vspace;
 
-    leave;
+    be_xml_leave;
     print "</hardware>\n";
   }
 
@@ -755,11 +755,11 @@ sub filter
 
 while (@ARGV)
   {
-    if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { be_set_operation("get"); }
-    elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { be_set_operation("set"); }
-    elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { be_set_operation("filter"); }
-    elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print STDERR $Usage; exit(0); }
-    elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+    if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
+    elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
+    elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+    elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print STDERR $Usage; exit(0); }
+    elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
       {
 	if ($be_prefix ne "")
 	  {
@@ -767,7 +767,7 @@ while (@ARGV)
 	    print STDERR $Usage; exit(1);
 	  }
 	
-	$be_prefix = @ARGV[1];
+	$be_prefix = $ARGV[1];
 	
 	if ($be_prefix eq "")
 	  {
@@ -777,11 +777,11 @@ while (@ARGV)
 	
 	shift @ARGV;		# For the argument.
       }
-    elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-    elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
+    elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+    elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
     else
       {
-	print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+	print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
 	print STDERR $Usage; exit(1);
       }
 

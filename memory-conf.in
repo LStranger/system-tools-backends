@@ -186,47 +186,47 @@ sub xml_print
     print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
     print "<!DOCTYPE memory []>\n\n";
     print "<memory>\n";
-    enter;
+    be_xml_enter;
 
-    vspace;
-    indent; print "<!-- Configuration starts here -->\n";
-    vspace;
+    be_xml_vspace;
+    be_xml_indent; print "<!-- Configuration starts here -->\n";
+    be_xml_vspace;
 
     foreach $entry (@cf_memory) {
-      indent; print "<MemTotal>$entry->{MemTotal}</MemTotal>\n";
-      indent; print "<SwapTotal>$entry->{SwapTotal}</SwapTotal>\n\n";
+      be_xml_indent; print "<MemTotal>$entry->{MemTotal}</MemTotal>\n";
+      be_xml_indent; print "<SwapTotal>$entry->{SwapTotal}</SwapTotal>\n\n";
     }
 
     foreach $entry (@cf_partition) {
-      indent; print "<partition>\n";
-      indent; indent; print "<device>$entry->{device}</device>\n";
-      indent; indent; print "<size>$entry->{size}</size>\n";
-      indent; print "</partition>\n\n";
+      be_xml_indent; print "<partition>\n";
+      be_xml_indent; be_xml_indent; print "<device>$entry->{device}</device>\n";
+      be_xml_indent; be_xml_indent; print "<size>$entry->{size}</size>\n";
+      be_xml_indent; print "</partition>\n\n";
     }
 
-    vspace;
+    be_xml_vspace;
 
     foreach $entry (@cf_swapinfo) {
-      indent; print "<swapdev>\n";
-      indent; indent; print "<device>$entry->{device}</device>\n";
-      indent; indent; print "<enabled state='", 
+      be_xml_indent; print "<swapdev>\n";
+      be_xml_indent; be_xml_indent; print "<device>$entry->{device}</device>\n";
+      be_xml_indent; be_xml_indent; print "<enabled state='", 
                             be_print_boolean_yesno ($entry->{enabled}), 
                             "'/>\n";
-      indent; indent; print "<priority>$entry->{priority}</priority>\n";
-      indent; indent; print "<isfile state='",
+      be_xml_indent; be_xml_indent; print "<priority>$entry->{priority}</priority>\n";
+      be_xml_indent; be_xml_indent; print "<isfile state='",
                             be_print_boolean_truefalse ($entry->{is_file}),
                             "'/>\n";
-      indent; indent; print "<size>$entry->{size}</size>\n";
-      indent; indent; print "<isnew state='",
+      be_xml_indent; be_xml_indent; print "<size>$entry->{size}</size>\n";
+      be_xml_indent; be_xml_indent; print "<isnew state='",
                             be_print_boolean_truefalse ($entry->{is_new}),
                             "'/>\n";
-      indent; print "</swapdev>\n\n";
+      be_xml_indent; print "</swapdev>\n\n";
     }
 
-    indent; print "<!-- End of configuration -->\n";
-    vspace;
+    be_xml_indent; print "<!-- End of configuration -->\n";
+    be_xml_vspace;
 
-    leave;
+    be_xml_leave;
     print "</memory>\n";
   }
 
@@ -564,12 +564,12 @@ sub filter
 
 while (@ARGV)
   {
-    if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { be_set_operation("get"); }
-    elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { be_set_operation("set"); }
-    elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { be_set_operation("filter"); }
-    elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
-    elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-    elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+    if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
+    elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
+    elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+    elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
+    elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+    elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
       {
 	if ($be_prefix ne "")
 	  {
@@ -577,7 +577,7 @@ while (@ARGV)
 	    print STDERR $Usage; exit(1);
 	  }
 	
-	$be_prefix = @ARGV[1];
+	$be_prefix = $ARGV[1];
 	
 	if ($be_prefix eq "")
 	  {
@@ -587,12 +587,12 @@ while (@ARGV)
 	
 	shift @ARGV;		# For the argument.
       }
-    elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-    elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
-    elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
+    elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+    elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
+    elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
     else
       {
-	print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+	print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
 	print STDERR $Usage; exit(1);
       }
 

@@ -29,7 +29,7 @@
 # files.
 
 $be_prefix = "";
-$be_verbose = 0;
+$be_verbose = 1;
 $be_progress = 0;
 $be_do_immediate = 1;
 
@@ -44,10 +44,10 @@ sub be_print_progress
 
 # --- XML print formatting  --- #
 
-# be_enter: Call after entering a block. Increases indent level.
-# be_leave: Call before leaving a block. Decreases indent level.
-# be_indent: Call before printing a line. Indents to current level. 
-# be_vspace: Ensures there is a vertical space of one and only one line.
+# be_xml_enter: Call after entering a block. Increases indent level.
+# be_xml_leave: Call before leaving a block. Decreases indent level.
+# be_xml_indent: Call before printing a line. Indents to current level. 
+# be_xml_vspace: Ensures there is a vertical space of one and only one line.
 
 $be_indent_level = 0;
 $be_have_vspace = 0;
@@ -71,7 +71,7 @@ sub be_xml_scan_make_kid_array
     my %hash = {};
     my @sublist;
     
-    @attr = @_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z]+)/g;
+    @attr = $_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z]+)/g;
     %hash = @attr;
     
     push(@sublist, \%hash);
@@ -84,11 +84,11 @@ sub be_xml_scan_recurse;
 sub be_xml_scan_recurse
   {
     my @list;
-    if (@_) { @list = @_[0]->[0]; }
+    if (@_) { @list = $_[0]->[0]; }
     
     while (@be_xml_scan_list)
       {
-	$el = @be_xml_scan_list[0]; shift @be_xml_scan_list;
+	$el = $be_xml_scan_list[0]; shift @be_xml_scan_list;
 	
 	if ((not $el) || $el =~ /^\<[!?].*\>$/s) { next; } # Empty strings, PI and DTD must go.
 	
@@ -141,7 +141,7 @@ sub be_xml_scan
 
 sub be_xml_entities_to_plain
   {
-    my $in = @_[0];
+    my $in = $_[0];
     my $out = "";
     my @xe;
     
@@ -153,7 +153,7 @@ sub be_xml_entities_to_plain
       {
 	# Join text.
 	
-	$out = join('', $out, @elist[0]);
+	$out = join('', $out, $elist[0]);
 	shift @elist;
 	
 	# Find entity and join its text equivalent.
@@ -161,7 +161,7 @@ sub be_xml_entities_to_plain
 	
 	for (@xe = @be_xml_entities; @xe; )
 	  {
-	    if (@xe[0] eq @elist[0]) { $out = join('', $out, @xe[1]); last; }
+	    if ($xe[0] eq $elist[0]) { $out = join('', $out, $xe[1]); last; }
 	    shift @xe; shift @xe;
 	  }
 	
@@ -174,7 +174,7 @@ sub be_xml_entities_to_plain
 
 sub be_xml_plain_to_entities
   {
-    my $in = @_[0];
+    my $in = $_[0];
     my $out = "";
     my @xe;
     my $joined = 0;
@@ -192,11 +192,11 @@ sub be_xml_plain_to_entities
 	
 	for (@xe = @be_xml_entities; @xe && !$joined; )
 	  {
-	    if (@xe[1] eq @clist[0]) { $out = join('', $out, @xe[0]); $joined = 1; }
+	    if ($xe[1] eq $clist[0]) { $out = join('', $out, $xe[0]); $joined = 1; }
 	    shift @xe; shift @xe;
 	  }
 	
-	if (!$joined) { $out = join('', $out, @clist[0]); }
+	if (!$joined) { $out = join('', $out, $clist[0]); }
 	shift @clist;
       }
     
@@ -210,20 +210,20 @@ sub be_xml_plain_to_entities
 
 sub be_read_boolean
   {
-    if (@_[0] eq "true") { return(1); }
-    elsif (@_[0] eq "yes") { return(1); }
+    if ($_[0] eq "true") { return(1); }
+    elsif ($_[0] eq "yes") { return(1); }
     return(0);
   }
 
 sub be_print_boolean_yesno
   {
-    if (@_[0] == 1) { return("yes"); }
+    if ($_[0] == 1) { return("yes"); }
     return("no");
   }
 
 sub be_print_boolean_truefalse
   {
-    if (@_[0] == 1) { return("true"); }
+    if ($_[0] == 1) { return("true"); }
     return("false");
   }
 
@@ -234,30 +234,30 @@ sub be_print_boolean_truefalse
 
 sub be_push_unique
   {
-    my $arr = @_[0];
+    my $arr = $_[0];
     my $found;
     my $i;
     
     # Go through all elements in pushed list.
     
-    for ($i = 1; @_[$i]; $i++)
+    for ($i = 1; $_[$i]; $i++)
       {
 	# Compare against all elements in destination array.
 	
 	$found = "";
 	for $elem (@$arr)
 	  {
-	    if ($elem eq @_[$i]) { $found = $elem; last; }
+	    if ($elem eq $_[$i]) { $found = $elem; last; }
 	  }
 	
-	if ($found eq "") { push(@$arr, @_[$i]); }
+	if ($found eq "") { push(@$arr, $_[$i]); }
       }
   }
 
 
 sub be_is_line_comment_start
   {
-    if (@_[0] =~ /^\#/) { return(1); }
+    if ($_[0] =~ /^\#/) { return(1); }
     return(0);
   }
 
@@ -280,14 +280,14 @@ sub be_locate_tool
 
   for $path (@user_paths)
   {
-    if (-x "$path/@_[0]") { $found = "$path/@_[0]"; last; }
+    if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
   }
 
   # Try builtin paths.
 
   for $path (@be_builtin_paths)
   {
-    if (-x "$path/@_[0]") { $found = "$path/@_[0]"; last; }
+    if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
   }
   
   return($found);
@@ -298,7 +298,7 @@ sub be_open_read_from_names
     local *FILE;
     my $fname = "";
     
-    for $name (@_)
+    foreach $name (@_)
       {
 	if (open(FILE, "$be_prefix/$name")) { $fname = $name; last; }
       }
@@ -345,7 +345,7 @@ sub be_open_write_from_names
 	  }
 	else
 	  {
-	    $name = @_[0];
+	    $name = $_[0];
 	    if ($be_verbose)
 	      {
 		(my $fullname = "$prefix/$name") =~ tr/\//\//s;
@@ -360,7 +360,7 @@ sub be_open_write_from_names
       }
     
     ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-      create_path($name);
+      be_create_path($name);
     
     # Make a backup if the file already exists - if the user specified a prefix,
     # it might not.
@@ -408,7 +408,7 @@ sub be_open_filter_write_from_names
 	  }
 	else
 	  {
-	    $name = @_[0];
+	    $name = $_[0];
 	    if ($be_verbose)
 	      {
 		(my $fullname = "$prefix/$name") =~ tr/\//\//s;
@@ -423,7 +423,7 @@ sub be_open_filter_write_from_names
       }
     
     ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-      create_path($name);
+      be_create_path($name);
     
     # Make a backup if the file already exists - if the user specified a prefix,
     # it might not.
@@ -455,14 +455,14 @@ sub be_create_path
   {
     my $path;
     
-    $path = @_[0];
+    $path = $_[0];
     my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
     
     for ($path = ""; @pelem; shift @pelem)
       {
-	if (@pelem[1] ne "")
+	if ($pelem[1] ne "")
 	  {
-	    $path = "$path@pelem[0]";
+	    $path = "$path$pelem[0]";
 	    mkdir($path, 0770);
 	    $path = "$path/";
 	  }
@@ -499,7 +499,7 @@ sub be_xml_parse
 
 sub be_xml_get_word
   {
-    my $tree = @_[0];
+    my $tree = $_[0];
     
     shift @$tree;		# Skip attributes.
     
@@ -525,7 +525,7 @@ sub be_xml_get_word
 
 sub be_xml_get_size
   {
-    my $tree = @_[0];
+    my $tree = $_[0];
 
     shift @$tree;		# Skip attributes.
 
@@ -555,7 +555,7 @@ sub be_xml_get_size
 
 sub be_xml_get_text
   {
-    my $tree = @_[0];
+    my $tree = $_[0];
     
     shift @$tree;		# Skip attributes.
     
@@ -588,7 +588,7 @@ sub be_set_operation
 	exit(1);
       }
     
-    $be_operation = @_[0];
+    $be_operation = $_[0];
   }
 
 1;

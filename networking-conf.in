@@ -147,52 +147,52 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE networking []>\n\n";
   print "<networking>\n";
-  enter;
+  be_xml_enter;
 
-  vspace;
-  indent; print "<!-- Configuration starts here -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- Configuration starts here -->\n";
+  be_xml_vspace;
 
   # Hostname, domain, search domains, nameservers.
 
-  indent;
+  be_xml_indent;
   if ($cf_onboot) { print "<enabled state='yes'/>\n"; }
   else            { print "<enabled state='no'/>\n"; }
 
-  vspace;
+  be_xml_vspace;
 
-  if ($cfl_interface ne "") { indent; print "<primaryinterface>$cfl_interface</primaryinterface>\n"; }
-  if ($cfl_hostip ne "") { indent; print "<hostip>$cfl_hostip</hostip>\n"; }
-  if ($cfl_netmask ne "") { indent; print "<netmask>$cfl_netmask</netmask>\n"; }
-  if ($cfl_gateway ne "") { indent; print "<gateway>$cfl_gateway</gateway>\n"; }
-  vspace;
-  if ($cfl_method ne "") { indent; print "<method>$cfl_method</method>\n"; }
-  vspace;
+  if ($cfl_interface ne "") { be_xml_indent; print "<primaryinterface>$cfl_interface</primaryinterface>\n"; }
+  if ($cfl_hostip ne "") { be_xml_indent; print "<hostip>$cfl_hostip</hostip>\n"; }
+  if ($cfl_netmask ne "") { be_xml_indent; print "<netmask>$cfl_netmask</netmask>\n"; }
+  if ($cfl_gateway ne "") { be_xml_indent; print "<gateway>$cfl_gateway</gateway>\n"; }
+  be_xml_vspace;
+  if ($cfl_method ne "") { be_xml_indent; print "<method>$cfl_method</method>\n"; }
+  be_xml_vspace;
 
-  vspace;
-  indent; print "<!-- You shouldn't have to modify anything below this line -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- You shouldn't have to modify anything below this line -->\n";
+  be_xml_vspace;
 
-  indent; 
+  be_xml_indent; 
   if ($cf_forward) { print "<forward state='yes'/>\n"; }
   else             { print "<forward state='no'/>\n"; }
 
-  vspace;
-  indent; print "<!-- You cannot modify anything below this line -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- You cannot modify anything below this line -->\n";
+  be_xml_vspace;
 
   for $elem (@cf_interface_list)
   {
     $elem = be_xml_plain_to_entities(\$elem);
     if ($elem ne $cfl_interface)  # Hack: Don't list primary interface here.
-    { indent; print "<knowninterface>$elem</knowninterface>\n"; }
+    { be_xml_indent; print "<knowninterface>$elem</knowninterface>\n"; }
   }
 
-  vspace;
-  indent; print "<!-- End of configuration -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- End of configuration -->\n";
+  be_xml_vspace;
 
-  leave;
+  be_xml_leave;
   print "</networking>\n";
 }
 
@@ -333,12 +333,12 @@ sub filter
 
 while (@ARGV)
 {
-  if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-  elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
+  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
+  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
   {
     if ($be_prefix ne "")
     {
@@ -346,7 +346,7 @@ while (@ARGV)
       print STDERR $Usage; exit(1);
     }
 
-    $be_prefix = @ARGV[1];
+    $be_prefix = $ARGV[1];
 
     if ($be_prefix eq "")
     {
@@ -356,12 +356,12 @@ while (@ARGV)
 
     shift @ARGV;  # For the argument.
   }
-  elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
+  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
+  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
   else
   {
-    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
     print STDERR $Usage; exit(1);
   }
 

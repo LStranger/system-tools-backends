@@ -1,4 +1,5 @@
 backends = \
+disks-conf \
 hardware-conf \
 memory-conf \
 nameresolution-conf \

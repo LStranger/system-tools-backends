@@ -115,6 +115,478 @@ $progress_max = 16;
 @cf_disks = ();
 
 
+# --- Backend-specific helper subs --- #
+
+sub update_partition
+{
+  my ($disk, $device, $point, $fs, $options, $check);
+  my ($listed, $bootable, $detected);
+  my ($disk_found, $point_found) = (0, 0);
+
+  ($disk, $device, $point, $fs, $options, $check, $size, $listed,
+   $bootable, $detected) = @_;
+
+  if ($fs eq "auto") { $fs = ""; }
+  print "hola\n";
+
+  for ($i = 0; $cf_disks[$i]; $i++)
+  {
+    if (($cf_disks[$i])->{device} eq $disk)
+    {
+      # Found disk. Now look for partition.
+          
+      for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
+      {
+        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device)
+        {
+          # Found partition.
+          
+          if ($options ne "")
+          {
+            if ($options =~ /noauto/)
+            {
+              $cf_disks[$i]->{partitions}[$j]->{mounted} = 0;
+            }
+            else
+            {
+              $cf_disks[$i]->{partitions}[$j]->{mounted} = 1;
+            }
+          }
+
+          if ($point ne "") { $cf_disks[$i]->{partitions}[$j]->{point} = $point; }
+          if ($fs) { $cf_disks[$i]->{partitions}[$j]->{type} = $fs; }
+          if ($listed) { $cf_disks[$i]->{partitions}[$j]->{listed} = 1; }
+          if ($bootable) { $cf_disks[$i]->{partitions}[$j]->{bootable} = 1; }
+          if ($detected) { $cf_disks[$i]->{partitions}[$j]->{detected} = 1; }
+          if ($check) { $cf_disks[$i]->{partitions}[$j]->{check} = 1; }
+          if ($size) { $cf_disks[$i]->{partitions}[$j]->{size} = $size; }
+
+          $point_found = 1; last;
+        }
+      }
+
+      if (!$point_found)
+      {
+        # Make new partition entry.
+
+        my %partition;
+
+        if ($options =~ /noauto/) { %partition->{mounted} = 0; }
+        else                      { %partition->{mounted} = 1; }
+
+        %partition->{device} = $device;
+        %partition->{point} = $point;
+        %partition->{type} = $fs;
+        %partition->{listed} = $listed;
+        if ($bootable) { %partition->{bootable} = 1; }
+        if ($detected) { %partition->{detected} = 1; }
+        if ($check) { %partition->{check} = 1; }
+        %partition->{size} = $size;
+
+        $bleh = $cf_disks[$i]->{partitions};
+        push(@$bleh, \%partition);
+      }
+            
+      $disk_found = 1; last;
+    }
+  }
+
+  if (!$disk_found)
+  {
+    # Make new disk entry containing this partition.
+
+    my (%disk, %partition);
+
+    if ($options =~ /noauto/) { %partition->{mounted} = 0; }
+    else                      { %partition->{mounted} = 1; }
+
+    %partition->{device} = $device;
+    %partition->{point} = $point;
+    %partition->{type} = $fs;
+    %partition->{listed} = $listed;
+    if ($bootable) { %partition->{bootable} = 1; }
+    if ($detected) { %partition->{detected} = 1; }
+    if ($check) { %partition->{check} = 1; }
+    %partition->{size} = $size;
+
+    %disk->{device} = $disk;
+    %disk->{partitions} = [];
+
+    $bleh = %disk->{partitions};
+    push(@$bleh, \%partition);
+    push(@cf_disks, \%disk);
+  }
+}
+
+
+sub get_partition
+{
+  my ($disk, $device);
+  my ($i, $j);
+
+  ($disk, $device) = @_;
+
+  for ($i = 0; $cf_disks[$i]; $i++)
+  {
+    if (($cf_disks[$i])->{device} eq $disk)
+    {
+      # Found disk. Now look for partition.
+
+      for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
+      {
+        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device)
+        {
+          # Found partition.
+
+          return ($cf_disks[$i]->{partitions}[$j]);
+        }
+      }
+    }
+  }
+}
+
+
+sub get_partition_data
+{
+  my ($disk, $device, $point, $fs, $options, $check);
+  my ($listed, $bootable);
+
+  ($disk, $device, $point, $fs, $options, $check, $size, $listed,
+   $bootable, $detected) = @_;
+
+  for ($i = 0; $cf_disks[$i]; $i++)
+  {
+    if (($cf_disks[$i])->{device} eq $disk)
+    {
+      # Found disk. Now look for partition.
+
+      for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
+      {
+        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device)
+        {
+          # Found partition.
+
+          return ($cf_disks[$i]->{partitions}[$j]->{point},
+                  $cf_disks[$i]->{partitions}[$j]->{type},
+                  $cf_disks[$i]->{partitions}[$j]->{listed},
+                  $cf_disks[$i]->{partitions}[$j]->{mounted},
+                  $cf_disks[$i]->{partitions}[$j]->{bootable},
+                  $cf_disks[$i]->{partitions}[$j]->{check});
+        }
+      }
+    }
+  }
+}
+
+
+sub update_disk_size
+{
+  my ($disk, $size);
+  
+  ($disk, $size) = @_;
+
+  for ($i = 0; $cf_disks[$i]; $i++)
+  {
+    if (($cf_disks[$i])->{device} eq $disk)
+    {
+      # Found disk.
+      
+      $cf_disks[$i]->{size} = $size;
+      last;
+    }
+  }
+}
+
+
+# --- Configuration file manipulation --- #
+
+
+# /etc/fstab
+#
+# <device> <mount point> <filesystem> <option,option,...> <dump> <fsck>
+# <device> <mount point> <filesystem> <option,option,...> <dump> <fsck>
+# ...
+#
+# Exists: (Presumably everywhere)
+#
+# Absent: (Presumably nowhere)
+
+sub read_fstab
+{
+  local *FSTAB_FILE;
+
+  # Find the file.
+
+  *FSTAB_FILE = be_open_read_from_names(@fstab_names);
+  if (not *FSTAB_FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FSTAB_FILE>)
+  {
+    my ($disk, $device, $point, $fs, $options, $check);
+
+    @line = split(/[ \n\r\t]+/, $_);
+
+    if ($line[0] eq "") { shift @line; }
+    if ($line[0] eq "") { next; }
+    if (be_is_line_comment_start($line[0])) { next; }
+    ($device, $point, $fs, $options, $dump, $check) = @line;
+
+    if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||
+        $fs eq "iso9660" || $fs eq "swap")
+    {
+      next;  # We can skip these filesystems for sure.
+    }
+
+    if ($point eq "none") { $dir = ""; }
+    ($disk) = ($device =~ /([a-zA-Z\/]+)/);
+    
+    if ($disk eq "/dev/fd" || $disk eq $device)
+    { 
+      next;  # Skip floppies and CD-ROMs.
+    }
+
+    # (Find and update) or (add) our internal disk/partition record.
+
+    if ($disk ne "")
+    {
+      update_partition($disk, $device, $point, $fs, $options, $check, "", 1, 0);
+    }
+  }
+
+  close(FILE);
+}
+
+
+sub write_fstab
+{
+  my ($INFILE, $OUTFILE);
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@fstab_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  while (<INFILE>)
+  {
+    my ($disk, $device, $point, $fs, $options, $dump, $check);
+    my ($ipoint, $itype, $icheck, $ilisted, $imounted, $ibootable);
+
+    @line = split(/[ \n\r\t]+/, $_);
+
+    if ($line[0] eq "") { shift @line; }
+    if ($line[0] eq "") { print OUTFILE; next; }
+    if (be_is_line_comment_start($line[0])) { print OUTFILE; next; }
+    ($device, $point, $fs, $options, $dump, $check) = @line;
+
+    if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||
+        $fs eq "iso9660" || $fs eq "swap")
+    {
+      print OUTFILE; next;  # We can skip these filesystems for sure.
+    }
+
+    # By now, we know that the "entry" is "interesting". Check if known.
+
+    ($disk) = ($device =~ /([a-zA-Z\/]+)/);
+
+    ($ipoint, $itype, $ilisted, $imounted, $ibootable, $icheck) = get_partition_data($disk, $device);
+
+    if ($ilisted)
+    {
+      # Write record if listedness requested.
+      
+      print OUTFILE $device . " ";
+      if ($ipoint eq "") { print OUTFILE "none "; }
+      else { print OUTFILE $ipoint . " "; }
+
+      if ($itype eq "") { print OUTFILE "auto "; }
+      else              { print OUTFILE $itype . " "; }
+
+      # Options merging and printing.
+
+      my $prev = 0;
+      if (!$imounted) { print OUTFILE "noauto"; $prev = 1; }
+      my @options = ($options =~ /([a-zA-Z0-9=]+),?/mg);
+      for $option (@options)
+      {
+        # Strip options we handle, keep the rest.
+
+        if ($option eq "auto" || $option eq "noauto" ||
+            $option eq "defaults") { next; }
+        if ($prev) { print OUTFILE ","; }
+        print OUTFILE $option;
+        $prev = 1;
+      }
+      
+      if (!$prev) { print OUTFILE "defaults"; }
+      
+      # Leave dump alone.
+      
+      print OUTFILE " $dump ";
+      
+      # Fsck onboot priority.
+
+      if ($icheck eq "") { $icheck = 0; }
+      if ($icheck == 1)
+      {
+        if ($ipoint eq "/") { print OUTFILE "1\n"; }
+        else { print OUTFILE "2\n"; }
+      }
+      else { print OUTFILE "0\n"; }
+      
+      # Indicate that parameters for this partition have been stored.
+      
+      my $partition = get_partition($disk, $device);
+      %$partition->{stored} = 1;
+    }
+    
+    # Unknown or unlisted-by-request partitions are not written.
+  }
+  
+  # Print the remaining partitions from our internal list. These are
+  # newly added, and didn't exist in the fstab previously.
+  
+  for ($i = 0; $cf_disks[$i]; $i++)
+  {
+    for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
+    {
+      if ($cf_disks[$i]->{partitions}[$j]->{listed} &&
+          !$cf_disks[$i]->{partitions}[$j]->{stored})
+      {
+        my $part = $cf_disks[$i]->{partitions}[$j];
+
+        if ($be_verbose)
+        {
+          print STDERR "Adding " . $cf_disks[$i]->{partitions}[$j]->{device} . " to fstab.\n";
+        }
+        
+        # Write record.
+
+        print OUTFILE %$part->{device} . " ";
+        if (%$part->{point} eq "") { print OUTFILE "none "; }
+        else { print OUTFILE %$part->{point} . " "; }
+
+        if (%$part->{type} eq "") { print OUTFILE "auto "; }
+        else                     { print OUTFILE %$part->{type} . " "; }
+
+        # Options printing.
+
+        if (!%$part->{mounted}) { print OUTFILE "noauto "; }
+        else { print OUTFILE "defaults "; }
+
+        # No dumping by default.
+
+        print OUTFILE " 0 ";
+      
+        # Fsck onboot priority.
+
+        if (%$part->{check} == 1)
+        {
+          if (%$part->{point} eq "/") { print OUTFILE "1\n"; }
+          else { print OUTFILE "2\n"; }
+        }
+        else { print OUTFILE "0\n"; }
+      }
+    }
+  }
+  
+  close OUTFILE;
+}
+
+
+# fdisk -l <disk device>
+#
+# <filtered lines>
+#
+# <partition device> [*] <start cluster> <end cluster> <blocks> <id> <verbose id>
+# <partition device> [*] <start cluster> <end cluster> <blocks> <id> <verbose id>
+# ...
+#
+# Exists: Red Hat 6.2 (Presumably all Linux)
+#
+# Absent:
+#
+# The star is optional, and means that the partition is bootable. We could've
+# used /proc/partitions to get this information, but it lists CD-ROM devices
+# and whatnot as well, without a disambiguating identifier. Then there is
+# portability, forward-compatibility, people without /proc, etc.
+
+# fdisk -s <disk device>
+#
+# <blocksize>
+
+sub get_fdisk
+{
+  my $fdisk_tool;
+
+  # Okay, so this is strictly not portable either. Patches welcome.
+
+  my @check_devs = ( "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/hdd",
+
+                     "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd",
+                     "/dev/sde", "/dev/sdf",
+                     
+                     "/dev/eda", "/dev/edb", "/dev/edc", "/dev/edd",
+                     
+                     "/dev/xda", "/dev/xdb" );
+
+  $fdisk_tool = be_locate_tool("fdisk");
+
+  for $dev (@check_devs)
+  {
+    my ($disk, $device, $point, $fs, $options, $check, $size, $bootable);
+    
+    if ($be_verbose) { print STDERR "Looking for partitions on $dev.\n"; }
+
+    open(FDISK_HD, "$fdisk_tool -l $dev 2>/dev/null |");
+    while (<FDISK_HD>)
+    {
+      if (/^\/dev/)
+      {
+        @line = split(/[ \n\r\t]+/, $_);
+
+        $device = $line[0]; shift @line;
+        ($disk) = ($device =~ /([a-zA-Z\/]+)/);
+        if ($line[0] eq "\*")
+        {
+          # NOTE: Currently unused.
+          $bootable = 1; shift @line;
+        }
+        else { $bootable = 0; }
+
+        shift @line; shift @line;  # Start and end clusters.
+
+        ($size) = ($line[0] =~ /([0-9]+)/);
+        shift @line;
+
+        if ($line[0] eq "82") { next; }  # Swap.
+        elsif ($line[0] eq "83") { $type = "ext2"; }
+        elsif ($line[0] eq "e") { $type = "vfat"; }
+        elsif ($line[0] eq "c") { $type = "fat32"; }
+        elsif ($line[0] eq "b") { $type = "fat32"; }
+        elsif ($line[0] eq "6") { $type = "msdos"; }
+        elsif ($line[0] eq "4") { $type = "msdos"; }
+        elsif ($line[0] eq "1") { $type = "msdos"; }
+        elsif ($line[0] eq "7") { $type = "hpfs"; }
+        else { $type = ""; }
+
+        update_partition($disk, $device, "", $type, "noauto", 0, $size, 0,
+                         $bootable, 1);
+      }
+    }
+    close(FDISK_HD);
+
+    if ($be_verbose) { print STDERR "Querying size of $dev.\n"; }
+
+    open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
+    ($size) = (<FDISK_HD> =~ /([0-9]+)/);
+    if ($size ne "") { update_disk_size($dev, $size); }
+    close(FDISK_HD);
+    
+    be_print_progress();
+  }
+}
+
+
 # --- XML printing --- #
 
 
@@ -123,74 +595,74 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE disks []>\n\n";
   print "<disks>\n";
-  enter;
+  be_xml_enter;
 
-  vspace;
-  indent; print "<!-- Configuration starts here -->\n";
-  vspace;
-  indent; print "<!-- Local fixed media and partitions -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- Configuration starts here -->\n";
+  be_xml_vspace;
+  be_xml_indent; print "<!-- Local fixed media and partitions -->\n";
+  be_xml_vspace;
 
   my @disks = @cf_disks;
-
+  
   while (@disks)
   {
-    if (@disks[0])
+    if ($disks[0])
     {
-      my $disk = @disks[0];
+      my $disk = $disks[0];
       
-      vspace;
-      indent; print "<disk>\n";
-      enter;
+      be_xml_vspace;
+      be_xml_indent; print "<disk>\n";
+      be_xml_enter;
 
-      indent; print "<device>" . %$disk->{device} . "</device>\n";
-      if (%$disk->{size}) { indent; print "<size>" . %$disk->{size} . "</size>\n"; }
+      be_xml_indent; print "<device>" . %$disk->{device} . "</device>\n";
+      if (%$disk->{size}) { be_xml_indent; print "<size>" . %$disk->{size} . "</size>\n"; }
       
       my $partitions = %$disk->{partitions};
       
       while (@$partitions)
       {
-        my $partition = @$partitions[0];
+        my $partition = $partitions[0];
 
-        vspace;
-        indent; print "<partition>\n";
-        enter;
+        be_xml_vspace;
+        be_xml_indent; print "<partition>\n";
+        be_xml_enter;
 
-        indent; print "<device>" . %$partition->{device} . "</device>\n";
-        if (%$partition->{type}) { indent; print "<type>" . %$partition->{type} . "</type>\n"; }
-        if (%$partition->{point}) { indent; print "<point>" . %$partition->{point} . "</point>\n"; }
+        be_xml_indent; print "<device>" . %$partition->{device} . "</device>\n";
+        if (%$partition->{type}) { be_xml_indent; print "<type>" . %$partition->{type} . "</type>\n"; }
+        if (%$partition->{point}) { be_xml_indent; print "<point>" . %$partition->{point} . "</point>\n"; }
         if (%$partition->{size})
         {
-          indent; print "<size>" . %$partition->{size} . "</size>\n";
+          be_xml_indent; print "<size>" . %$partition->{size} . "</size>\n";
         }
         
-        indent; print "<bootable state='" . be_print_boolean_truefalse(%$partition->{bootable}) . "'/>";
+        be_xml_indent; print "<bootable state='" . be_print_boolean_truefalse(%$partition->{bootable}) . "'/>";
                 print "<integritycheck state='" . be_print_boolean_truefalse(%$partition->{check}) . "'/>\n";
 
-        indent;
+        be_xml_indent;
         print "<mounted state='" . be_print_boolean_truefalse(%$partition->{mounted}) . "'/>";
         print "<listed state='" . be_print_boolean_truefalse(%$partition->{listed}) . "'/>";
         print "<detected state='" . be_print_boolean_truefalse(%$partition->{detected}) . "'/>\n";
 
-        leave;
-        indent; print "</partition>\n";
+        be_xml_leave;
+        be_xml_indent; print "</partition>\n";
         
         shift @$partitions;
       }
 
-      leave;
-      indent; print "</disk>\n";
-      vspace;
+      be_xml_leave;
+      be_xml_indent; print "</disk>\n";
+      be_xml_vspace;
     }
   
     shift @disks;
   }
 
-  vspace;
-  indent; print "<!-- End of configuration -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- End of configuration -->\n";
+  be_xml_vspace;
 
-  leave;
+  be_xml_leave;
   print "</disks>\n";
 }
 
@@ -228,28 +700,28 @@ sub set_immediate
 
   if (($mount_tool ne "") && ($umount_tool ne ""))
   {
-    my $i, my $j;
+    my $i; my $j;
 
-    for ($i = 0; @cf_disks[$i]; $i++)
+    for ($i = 0; $cf_disks[$i]; $i++)
     {
-      for ($j = 0; @cf_disks[$i]->{partitions}[$j]; $j++)
+      for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
       {
-        if (@cf_disks[$i]->{partitions}[$j]->{mounted})
+        if ($cf_disks[$i]->{partitions}[$j]->{mounted})
         {
           if ($be_verbose)
           {
-            print STDERR "Mounting " . @cf_disks[$i]->{partitions}[$j]->{device} . ".\n";
+            print STDERR "Mounting " . $cf_disks[$i]->{partitions}[$j]->{device} . ".\n";
           }
-          system "$mount_tool " . @cf_disks[$i]->{partitions}[$j]->{device} . " " .
-                 @cf_disks[$i]->{partitions}[$j]->{point} . " >/dev/null 2>/dev/null";
+          system "$mount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " " .
+                 $cf_disks[$i]->{partitions}[$j]->{point} . " >/dev/null 2>/dev/null";
         }
         else
         {
           if ($be_verbose)
           {
-            print STDERR "Unmounting " . @cf_disks[$i]->{partitions}[$j]->{device} . ".\n";
+            print STDERR "Unmounting " . $cf_disks[$i]->{partitions}[$j]->{device} . ".\n";
           }
-          system "$umount_tool " . @cf_disks[$i]->{partitions}[$j]->{device} . " >/dev/null 2>/dev/null";
+          system "$umount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " >/dev/null 2>/dev/null";
         }
       }
     }
@@ -294,12 +766,12 @@ sub filter
 
 while (@ARGV)
 {
-  if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-  elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
+  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
+  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
   {
     if ($be_prefix ne "")
     {
@@ -307,7 +779,7 @@ while (@ARGV)
       print STDERR $Usage; exit(1);
     }
 
-    $be_prefix = @ARGV[1];
+    $be_prefix = $ARGV[1];
 
     if ($be_prefix eq "")
     {
@@ -317,12 +789,12 @@ while (@ARGV)
 
     shift @ARGV;  # For the argument.
   }
-  elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
+  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
+  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
   else
   {
-    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
     print STDERR $Usage; exit(1);
   }
 

@@ -130,45 +130,45 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE time []>\n\n";
   print "<time>\n";
-  enter;
+  be_xml_enter;
 
-  vspace;
-  indent; print "<!-- Configuration starts here -->\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<!-- Configuration starts here -->\n";
+  be_xml_vspace;
 
-  indent; print "<year>$cf_year</year>\n";
-  indent; print "<month>$cf_month</month>\n";
-  indent; print "<monthday>$cf_mday</monthday>\n";
+  be_xml_indent; print "<year>$cf_year</year>\n";
+  be_xml_indent; print "<month>$cf_month</month>\n";
+  be_xml_indent; print "<monthday>$cf_mday</monthday>\n";
   
-  vspace;
+  be_xml_vspace;
   
-  indent; print "<hour>$cf_hour</hour>\n";
-  indent; print "<minute>$cf_minute</minute>\n";
-  indent; print "<second>$cf_second</second>\n";
+  be_xml_indent; print "<hour>$cf_hour</hour>\n";
+  be_xml_indent; print "<minute>$cf_minute</minute>\n";
+  be_xml_indent; print "<second>$cf_second</second>\n";
 
-  vspace;
-  indent; print "<timezone>$cf_timezone</timezone>\n";
-  vspace;
+  be_xml_vspace;
+  be_xml_indent; print "<timezone>$cf_timezone</timezone>\n";
+  be_xml_vspace;
   
-  vspace;
-  indent; print "<synchronization active='", be_print_boolean_yesno($cf_sync_active), "'>\n";
+  be_xml_vspace;
+  be_xml_indent; print "<synchronization active='", be_print_boolean_yesno($cf_sync_active), "'>\n";
   
-  enter;
+  be_xml_enter;
   
   for $server (@cf_servers)
   {
-    indent; print "<server>$server</server>\n";
+    be_xml_indent; print "<server>$server</server>\n";
   }
   
-  leave;
+  be_xml_leave;
   
-  indent; print "</synchronization>\n";
-  vspace;
+  be_xml_indent; print "</synchronization>\n";
+  be_xml_vspace;
   
-  indent; print "<!-- End of configuration -->\n";
-  vspace;
+  be_xml_indent; print "<!-- End of configuration -->\n";
+  be_xml_vspace;
 
-  leave;
+  be_xml_leave;
   print "</time>\n";
 }
 
@@ -307,12 +307,12 @@ sub filter
 
 while (@ARGV)
 {
-  if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-  elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
+  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
+  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
   {
     if ($be_prefix ne "")
     {
@@ -320,7 +320,7 @@ while (@ARGV)
       print STDERR $Usage; exit(1);
     }
 
-    $be_prefix = @ARGV[1];
+    $be_prefix = $ARGV[1];
 
     if ($be_prefix eq "")
     {
@@ -330,12 +330,12 @@ while (@ARGV)
 
     shift @ARGV;  # For the argument.
   }
-  elsif (@ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif (@ARGV[0] eq "--progress")                    { $be_progress = 1; }
+  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
+  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
   else
   {
-    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
     print STDERR $Usage; exit(1);
   }
 
