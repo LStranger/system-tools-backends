@@ -86,7 +86,7 @@ End_of_Usage;
 
 $version = "0.1.0";
 
-$progress_max = 1;
+$progress_max = 3;
 
 
 # --- System config file locations --- #
@@ -101,6 +101,8 @@ $progress_max = 1;
 # Configuration is parsed/read to, and printed/written from, these temporary variables.
 
 @cf_swapinfo = ();
+@cf_partition = ();
+@cf_memory = ();
 
 # --- Operation modifying variables --- #
 
@@ -707,6 +709,20 @@ sub xml_print
     indent; print "<!-- Configuration starts here -->\n";
     vspace;
 
+    foreach $entry (@cf_memory) {
+      indent; print "<MemTotal>$entry->{MemTotal}</MemTotal>\n";
+      indent; print "<SwapTotal>$entry->{SwapTotal}</SwapTotal>\n\n";
+    }
+
+    foreach $entry (@cf_partition) {
+      indent; print "<partition>\n";
+      indent; indent; print "<device>$entry->{device}</device>\n";
+      indent; indent; print "<size>$entry->{size}</size>\n";
+      indent; print "</partition>\n\n";
+    }
+
+    vspace;
+
     foreach $entry (@cf_swapinfo) {
       indent; print "<swapdev>\n";
       indent; indent; print "<device>$entry->{device}</device>\n";
@@ -734,6 +750,100 @@ sub xml_print
 
 # --- Get (read) config --- #
 
+sub get_memory
+{
+  my (@meminfo);
+  my ($totmem);
+  my ($totswap);
+
+  open (FD, "/proc/meminfo");		# Not portable at all, works on Linuces.
+  @meminfo = <FD>;
+  close FD;
+
+  foreach $entry (@meminfo)
+    {
+      if ($entry =~ /^MemTotal:(\s+)(\w+)/)
+	{
+	  $totmem = sprintf ("%d Mb", $2 / 1024);	# In Mb, integer
+	}
+      elsif ($entry =~ /^SwapTotal:(\s+)(\w+)/)
+	{
+	  $totswap = sprintf ("%d Mb", $2 / 1024);
+	}
+    }
+
+  push @cf_memory, {
+		"MemTotal" => $totmem,
+		"SwapTotal" => $totswap
+		};
+}
+
+
+sub get_fdisk
+{
+  my $fdisk_tool;
+
+  # Okay, so this is strictly not portable either. Patches welcome.
+
+  my @check_devs = ( "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/hdd",
+
+                     "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd",
+                     "/dev/sde", "/dev/sdf",
+                     
+                     "/dev/eda", "/dev/edb", "/dev/edc", "/dev/edd",
+                     
+                     "/dev/xda", "/dev/xdb" );
+
+  $fdisk_tool = "/sbin/fdisk";
+
+  for $dev (@check_devs)
+  {
+    my $disk, $device, $point, $fs, $options, $check, $size, $bootable;
+    
+    if ($verbose) { print STDERR "Looking for partitions on $dev.\n"; }
+
+    open(FDISK_HD, "$fdisk_tool -l $dev 2>/dev/null |");
+    while (<FDISK_HD>)
+    {
+      if (/^\/dev/)
+      {
+        @line = split(/[ \n\r\t]+/, $_);
+
+        $device = @line[0]; shift @line;
+        ($disk) = ($device =~ /([a-zA-Z\/]+)/);
+
+        shift @line; shift @line;  # Start and end clusters.
+
+        ($size) = (@line[0] =~ /([0-9]+)/);
+	$size = sprintf ("%d Mb", $size / 1024);
+        shift @line;
+
+        if (@line[0] ne "82") { next; }  # Not Swap
+        else
+	  {
+	    push @cf_partition, {
+				"device" => $device,
+				"size" => $size
+				};
+	  }
+
+
+      }
+    }
+    close(FDISK_HD);
+
+    if ($verbose) { print STDERR "Querying size of $dev.\n"; }
+
+#    open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
+#    ($size) = (<FDISK_HD> =~ /([0-9]+)/);
+#    if ($size eq "") { next; }
+#    close(FDISK_HD);
+
+  }
+}
+
+
+
 sub get_swap_size
   {
     my ($device) = $_[0];
@@ -743,15 +853,10 @@ sub get_swap_size
     if ($is_file && -f $device)
       {
         # Is file, get file size.
-        open(FD, "/usr/bin/stat $device |");
-        while (<FD>)
-          {
-            if (/(\s+)Size: (\d+)/)
-              {
-                 $size = $2 / 1024 / 1024; 	#size from bytes to Mb
-                 $size .= " Mb";
-              }
-          }
+	my (@stats) = stat($device);
+	$size = $stats[7];			# size in stat structure.
+	$size = $size /1024 / 1024;		# Size from bytes to Mb.
+	$size .= " Mb";
       }
     elsif ($is_file == 0)
       {
@@ -842,7 +947,9 @@ sub get
       }
     
     if ($verbose) { print STDERR "Getting swap entries.\n"; }
-    
+
+    get_memory; print_progress;
+    get_fdisk;  print_progress;
     get_swap_entries; print_progress;
     
     if ($verbose) { print STDERR "Printing XML.\n"; }
