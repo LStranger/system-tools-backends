@@ -1,5 +1,8 @@
 2001-06-29  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* users-conf.in (my_system): use xst_file_run, only send
+	debug strings if $DEBUG & 2, and to STDERR, not STDOUT.
+
 	* xml.pl.in (xst_xml_read_stdin): Like, a precedence bug.
 
 	* users-conf.in (xml_parse): Use standard xst_xml_scan.

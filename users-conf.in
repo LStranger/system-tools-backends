@@ -179,9 +179,8 @@ for ($i = 0; $login_defs_prop_array[$i] ne ""; $i += 2)
 
 sub my_system
 {
-  print STDERR "$_[0]\n";
-  print "$_[0]\n" if ($DEBUG & 2);
-  system ($_[0]) if ($DEBUG & 1);
+  print STDERR "$_[0]\n" if ($DEBUG & 2);
+  &xst_file_run ($_[0]) if ($DEBUG & 1);
 }
 
 sub max
