@@ -371,7 +371,7 @@ sub get_swap_size
     elsif ($is_file == 0)
       {
         # Is partition, get size.
-        open(FD, "/sbin/fdisk -s $device |");
+        open(FD, "/sbin/fdisk -s $device 2>/dev/null |");
         while (<FD>)
           {
             if (/^\w+/)
