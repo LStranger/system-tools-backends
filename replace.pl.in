@@ -1260,3 +1260,4 @@ sub xst_replace_xml_attribute
 
   return 0;
 }
+

@@ -1,5 +1,12 @@
 2001-07-16  Hans Petter Jansson  <hpj@ximian.com>
 
+	* print.pl.in (xst_print_printers_get_rh71): Implement.
+
+	* xml.pl.in (xst_xml_read_compressed_file): Implement.
+	  (xst_xml_model_scan): Read compressed files.
+
+2001-07-16  Hans Petter Jansson  <hpj@ximian.com>
+
 	* parse.pl.in (xst_parse_xml_children): Implement.
 
 	* print.pl.in (xst_print_printers_get): Rename to

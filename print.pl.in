@@ -118,6 +118,14 @@ sub xst_print_printers_get_rh70
   return @printers;
 }
 
+sub xst_print_printers_get_rh71
+{
+  my @printers;
+
+  @printers = &xst_parse_xml_children ("/etc/alchemist/namespace/printconf/local.adl");
+  return @printers;
+}
+
 sub xst_print_get_printer_parse_table
 {
   my %dist_map =
