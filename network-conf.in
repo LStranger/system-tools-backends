@@ -598,6 +598,14 @@ sub detect_essids
   &gst_xml_print_end   ("essids");
 }
 
+sub set_gateway
+{
+  my ($tool, $iface, $address) = @_;
+
+  &gst_network_route_set_default_gw ($iface, $address);
+  &gst_report_end ();
+}
+
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
@@ -618,7 +626,8 @@ $directives = {
   "enable_iface_with_config" => [ \&enable_iface_with_config, [],
                                   "Enable an interface with a given configuration" ],
   "detect_modem"       => [ \&detect_modem, [], "Detects the modem device." ],
-  "detect_essids"      => [ \&detect_essids, [ "interface" ], "Detects active wireless networks" ]
+  "detect_essids"      => [ \&detect_essids, [ "interface" ], "Detects active wireless networks" ],
+  "set_gateway"        => [ \&set_gateway,  [ "interface", "address" ],  "Sets the default gateway" ]
 };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);

@@ -1,3 +1,7 @@
+2005-02-24  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in: added "set_gateway" directive
+
 2005-02-23  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* network-conf.in, network.pl.in: patch with lots of help and testing
