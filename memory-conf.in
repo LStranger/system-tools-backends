@@ -53,7 +53,7 @@ $version = "0.1.0";
 
 $description =<<"end_of_description;";
 Configures main and swap memory.
-    end_of_description;
+end_of_description;
 
 $progress_max = 3;
 

@@ -161,7 +161,7 @@ sub xml_print
   my $h = $_[0];
   my @sync;
 
-  @scalar_keys = qw (timezone, ntpinstalled);
+  @scalar_keys = qw (timezone ntpinstalled);
 
   $sync = $$h{"sync"};
 
@@ -275,7 +275,7 @@ sub time_get_rh62_zone
 
   while (<TZLIST>)
   {
-    if (/\#/) { next; }                     # Skip comments.
+    if (/^\#/) { next; }                   # Skip comments.
     ($d, $d, $zone) = split /[\t ]+/, $_;  # Get 3rd column.
     chomp $zone;                           # Remove linefeeds.
 

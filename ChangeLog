@@ -1,3 +1,12 @@
+2001-04-26  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* boot-conf.in: removed useless commented debug code.
+	* boot.pl.in: Added mandrake-7.2 and debian-2.2 table equivalences.
+	Fixed bug where a comment would get into the options hash.
+	* memory-conf.in: end_of_description; should go at beginning of line.
+	* time-conf.in: qw values were separated by comma. fixed.
+	timezone description file comments are those that START with #.
+	
 2001-04-26  Chema Celorio  <chema@celorio.com>
 
 	* Makefile.am (EXTRA_DIST): add print-conf.in to pass distcheck

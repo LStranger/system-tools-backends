@@ -101,13 +101,15 @@ sub xst_boot_parse_images
     $found++ if (/^(image|other)/);
     next if $found < 0;
     
-    next if (/^$/);
     if (/^\#[ \t]*(\w+)/)
     {
       next if $1 ne "XstPartitionType";
 
       s/^\#[ \t]*//;
     }
+
+    s/\#.*//;
+    next if (/^$/);
     
     @line = split ("[ \t]*=[ \t]*", $_, 2);    
     $key = $line[0];
@@ -431,7 +433,10 @@ sub xst_boot_conf_set
    "redhat-6.0" => "redhat-6.2",
    "redhat-6.1" => "redhat-6.2",
    "redhat-6.2" => "redhat-6.2",
-   "redhat-7.0" => "redhat-6.2"
+   "redhat-7.0" => "redhat-6.2",
+
+   "mandrake-7.2" => "redhat-6.2",
+   "debian-2.2" => "redhat-6.2"
   );
   
   my %dist_tables =
@@ -471,14 +476,17 @@ sub xst_boot_conf_get
    "redhat-6.0" => "redhat-6.2",
    "redhat-6.1" => "redhat-6.2",
    "redhat-6.2" => "redhat-6.2",
-   "redhat-7.0" => "redhat-6.2"
+   "redhat-7.0" => "redhat-6.2",
+
+   "mandrake-7.2" => "redhat-6.2",
+   "debian-2.2" => "redhat-6.2"
    );
   
   my %dist_tables =
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/etc/lilo.conf" },
+        LILO_CONF => "/etc/lilo.conf" },
 	    table => [
                 [ 'prompt',  \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
                 [ 'lba32',   \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],

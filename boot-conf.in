@@ -245,7 +245,6 @@ sub set
 {
   my $hash;
   
-#  $xst_input_file = "aaa";
   $hash = &xml_parse ();
 
   &xst_boot_conf_set ($hash);
