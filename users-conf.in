@@ -113,24 +113,42 @@ $cmd_pw       = &gst_file_locate_tool ("pw");
 # --- Mapping constants --- #
 
 %users_prop_map = ();
-@users_prop_array = (
-  "key", 0,
-  "login", 1,
-  "password", 2,
-  "uid", 3,
-  "gid", 4,
-  "comment", 5,
-  "home", 6,
-  "shell", 7,
-  "last_mod", 8, # Read shadow (5) for these.
-  "passwd_min_life", 9,
-  "passwd_max_life", 10,
-  "passwd_exp_warn", 11,
-  "passwd_exp_disable", 12,
-  "passwd_disable", 13,
-  "reserved", 14,
-  "is_shadow", 15,
-  "", "");
+@users_prop_array = ();
+
+if ($$tool{"platform"} eq "Linux")
+{
+  @users_prop_array = (
+    "key", 0,
+    "login", 1,
+    "password", 2,
+    "uid", 3,
+    "gid", 4,
+    "comment", 5,
+    "home", 6,
+    "shell", 7,
+    "last_mod", 8, # Read shadow (5) for these.
+    "passwd_min_life", 9,
+    "passwd_max_life", 10,
+    "passwd_exp_warn", 11,
+    "passwd_exp_disable", 12,
+    "passwd_disable", 13,
+    "reserved", 14,
+    "is_shadow", 15,
+    "", "");
+}
+else
+{
+  @users_prop_array = (
+    "key", 0,
+    "login", 1,
+    "password", 2,
+    "uid", 3,
+    "gid", 4,
+    "comment", 5,
+    "home", 6,
+    "shell", 7,
+    "", "");
+}
 
 for ($i = 0; $users_prop_array[$i] ne ""; $i += 2)
 {
@@ -222,6 +240,12 @@ my $gentoo_logindefs_defaults = {
   'skel_dir'    => '/etc/skel/',
 };
 
+my $freebsd_logindefs_defaults = {
+  'shell'       => '/bin/sh',
+  'group'       => '$user',
+  'skel_dir'    => '/etc/skel/',
+};
+
 my $logindefs_dist_map = {
   'redhat-5.2'      => $rh_logindefs_defaults,
   'redhat-6.0'      => $rh_logindefs_defaults,
@@ -248,6 +272,8 @@ my $logindefs_dist_map = {
   'debian-sarge'    => $rh_logindefs_defaults,
   'gentoo'	        => $gentoo_logindefs_defaults,
   'slackware-9.1.0' => $gentoo_logindefs_defaults,
+  'freebsd-4'       => $freebsd_logindefs_defaults,
+  'freebsd-5'       => $freebsd_logindefs_defaults,
 
   # FIXME: I don't know about those, so using RH values for now.
   'suse-7.0'        => $rh_logindefs_defaults,
@@ -255,29 +281,27 @@ my $logindefs_dist_map = {
   'slackware-8.0.0' => $rh_logindefs_defaults,
   'slackware-8.1'   => $rh_logindefs_defaults,
   'slackware-9.0.0' => $rh_logindefs_defaults,
-  'freebsd-4'       => $rh_logindefs_defaults,
-  'freebsd-5'       => $rh_logindefs_defaults,
 };
 
 
 # Add reporting table.
 
 &gst_report_table ({
-  'users_read_profiledb_success' => ['info', _('Profiles read successfully.')],
-  'users_read_profiledb_fail'    => ['warn', _('Profiles read failed.')],
-  'users_read_users_success'     => ['info', _('Users read successfully.')],
-  'users_read_users_fail'        => ['warn', _('Users read failed.')],
-  'users_read_groups_success'    => ['info', _('Groups read successfully.')],
-  'users_read_groups_fail'       => ['warn', _('Groups read failed.')],
-  'users_read_shells_success'    => ['info', _('Shells read successfully.')],
-  'users_read_shells_fail'       => ['warn', _('Reading shells failed.')],
+  'users_read_profiledb_success' => ['info', 'Profiles read successfully.'],
+  'users_read_profiledb_fail'    => ['warn', 'Profiles read failed.'],
+  'users_read_users_success'     => ['info', 'Users read successfully.'],
+  'users_read_users_fail'        => ['warn', 'Users read failed.'],
+  'users_read_groups_success'    => ['info', 'Groups read successfully.'],
+  'users_read_groups_fail'       => ['warn', 'Groups read failed.'],
+  'users_read_shells_success'    => ['info', 'Shells read successfully.'],
+  'users_read_shells_fail'       => ['warn', 'Reading shells failed.'],
 
-  'users_write_profiledb_success' => ['info', _('Profiles written successfully.')],
-  'users_write_profiledb_fail'    => ['warn', _('Writing profiles failed.')],
-  'users_write_users_success'     => ['info', _('Users written successfully.')],
-  'users_write_users_fail'        => ['warn', _('Writing users failed.')],
-  'users_write_groups_success'    => ['info', _('Groups written successfully.')],
-  'users_write_groups_fail'       => ['warn', _('Writing groups failed.')],
+  'users_write_profiledb_success' => ['info', 'Profiles written successfully.'],
+  'users_write_profiledb_fail'    => ['warn', 'Writing profiles failed.'],
+  'users_write_users_success'     => ['info', 'Users written successfully.'],
+  'users_write_users_fail'        => ['warn', 'Writing users failed.'],
+  'users_write_groups_success'    => ['info', 'Groups written successfully.'],
+  'users_write_groups_fail'       => ['warn', 'Writing groups failed.'],
 });
 
 
@@ -335,8 +359,9 @@ sub logindefs_add_defaults
 {
   # Common for all distros
   my $logindefs = {
-    'name'        => 'Default',
-    'comment'     => 'Default profile',
+    'name'        => _("Default"),
+    'comment'     => _("Default profile"),
+    'default'     => 1,
     'login_defs'  => 1,
     'home_prefix' => '/home/$user',
   };
@@ -375,19 +400,30 @@ sub read_logindefs
 
   # Get new data in case someone has changed login_defs manually.
   my $fh = &gst_file_open_read_from_names (@login_defs_names);
-  return unless $fh;
 
-  while (<$fh>)
+  if ($fh)
   {
-    next if &gst_ignore_line ($_);
-    chomp;
-    my @line = split /[ \t]+/;
-    if (exists $login_defs_prop_map{$line[0]})
+    while (<$fh>)
     {
-      $logindefs->{$login_defs_prop_map{$line[0]}} = $line[1];
+      next if &gst_ignore_line ($_);
+      chomp;
+      my @line = split /[ \t]+/;
+      if (exists $login_defs_prop_map{$line[0]})
+      {
+        $logindefs->{$login_defs_prop_map{$line[0]}} = $line[1];
+      }
     }
+
+    close $fh;
   }
-  close $fh;
+  else
+  {
+    # Put safe defaults for distros/OS that don't have any defaults file
+    $logindefs->{"umin"} = '1000';
+    $logindefs->{"umax"} = '60000';
+    $logindefs->{"gmin"} = '1000';
+    $logindefs->{"gmax"} = '60000';
+  }
 }
 
 
@@ -452,10 +488,10 @@ sub read_passwd_shadow
   while (<$ifh>)
   {
     chomp;
-    # FreeBSD allows comments in the passwd file. */
+    # FreeBSD allows comments in the passwd file.
     next if &gst_ignore_line ($_);
     $_ = &gst_xml_quote ($_);
-    
+
     @line = split ':', $_, -1;
     unshift @line, sprintf ("%06d", $i);
     $copy = [@line];
@@ -476,7 +512,7 @@ sub read_passwd_shadow
     while (<$ifh>)
     {
       chomp;
-      # FreeBSD allows comments in the shadow passwd file. */
+      # FreeBSD allows comments in the shadow passwd file.
       next if &gst_ignore_line ($_);
       $_ = &gst_xml_quote ($_);
 
@@ -731,15 +767,17 @@ sub add_user
 	my ($data) = @_;
 	my ($home_parents, $tool_mkdir);
   
-  $home_parents = $$data[$users_prop_map{"home"}];
-  $home_parents =~ s/\/+[^\/]+\/*$//;
-
+  $log = $$data[$users_prop_map{"login"}];
   $tool_mkdir = &gst_file_locate_tool ("mkdir");
-  &gst_file_run ("$tool_mkdir -p $home_parents");
-  
+
   if ($gst_dist =~ /^freebsd/)
   {
     my $pwdpipe;
+    my $home;
+
+    # FreeBSD doesn't create the home directory
+    $home = $$data[$users_prop_map{"home"}];
+    &gst_file_run ("$tool_mkdir -p $home");
 
     $command = "$cmd_pw useradd " .
      " -n \'" . $$data[$users_prop_map{"login"}] . "\'" .
@@ -747,20 +785,24 @@ sub add_user
      " -d \'" . $$data[$users_prop_map{"home"}] . "\'" .
      " -g \'" . $$data[$users_prop_map{"gid"}] . "\'" .
      " -s \'" . $$data[$users_prop_map{"shell"}] . "\'" .
-     " -h 0"; # pw(8) reads password from STDIN
+     " -H 0"; # pw(8) reads password from STDIN
 
     $pwdpipe = &gst_file_run_pipe($command, $GST_FILE_WRITE);
     print $pwdpipe $$data[$users_prop_map{"password"}];
-    close(PIPE);
+    &gst_file_close ($pwdpipe);
   }
   else
   {
+    $home_parents = $$data[$users_prop_map{"home"}];
+    $home_parents =~ s/\/+[^\/]+\/*$//;
+    &gst_file_run ("$tool_mkdir -p $home_parents");
+
     $command = "$cmd_useradd" . " -d \'" . $$data[$users_prop_map{"home"}] .
-     "\' -g \'" . $$data[$users_prop_map{"gid"}] .
+     "\' -g \'"    . $$data[$users_prop_map{"gid"}] .
      "\' -m -p \'" . $$data[$users_prop_map{"password"}] .
-     "\' -s \'" . $$data[$users_prop_map{"shell"}] .
-     "\' -u \'" . $$data[$users_prop_map{"uid"}] .
-     "\' \'" . $$data[$users_prop_map{"login"}] . "\'";
+     "\' -s \'"    . $$data[$users_prop_map{"shell"}] .
+     "\' -u \'"    . $$data[$users_prop_map{"uid"}] .
+     "\' \'"       . $$data[$users_prop_map{"login"}] . "\'";
     &gst_file_run ($command);
   }
 
@@ -775,17 +817,17 @@ sub change_user
   {
     my $pwdpipe;
 
-    $command = "$cmd_pw usermod " .
-     " -n \'" . $$data[$users_prop_map{"login"}] . "\'" .
-     " -u \'" . $$data[$users_prop_map{"uid"}] . "\'" .
-     " -d \'" . $$data[$users_prop_map{"home"}] . "\'" .
-     " -g \'" . $$data[$users_prop_map{"gid"}] . "\'" .
-     " -s \'" . $$data[$users_prop_map{"shell"}] . "\'" .
-     " -h 0"; # pw(8) reads password from STDIN
+    $command = "$cmd_pw usermod \'" . $$old_data[$users_prop_map{"login"}] . "\'" .
+     " -l \'" . $$new_data[$users_prop_map{"login"}] . "\'" .
+     " -u \'" . $$new_data[$users_prop_map{"uid"}]   . "\'" .
+     " -d \'" . $$new_data[$users_prop_map{"home"}]  . "\'" .
+     " -g \'" . $$new_data[$users_prop_map{"gid"}]   . "\'" .
+     " -s \'" . $$new_data[$users_prop_map{"shell"}] . "\'" .
+     " -H 0"; # pw(8) reads password from STDIN
 
     $pwdpipe = &gst_file_run_pipe($command, $GST_FILE_WRITE);
     print $pwdpipe $$data[$users_prop_map{"password"}];
-    close(PIPE);
+    &gst_file_close ($pwdpipe);
   }
   else
   {
@@ -826,8 +868,11 @@ sub add_group
 	
   if ($gst_dist =~ /^freebsd/)
   {
+    $users = join (",", @$u);
+      
     $command = "$cmd_pw groupadd -n \'" . $$data[$groups_prop_map{"name"}] .
-      "\' -g " . $$data[$groups_prop_map{"gid"}];
+      "\' -g \'" . $$data[$groups_prop_map{"gid"}] .
+      "\' -M \'" . $users . "\'";
     &gst_file_run ($command);
   }
   else
@@ -848,42 +893,59 @@ sub add_group
 sub change_group
 {
 	my ($old_data, $new_data) = @_;
-	my ($n, $o, $i, $j, $max_n, $max_o, $r, @tmp); # for iterations
+	my ($n, $o, $users, $i, $j, $max_n, $max_o, $r, @tmp); # for iterations
 
-	$command = "$cmd_groupmod -g \'" . $$new_data[$groups_prop_map{"gid"}] .
-	  "\' -n \'" . $$new_data[$groups_prop_map{"name"}] . "\'" 
-		. " \'" . $$old_data[$groups_prop_map{"name"}] . "\'";
-	&gst_file_run ($command);
+  if ($gst_dist =~ /^freebsd/)
+  {
+    $n = [ @{$$new_data[$groups_prop_map{"users"}]} ]; sort @$n;
+    $users = join (",", @$n);
+
+    $command = "$cmd_pw groupmod -n \'" . $$old_data[$groups_prop_map{"name"}] .
+        "\' -g \'" . $$new_data[$groups_prop_map{"gid"}] .
+        "\' -l \'" . $$new_data[$groups_prop_map{"name"}] .
+        "\' -M \'" . $users . "\'";
+
+    &gst_file_run ($command);
+  }
+  else
+  {
+    $command = "$cmd_groupmod -g \'" . $$new_data[$groups_prop_map{"gid"}] .
+      "\' -n \'" . $$new_data[$groups_prop_map{"name"}] . "\' " .
+      "\'" . $$old_data[$groups_prop_map{"name"}] . "\'";
+  
+    &gst_file_run ($command);
 	
-	# Let's see if the users that compose the group have changed.
-	if (&arr_cmp_recurse ($$new_data[$groups_prop_map{"users"}],
-	                      $$old_data[$groups_prop_map{"users"}])) {
+    # Let's see if the users that compose the group have changed.
+    if (&arr_cmp_recurse ($$new_data[$groups_prop_map{"users"}],
+                          $$old_data[$groups_prop_map{"users"}])) {
 
-		$n = [ @{$$new_data[$groups_prop_map{"users"}]} ]; sort @$n;
-		$o = [ @{$$old_data[$groups_prop_map{"users"}]} ]; sort @$o;
+      $n = [ @{$$new_data[$groups_prop_map{"users"}]} ]; sort @$n;
+      $o = [ @{$$old_data[$groups_prop_map{"users"}]} ]; sort @$o;
 		
-		$max_n = $#$n;
-		$max_o = $#$o;
-		for ($i = 0, $j = 0; $i <= &max ($max_n, $max_o); ) {
-		  $r = $$n[$i] cmp $$o[$j];
-			$r *= -1 if (($$o[$j] eq "") || ($$n[$i] eq ""));
-		  if ($r < 0) { # add this user to the group.
-			  $command = "$cmd_gpasswd -a \'" . $$n[$i] . "\' \'" . 
-				  $$new_data[$groups_prop_map{"name"}] . "\'";
-				$i ++;
+      $max_n = $#$n;
+      $max_o = $#$o;
+      for ($i = 0, $j = 0; $i <= &max ($max_n, $max_o); ) {
+        $r = $$n[$i] cmp $$o[$j];
+        $r *= -1 if (($$o[$j] eq "") || ($$n[$i] eq ""));
+
+        if ($r < 0) { # add this user to the group.
+          $command = "$cmd_gpasswd -a \'" . $$n[$i] . "\' \'" . 
+            $$new_data[$groups_prop_map{"name"}] . "\'";
+          $i ++;
 				
-				&gst_file_run ($command);
-			} elsif ($r > 0) { # delete the user from the group.
-			  $command = "$cmd_gpasswd -d \'" . $$o[$j] . "\' \'" . 
-				  $$new_data[$groups_prop_map{"name"}] . "\'";
-				$j ++;
+          &gst_file_run ($command);
+			  } elsif ($r > 0) { # delete the user from the group.
+          $command = "$cmd_gpasswd -d \'" . $$o[$j] . "\' \'" . 
+            $$new_data[$groups_prop_map{"name"}] . "\'";
+          $j ++;
 				
-				&gst_file_run ($command);
-			} else { # The information is the same. Go to next tuple.
-			  $i ++; $j ++;
-			}	
-		}	
-	}	
+          &gst_file_run ($command);
+			  } else { # The information is the same. Go to next tuple.
+          $i ++; $j ++;
+			  }	
+		  }	
+	  }
+  }
 }
 
 
@@ -1157,7 +1219,8 @@ sub xml_parse_profile
 
   while (@$tree)
 	{
-		if ($profiles_prop_map{$$tree[0]})
+    # The "default" tag is not in the map, but we need to parse it
+		if ($profiles_prop_map{$$tree[0]} || $$tree[0] eq "default")
 		{
 		  $profile{$$tree[0]} = $$tree[1][2];
 		}

@@ -1,5 +1,13 @@
 2004-05-05  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* users-conf.in: lots of bugfixes related to FreeBSD, now it parses
+	  correctly data, adds/deletes/modifies users/groups correctly (AFAICT).
+	  Added too the <default> tag to the profiles, guessing the default
+	  profile with the name tag sucked. Added and removed some strings for
+	  translation
+
+2004-05-05  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* users-conf.in (add_group): made it to add users too in linux OS
 
 2004-05-04  Carlos Garnacho Parro  <garnacho@tuxerver.net>
