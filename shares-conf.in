@@ -554,7 +554,7 @@ sub get
 sub set
 {
   my $config;
-  my ($fs);
+  my ($fs, $fs_no_shares, $fs_new_shares);
   my $imports;
 
   $config = &xml_parse ();
@@ -568,11 +568,15 @@ sub set
   }
 
   $fs = &xst_filesys_fstab_parse (&distro_file ("fstab"));
-  &remove_shares_from_filesys_table ($fs);
   &xst_filesys_table_set_permanent_true ($fs);
-  $fs = &xst_filesys_table_merge_superset ($$config{"imports"}, $fs);
 
-  &xst_filesys_fstab_replace     (&distro_file ("fstab"),    $fs);
+  $fs_no_shares = &xst_filesys_table_dup ($fs);
+  &remove_shares_from_filesys_table ($fs_no_shares);
+
+  $fs_new_shares = &xst_filesys_table_merge_superset ($$config{"imports"}, $fs_no_shares);
+  $fs_new_shares = &xst_filesys_table_merge_subset ($fs_new_shares, $fs);
+
+  &xst_filesys_fstab_replace     (&distro_file ("fstab"),    $fs_new_shares);
   &xst_share_replace_smb_conf    (&distro_file ("smb.conf"), $$config{"smb_exports"});
   &xst_share_replace_nfs_exports (&distro_file ("exports"),  $$config{"nfs_exports"});
 

@@ -493,7 +493,7 @@ sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B
 }
 
 # Merges filesys tables A and B, resolving conflicts by giving priority to A.
-# Any entries in A not in B are dropped.
+# Any entries not in A are dropped.
 #
 # Returns a newly allocated table C, which is a subset of A and B.
 
