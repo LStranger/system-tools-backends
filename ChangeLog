@@ -1,5 +1,15 @@
 2001-05-08  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* general.pl.in (xst_end): Turn off reporting here, to make
+	sure no further reporting gets mixed with the XML.
+
+	* network.pl.in (xst_network_sysconfig_ifaces_get_existing):
+	only check files that START with ifcfg-. This was confusing
+	the backend with Mandrake's, and potentially others, backup
+	files.
+
+2001-05-08  Arturo Espinosa Aldama  <arturo@ximian.com>
+
 	After some profiling, some optimizations:
 	
 	* report.pl.in (xst_report): Only send debug string if debug flag

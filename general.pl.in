@@ -154,6 +154,7 @@ sub xst_end
   &xst_progress_end ();
   &xst_report_leave ();
   &xst_report ("end");
+  &xst_report_set_threshold (-1);
 }
 
 

@@ -145,7 +145,7 @@ sub xst_network_sysconfig_ifaces_get_existing
   {
     foreach $i (readdir (IFACE_DIR))
     {
-      if ($i =~ /ifcfg-[a-z0-9]+$/)
+      if ($i =~ /^ifcfg-[a-z0-9]+$/)
       {
         $name = $i;
         $name =~ s/ifcfg-//;
