@@ -51,7 +51,7 @@ require "___scriptsdir___/replace.pl";
 $name = "time";
 $version = "0.1.0";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2",
-              "redhat-7.0");
+              "redhat-7.0", "mandrake-7.2");
 
 $description =<<"end_of_description;";
        Configures your system clock, timezone and time server list.
@@ -374,10 +374,11 @@ sub conf_get_parse_table
 {
   my %dist_map =
   (
-   "redhat-6.0" => "redhat-6.2",
-   "redhat-6.1" => "redhat-6.2",
-   "redhat-6.2" => "redhat-6.2",
-   "redhat-7.0" => "redhat-6.2"
+   "redhat-6.0"   => "redhat-6.2",
+   "redhat-6.1"   => "redhat-6.2",
+   "redhat-6.2"   => "redhat-6.2",
+   "redhat-7.0"   => "redhat-6.2",
+   "mandrake-7.2" => "redhat-6.2"
    );
 
   my %dist_tables =
@@ -412,10 +413,11 @@ sub conf_get_replace_table
 {
   my %dist_map =
   (
-   "redhat-6.0" => "redhat-6.2",
-   "redhat-6.1" => "redhat-6.2",
-   "redhat-6.2" => "redhat-6.2",
-   "redhat-7.0" => "redhat-6.2"
+   "redhat-6.0"   => "redhat-6.2",
+   "redhat-6.1"   => "redhat-6.2",
+   "redhat-6.2"   => "redhat-6.2",
+   "redhat-7.0"   => "redhat-6.2",
+   "mandrake-7.2" => "mandrake-7.2"
    );
 
   my %dist_tables =
