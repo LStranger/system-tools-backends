@@ -1,5 +1,7 @@
 2001-05-25  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* service.pl.in (xst_service_sysv_get_paths): Added redhat-7.1.
+
 	* parse.pl.in (xst_parse_shell_escape): Some special chars
 	are escaped when surrounded by quotes, so let's apply quotes
 	if they appear, and not escape them with '\', as they may

@@ -47,6 +47,7 @@ sub xst_service_sysv_get_paths
        "redhat-6.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
        "redhat-6.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
        "redhat-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-7.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
 
        "mandrake-7.2" => ["/etc/rc.d", "/etc/rc.d/init.d"],
 
