@@ -536,6 +536,18 @@ sub xst_parse_sh_export
   return &xst_parse_shell_unescape ($ret);
 }
 
+# Same, but interpret the returing value as a bool. (ie export NETWORKING=yes)
+sub xst_parse_sh_export_bool
+{
+  my ($file, $key) = @_;
+  my $ret;
+
+  $ret = &xst_parse_sh_export ($file, $key);
+
+  return undef if ($ret eq undef);
+  return (&xst_read_boolean ($ret)? 1: 0);
+}
+
 # Search for $keyword in $file, delimited by $re (default " ") or EOL.
 # If keyword exists, return 1, else 0.
 sub xst_parse_kw
@@ -734,7 +746,7 @@ sub xst_parse_cap_line_clean
   $_ = $_[0];
 
   chomp;
-  s/\#.*//;
+  s/^[ \t]*\#.*//;
   s/;.*//;
   s/^[ \t]+//;
   s/[ \t]+$//;
@@ -776,6 +788,71 @@ sub xst_parse_cap_sections
 
   close $fd;
   return @sections;
+}
+
+sub xst_parse_cap
+{
+  my ($file, $section, $var) = @_;
+  my ($fd, $res, $line);
+  my $found_section_flag = 0;
+
+  $fd = &xst_file_open_read_from_names ($file);
+  $res = undef;
+  
+  while (($line = &xst_parse_ini_line_read ($fd)) != -1)
+  {
+    $_ = $$line;
+    next if (/^$/);
+    if (/^$section[:|]/i)
+    {
+      $found_section_flag = 1;
+    }
+
+    if ($found_section_flag && /:$var\#/i)
+    {
+      $_ =~ /:$var\#([^:]*)/;
+      $res = $1;
+      last;
+    }
+#    if ($found_section_flag && /:$var[#=]/i)
+#    {
+#      $_ =~ /:$var[#=]([^:]*)/;
+#      $res = $1;
+#      last;
+#    }
+  }
+
+  close $fd;
+  return $res;
+}
+
+sub xst_parse_cap_bool
+{
+  my ($file, $section, $var) = @_;
+  my ($fd, $res, $line);
+  my $found_section_flag = 0;
+
+  $fd = &xst_file_open_read_from_names ($file);
+  $res = 0;
+  
+  while (($line = &xst_parse_ini_line_read ($fd)) != -1)
+  {
+    $_ = $$line;
+    next if (/^$/);
+    if (/^$section[:|]/i)
+    {
+      $found_section_flag = 1;
+    }
+
+    if ($found_section_flag && /:$var[:\#=]/i)
+    {
+      $res = 1;
+      last;
+    }
+  }
+
+  close $fd;
+  return $res;
 }
 
 # Debian interfaces(5) states that files starting with # are comments.

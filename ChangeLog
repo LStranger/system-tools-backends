@@ -1,3 +1,14 @@
+2001-06-19  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_sh_export_bool): Implement.
+	  (xst_parse_cap): Implement.
+	  (xst_parse_cap_bool): Implement.
+
+	* print.pl.in (xst_print_conf_get): Rewrite.
+	  (xst_printcap_read): Eliminate.
+	  (xst_print_printers_get): Implement.
+	  (xst_print_get_printer_parse_table): Implement.
+
 2001-06-15  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* general.pl.in: Deprecated some globals that come now inside a hash

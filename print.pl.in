@@ -1,14 +1,11 @@
 #!/usr/bin/env perl
 #-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-# Common stuff for the ximian-setup-tools backends.
+# Common printer configuration functionality.
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
 # Authors: Hans Petter Jansson <hpj@ximian.com>
-#          Arturo Espinosa <arturo@ximian.com>
-#          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
-#          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -24,209 +21,41 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
 
-#
-# Tried to split this, but suffered from indirection fatigue
-# before referencing the output hash correctly.
-#
-sub parse_vars
-{
-  my ($dir, $section, $i, $spools, @known_options) = @_;
-
-  $$$spools{'lp'}{'lpr'}{'JIM'} = "BOB";
-
-  if (-f $dir . "/$section.cfg")
-  {
-    my $j;
-    
-    &xst_debug_print_line ("Parse vars in section '$i'");
-    
-    foreach $j (@known_options)
-    {
-      &xst_debug_print_line ("option '$j'");
-      $val = &xst_parse_sh_export ($dir . "/$section.cfg", $j);
-      $$$spools{$i}{'rhs-general'}{$j} = $val;
-    }
-  }
-  else
-  {
-    &xst_report ("file_open_read_failed", "$dir/$section.cfg");
-  }
-}
-
-sub xst_printcap_read
-{
-  my ($file, $spool_dir) = @_;
-  my ($fd, $found, $spool, $in_spool);
-  my (%output);
-  my (%spools);
-
-  $fd = &xst_file_open_read_from_names ("$file");
-  return undef if !$fd;
-    
-  $in_spool = 0;
-
-  while (<$fd>)
-  {
-    # We'll be emptying $_ as we "scan".
-    chomp;
-
-    if ($in_spool) {
-        if (/[ \t]*:([^=\#]+)[\#=]*(.*):/) {
-            $spools{$spool}{$1} = $2;
-        }
-
-        # Look for line continuation.
-        if (/.*\\$/) {
-            $in_spool = 1;
-        } else {
-            $in_spool = 0;
-        }
-    } elsif (/^([A-Za-z0-9]+):\\/) {
-        # Get the spool name.
-        $spool = $1;
-        $in_spool = 1;
-
-        $spools{$spool}{'name'} = $spool;
-#
-#        # Pack away the type and description for this spool.
-#        $spools{$spool}{'type'} = $type;
-#        $spools{$spool}{'description'} = $description;
-#
-#        # Reset for the next pass.
-#        $type = '';
-#        $description = '';
-#    } elsif ( s/^\#\#PRINTTOOL.*\#\#// ) {
-#     # printtool creates a comment line of the form:
-#     # ##PRINTTOOL3## printer_type some multi-word description
-#     # for each printer entry.  Let's parse it into the consituent
-#     # type and description.
-#      s/^\s+//;
-#      ($type, $description) = split(/\s+/, $_, 2);
-    }
-  }
-  
-  close $fd;
-
-# Should be split out...
-
-  foreach $spool (keys %spools) {
-      my $dir = $spools{$spool}{'sd'};
-      my %tmp;
-
-      if (-d ($dir) && -e ($dir . "/filter")) {
-          my @known_options;
-
-          # Parse general.cfg.
-          $section = "general.cfg";
-          @known_options = ('DESIRED_TO', 'PAPERSIZE',
-                            'PRINTER_TYPE', 'ASCII_TO_PS');
-
-          if (-f "$dir/$section") {
-              my $j;
-
-              foreach $j (@known_options) {
-                  $val = &xst_parse_sh_export ($dir . "/$section", $j);
-                  $tmp{$j} = $val;
-              }
-          } else {
-            &xst_report ("file_open_read_failed", "$dir/$section");
-          }
-
-          # Parse postscript.cfg.
-          $section = "postscript.cfg";
-          @known_options = ('GSDEVICE', 'RESOLUTION',
-                            'COLOR', 'PAPERSIZE',
-                            'EXTRA_GS_OPTIONS', 'REVERSE_ORDER',
-                            'PS_SEND_EOF', 'NUP',
-                            'RTFLMAR', 'TOPBOTMAR');
-
-          if (-f "$dir/$section") {
-              my $j;
-
-              foreach $j (@known_options) {
-                  $val = &xst_parse_sh ($dir . "/$section", $j);
-                  $tmp{$j} = $val;
-              }
-          } else {
-            &xst_report ("file_open_read_failed", "$dir/$section");
-          }
-
-          # Parse textonly.cfg.
-          $section = "textonly.cfg";
-          @known_options = ('TEXTONLYOPTIONS', 'CRLFTRANS',
-                            'TEXT_SEND_EOF');
-
-          if (-f "$dir/$section") {
-              my $j;
-
-              foreach $j (@known_options) {
-                  $val = &xst_parse_sh ($dir . "/$section.cfg", $j);
-                  $tmp{$j} = $val;
-              }
-          } else {
-            &xst_report ("file_open_read_failed", "$dir/$section.cfg");
-          }
-
-          # Parse .config
-          $section = ".config";
-          @known_options = ('share', 'hostip',
-                            'user', 'password',
-                            'workgroup');
-
-          if (-f "$dir/$section") {
-              my $j;
-
-              foreach $j (@known_options) {
-                  $val = &xst_parse_sh ($dir . "/$section", $j);
-                  if ($val) {
-                      $output{$spool}{$j} = $val;
-                  }
-              }
-          } else {
-            &xst_report ("file_open_read_failed", "$dir/$section");
-          }
-
-          # Build Output
-          {
-              my (@mapping) = ( 'PRINTER_TYPE', 'type',
-                                'PAPERSIZE',    'paper_size',
-                                'GSDEVICE',     'gsdevice',
-                                'RESOLUTION',   'resolution' );
-              my ($src, $dst);
-
-              $output{$spool}{'name'} = $spool;
-
-              while (($src = shift (@mapping))) {
-                  $dst = shift (@mapping);
-#                  print "Copy '$src'(='$spools{$spool}{$src} to '$dst'\n";
-                  if ($tmp{$src}) {
-                      $output{$spool}{$dst} = $tmp{$src};
-                  }
-              }
-          }
-
-      } else {
-          &xst_report ("print_no_printtool", $spool);
-      }
-  }
-
-  return \%output;
-}
-
 sub xst_print_conf_get
 {
-    my %data;
-    
-    $data = &xst_printcap_read ("$xst_prefix/etc/printcap",
-                                "$xst_prefix/var/spool/lpd/");
+  my (%dist_attrib, %hash, %fn, @printers, $printer);
+  my ($dist, $value, $file, $proc);
+  my ($i, $j);
 
-    return $data;
+  %dist_attrib = &xst_print_get_printer_parse_table ();
+  %fn = %{$dist_attrib{"fn"}};
+  $proc = $dist_attrib{"printers_get"};
+  @printers = &$proc ();
+  $key = 0;
+  
+  foreach $i (@printers)
+  {
+    foreach $j (keys (%fn))
+    {
+      my $spooldir = "/var/spool/lpd/$i";  # Not flexible, FIXME.
+
+      $value = $fn{$j};
+      $value =~ s/\#printer\#/$i/;
+      $value =~ s/\#spooldir\#/$spooldir/;
+      $ {$dist_attrib{"fn"}}{$j} = $value;
+    }
+
+    $printer = &xst_parse_from_table ($dist_attrib{"fn"},
+                                      $dist_attrib{"table"});
+    $hash{$i} = $printer;
+  }
+
+  return \%hash;
 }
 
 sub xst_print_conf_set
@@ -240,6 +69,69 @@ sub xst_print_conf_set
 #  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
 #                                  $values_hash, $old_hash);
   return $res;
+}
+
+sub xst_print_printers_get
+{
+  my @printers;
+
+  @printers = &xst_parse_cap_sections ("/etc/printcap");
+  return @printers;
+}
+
+sub xst_print_get_printer_parse_table
+{
+  my %dist_map =
+	(
+	  "redhat-7.0" => "redhat-7.0",
+	  "redhat-7.1" => "redhat-7.0"
+  );
+
+  my %dist_tables =
+  (
+    "redhat-7.0" =>
+	  {
+      printers_get => \&xst_print_printers_get,
+#	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
+	    fn =>
+	    {
+        PRINTCAP   => "/etc/printcap",
+        GENERAL    => "#spooldir#/general.cfg",
+        POSTSCRIPT => "#spooldir#/postscript.cfg",
+        TEXTONLY   => "#spooldir#/textonly.cfg",
+        PRINTER    => "#printer#"
+      },
+	    table =>
+      [
+        [ "spooldir",           \&xst_parse_cap,            [PRINTCAP,  PRINTER],    "sd" ],
+        [ "jobsize_max_k",      \&xst_parse_cap,            [PRINTCAP,  PRINTER],    "mx" ],
+        [ "suppress_headers",   \&xst_parse_cap_bool,       [PRINTCAP,  PRINTER],    "sh" ],
+        [ "device",             \&xst_parse_cap,            [PRINTCAP,  PRINTER],    "lp" ],
+        [ "filter",             \&xst_parse_cap,            [PRINTCAP,  PRINTER],    "if" ],
+        [ "papersize",          \&xst_parse_sh_export,      GENERAL,    PAPERSIZE         ],
+        [ "type",               \&xst_parse_sh_export,      GENERAL,    PRINTERTYPE       ],
+        [ "ascii_to_ps",        \&xst_parse_sh_export_bool, GENERAL,    ASCII_TO_PS       ],
+        [ "gsdevice",           \&xst_parse_sh,             POSTSCRIPT, GSDEVICE          ],
+        [ "resolution",         \&xst_parse_sh,             POSTSCRIPT, RESOLUTION        ],
+        [ "color",              \&xst_parse_sh,             POSTSCRIPT, COLOR             ],
+        [ "gs_papersize",       \&xst_parse_sh,             POSTSCRIPT, PAPERSIZE         ],
+        [ "gs_options",         \&xst_parse_sh,             POSTSCRIPT, EXTRA_GS_OPTIONS  ],
+        [ "ps_send_eof",        \&xst_parse_sh_bool,        POSTSCRIPT, PS_SEND_EOF       ],
+        [ "pages_per_sheet",    \&xst_parse_sh,             POSTSCRIPT, NUP               ],
+        [ "rt_margin",          \&xst_parse_sh,             POSTSCRIPT, RTLFTMAR          ],
+        [ "tb_margin",          \&xst_parse_sh,             POSTSCRIPT, TOPBOTMAR         ],
+        [ "text_options",       \&xst_parse_sh,             TEXTONLY,   TEXTONLYOPTIONS   ],
+        [ "trans_crlf",         \&xst_parse_sh_bool,        TEXTONLY,   CRLFTRANS         ],
+        [ "text_send_eof",      \&xst_parse_sh_bool,        TEXTONLY,   TEXT_SEND_EOF     ]
+      ]
+    }
+  );
+
+  my $dist = $dist_map{$xst_dist};
+  return %{$dist_tables{$dist}} if $dist;
+
+  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
 }
 
 1;
