@@ -1,21 +1,19 @@
-# Albanian translation of setup-tools-backends.
+# Përkthimi i mesazheve të setup-tools-backends në shqip
 # Copyright (C) 2004 THE setup-tools-backends'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the setup-tools-backends package.
 # Elian Myftiu <elian@lycos.com>, 2004.
-# , fuzzy
-# 
-# 
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: setup-tools-backends\n"
+"Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-07-27 04:28+0200\n"
-"PO-Revision-Date: 2004-08-24 14:39+0200\n"
+"POT-Creation-Date: 2004-08-28 04:14+0200\n"
+"PO-Revision-Date: 2004-08-28 12:03+0200\n"
 "Last-Translator: Elian Myftiu <elian@lycos.com>\n"
 "Language-Team: Albanian <gnome-albanian-perkthyesit@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -28,8 +26,8 @@ msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
-"Njofton programet e përdoruesit rreth ngjarjeve ACPI: ekzekuton komanda "
-"në përgjigje të ngjarjeve ACPI si p.sh. tastat e ndezjes."
+"Njofton programet e përdoruesit rreth ngjarjeve ACPI: ekzekuton komanda në "
+"përgjigje të ngjarjeve ACPI si p.sh. tastat e ndezjes."
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
@@ -40,8 +38,7 @@ msgid "web server"
 msgstr "server web"
 
 #: service-list.pl.in:38 service-list.pl.in:70
-msgid ""
-"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+msgid "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr ""
 "Apache është një server World Wide Web.  Përdoret për të shërbyer skedarë "
 "HTML dhe CGI."
@@ -76,8 +73,8 @@ msgid ""
 "Runs commands scheduled by the at command at the time specified when at was "
 "run, and runs batch commands when the load average is low enough."
 msgstr ""
-"Ekzekuton komanda të skeduara nga komanda \"at\" në çastin e përcaktuar kur \"at\" "
-"u nis, dhe ekzekuton komada batch kur ngarkesa mesatare është e ulët."
+"Ekzekuton komanda të skeduara nga komanda \"at\" në çastin e përcaktuar kur "
+"\"at\" u nis, dhe ekzekuton komada batch kur ngarkesa mesatare është e ulët."
 
 #: service-list.pl.in:42
 msgid "Audio mixer"
@@ -104,8 +101,8 @@ msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
 msgstr ""
-"Punon në sfond dhe kopjon të gjitha mesazhet që dërgohen në dispozitivin "
-"/dev/console në një file regjistrimi."
+"Punon në sfond dhe kopjon të gjitha mesazhet që dërgohen në dispozitivin /"
+"dev/console në një file regjistrimi."
 
 #: service-list.pl.in:45
 msgid ""
@@ -140,8 +137,8 @@ msgid ""
 "providing optimal performance"
 msgstr ""
 "cpufreqd përdoret për të vëzhguar gjendjen e baterisë dhe për të përshtatur "
-"frekuencën e CPU-së në mënyrë që të ruajë fuqinë e baterisë duke kryer "
-"një punë të arsyeshme."
+"frekuencën e CPU-së në mënyrë që të ruajë fuqinë e baterisë duke kryer një "
+"punë të arsyeshme."
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -157,10 +154,10 @@ msgid ""
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
 msgstr ""
-"cron është një program standart UNIX i cili ekzekuton programe specifikë "
-"në momente periodike të skeduar. vixie cron i shton një numër vetish "
-"programit bazë UNIX cron, që përfshijnë siguri më të mirë dhe mundësi "
-"më të fuqishme konfigurimi."
+"cron është një program standart UNIX i cili ekzekuton programe specifikë në "
+"momente periodike të skeduar. vixie cron i shton një numër vetish programit "
+"bazë UNIX cron, që përfshijnë siguri më të mirë dhe mundësi më të fuqishme "
+"konfigurimi."
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
@@ -168,7 +165,9 @@ msgstr "Sistem i Përgjithshëm i Printimit Unix"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr "Sistem printimi i bazuar mbi Protokollin e Prinitimit në Internet, versioni  1.1"
+msgstr ""
+"Sistem printimi i bazuar mbi Protokollin e Prinitimit në Internet, versioni  "
+"1.1"
 
 #: service-list.pl.in:52
 msgid ""
@@ -176,9 +175,9 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
 msgstr ""
-"Një shërbim i brendshëm xinetd i cili tërheq orën e sistemit e pastaj e printon "
-"në një format si ky: 'Mër Nën 13 22:30:27 CEST 2002'.  Ky është versioni tcp. "
-"Duhet të aktivizoni xinetd për të përdorur këtë shërbim."
+"Një shërbim i brendshëm xinetd i cili tërheq orën e sistemit e pastaj e "
+"printon në një format si ky: 'Mër Nën 13 22:30:27 CEST 2002'.  Ky është "
+"versioni tcp. Duhet të aktivizoni xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:53
 msgid ""
@@ -186,9 +185,9 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
-"Një shërbim i brendshëm xinetd i cili tërheq orën e sistemit e pastaj e printon "
-"në një format si ky: 'Mër Nën 13 22:30:27 CEST 2002'.  Ky është versioni udp. "
-"Duhet të aktivizoni xinetd për të përdorur këtë shërbim."
+"Një shërbim i brendshëm xinetd i cili tërheq orën e sistemit e pastaj e "
+"printon në një format si ky: 'Mër Nën 13 22:30:27 CEST 2002'.  Ky është "
+"versioni udp. Duhet të aktivizoni xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:54 service-list.pl.in:55
 msgid "Dynamic DNS Client"
@@ -297,8 +296,8 @@ msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
 msgstr ""
-"Sjell një ndërfaqe për ioctls të ndryshme disqesh të ngurtë të suportuar "
-"nga nënsistemi i dispozitivëve lexues ATA/IDE për Linux."
+"Sjell një ndërfaqe për ioctls të ndryshme disqesh të ngurtë të suportuar nga "
+"nënsistemi i dispozitivëve lexues ATA/IDE për Linux."
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
@@ -311,9 +310,9 @@ msgid ""
 "An example is when a USB or Cardbus device has just been plugged in."
 msgstr ""
 "hotplug është një program i cili përdoret nga kerneli për të njoftuar "
-"software të zakonshëm kur ndodhin disa ngjarje të rëndësishme (zakonisht "
-"të lidhura me hardware). Një shembull është kur sapo lidhet një dispozitiv "
-"USB ose Cardbus."
+"software të zakonshëm kur ndodhin disa ngjarje të rëndësishme (zakonisht të "
+"lidhura me hardware). Një shembull është kur sapo lidhet një dispozitiv USB "
+"ose Cardbus."
 
 #: service-list.pl.in:71
 msgid "internet superserver"
@@ -336,8 +335,8 @@ msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
 msgstr ""
-"iptables përdoret për të rregulluar, ruajtur dhe vëzhguar tabelat e rregullave "
-"filtruese të paketave IP në kernelin Linux."
+"iptables përdoret për të rregulluar, ruajtur dhe vëzhguar tabelat e "
+"rregullave filtruese të paketave IP në kernelin Linux."
 
 #: service-list.pl.in:73
 msgid "IrDA stack for Linux"
@@ -365,9 +364,9 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
-"Ekzekuton kontrollin-e-dispozitivit-joystick.  kontrolli-dispozitivit-joystick "
-"është një program i cili siguron saktësinë e nyjeve /dev/js* për versionin "
-"e kernelit në përdorim."
+"Ekzekuton kontrollin-e-dispozitivit-joystick.  kontrolli-dispozitivit-"
+"joystick është një program i cili siguron saktësinë e nyjeve /dev/js* për "
+"versionin e kernelit në përdorim."
 
 #: service-list.pl.in:77
 msgid ""
@@ -375,8 +374,8 @@ msgid ""
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
 "leave this enabled for most machines."
 msgstr ""
-"Ky paket ngarkon llojin e tastierës së zgjedhur siç është caktuar në "
-"/etc/sysconfig/keyboard.  Kjo mund të zgjidhet duke përdorur programin "
+"Ky paket ngarkon llojin e tastierës së zgjedhur siç është caktuar në /etc/"
+"sysconfig/keyboard.  Kjo mund të zgjidhet duke përdorur programin "
 "kbdconfig.  Duhet ta aktivizosh për shumicën e kompjuterave."
 
 #: service-list.pl.in:78
@@ -384,15 +383,13 @@ msgid "Kernel Log Daemon"
 msgstr "Programi Shërbyes i Regjistrimeve të Kernelit"
 
 #: service-list.pl.in:78
-msgid ""
-"klogd is a system daemon which intercepts and logs Linux kernel messages."
+msgid "klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr ""
 "klogd është një program shërbyes i sistemit i cili mbledh dhe regjistron "
 "mesazhet e kernelit Linux"
 
 #: service-list.pl.in:79
-msgid ""
-"This runs the hardware probe, and optionally configures changed hardware."
+msgid "This runs the hardware probe, and optionally configures changed hardware."
 msgstr ""
 "Ky program ekzekuton kontrollin hardware, dhe mundësisht konfiguron "
 "ndryshimet në hardware."
@@ -414,8 +411,9 @@ msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
-"lpd është programi shërbyes i printimit i cili nevojitet që lpr të punojë siç "
-"duhet. Në thelb është një server i cili arbitron printimet tek printer(at)."
+"lpd është programi shërbyes i printimit i cili nevojitet që lpr të punojë "
+"siç duhet. Në thelb është një server i cili arbitron printimet tek printer"
+"(at)."
 
 #: service-list.pl.in:84
 msgid "Create devices"
@@ -426,8 +424,8 @@ msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
 msgstr ""
-"Programth i cili do të krijojë dispozitivat në /dev të cilat përdoren për "
-"tu ndërfaqur me driver-at në kernel"
+"Programth i cili do të krijojë dispozitivat në /dev të cilat përdoren për tu "
+"ndërfaqur me driver-at në kernel"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -462,16 +460,16 @@ msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
-"named (BIND) është një Domain Name Server (DNS) i cili përdorer për zgjidhjen "
-"e emrave të strehave në adresa IP."
+"named (BIND) është një Domain Name Server (DNS) i cili përdorer për "
+"zgjidhjen e emrave të strehave në adresa IP."
 
 #: service-list.pl.in:90
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
-"Monton dhe çmonton të gjitha pikat e montimit të Filesistemeve të Rrjetit (NFS), "
-"SMB (Organizuesit Lan/Windows) dhe NCP (NetWare)."
+"Monton dhe çmonton të gjitha pikat e montimit të Filesistemeve të Rrjetit "
+"(NFS), SMB (Organizuesit Lan/Windows) dhe NCP (NetWare)."
 
 #: service-list.pl.in:91
 msgid ""
@@ -488,8 +486,8 @@ msgid ""
 "exports file."
 msgstr ""
 "NFS është një protokoll i përdorshëm për ndarjen e kartelave nëpërmjet "
-"rrjeteve TCP/IP. Ky shërbim afron funksionalitet serveri NFS, i cili konfigurohet "
-"me anë të kartelës /etc/exports."
+"rrjeteve TCP/IP. Ky shërbim afron funksionalitet serveri NFS, i cili "
+"konfigurohet me anë të kartelës /etc/exports."
 
 #: service-list.pl.in:93
 msgid ""
@@ -505,8 +503,9 @@ msgstr "Program shërbyes emrash cache"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
-msgstr "Program shërbimi i cili afron një cache për shumicën e kërkesave të shërbimit "
-"të emrave të zakonshëm."
+msgstr ""
+"Program shërbimi i cili afron një cache për shumicën e kërkesave të "
+"shërbimit të emrave të zakonshëm."
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
@@ -524,8 +523,7 @@ msgstr "Fresko orën e sistemit nëpërmjet rrjetit"
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
-msgstr ""
-"Kontrollon orën nga një server dhe me anë të tij rregullon orën e sistemit."
+msgstr "Kontrollon orën nga një server dhe me anë të tij rregullon orën e sistemit."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -565,9 +563,9 @@ msgid ""
 "NFS and NIS. The portmap server must be running on machines which act as "
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
-"Vëzhguesi i portave organizon lidhjet RPC, të cilat përdoren nga protokolle si "
-"NFS dhe NIS. Serveri portmap duhet të jetë në ekzekutim në sistemet që punojnë "
-"si servera për protokollet që përdorin mekanizmin RPC."
+"Vëzhguesi i portave organizon lidhjet RPC, të cilat përdoren nga protokolle "
+"si NFS dhe NIS. Serveri portmap duhet të jetë në ekzekutim në sistemet që "
+"punojnë si servera për protokollet që përdorin mekanizmin RPC."
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
@@ -604,7 +602,9 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
-""
+"Ky script përcakton dispozitivët e pafilluar në dispozitivë në blloqe (si p.sh. particione "
+"të diskut fiks). Përdoret për programe si p.sh. Oracle. Mund të caktoni një "
+"dispozitiv të pafilluar në dispozitiv në bllok duke edituar file /etc/sysconfig/rawdevices."
 
 #: service-list.pl.in:110
 msgid ""
@@ -613,12 +613,16 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
+"Ky është një daemon që administron aktivitetin e lidhjes periodike me "
+"serverët e Red Hat Network për të kontrolluar për rifreskime, njoftime dhe "
+"kryen aktivitetet e monitorimit të sistemit në përputhje me nivelin e shërbimit "
+"për të cilin ky server është abonuar."
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
-msgstr ""
+msgstr "Serveri rsync është një plotësues i mirë i serverit ftp, sepse mundëson crc checksumming, etj. Për të shfrytëzuar këtë shërbim duhet të keni aktivuar xinetd."
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
@@ -633,31 +637,38 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
-""
+"The Samba software suite është një koleksion programesh që kompleton protokollin "
+"Server Message Block për sistemet UNIX."
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
-msgstr ""
+msgstr "saslauthd është një proçes serveri që administron kërkesat për autentifikimet në tekst të thjeshtë të përdorura nga libraria cyrus-sasl."
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
+"Sendmail është një Mail Transport Agent, që është një program që lëviz mesazhet "
+"mail nga një tek një tjetër."
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
+"Një shërbim i brendshëm i xinetd, shfaq serverët aktivë. Duhet të keni aktivuar "
+"xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
 msgstr ""
+"Një shërbim i brendshëm i xinetd, shfaq shërbimet aktive. Duhet të keni aktivuar "
+"xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
@@ -668,12 +679,16 @@ msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
 msgstr ""
+"setserial është një program i krijuar për të përcaktuar dhe/apo raportuar "
+"informacionet e konfigurimit në lidhje me një portë seriale."
 
 #: service-list.pl.in:119
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
+"FAM është një daemon për monitorimin e file. Mund të përdoret për të marrë "
+"raportime kur files ndryshohen. Duhet të keni aktivuar xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
@@ -681,7 +696,7 @@ msgstr "kontrollo dhe vëzhgo sistemet e kujtesës duke përdorur S.M.A.R.T."
 
 #: service-list.pl.in:121
 msgid "Perl-based spam filter using text analysis"
-msgstr ""
+msgstr "Një filtrues spam i bazuar në Perl që përdor analizimet e tekstit"
 
 #: service-list.pl.in:122
 msgid "Simple Network Management Protocol (SNMP) Daemon"
@@ -705,19 +720,23 @@ msgstr "Server OpenSSH"
 
 #: service-list.pl.in:125
 msgid "Linux system logging utilities"
-msgstr ""
+msgstr "Instrumentë të mesazheve të sistemit për Linux"
 
 #: service-list.pl.in:125
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr ""
+"Sysklogd afron dy instrumentë që afrojnë suport për mesazhet e sistemit  "
+"dhe  kapjen  e  mesazheve  të  kernel."
 
 #: service-list.pl.in:126
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
+"Syslog është vegla e përdorur nga shumë shërbime për të regjistruar "
+"mesazhet tek file e ndryshëm të mesazheve të sistemit.  Aktivimi i tij është një ide e mirë."
 
 #: service-list.pl.in:127
 msgid ""
@@ -726,6 +745,10 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"Një server kohe RFC 868. Ky protokoll afron datën dhe orën në format "
+"të lexueshëm nga makina. Shërbimi i Orës i transmeton përsëri burimit "
+"kohën në sekonda që nga mesnata e një Janar 1900.  Ky është versioni "
+"tcp. Duhet të jetë aktiv xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:128
 msgid ""
@@ -734,10 +757,14 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"Një server kohe RFC 868. Ky protokoll afron datën dhe orën në format "
+"të lexueshëm nga makina. Shërbimi i Orës i transmeton përsëri burimit "
+"kohën në sekonda që nga mesnata e një Janar 1900.  Ky është versioni "
+"udp. Duhet të jetë aktiv xinetd për të përdorur këtë shërbim."
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
-msgstr ""
+msgstr "dispozitivët e kernel me burim numra të rastit"
 
 #: service-list.pl.in:129
 msgid ""
@@ -745,6 +772,9 @@ msgid ""
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
+"Gjeneratori  i  numrave  të  rastit  grumbullon zhurmën ambientale nga dirvers "
+"e dispozitivëve apo burimeve të tjerë nën një entropy pool. Nga ky entropy "
+"pool krijohen numrat e rastit."
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -755,14 +785,16 @@ msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
+"Komanda vmware nis një makinë virtuale Intel X86. Ky script trajton shërbimet "
+"e duhura për të ekzekutuar programin VMware."
 
 #: service-list.pl.in:132
 msgid "Web-based administration toolkit"
-msgstr ""
+msgstr "Vegla administrimi të bazuara në Web"
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
-msgstr ""
+msgstr "Daemoni i Name Service Switch për të zgjidhur emrat nga serverët NT"
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
@@ -773,6 +805,8 @@ msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
+"U jep mundësinë pëedoruesve të zbatojnë programe Windows(tm) duke u "
+"klikuar sipër (ose duke shkruar ./file.exe)"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
@@ -791,6 +825,8 @@ msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
 msgstr ""
+"Xfs është serveri i gërmave të sistemit X Window. Ai furnizon me gërma serverët "
+"grafikë e X Window System."
 
 #: service-list.pl.in:137
 msgid ""
@@ -799,32 +835,36 @@ msgid ""
 "available based on time, and can place limits on the number of servers that "
 "can be started, among other things."
 msgstr ""
+"xinetd është një zëvendësues i fuqishëm i inetd. xinetd ka mekanizme "
+"kontrolli të hyrjeve, aftësi të zgjeruara mesazhimi, aftësinë e vënies në dispozicion "
+"të shërbimeve në varësi të kohës, dhe mund të kufizojë numrin e serverëve që "
+"mund të nisen, përveç gjërave të tjera."
 
-#: service.pl.in:208 service.pl.in:213
+#: service.pl.in:224 service.pl.in:229
 msgid "Halting the system"
 msgstr "Duke ndaluar sistemin"
 
-#: service.pl.in:209 service.pl.in:215
+#: service.pl.in:225 service.pl.in:231
 msgid "Text mode"
 msgstr "Mënyrë tekstuale"
 
-#: service.pl.in:210 service.pl.in:214 service.pl.in:223
+#: service.pl.in:226 service.pl.in:230 service.pl.in:239
 msgid "Graphical mode"
 msgstr "Mënyrë grafike"
 
-#: service.pl.in:211 service.pl.in:216
+#: service.pl.in:227 service.pl.in:232
 msgid "Rebooting the system"
 msgstr "Duke rinisur sistemin"
 
-#: service.pl.in:218
+#: service.pl.in:234
 msgid "Starts all system neccesary services"
 msgstr "Nis të gjithë shërbimet e nevojshme të sistemit"
 
-#: service.pl.in:219
+#: service.pl.in:235
 msgid "Default runlevel"
-msgstr ""
+msgstr "Niveli i prezgjedhur i nisjes"
 
-#: service.pl.in:220
+#: service.pl.in:236
 msgid "Networkless runlevel"
-msgstr ""
+msgstr "Niveli i nisjes së rrjetit"
 
