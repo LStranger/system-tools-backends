@@ -511,7 +511,7 @@ sub read_fstab
 	  last;
        }
     }
-    
+
     if ($disk eq $device) {
        # Disk, not partition, we only want filesystem type, 
        # mount point and mount options
@@ -762,10 +762,10 @@ sub scan_scsi_bus
   
    my @scsi = ();
    for $dev (@files) {
-      if (sysopen (RD, $dev, O_RDONLY|O_NONBLOCK)) {
+      if (sysopen (RD, $dev, O_RDONLY | O_NONBLOCK)) {
 	 my $info;
 	 if (ioctl (RD, $SCSI_IOCTL_GET_IDLUN, $info)) {
-	    my @scsi_info = unpack ("CCCCCC", $info);
+	    my @scsi_info = unpack ("II", $info);
             my (%scsi_data);
   
             %scsi_data->{'device'} = $dev;
@@ -781,6 +781,7 @@ sub scan_scsi_bus
 
             push (@scsi, \%scsi_data);
          }
+
 	 close (RD);
       }
    }
@@ -800,12 +801,14 @@ sub scan_scsi_bus
          ($host, $channel, $id, $lun) = ($data =~ /^Host:.*scsi([0-9]+).*Channel:.*([0-9]+).*Id:.*([0-9]+).*Lun:.*([0-9]+).*$/);
          
          $i = 0;
-         while ($scsi[$i]) {
+	 while ($scsi[$i]) {
+	    #print "DBG: device: " . $scsi[$i]->{'device'} . " host " . $scsi[$i]->{'host'} . " id " . $scsi[$i]->{'id'} . " lun " .  $scsi[$i]->{'lun'} . "\n";
+	    #print "DBG: host $host id $id lun $lun\n";
             if ($scsi[$i]->{'id'} == int ($id) && $scsi[$i]->{'lun'} == int ($lun) &&
                 $scsi[$i]->{'channel'} == int ($channel) && $scsi[$i]->{'host'} == int ($host)) {
-                last;
+		   last;
             }
-            $i++;
+	    $i++;
          }
       } elsif ($line[0] eq "Vendor") {
          ($vendor, $model) = ($data =~ /^Vendor:(.*)Model:(.*)Rev:.*$/);
@@ -815,7 +818,7 @@ sub scan_scsi_bus
          $model  =~ s/^\s*//;
          $model  =~ s/\s*$//;
          
-         if ($scsi[$i]->{'device'}) { &update_disk_data ($scsi[$i]->{'device'}, "model", "$vendor $model");}
+	 if ($scsi[$i]->{'device'}) { &update_disk_data ($scsi[$i]->{'device'}, "model", "$vendor $model");}
       } elsif ($line[0] eq "Type") {
          if ($data =~ /CD-ROM/) {
             $media = "cdrom";
@@ -824,7 +827,7 @@ sub scan_scsi_bus
             $media = "disk";
          }
          
-         if ($scsi[$i]->{'device'}) { &update_disk_data ($scsi[$i]->{'device'}, "media", $media);}
+	 if ($scsi[$i]->{'device'}) { &update_disk_data ($scsi[$i]->{'device'}, "media", $media);}
       }
    }
    close (PROC_SCSI_FILE);
@@ -1559,10 +1562,6 @@ sub get_disk_info
    if ($present) {
       # We only want to know if the device is attached
       return ($is_present);
-   } else {
-      if (!$is_present) {
-	 return ($is_present);
-      }
    }
    
    for ($i = 0; $cf_disks[$i]; $i++) {
@@ -1586,18 +1585,20 @@ sub get_disk_info
 sub disk_info
 {
    my ($tool, $device, $present) = @_;
-
+   
    my ($is_present, $disk) = &get_disk_info ($device, $present);
    &gst_report_end ();
    &gst_xml_print_begin ("disk_info");
    
-   &gst_xml_print_line ("<device>" . $device . "</device>\n");
-   &gst_xml_print_state_tag ("present", $is_present);
-   
    if ($disk) {
       &xml_print_common ($disk);
       my $partitions = %$disk->{partitions};
-      &xml_print_partitions ($disk, $partitions);
+      if ($partitions) {
+	 &xml_print_partitions ($disk, $partitions);
+      }
+   } else {
+      &gst_xml_print_line ("<device>" . $device . "</device>\n");
+      &gst_xml_print_state_tag ("present", $is_present);
    }
    
    &gst_xml_print_end ("disk_info");

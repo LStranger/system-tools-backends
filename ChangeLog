@@ -1,3 +1,7 @@
+2005-01-20  Carlos Garcia Campos  <carlosgc@gnome.org>
+
+	* disks-conf.in: fixed an important bug in the scsi bus scanning
+
 2005-01-17  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* network.pl.in: Doh!, fixed bootproto creation in debian
