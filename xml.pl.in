@@ -166,22 +166,36 @@ sub xst_xml_scan
 
 @xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\\\'', "&quot;", '"', "&amp;", '&' );
 
+
 sub xst_xml_quote
 {
-  my $ret = $_[0];
-  my $i;
-
-  #print STDERR "INI Q: $ret\n";
+  my $in = $_[0];
+  my $out = "";
+  my @xe;
+  my $joined = 0;
   
-  for ($i = 1; @xst_xml_entities[$i] ne undef; $i += 2)
+  my @clist = split(//, $in);
+  
+  while (@clist)
   {
-    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i - 1]/g;
+    # Find character and join its entity equivalent.
+    # If none found, simply join the character.
+	
+    $joined = 0;		# Cumbersome.
+    
+    for (@xe = @xst_xml_entities; @xe && !$joined; )
+    {
+	 if ($xe[1] eq $clist[0]) { $out = join('', $out, $xe[0]); $joined = 1; }
+	 shift @xe; shift @xe;
+    }
+	
+    if (!$joined) { $out = join('', $out, $clist[0]); }
+    shift @clist;
   }
-
-  #print STDERR "END Q: $ret\n";
   
-  return $ret;
+  return($out);
 }
+
 
 sub xst_xml_unquote
 {
