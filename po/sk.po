@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the setup-tools-backends package.
 # Marcel Telka <marcel@telka.sk>, 2004.
 #
-# $Id: sk.po,v 1.2 2004/12/18 10:18:35 marcel Exp $
+# $Id: sk.po,v 1.3 2004/12/29 10:46:01 marcel Exp $
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-12-18 10:45+0100\n"
-"PO-Revision-Date: 2004-12-18 10:55+0100\n"
+"POT-Creation-Date: 2004-12-29 11:30+0100\n"
+"PO-Revision-Date: 2004-12-29 11:44+0100\n"
 "Last-Translator: Marcel Telka <marcel@telka.sk>\n"
 "Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
 "MIME-Version: 1.0\n"
@@ -45,11 +45,11 @@ msgstr ""
 
 #: service-list.pl.in:39
 msgid "Run missed scheduled jobs at startup"
-msgstr ""
+msgstr "Spustiť zmeškané naplánované úlohy pri štarte"
 
 #: service-list.pl.in:39
 msgid "Run cron jobs that were left out due to downtime"
-msgstr ""
+msgstr "Spustiť cron úlohy, ktoré boli zmeškané kvôli vypnutiu"
 
 #: service-list.pl.in:40
 msgid "Automatic power management daemon"
@@ -60,8 +60,8 @@ msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
 msgstr ""
-"apmd je použité pre sledovanie stavu batérie a jeho zaznamenávanie cez syslog(8). "
-"Môže byť tiež použitý pre vypínanie počítača pri nízkom stave batérie."
+"apmd je použité pre sledovanie stavu batérie a jeho zaznamenávanie cez syslog"
+"(8). Môže byť tiež použitý pre vypínanie počítača pri nízkom stave batérie."
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
@@ -129,6 +129,9 @@ msgid ""
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
 msgstr ""
+"cpufreqd je používaný na sledovanie stavu batérie a úpravu frekvencie "
+"procesora tak, aby bol poskytnutý optimálny výkon pri zachovaní energie "
+"batérie"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -618,6 +621,8 @@ msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
 msgstr ""
+"ssh je program pre prihlasovanie k vzdialeným počítačom a pre spúšťanie "
+"príkazov na vzdialených počítačoch."
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
@@ -668,7 +673,7 @@ msgstr ""
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
-msgstr ""
+msgstr "Virtuálny stroj založený na Intel(TM) x86(TM)"
 
 #: service-list.pl.in:131
 msgid ""
@@ -698,7 +703,7 @@ msgstr ""
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
-msgstr ""
+msgstr "Správca obrazoviek X"
 
 #: service-list.pl.in:135
 msgid "Provides the X equivalent of a \"login:\" prompt."
@@ -749,3 +754,51 @@ msgstr "Predvolená úroveň behu"
 #: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Bezsieťová úroveň behu"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "Sledovať systémové záznamy"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "Použiť zvukové zariadenia"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "Prístup k jednotkám CD-ROM"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr ""
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr ""
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "Odosielať a prijímať faxy"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "Prístup k disketovým jednotkám"
+
+#: users-conf.in:186
+msgid "Mount removable devices automatically"
+msgstr "Automaticky pripojiť odpojiteľné zariadenia"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "Prístup k páskovým jednotkám"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "Mať možnosť získať práva správcu"
+
+#: users-conf.in:458
+msgid "Default"
+msgstr "Predvolené"
+
+#: users-conf.in:459
+msgid "Default profile"
+msgstr "Predvolený profil"
