@@ -5,6 +5,7 @@
 # Copyright (C) 2000 Helix Code, Inc.
 #
 # Authors: Hans Petter Jansson <hpj@helixcode.com>
+#          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -30,6 +31,8 @@
 # /etc/sysconfig/network
 # /etc/sysconfig/network-scripts/ifcfg-*
 # /etc/rc.config
+# /etc/network/interfaces
+# /etc/network/options
 
 # Running programs affected/used:
 #
@@ -94,7 +97,8 @@ $version = "0.1.0";
 
 @sysconfig_network_names = ( "/etc/sysconfig/network" );
 @rc_config_names =         ( "/etc/rc.config" );
-
+@network_interfaces_names = ( "/etc/network/interfaces" );
+@network_options_names = ( "/etc/network/options" );
 
 # --- Internal configuration variables --- #
 
@@ -586,7 +590,560 @@ sub create_path
 }
 
 
+# --- Miscellaneous data-structure accessors --- #
+
+# get_key_for_subkeys
+#
+# Given:
+#   * A hash-table with its values containing references to other hash-tables,
+#     which are called "sub-hash-tables".
+#   * A list of possible keys (stored as strings), called the "match_list".
+# this method will look through the "sub-keys" (the keys of each
+# sub-hash-table) seeing if one of them matches up with an item in the
+# match_list.  If so, the key will be returned.
+
+sub get_key_for_subkeys
+{
+  my %hash = %{$_[0]};
+  my @match_list = @{$_[1]};
+
+  foreach $key (keys(%hash))
+  {
+    my %subhash = %{$hash{$key}};
+    foreach $item (@match_list)
+    {
+      if ($subhash{$item} ne "") { return $key; }
+    }
+  }
+
+  return "";
+}
+
+# get_key_for_subkey_and_subvalues
+#
+# Given:
+#   * A hash-table with its values containing references to other hash-tables,
+#     which are called "sub-hash-tables".  These sub-hash-tables contain
+#     "sub-keys" with associated "sub-values".
+#   * A sub-key, called the "match_key".
+#   * A list of possible sub-values, called the "match_list".
+# this function will look through each sub-hash-table looking for an entry
+# whose:
+#   * sub-key equals match_key.
+#   * sub-key associated sub-value is contained in the match_list.
+
+sub get_key_for_subkey_and_subvalues
+{
+  my %hash = %{$_[0]};
+  my $match_key = $_[1];
+  my @match_list = @{$_[2]};
+
+  foreach $key (keys(%hash))
+  {
+    my %subhash = %{$hash{$key}};
+    my $subvalue = $subhash{$match_key};
+
+    if ($subvalue eq "") { next; }
+
+    foreach $item (@match_list)
+    {
+      if ($item eq $subvalue) { return $key; }
+    }
+  }
+
+  return "";
+}
+
+
+# is_in_list
+#
+# Given:
+#   * A scalar value.
+#   * An array.
+# this function will return 1 if the scalar value is in the array, 0 otherwise.
+
+sub is_in_list
+{
+  my $value = shift(@_);
+
+  foreach my $item (@_)
+  {
+    if ( $value eq $item ) { return 1; }
+  }
+
+  return 0;
+}
+
+
 # --- Configuration file manipulation --- #
+
+# Debian 2.[2|3]+ style /etc/network/interfaces
+#
+# <filtered lines>
+# iface <interface> inet <static|dhcp|bootp|ppp>
+#     address <ip>
+#     netmask <ip mask>
+#     gateway <gateway ip>
+#     broadcast <broadcast ip>
+#     network <network ip>
+#     noauto (this is only used to not enable the interface on boot)
+#     up <command to run when the interface is brought up>
+#     down <command to run when the interface is brought down>
+# <filtered lines>
+# (more interfaces may follow)
+#
+# read_network_interfaces_int_hash will read the contents of
+# /etc/network/interfaces into a hash table of references to hash tables.  For
+# example:
+#
+# %ifaces = ("eth0" => {"method" => "dhcp"},
+#            "eth1" => {"method" => "static",
+#                       "address" => "192.168.0.42",
+#                       "netmask" => "255.255.255.0"});
+#
+# The resulting hash table, %ifaces, is returned.
+#
+# NOTE: For more information on the format of /etc/network/interfaces, read
+# the "interfaces" man page (section 5).  This is included as part of the
+# "netbase" package in Debian 2.[2|3].
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent:
+
+# FIXME: /etc/network/interfaces allows line continuation via the "\"
+# character.  Support for this is currently unimplemented here.
+sub read_network_interfaces_into_hash
+{
+  my $FILE;
+  my %ifaces, $current_name, $current_iface;
+
+  $FILE = open_read_from_names(@network_interfaces_names);
+  if (not FILE) { return; }
+
+  # Build a list of all interfaces
+  while (<FILE>)
+  {
+    # Split the current line into a list of tokens.
+    @line = split(/[ \n\r\t]+/, $_);
+
+    # Remove leading whitespace.
+    if ($line[0] eq "") { shift(@line); }
+
+
+    # Check to see if this line continues onto other lines.  If so, append
+    # them
+    while ($line[$#line] eq "\\")
+    {
+      # Remove the \ character.
+      pop @line;
+
+      # Read in the next line and split it into a list of tokens.
+      @nextline = split(/[ \n\r\t]+/, <FILE>);
+
+      # Remove any leading whitepage.
+      if ($nextline[0] eq "") { shift(@nextline); }
+
+      # Append @nextline to the end of @line
+      push @line, @nextline;
+    }
+
+    # Make sure this line isn't a comment.
+    if (is_line_comment_start($line[0])) { next; }
+
+    # Check if the line specifies a new interface.
+    if ($line[0] eq "iface" && not is_line_comment_start($line[1]))
+    {
+      # Make sure the device was detected via ifconfig (see "get_immediate").
+      # NOTE: This will weed out any loopback or dummy interfaces.
+      if (not is_in_list($line[1], @cf_interface_list))
+      {
+        if ($verbose) { print STDERR "Warning: $line[1] isn't an available, " .
+                            "configured interface.\n"; }
+        next;
+      }
+
+      # Make sure the interface is set up for IPv4/internet networking
+      if ($line[2] ne "inet") { next; }
+
+      # Also make sure there is a set configuration method.
+      if ($line[3] eq "" || is_line_comment_start($line[3]))
+      {
+        if ($verbose) { print STDERR "Warning: Interface $line[1] has no " .
+                            "config method.\n"; }
+        next;
+      }
+
+      # Create a new hash table for this interface.
+      my %iface_hash = ();
+
+      # Set this interface to be the 'current' one.
+      $current_name = $line[1];
+      $current_iface = $ifaces{$current_name} = \%iface_hash;
+
+      # Set the interface's method
+      $$current_iface{"method"} = $line[3];
+    }
+    else  # Add an attribute to an already set interface.
+    {
+      # Make sure an interface has been set.
+      if (not $current_iface) { next; }
+
+      # Make sure the attribute has been properly set
+      if (not $line[1]) { next; }
+
+      # Set the attribute
+      $$current_iface{$line[0]} = join(' ', @line[1..$#line]);
+    }
+  }
+
+  close($FILE);
+
+  return %ifaces;
+}
+
+
+# Debian 2.[2|3]+ style /etc/network/interfaces
+#
+# (See 'read_network_interfaces_into_hash()' for information on
+# /etc/network/interfaces as well as the structure of %ifaces.
+#
+# Takes network interface information and places them into the correct
+# variables.
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent:
+
+sub read_network_interfaces
+{
+  my $FILE;
+  my %ifaces, $current_name, $current_iface;
+  my $chosen_name;
+
+  %ifaces = read_network_interfaces_into_hash();
+
+  # Now, a "primary" interface will be selected.  The selection order is as
+  # follows:
+  #
+  # * If only one interface exists, use that one.
+  # * If an interface has a preset gateway, use that one.
+  # * The first interface with a dynamic configuration "method" (such as "dhcp",
+  #   "bootp", "ppp", etc.) will be selected.
+  # * If all else fails, pick the first interface.
+
+  # See if only one interface exists.
+  if ( scalar(keys(%ifaces)) == 1 )
+  {
+    $chosen_name = (keys(%ifaces))[0];
+
+    if ( $verbose )
+    { print STDERR "Only one interface, $chosen_name, exists.  It is being " .
+          "selected as the \"primary\" interface.\n"; }
+  }
+
+  # For that matter, do any interfaces exist at all.
+  elsif ( scalar(keys(%ifaces)) == 0 )
+  {
+    if ($verbose) { print STDERR "Warning: No interfaces found!\n"; }
+    return;
+  }
+
+  else
+  {
+    # Look for an interface with a preset gateway.
+    $chosen_name = get_key_for_subkeys(\%ifaces, ["gateway"]);
+
+    # If need be, look for an interface with a dynamic configuration "method".
+    if ( $chosen_name eq "" )
+    {
+      $chosen_name = get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
+    }
+
+    # If an interface hasn't been chosen, then just pick the first available one.
+    if ( $chosen_name eq "" )
+    {
+      $chosen_name = (keys(%ifaces))[0];
+    }
+  }
+
+  # Now that a "primary" interface has been chosen, set the proper global
+  # variables.
+  %current_iface = %{$ifaces{$chosen_name}};
+
+  $cf_interface = $chosen_name;
+  $cf_hostip = $current_iface{"address"};
+  $cf_netmask = $current_iface{"netmask"};
+  $cf_gateway = $current_iface{"gateway"};
+  $cf_method = $current_iface{"method"};
+  if ( exists $current_iface{"noauto"} ) { $cf_onboot = 0; }
+  else { $cf_onboot = 1; }
+}
+
+
+sub write_network_interfaces
+{
+  my $INFILE;
+  my $OUTFILE;
+
+  my $wrote_interface;
+  my $wrote_hostip;
+  my $wrote_netmask;
+  my $wrote_gateway;
+  my $wrote_onboot;
+  my $wrote_network;
+  my $wrote_broadcast;
+
+  my $output_line;
+  my @iface_lines;
+  my @post_lines;
+  my $use_post;
+
+  my $cfl_network = "";
+  my $cfl_broadcast = "";
+
+  # Find and open the needed files.
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@network_interfaces_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Generate $cfl_network and $cfl_broadcast
+  $cfl_network = ip_calc_network($cf_hostip, $cf_netmask);
+  $cfl_broadcast = ip_calc_broadcast($cf_hostip, $cf_netmask);
+
+  # Write the file, preserving as much as possible from INFILE.
+  while (<INFILE>)
+  {
+    # Split the current line into a list of tokens.
+    @line = split(/[ \n\r\t]+/, $_);
+
+    # Remove leading whitespace.
+    if ($line[0] eq "") { shift(@line); }
+
+    # Check to see if this line continues onto other lines.  If so, append
+    # them.
+    while ($line[$#line] eq "\\")
+    {
+      # Remove the \ character.
+      pop @line;
+
+      # Read in the next line and split it into a list of tokens.
+      @nextline = split(/[ \n\r\t]+/, <INFILE>);
+
+      # Remove any leading whitepage.
+      if ($nextline[0] eq "") { shift(@nextline); }
+
+      # Append @nextline to the end of @line
+      push @line, @nextline;
+    }
+
+    # Check if a new interface is being defined.  If so and it's the primary
+    # interface (as defined in $cf_interface), then we can start writing to
+    # OUTFILE.
+    if ($line[0] eq "iface")
+    {
+      if ($line[1] eq $cf_interface)
+      {
+        $current_name = $line[1];
+        print OUTFILE "iface $cf_interface inet $cf_method\n";
+        $wrote_interface = 1;
+
+        next;
+      }
+      elsif ($current_name ne "")
+      {
+        $current_name = "";
+        $use_post = 1;
+      }
+    }
+
+    # Check to see if we're parsing through the primary interface's predefined
+    # section.  If so, push wanted lines into @iface_lines (these will
+    # eventually be sent to OUTFILE.)
+    if ($current_name ne "")
+    {
+      if ($line[0] eq "address")
+      {
+        if ($cf_hostip ne "")
+        {
+          push @iface_lines, "    address $cf_hostip\n";
+        }
+        $wrote_hostip = 1;
+      }
+      elsif ($line[0] eq "netmask")
+      {
+        if ($cf_netmask ne "")
+        {
+          push @iface_lines, "    netmask $cf_netmask\n";
+        }
+        $wrote_netmask = 1;
+      }
+      elsif ($line[0] eq "gateway")
+      {
+        if ($cf_gateway ne "")
+        {
+          push @iface_lines, "    gateway $cf_gateway\n";
+        }
+        $wrote_gateway = 1;
+      }
+      elsif ($line[0] eq "onboot")
+      {
+        push @iface_lines, "    noauto\n";
+        $wrote_onboot = 1;
+      }
+      elsif ($line[0] eq "network")
+      {
+        if ($cfl_network ne "")
+        {
+          push @iface_lines, "    network $cfl_network\n";
+        }
+        $wrote_network = 1;
+      }
+      elsif ($line[0] eq "broadcast")
+      {
+        if ($cfl_broadcast ne "")
+        {
+          push @iface_lines, "    broadcast $cfl_broadcast\n";
+        }
+        $wrote_broadcast = 1;
+      }
+      else
+      {
+        push @iface_lines, $_;
+      }
+    }
+    else
+    {
+      if (not $use_post)
+      {
+        print OUTFILE;
+      }
+      else
+      {
+        push @post_lines, $_;
+      }
+    }
+  }
+
+  # Make sure that unwritten, non-empty variables are written to OUTFILE.
+  if (not $wrote_interface)
+  { print OUTFILE "iface $cf_interface inet $cf_method\n"; }
+
+  if ((not $wrote_hostip) && ($cf_hostip ne ""))
+  { print OUTFILE "    address $cf_hostip\n"; }
+
+  if ((not $wrote_netmask) && ($cf_netmask ne ""))
+  { print OUTFILE "    netmask $cf_netmask\n"; }
+
+  if ((not $wrote_gateway) && ($cf_gateway ne ""))
+  { print OUTFILE "    gateway $cf_gateway\n"; }
+
+  if ((not $wrote_onboot) && ($cf_onboot eq 0))
+  { print OUTFILE "    noauto\n"; }
+
+  if ((not $wrote_network) && ($cfl_network ne ""))
+  { print OUTFILE "    network $cfl_network\n"; }
+
+  if ((not $wrote_broadcast) && ($cfl_broadcast ne ""))
+  { print OUTFILE "    broadcast $cfl_broadcast\n"; }
+
+  # Output all the rest of the lines which relate to the primary interface.
+  if (($#iface_lines + 1) > 0)
+  {
+    foreach $output_line (@iface_lines)
+    {
+      print OUTFILE "$output_line";
+    }
+  }
+
+  # Output any additional, preexisting interfaces.
+  if (($#post_lines + 1) > 0)
+  {
+    foreach $output_line (@post_lines)
+    {
+      print OUTFILE "$output_line";
+    }
+  }
+
+  # All done.  Clean up before returning.
+  close(OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
+
+
+# Debian 2.[2|3] style /etc/network/options
+#
+# <filtered lines>
+# ip_forward=<yes|no>
+# spoofprotect=<yes|no>
+# syncookies=<yes|no>
+# <filtered lines>
+#
+# Reads in relevant network options that aren't found in
+# /etc/network/interfaces.  NOTE: None of these options are interface specific.
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent:
+
+sub read_network_options
+{
+  my $FILE;
+
+  $FILE = open_read_from_names(@network_options_names);
+  if (not FILE) { return; }
+
+  # Build a list of all interfaces
+  while (<FILE>)
+  {
+    # Split the current line into a list of tokens.
+    #@line = split(/[ \n\r\t]+/, $_);
+    @line = split(/[ \n\r\t=]+/, $_);
+
+    # Remove leading whitespace.
+    if ($line[0] eq "") { shift(@line); }
+
+    # Make sure this line isn't a comment;
+    if (is_line_comment_start($line[0])) { next; }
+
+    # Set any relevant global configuration variables.
+    if ($line[0] eq "ip_forward" && not is_line_comment_start($line[1]))
+    { $cf_forward = read_boolean($line[1]); }
+  }
+}
+
+
+sub write_network_options
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $wrote_forward;
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@network_options_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Write the file, preserving as much as possible from INFILE.
+  while (<INFILE>)
+  {
+    # Split the current line into a list of tokens.
+    @line = split(/[ \n\r\t=]+/, $_);
+
+    # Remove leading whitespace.
+    if ($line[0] eq "") { shift(@line); }
+
+    if ($line[0] eq "ip_forward")
+    {
+      print OUTFILE "ip_forward=" . print_boolean_yesno($cf_forward) . "\n";
+      $wrote_forward = 1;
+    }
+    else { print OUTFILE; }
+  }
+
+  if (not $wrote_forward)
+  { print OUTFILE "ip_forward=" . print_boolean_yesno($cf_forward) . "\n"; }
+
+  close (OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
 
 
 # Red Hat style /etc/sysconfig/network-scripts/ifcfg-*
@@ -1270,6 +1827,8 @@ sub get
 
   read_rc_config;
   read_sysconfig_network;
+  read_network_interfaces;
+  read_network_options;
   read_primary_interface;
 
   if ($verbose) { print STDERR "Printing XML.\n"; }
@@ -1332,6 +1891,8 @@ sub set
 
   write_rc_config;
   write_sysconfig_network;
+  write_network_interfaces;
+  write_network_options;
   write_primary_interface;
 
   if ($do_immediate)
