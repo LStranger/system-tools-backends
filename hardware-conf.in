@@ -51,7 +51,8 @@
 
 
 
-require "___scriptsdir___/be.pl";
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/xml.pl";
 
 
 
@@ -60,7 +61,7 @@ require "___scriptsdir___/be.pl";
 $name = "hardware";
 $version = "0.1.0";
 
-$description =<<"end_of_description";
+$description =<<"end_of_description;";
        Configures hardware.
 end_of_description;
 

@@ -170,6 +170,31 @@ sub check_freebsd
   return -1;
 }
 
+sub check_solaris
+{
+  my $cmd_uname = &xst_file_locate_tool ("uname");
+  my $dist;
+
+  #
+  # The file /etc/release is present for solaris-2.6
+  # solaris 2.5 does not have the file.  Solaris-7.0 and 8.0 have not
+  # been checked
+  #
+  # uname output
+  # Solaris 2.5: 5.5(.1)
+  # Solaris 2.6: 5.6
+  # Solaris 7:   unknown, assume 7.0
+  # Solaris 8:   unknown, assume 8.0
+  #
+  $pid = open (RELEASE, "$cmd_uname -r |") or return -1;
+  chomp ($dist = <RELEASE>);
+  close RELEASE;
+
+  if ($dist =~ /^5\.(\d)/) { return "solaris-2.$1" }
+  else { if ($dist =~ /^([78])\.\d/) { return "solaris-$1.0" } }
+  return -1;
+}
+
 sub xst_platform_guess
 {
   my $dir = "___scriptsdir___";
@@ -218,8 +243,6 @@ sub xst_platform_guess
         return;
       }
     }
-
-    $xst_dist = "unknown";
   }
 
   if ($xst_system =~ /freebsdelf/)
@@ -231,9 +254,20 @@ sub xst_platform_guess
       $xst_dist = $dist;
       return;
     }
-
-    $xst_dist = "unknown";
   }
+
+  if ($xst_system =~ /solaris/)
+  {
+    my $dist;
+
+    $dist = &check_solaris ();
+    if ($dist != -1) {
+      $xst_dist = $dist;
+      return;
+  }
+  }
+
+  $xst_dist = "unknown";
 }
 
 

@@ -1,3 +1,10 @@
+2001-06-12  Richard Bos  <allabos@freeler.nl>
+
+	* platform.pl.in (check_solaris): Add Solaris check.
+	(xst_platform_guess): Allow for Solaris.
+
+	* hardware-conf.in: Add required requires. Make it work.
+
 2001-06-06  Hans Petter Jansson  <hpj@ximian.com>
 
 	* shares-conf.in (xml_print_import_smb): Don't print tags for user and
