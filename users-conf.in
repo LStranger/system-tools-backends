@@ -578,7 +578,14 @@ sub change_user_chfn
 sub add_user
 {
 	my ($data) = @_;
-	
+	my ($home_parents, $tool_mkdir);
+  
+  $home_parents = $$data[$users_prop_map{"home"}];
+  $home_parents =~ s/\/+[^\/]+\/*$//;
+
+  $tool_mkdir = &xst_file_locate_tool ("mkdir");
+  &my_system ("$tool_mkdir -p $home_parents");
+  
   $command = "$cmd_useradd" . " -d \'" . $$data[$users_prop_map{"home"}] .
 	  "\' -g \'" . $$data[$users_prop_map{"gid"}] .
 	  "\' -m -p \'" . $$data[$users_prop_map{"password"}] .
