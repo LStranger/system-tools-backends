@@ -40,7 +40,6 @@ use English;
 my $XST_FONT_DIR = "/usr/share/fonts/xst";
 
 
-
 # This code is some experimental stuff that may be useful on the future.
 # Commented due to the dependency to the TTF perl module.i
 if (0)
@@ -505,6 +504,30 @@ sub xfs_parse
 #                              #
 ################################
 
+my $cmd = 'gnome-font-install';
+
+my $GNOME_PRINT_DATADIR;
+my $GNOME_PRINT_SYSCONFDIR;
+
+open (FD, "$cmd --dir 2>&1 |");
+if (FD)
+{
+  my @output = (<FD>);
+  close (FD);
+
+  foreach (@output)
+  {
+    if (/^\$DATADIR=(.*)/) { $GNOME_PRINT_DATADIR = $1; next; }
+    if (/^\$SYSCONFDIR=(.*)/) { $GNOME_PRINT_SYSCONFDIR = $1; next; }
+  }
+}
+
+unless ($GNOME_PRINT_DATADIR || $GNOME_PRINT_SYSCONFDIR)
+{
+  print ("Can't find gnome-print's \$DATADIR or \$SYSCONFDIR.\n");
+  return;
+}
+
 BEGIN {
   &xst_report_table ({
     'font_install_success'    => ['info',  _('Font [%s] installed successfully.')],
@@ -545,96 +568,21 @@ sub font_list
   return $fonts;
 }
 
-# Internal. Shouldn't be called by anythiing but font_cmp.
-sub font_cmp_files
-{
-  my $files1 = shift;
-  my $files2 = shift;
-
-  return if ($files1 && ! $files2);
-  return if ($files2 && ! $files1);
-
-  my (@path1, @path2);
-  foreach (@$files1) { push @path1, $_->{'path'} if exists $_->{'path'}; }
-  foreach (@$files2) { push @path2, $_->{'path'} if exists $_->{'path'}; }
-
-  return if (scalar @path1 != scalar @path2);
-
-  # FIXME: Check if @path1 == @path2
-  return 1;
-}
-
-# Return true if the two fonts are equal.
-sub font_cmp
-{
-  my $font1 = shift;
-  my $font2 = shift;
-
-  return if ($font1 && ! $font2);
-  return if ($font2 && ! $font1);
-
-  if ($font1->{'name'} eq $font2->{'name'} &&
-      $font1->{'format'} eq $font2->{'format'})
-#  if ($font1->{'name'} eq $font2->{'name'} &&
-#      $font1->{'format'} eq $font2->{'format'} &&
-#      &font_cmp_files ($font1->{'file'}, $font2->{'file'}))
-  {
-    return 1;
-  }
-
-  return;
-}
-
-# Check whether font exists in font list.
-# Returns true if yes, undef if not.
-sub font_exists
-{
-  my $font_list = shift;
-  my $font = shift;
-
-  foreach my $tmp (@$font_list)
-  {
-    return 1 if &font_cmp ($tmp, $font);
-  }
-
-  return;
-}
-
-# Removes a font from font list
-sub font_delete
-{
-  my $font_list = shift;
-  my $font = shift;
-
-  for (my $i = 0; $i < scalar @$font_list; $i++)
-  {
-    my $tmp = $$font_list[$i];
-    if (&font_cmp ($tmp, $font))
-    {
-      delete $$font_list[$i];
-      last;
-    }
-  }
-}
 
 # Returns a hash of all fonts.
 # Unifies different systems, abstracts font systems.
 sub font_get_all
 {
-  my $font_list = [];
+  my %font_list;
   my $fonts = &font_list ();
 
   foreach my $system (keys %$fonts)
   {
-    my $tmp_list = $fonts->{$system};
-
-    foreach my $font (@$tmp_list)
-    {
-      push @$font_list, $font unless &font_exists ($font_list, $font);
-    }
+    my $tmp_fonts = $fonts->{$system};
+    %font_list = (%font_list, %$tmp_fonts);
   }
 
-  return $font_list;
+  return \%font_list;
 }
 
 # Takes two arguments with lists of fonts.
@@ -645,32 +593,28 @@ sub font_lists_compare
   my $xml_fonts = shift;
 
   # Make a copy of xml_fonts.
-  my @fonts_copy = @$xml_fonts;
+  my %fonts_copy = %$xml_fonts;
 
-  my $del = [];
-  my $add = [];
+  my %del;
+  my %add;
 
   # Build list of removals
-  foreach my $font (@$sys_fonts)
+  foreach my $key (keys (%$sys_fonts))
   {
-    if (&font_exists (\@fonts_copy, $font))
+    if (exists $fonts_copy{$key})
     {
-      &font_delete (\@fonts_copy, $font);
+      delete $fonts_copy{$key};
     }
     else
     {
-      push @$del, $font;
+      $del{$key} = $sys_fonts->{$key};
     }
   }
 
   # Build list of additions
-  foreach my $font (@fonts_copy)
-  {
-    next unless $font;
-    push @$add, $font;
-  }
+  %add = %fonts_copy;
 
-  return ($del, $add);
+  return (\%del, \%add);
 }
 
 # Returns true if file should be copied.
@@ -691,8 +635,9 @@ sub font_file_copy
   my $add = shift;
   return unless $add;
 
-  foreach my $font (@$add)
+  foreach (keys %$add)
   {
+    my $font = $add->{$_};
     next unless exists $font->{'name'};
 
     my $type = $font->{'format'};
@@ -721,11 +666,13 @@ sub font_file_del
   my $del = shift;
   return unless $del;
 
-  foreach my $font (@$del)
+  foreach (keys %$del)
   {
+    my $font = $del->{$_};
+
+    # FIXME: Report.
     foreach my $file (@{$font->{'file'}})
     {
-      # FIXME: Report.
       # unlink $file->{'path'} if (-f $file->{'path'});
     }
   }
@@ -736,7 +683,7 @@ sub font_set
 {
   my $xml_fonts = shift;
   return unless $xml_fonts;
-  return unless ref ($xml_fonts) eq 'ARRAY';
+  return unless ref ($xml_fonts) eq 'HASH';
 
   my $names = $font_map->{'name'};
   my $get_functions = $font_map->{'get'};
@@ -760,8 +707,10 @@ sub font_xml_print
 {
   my $fonts = shift;
 
-  foreach my $font (@$fonts)
+  foreach (keys %$fonts)
   {
+    my $font = $fonts->{$_};
+
     &xst_xml_print_line ("<font format=\"$font->{format}\" name=\"$font->{name}\" version=\"$font->{version}\"" .
                          " familyname=\"$font->{familyname}\" speciesname=\"$font->{speciesname}\"" .
                          " psname=\"$font->{psname}\" weight=\"$font->{weight}\" italicangle=\"$font->{italicangle}\">");
@@ -831,9 +780,8 @@ sub gp_run
   $user = $user ? "--user " : "--dynamic ";
   $set = $set ? "" : "--clean --target - ";
 
-  my $command = &xst_file_locate_tool ('/home/tambet/opt/bin/gnome-font-install');
-  return unless $command;
-  $command = "$command --debug --recursive -a /usr/share/fonts/adobe-urw.font " . $set . $user . $dir;
+  my $command = "gnome-font-install --debug --recursive -a $GNOME_PRINT_DATADIR/gnome/fonts/adobe-urw.font " .
+      $set . $user . $dir;
 
   open (FD, "$command 2>&1 |");
   if (FD)
@@ -921,14 +869,14 @@ sub gp_parse_font
     push @{$font->{$tag}}, $$data[0];
   }
 
-  push @$font_list, $font;
+  $font_list->{$font->{'name'}} = $font;
 }
 
 
 sub gp_parse
 {
   my $fname = shift;
-  my $font_list = [];
+  my $font_list = {};
 
   my $tree = &xst_xml_scan ($fname);
 
@@ -980,14 +928,12 @@ sub gp_read_fontmaps
 {
   my $fontmap = 'gnome-print.fontmap';
   my $home = $ENV{'HOME'};
-  my $prefix = '/usr'; # FIXME!
-  my $sysconfdir = "/etc"; # FIXME!
-  my $datadir = "$prefix/share";
 
-  my @dirs = ("$home/.gnome/fonts", "$sysconfdir/gnome/fonts", "$datadir/gnome/fonts");
+  # FIXME: There are couple of hardcoded ones too.
+  my @dirs = ("$home/.gnome/fonts", "$GNOME_PRINT_SYSCONFDIR/gnome/fonts", "$GNOME_PRINT_DATADIR/gnome/fonts");
 
   # FIXME: Report.
-  my @fontlist;
+  my %gp_fonts;
   foreach my $dir (@dirs)
   {
     my @files;
@@ -1003,34 +949,27 @@ sub gp_read_fontmaps
     foreach (@files)
     {
       my $font_ref = &gp_parse ($_) if (-f $_);
-      next unless $font_ref;
-
-      foreach my $font (@$font_ref)
-      {
-        push @fontlist, $font unless &font_exists (\@fontlist, $font);
-      }
+      next unless scalar keys %$font_ref;
+      %gp_fonts = (%gp_fonts, %$font_ref);
     }
   }
 
-  return \@fontlist;
+  return \%gp_fonts;
 }
 
 sub gp_font_set
 {
   my $del = shift;
   my $add = shift;
-  my ($font, @list);
+  my @list;
 
   # FIXME: Report.
 
-  foreach $font (@$del)
-  {
-    # FIXME!
-    1;
-  }
+  # FIXME: Delete
 
-  foreach $font (@$add)
+  foreach (keys %$add)
   {
+    my $font = $add->{$_};
     next unless exists $font->{'file'};
 
     foreach my $file (@{$font->{'file'}})
@@ -1186,7 +1125,7 @@ sub x_fonts_dir_parse
   # Known font suffixes
   my @suffixlist = qw (.afm .pfm .pfa .pfb .ttf);
 
-  my @fonts;
+  my $fonts;
   while (<$fh>)
   {
     next if /^\d+\s+$/; # Probably the first line, showing the number of fonts.
@@ -1194,12 +1133,12 @@ sub x_fonts_dir_parse
     if (/^(\S+) (\S+)/)
     {
       my $f = basename ($1, @suffixlist);
-      push @fonts, "$path/$f.*";
+      $fonts->{"$path/$f.*"} = undef;
     }
   }
 
   $fh->close ();
-  return @fonts;
+  return $fonts;
 }
 
 # Not used.
@@ -1249,7 +1188,6 @@ sub x_fonts_dir_modify
   &xst_file_run ("$cmd -d $XST_FONT_DIR/truetype/ -o $XST_FONT_DIR/truetype/fonts.scale");
 }
 
-
 sub x_get_fonts
 {
   my $x_font_path = &x_fontpath_get ();
@@ -1257,19 +1195,15 @@ sub x_get_fonts
 
   # FIXME: Report.
 
-  my $x_fonts = [];
+  my %x_fonts;
   foreach (@$x_font_path)
   {
-    my @fonts = &x_fonts_dir_parse ($_);
-    next unless scalar @fonts;
-
-    foreach my $font (@fonts)
-    {
-      push @$x_fonts, $font unless &xst_item_is_in_list ($font, @$x_fonts);
-    }
+    my $fonts = &x_fonts_dir_parse ($_);
+    next unless scalar keys %$fonts;
+    %x_fonts = (%x_fonts, %$fonts);
   }
 
-  return $x_fonts;
+  return \%x_fonts;
 }
 
 sub x_read_fonts
@@ -1277,7 +1211,7 @@ sub x_read_fonts
   my $x_font_paths = &x_get_fonts ();
   return unless $x_font_paths || scalar @$x_font_paths > 1;
 
-  return &gp_invoke (join (" ", @$x_font_paths), 0);
+  return &gp_invoke (join (" ", keys (%$x_font_paths)), 0);
 }
 
 # Maybe it should be common function:
@@ -1314,8 +1248,10 @@ sub x_add_font
 
   my $path = [];
 
-  foreach my $font (@$add)
+  foreach (keys %$add)
   {
+    my $font = $add->{$_};
+
     if    ($font->{'format'} eq 'type1') { push @$type1, $font; }
     elsif ($font->{'format'} eq 'truetype') { push @$true, $font; }
 

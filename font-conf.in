@@ -44,6 +44,7 @@ BEGIN {
   require "$SCRIPTSDIR/font.pl$DOTIN";
 }
 
+use Benchmark;
 
 # --- Tool information --- #
 

@@ -1,3 +1,14 @@
+2001-12-07  Tambet Ingo  <tambet@ximian.com>
+
+	* font.pl.in: Added checks to get gnome-print's $DATADIR
+	and $SYSCONFDIR.
+	Changed internal font list structure from ARRAY to HASH.
+	This makes font-conf much faster and obsoletes functions:
+	(font_cmp_files): Removed.
+	(font_cmp): Removed.
+	(font_exists): Removed.
+	(font_delete): Removed.
+
 2001-12-06  Tambet Ingo  <tambet@ximian.com>
 
 	* font.pl.in (font_cmp_files): Implement.
