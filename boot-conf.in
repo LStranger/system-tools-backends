@@ -162,6 +162,9 @@ sub get
 {
   my ($hash);
 
+  #FIXME: do mount in a more generic way, this is done because /boot may be unmounted
+  gst_file_run ("mount /boot");
+
   $hash = &gst_boot_conf_get ();
   &gst_boot_fix ($hash);
   
@@ -175,6 +178,9 @@ sub set
 {
   my ($hash);
 
+  #FIXME: do mount in a more generic way, this is done because /boot may be unmounted
+  gst_file_run ("mount /boot");
+  
   $hash = &xml_parse ();
 
   if ($hash)
