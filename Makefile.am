@@ -18,8 +18,8 @@ memory-conf.in \
 nameresolution-conf.in \
 networking-conf.in \
 shares-conf.in \
-time-conf.in
-##users-conf
+time-conf.in \
+users-conf.in
 
 CLEANFILES = $(backends)
 
