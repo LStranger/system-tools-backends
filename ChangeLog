@@ -10,6 +10,7 @@
 	  Stole redhat's init.d/function:status to do new, more fine-grained checking.
 	  (xst_service_sysv_get_status_any): just a proxy.
 	  (xst_service_sysv_run_initd_script): fixed init.d script invocation typo.
+	  (xst_service_sysv_set_status): Always set links, to fix broken setups.
 	
 2001-04-17  Arturo Espinosa  <arturo@ximian.com>
 

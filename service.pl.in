@@ -286,9 +286,9 @@ sub xst_service_sysv_set_status
 {
   my ($pri, $service, $active) = @_;
 
+  &xst_service_sysv_set_links ($pri, $service, $active);
+  
   $status = &xst_service_sysv_get_status ($service);
-  &xst_service_sysv_set_links ($pri, $service, $active) if ($status != $active);
-
   if ($status)
   {
     # if it's already active and you want it active, restart.
