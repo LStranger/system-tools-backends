@@ -30,7 +30,6 @@
 
 $be_prefix = "";
 $be_verbose = 0;
-$be_progress = 0;
 $be_do_immediate = 1;
 
 # for debugging (perl -d) purposes. set to "" for normal operation:
@@ -39,11 +38,104 @@ $be_input_file = "";
 
 # --- Progress printing --- #
 
+$be_progress_current = 0;  # Compat with old $progress_max use.
+$be_progress_last_percentage = 0;
 
-sub be_print_progress
+sub be_progress
 {
-  if ($be_progress) { print "."; }
+  $prc = @_[0];
+
+  if ($prc < $be_progress_last_percentage)
+  {
+    # Don't go backwards.
+    $prc = $be_progress_last_percentage;
+  }
+
+  if ($prc >= 100)
+  {
+    # Don't go above 99%.
+    $prc = 99;
+  }
+
+  if ($be_progress) { printf "%03d percent done.\n", $prc; }
+
+  $be_progress_last_percentage = $prc;
 }
+
+sub be_progress_begin { be_progress(0); }
+
+sub be_progress_end { be_progress(99); }
+
+sub be_print_progress  # Compat with old $progress_max use.
+{
+  my $prc;
+
+  $be_progress_current++;
+  be_progress(($be_progress_current * 100) / $progress_max);
+}
+
+
+# --- Report printing --- #
+
+sub be_report
+{
+  if ($be_reporting)
+  {
+    printf "%1d%02d %s.\n", @_[0], @_[1], @_[2];
+  }
+}
+
+sub be_report_begin
+{
+  be_report(1, 00, "Start of work report");
+}
+
+sub be_report_end
+{
+  be_report(1, 01, "End of work report");
+  print "\n";
+}
+
+sub be_report_info
+{
+  if ($be_verbose)
+  {
+    printf STDERR "%s.\n", @_[1];
+  }
+
+  be_report(2, @_[0], @_[1]);
+}
+
+sub be_report_warning
+{
+  if ($be_verbose)
+  {
+    printf STDERR "Warning: %s.\n", @_[1];
+  }
+
+  be_report(3, @_[0], @_[1]);
+}
+
+sub be_report_error
+{
+  if ($be_verbose)
+  {
+    printf STDERR "Error: %s.\n", @_[1];
+  }
+
+  be_report(4, @_[0], @_[1]);
+}
+
+sub be_report_fatal
+{
+  if ($be_verbose)
+  {
+    printf STDERR "Fatal error: %s.\n", @_[1];
+  }
+
+  be_report(5, @_[0], @_[1]);
+}
+
 
 # --- XML print formatting  --- #
 
@@ -311,31 +403,28 @@ sub be_locate_tool
 }
 
 sub be_open_read_from_names
+{
+  local *FILE;
+  my $fname = "";
+    
+  foreach $name (@_)
   {
-    local *FILE;
-    my $fname = "";
-    
-    foreach $name (@_)
-      {
-	if (open(FILE, "$be_prefix/$name")) { $fname = $name; last; }
-      }
-    
-    if ($be_verbose)
-      {
-	(my $fullname = "$be_prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
-
-	if ($fname ne "") 
-	  { 
-	    print STDERR "Reading options from \"$fullname\".\n"; 
-	  }
-	else 
-	  { 
-	    print STDERR "Could not read \[@_\].\n"; 
-	  }
-      }
-    
-    return *FILE;
+    if (open(FILE, "$be_prefix/$name")) { $fname = $name; last; }
   }
+
+  (my $fullname = "$be_prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
+
+  if ($fname ne "") 
+  { 
+    be_report_info(99, "Reading options from \"$fullname\"");
+  }
+  else 
+  { 
+    be_report_warning(99, "Could not read \[@_\]");
+  }
+    
+  return *FILE;
+}
 
 
 sub be_open_write_from_names
@@ -357,23 +446,20 @@ sub be_open_write_from_names
 	
 	if ($be_prefix eq "")
 	  {
-	    if ($be_verbose) { print STDERR "No file to replace: \[@_\].\n"; }
+	    be_report_warning(98, "No file to replace: \[@_\]");
 	    return(0);
 	  }
 	else
 	  {
 	    $name = $_[0];
-	    if ($be_verbose)
-	      {
-		(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-		print STDERR "Could not find \[@_\]. Writing to \"$fullname\".\n";
-	      }
+	    (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
+	    be_report_warning(97, "Could not find \[@_\]. Writing to \"$fullname\"");
 	  }
       }
-    elsif ($be_verbose)
+    else
       {
 	(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-	print STDERR "Found \"$name\". Writing to \"$fullname\".\n";
+	be_report_info(98, "Found \"$name\". Writing to \"$fullname\".\n");
       }
     
     ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
@@ -394,7 +480,7 @@ sub be_open_write_from_names
     
     if (!open(FILE, ">$name") && $be_verbose)
       {
-	print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+	be_report_error(99, "Failed to write to \"$name\"");
       }
     
     return *FILE;
@@ -420,23 +506,20 @@ sub be_open_filter_write_from_names
 	
 	if ($prefix eq "")
 	  {
-	    if ($be_verbose) { print STDERR "No file to patch: \[@_\].\n"; }
+	    be_report_warning(98, "No file to patch: \[@_\]");
 	    return(0, 0);
 	  }
 	else
 	  {
 	    $name = $_[0];
-	    if ($be_verbose)
-	      {
-		(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-		print STDERR "Could not find \[@_\]. Patching \"$fullname\".\n";
-	      }
+	    (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
+	    be_report_warning(97, "Could not find \[@_\]. Patching \"$fullname\"");
 	  }
       }
-    elsif ($be_verbose)
+    else
       {
 	(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-	print STDERR "Found \"$name\". Patching \"$fullname\".\n";
+	be_report_info(98, "Found \"$name\". Patching \"$fullname\"");
       }
     
     ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
@@ -461,7 +544,7 @@ sub be_open_filter_write_from_names
     
     if (!open(OUTFILE, ">$name") && $be_verbose)
       {
-	print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+	be_report_error(99, "Failed to write to \"$name\"");
       }
     
     return(*INFILE, *OUTFILE);
@@ -569,9 +652,9 @@ sub be_xml_get_text
   }
 
 
-# --- Others ---
+# --- Others --- #
 
-$be_operation = "";		# Major operation user wants to perform. [get | set | filter]
+$be_operation = "";  # Major operation user wants to perform. [get | set | filter]
 
 
 sub be_set_operation
@@ -586,5 +669,66 @@ sub be_set_operation
     $be_operation = $_[0];
   }
 
-1;
+sub be_begin
+{
+  $| = 1;
+  be_report_begin();
+  be_progress_begin();
+}
 
+sub be_end
+{
+  be_progress_end();
+  be_report_end();
+}
+
+
+# --- Argument parsing --- #
+
+sub be_init()
+{
+  my @args = @_;
+
+  while (@args)
+  {
+    if    ($args[0] eq "--get"    || $args[0] eq "-g") { be_set_operation("get"); }
+    elsif ($args[0] eq "--set"    || $args[0] eq "-s") { be_set_operation("set"); }
+    elsif ($args[0] eq "--filter" || $args[0] eq "-f") { be_set_operation("filter"); }
+    elsif ($args[0] eq "--help"   || $args[0] eq "-h") { print $Usage; exit(0); }
+    elsif ($args[0] eq "--version")                    { print "$version\n"; exit(0); }
+    elsif ($args[0] eq "--prefix" || $args[0] eq "-p")
+    {
+      if ($be_prefix ne "")
+      {
+        print STDERR "Error: You may specify --prefix only once.\n\n";
+        print STDERR $Usage; exit(1);
+      }
+
+      $be_prefix = $args[1];
+
+      if ($be_prefix eq "")
+      {
+        print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
+        print STDERR $Usage; exit(1);
+      }
+
+      shift @args;  # For the argument.
+    }
+    elsif ($args[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+    elsif ($args[0] eq "--verbose" || $args[0] eq "-v") { $be_verbose = 1; }
+    elsif ($args[0] eq "--progress")                    { $be_progress = 1; }
+    elsif ($args[0] eq "--report")                      { $be_reporting = 1; }
+    else
+    {
+      print STDERR "Error: Unrecognized option '$args[0]'.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    shift @args;
+  }
+
+  be_begin();
+}
+
+
+1;

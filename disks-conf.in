@@ -451,10 +451,7 @@ sub write_fstab
       {
         my $part = $cf_disks[$i]->{partitions}[$j];
 
-        if ($be_verbose)
-        {
-          print STDERR "Adding " . $cf_disks[$i]->{partitions}[$j]->{device} . " to fstab.\n";
-        }
+        be_report_info(01, "Adding " . $cf_disks[$i]->{partitions}[$j]->{device} . " to fstab");
         
         # Write record.
 
@@ -532,7 +529,7 @@ sub get_fdisk
   {
     my ($disk, $device, $point, $fs, $options, $check, $size, $bootable);
     
-    if ($be_verbose) { print STDERR "Looking for partitions on $dev.\n"; }
+    be_report_info(02, "Looking for partitions on $dev");
 
     open(FDISK_HD, "$fdisk_tool -l $dev 2>/dev/null |");
     while (<FDISK_HD>)
@@ -572,7 +569,7 @@ sub get_fdisk
     }
     close(FDISK_HD);
 
-    if ($be_verbose) { print STDERR "Querying size of $dev.\n"; }
+    be_report_info(03, "Querying size of $dev");
 
     open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
     ($size) = (<FDISK_HD> =~ /([0-9]+)/);
@@ -772,15 +769,10 @@ sub xml_print
 
 sub get
 {
-  if ($be_progress) { $| = 1; print $progress_max . "\n"; }
-
-  if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
-
   get_fdisk;
   read_fstab;
 
-  if ($be_verbose) { print STDERR "Printing XML.\n"; }
-  if ($be_progress) { print "\n"; }
+  be_end();
   xml_print ();
 }
 
@@ -808,19 +800,13 @@ sub set_immediate
       {
         if ($cf_disks[$i]->{partitions}[$j]->{mounted})
         {
-          if ($be_verbose)
-          {
-            print STDERR "Mounting " . $cf_disks[$i]->{partitions}[$j]->{device} . ".\n";
-          }
+          be_report_info(04, "Mounting " . $cf_disks[$i]->{partitions}[$j]->{device});
           system "$mount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " " .
                  $cf_disks[$i]->{partitions}[$j]->{point} . " >/dev/null 2>/dev/null";
         }
         else
         {
-          if ($be_verbose)
-          {
-            print STDERR "Unmounting " . $cf_disks[$i]->{partitions}[$j]->{device} . ".\n";
-          }
+          be_report_info("Unmounting " . $cf_disks[$i]->{partitions}[$j]->{device});
           system "$umount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " >/dev/null 2>/dev/null";
         }
       }
@@ -828,25 +814,23 @@ sub set_immediate
   }
   else
   {
-    if ($be_verbose) { print STDERR "Warning: Could not find mount tools. No mounting done.\n"; }
+    be_report_error(01, "Could not find mount tools. No mounting done");
   }
 }
 
 
 sub set
 {
-  if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
-
-  if ($be_verbose) { print STDERR "Parsing XML.\n"; }
   xml_parse ();
 
   write_fstab;
 
   if ($be_do_immediate)
   {
-    if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
     set_immediate;
   }
+  
+  be_end();
 }
 
 
@@ -856,51 +840,14 @@ sub set
 sub filter
 {
   xml_parse ();
+  be_end();
   xml_print ();
 }
 
 
 # --- Main --- #
 
-# Process options.
-
-while (@ARGV)
-{
-  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
-  {
-    if ($be_prefix ne "")
-    {
-      print STDERR "Error: You may specify --prefix only once.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    $be_prefix = $ARGV[1];
-
-    if ($be_prefix eq "")
-    {
-      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    shift @ARGV;  # For the argument.
-  }
-  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
-  else
-  {
-    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
-    print STDERR $Usage; exit(1);
-  }
-
-  shift @ARGV;
-}
-
+be_init(@ARGV);
 
 # Do our thing.
 
@@ -912,4 +859,3 @@ else
   print STDERR "Error: No operation specified.\n\n";
   print STDERR $Usage; exit(1);
 }
-

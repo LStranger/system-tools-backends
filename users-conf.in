@@ -561,9 +561,9 @@ sub xml_parse_users
 		elsif ($$tree[0] eq "group_last_modified") { &xml_parse_group_last_modified ($$tree[1]); }
 		elsif ($$tree[0] eq "userdb") { &xml_parse_userdb ($$tree[1]); }
 		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1]); }
-		elsif ($be_verbose)
+		else
 		{
-		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing users.\n"
+		  be_report_warning(1, "Unexpected tag " . $$tree[0] . " while parsing users");
 		}
 
     shift @$tree;
@@ -583,9 +583,9 @@ sub xml_parse_login_defs
 		{
 		  $login_defs{$$tree[0]} = $$tree[1][2];
 		}
-		elsif ($be_verbose)
+		else
 		{
-		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing logindefs.\n"
+		  be_report_warning(2, "Unexpected tag " . $$tree[0] . " while parsing logindefs");
 		}
 		
 		shift @$tree;
@@ -599,7 +599,7 @@ sub xml_parse_passwd_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	print STDERR "passwd_last_modified tag contents is not PCDATA only.\n" if ($$tree[0] ne "0" && $be_verbose);
+	be_report_warning(3, "passwd_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
 	$passwd_last_modified = $$tree[1];
 }	
 
@@ -609,7 +609,7 @@ sub xml_parse_group_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	print STDERR "group_last_modified tag contents is not PCDATA only.\n" if ($$tree[0] ne "0" && $be_verbose);
+	be_report_warning(4, "group_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
 	$group_last_modified = $$tree[1];
 }	
 
@@ -622,9 +622,9 @@ sub xml_parse_userdb
   while (@$tree)
 	{
 	  if ($$tree[0] eq "user") { &xml_parse_user ($$tree[1]); }
-		elsif ($be_verbose)
+		else
 		{
-		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing userdb.\n"
+		  be_report_warning(5, "Unexpected tag " . $$tree[0] . " while parsing userdb");
 		}
 
     shift @$tree;
@@ -645,9 +645,9 @@ sub xml_parse_user
 		{
 		  $line[$users_prop_map{$$tree[0]}] = $$tree[1][2];
 		}
-		elsif ($be_verbose)
+		else
 		{
-		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing user.\n"
+		  be_report_warning(6, "Unexpected tag " . $$tree[0] . " while parsing user");
 		}
 		
 		shift @$tree;
@@ -669,7 +669,7 @@ sub xml_parse_groupdb
 	  if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1]); }
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing groupdb.\n"
+		  be_report_warning(7, "Unexpected tag " . $$tree[0] . " while parsing groupdb");
 		}
 
     shift @$tree;
@@ -691,9 +691,9 @@ sub xml_parse_group
 		  if ($$tree[0] eq "users") { $line[$groups_prop_map{$$tree[0]}] = $$tree[1]; }
 			else { $line[$groups_prop_map{$$tree[0]}] = $$tree[1][2]; }
 		}
-		elsif ($be_verbose)
+		else
 		{
-		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing group.\n"
+		  be_report_warning("Unexpected tag " . $$tree[0] . " while parsing group");
 		}
 		
 		shift @$tree;
@@ -707,9 +707,9 @@ sub xml_parse_group
 	  if ($$a[0] eq "user") {
 		  push @u, $$a[1][2];
 		}
-		elsif ($be_verbose)
+		else
 		{
-		  print STDERR "Unexpected tag " . $$a[0] . " while parsing users.\n"
+		  be_report_warning(8, "Unexpected tag " . $$a[0] . " while parsing users");
 		}
 		shift @$a;
 		shift @$a;
@@ -818,32 +818,26 @@ sub xml_print
 
 sub get
 {
-  if ($be_progress) { $| = 1; print $progress_max . "\n"; }
-
-  if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
-  if ($be_verbose) { print STDERR "Getting user database.\n"; }
+  be_report_info(1, "Getting user database");
 
   &read_login_defs (); &be_print_progress ();
 	&read_group (); &be_print_progress ();
   &read_passwd_shadow (); &be_print_progress ();
 
-  if ($be_verbose) { print STDERR "Printing XML.\n"; }
-  if ($be_progress) { print "\n"; }
+  &be_end();
   &xml_print ();
 }
 
 sub set
 {
-  if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
-
-  if ($be_verbose) { print STDERR "Parsing XML.\n"; }
   &xml_parse ();
 
   if ($be_do_immediate)
   {
-    if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
 		&write_group_passwd ();
   }
+  
+  &be_end();
 }
 
 
@@ -853,50 +847,14 @@ sub set
 sub filter
 {
   &xml_parse ();
+  &be_end();
   &xml_print ();
 }
 
 
 # --- Main --- #
 
-# Process options.
-
-while (@ARGV)
-{
-  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
-  {
-    if ($be_prefix ne "")
-    {
-      print STDERR "Error: You may specify --prefix only once.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    $be_prefix = $ARGV[1];
-
-    if ($be_prefix eq "")
-    {
-      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    shift @ARGV;  # For the argument.
-  }
-  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
-  else
-  {
-    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
-    print STDERR $Usage; exit(1);
-  }
-
-  shift @ARGV;
-}
-
+&be_init(@ARGV);
 
 # Do our thing.
 

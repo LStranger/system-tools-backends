@@ -1391,7 +1391,7 @@ sub get_interfaces
 
   if (not @list)
   {
-    if ($be_verbose) { print STDERR "Warning: Couldn't find any network devices.\n"; }
+    be_report_warning(01, "Could not find any network devices");
     return(0);
   }
   
@@ -1447,14 +1447,14 @@ sub get_host_mounts
     close(PING_HD);
   }
 
-  if ($be_verbose) { print STDERR "Subnet ping found ", $#hosts + 1, " hosts.\n"; }
+  be_report_info(1, "Subnet ping found " . ($#hosts + 1) . " hosts");
   be_print_progress ();
 
   # List NFS shares.
 
   if ($showmount_tool eq "")
   {
-    if ($be_verbose) { print STDERR "Can't locate showmount - NFS scan skipped.\n"; }
+    be_report_error(1, "Can't locate showmount - NFS scan skipped");
   }
   else
   {
@@ -1485,7 +1485,7 @@ sub get_host_mounts
       $i++;
     }
 
-    if ($be_verbose) { print STDERR "Found $j NFS exports on $i hosts.\n"; }
+    be_report_info(02, "Found $j NFS exports on $i hosts");
     be_print_progress ();
   }
 
@@ -1496,7 +1496,7 @@ sub get_host_mounts
     my ($smb_master_ip, $smb_master_name);
     my @smb_hosts;
     
-    if ($be_verbose) { print STDERR "Doing SMB detection in workgroup $cf_workgroup.\n"; }
+    be_report_info(03, "Doing SMB detection in workgroup $cf_workgroup");
 
     # Find the workgroup master.
   
@@ -1519,7 +1519,7 @@ sub get_host_mounts
 
     if ($smb_master_name ne "")
     {
-      if ($be_verbose) { print STDERR "Workgroup master is $smb_master_name ($smb_master_ip).\n"; }
+      be_report_info(04, "Workgroup master is $smb_master_name ($smb_master_ip)");
 
       # List computers.
 
@@ -1538,11 +1538,11 @@ sub get_host_mounts
 
       if ($be_verbose)
       {
-        if ($#smb_hosts + 1) { print STDERR "Master reported ", $#smb_hosts + 1, " hosts in workgroup.\n"; }
-        else { print STDERR "No hosts reported by master - asking others.\n"; }
+        if ($#smb_hosts + 1) { be_report_info(05, "Master reported " . ($#smb_hosts + 1) . " hosts in workgroup"); }
+        else { be_report_info(06, "No hosts reported by master - asking others"); }
       }
     }
-    elsif ($be_verbose) { print STDERR "No workgroup master found.\n"; }
+    else { be_report_warning(02, "No workgroup master found"); }
 
     if (!@smb_hosts)
     {
@@ -1558,7 +1558,7 @@ sub get_host_mounts
         # since they have service entries for their own IPs, whereas Windows
         # boxen don't.
         
-        if ($be_verbose) { print STDERR "Asking $host for host list"; }
+        be_report_info(07, "Asking $host for host list");
 
         open(FD, "$smbclient_tool -N -U % -L $host -I $host |");
         while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
@@ -1575,10 +1575,10 @@ sub get_host_mounts
 
         if (@smb_hosts)
         {
-          if ($be_verbose) { print STDERR " - got ", $#smb_hosts + 1, " hosts.\n"; }
+          be_report_info(8, "Got " . ($#smb_hosts + 1) . " SMB hosts");
           last;
         }
-        elsif ($be_verbose) { print STDERR " - failed.\n"; }
+        else { be_report_warning(9, "No SMB hosts found"); }
       }
     }
 
@@ -1619,19 +1619,16 @@ sub get_host_mounts
       $i++;
     }
     
-    if ($be_verbose) { print STDERR "Found $j SMB exports on $i hosts.\n"; }
+    be_report_info(10, "Found $j SMB exports on $i hosts");
     be_print_progress ();
   }
-  elsif ($be_verbose) { print STDERR "No workgroup configured - SMB scan skipped.\n"; }
+  else { be_report_warning("No workgroup configured - SMB scan skipped"); }
 }
 
 
 sub get
 {
-  if ($be_progress) { $| = 1; print $progress_max . "\n"; }
-
-  if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
-  if ($be_verbose) { print STDERR "Finding interfaces.\n"; }
+  be_report_info(20, "Finding interfaces");
 
   get_interfaces; be_print_progress ();          # Needed for primary interface detection.
   read_rc_config;                          # Ditto.
@@ -1642,8 +1639,7 @@ sub get
   read_fstab;
   read_exports; be_print_progress ();
 
-  if ($be_verbose) { print STDERR "Printing XML.\n"; }
-  if ($be_progress) { print "\n"; }
+  be_end();
   xml_print ();
 }
 
@@ -1667,26 +1663,26 @@ sub set_immediate
   {
     if (system "/etc/rc.d/init.d/smb restart >/dev/null 2>/dev/null")
     {
-      if ($be_verbose) { print STDERR "Warning: SMB restart failed.\n"; }
+      be_report_error(2, "SMB restart failed");
     }
-    elsif ($be_verbose)
+    else
     {
-      print STDERR "SMB restarted with new configuration.\n";
+      be_report_info(11, "SMB restarted with new configuration");
     }
   }
-  elsif ($be_verbose)
+  else
   {
-    print STDERR "Warning: Could not find a way to restart SMB services.\n";
+    be_report_error(3, "Could not find a way to restart SMB services");
   }
 
   if ($exportfs_tool eq "")
   {
-    if ($be_verbose) { print STDERR "Warning: Could not reload NFS export tables.\n"; }
+    be_report_error(4, "Could not reload NFS export tables");
   }
   else
   {
     system "$exportfs_tool -a >/dev/null 2>/dev/null";
-    if ($be_verbose) { print STDERR "NFS export tables reloaded.\n"; }
+    be_report_info(12, "NFS export tables reloaded");
   }
 
   # Update imports.
@@ -1701,12 +1697,12 @@ sub set_immediate
       {
         if ($shares[3])
         {
-          if ($be_verbose) { print STDERR "Mounting $shares[8].\n"; }
+          be_report_info(13, "Mounting $shares[8]");
           system "$mount_tool $shares[8] >/dev/null 2>/dev/null";
         }
         else
         {
-          if ($be_verbose) { print STDERR "Unmounting $shares[8].\n"; }
+          be_report_info(14, "Unmounting $shares[8]");
           system "$umount_tool $shares[8] >/dev/null 2>/dev/null";
         }
       }
@@ -1718,7 +1714,7 @@ sub set_immediate
   }
   else
   {
-    if ($be_verbose) { print STDERR "Warning: Could not find mount tools. No mounting done.\n"; }
+    be_report_error(6, "Could not find mount tools. No mounting done");
   }
   
 }
@@ -1726,9 +1722,6 @@ sub set_immediate
 
 sub set
 {
-  if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
-
-  if ($be_verbose) { print STDERR "Parsing XML.\n"; }
   xml_parse ();
 
   write_fstab;
@@ -1737,9 +1730,10 @@ sub set
 
   if ($be_do_immediate)
   {
-    if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
     set_immediate;
   }
+  
+  be_end();
 }
 
 
@@ -1749,51 +1743,14 @@ sub set
 sub filter
 {
   xml_parse ();
+  be_end();
   xml_print ();
 }
 
 
 # --- Main --- #
 
-# Process options.
-
-while (@ARGV)
-{
-  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
-  {
-    if ($be_prefix ne "")
-    {
-      print STDERR "Error: You may specify --prefix only once.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    $be_prefix = $ARGV[1];
-
-    if ($be_prefix eq "")
-    {
-      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    shift @ARGV;  # For the argument.
-  }
-  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
-  else
-  {
-    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
-    print STDERR $Usage; exit(1);
-  }
-
-  shift @ARGV;
-}
-
+be_init(@ARGV);
 
 # Do our thing.
 
@@ -1805,4 +1762,3 @@ else
   print STDERR "Error: No operation specified.\n\n";
   print STDERR $Usage; exit(1);
 }
-

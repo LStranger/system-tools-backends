@@ -310,7 +310,7 @@ sub get_fdisk
   {
     my $disk, $device, $point, $fs, $options, $check, $size, $bootable;
     
-    if ($be_verbose) { print STDERR "Looking for partitions on $dev.\n"; }
+    be_report_info(01, "Looking for partitions on $dev");
 
     open(FDISK_HD, "$fdisk_tool -l $dev 2>/dev/null |");
     while (<FDISK_HD>)
@@ -342,7 +342,7 @@ sub get_fdisk
     }
     close(FDISK_HD);
 
-    if ($be_verbose) { print STDERR "Querying size of $dev.\n"; }
+    be_report_info(02, "Querying size of $dev");
 
 #    open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
 #    ($size) = (<FDISK_HD> =~ /([0-9]+)/);
@@ -391,11 +391,7 @@ sub get_swap_entries
 
     *FSTAB_FILE = be_open_read_from_names (@fstab_names);
 
-    if (not *FSTAB_FILE) 
-      {
-	print STDERR "Could not find file.\n";
-	return; 
-      }
+    if (not *FSTAB_FILE) { return; }
 
     while (<FSTAB_FILE>)
       {
@@ -409,7 +405,7 @@ sub get_swap_entries
 
 	next if $type ne 'swap';
 
-	if ($be_verbose) { print STDERR "Found swap entry:\n$_"; }
+	be_report_info(03, "Found swap entry $device");
 
 	if ($device =~ /^#(.*)/)
 	  {
@@ -449,21 +445,13 @@ sub get_swap_entries
 
 sub get
 {
-    if ($be_progress) { $| = 1; print $progress_max . "\n"; }
-
-    if ($be_verbose) 
-      { 
-	print STDERR "Getting system configuration, generating XML output.\n";
-      }
-    
-    if ($be_verbose) { print STDERR "Getting swap entries.\n"; }
+    be_report_info(04, "Getting swap entries");
 
     get_memory; be_print_progress;
     get_fdisk;  be_print_progress;
     get_swap_entries; be_print_progress;
     
-    if ($be_verbose) { print STDERR "Printing XML.\n"; }
-    if ($be_progress) { print "\n"; }
+    be_end();
     xml_print ();
   }
 
@@ -554,24 +542,15 @@ sub set_swap_entries
 
 sub set
   {
-    if ($be_verbose) 
-      { 
-	print STDERR "Setting system configuration from XML input.\n"; 
-      }
-
-    if ($be_verbose) { print STDERR "Parsing XML.\n"; }
     xml_parse ();
     
     if ($be_do_immediate)
       {
-	if ($be_verbose) 
-	  { 
-	    print STDERR 
-	      "Changing running configuration via local utilities.\n"; 
-	  }
 	setup_swap_files;
 	set_swap_entries;
       }
+
+    be_end();
   }
 
 
@@ -581,51 +560,14 @@ sub set
 sub filter
   {
     xml_parse ();
+    be_end();
     xml_print ();
   }
 
 
 # --- Main --- #
 
-# Process options.
-
-while (@ARGV)
-  {
-    if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
-    elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
-    elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
-    elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
-    elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-    elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
-      {
-	if ($be_prefix ne "")
-	  {
-	    print STDERR "Error: You may specify --prefix only once.\n\n";
-	    print STDERR $Usage; exit(1);
-	  }
-	
-	$be_prefix = $ARGV[1];
-	
-	if ($be_prefix eq "")
-	  {
-	    print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
-	    print STDERR $Usage; exit(1);
-	  }
-	
-	shift @ARGV;		# For the argument.
-      }
-    elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-    elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
-    elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
-    else
-      {
-	print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
-	print STDERR $Usage; exit(1);
-      }
-
-    shift @ARGV;
-  }
-
+be_init(@ARGV);
 
 # Do our thing.
 

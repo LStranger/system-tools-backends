@@ -1079,7 +1079,7 @@ sub get_immediate
 
   if ($ip eq "")
   {
-    if ($be_verbose) { print STDERR "Warning: Couldn't find a configured network device.\n"; }
+    be_report_warning(01, "Couldn't find a configured network device");
     return(0);
   }
 
@@ -1090,19 +1090,15 @@ sub get_immediate
   $cf_hostname_reverse = $1;
   $cf_domain_reverse = $2;
 
-  if (($cf_domain_reverse eq "" || $cf_hostname_reverse eq "") && $be_verbose)
+  if (($cf_domain_reverse eq "" || $cf_hostname_reverse eq ""))
   {
-    print STDERR "Warning: Couldn't get reverse names for this host.\n";
+    be_report_warning(02, "Couldn't get reverse names for this host");
   }
 }
 
 
 sub get
 {
-  if ($be_progress) { $| = 1; print $progress_max . "\n"; }
-
-  if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
-
   read_host_conf (); be_print_progress ();
   read_hosts (); be_print_progress ();
   read_resolv_conf (); be_print_progress ();
@@ -1111,12 +1107,9 @@ sub get
   read_defaultdomain (); be_print_progress ();
   read_hostname (); be_print_progress ();
   read_smb_conf (); be_print_progress ();
-
-  if ($be_verbose) { print STDERR "Getting reverse names.\n"; }
   get_immediate (); be_print_progress ();
 
-  if ($be_verbose) { print STDERR "Printing XML.\n"; }
-  if ($be_progress) { print "\n"; }
+  be_end();
   xml_print ();
 }
 
@@ -1136,21 +1129,21 @@ sub set_immediate
     {
       if (system "hostname $cf_hostname >/dev/null 2>/dev/null")
       {
-	if ($be_verbose) { print STDERR "Warning: Failed to set runtime hostname. Are you root?\n"; }
+	be_report_warning(03, "Failed to set runtime hostname");
       }
-      elsif ($be_verbose)
+      else
       {
-        print STDERR "Runtime hostname set.\n";
+        be_report_info(01, "Runtime hostname set");
       }
     }
-    elsif ($be_verbose)
+    else
     {
-      print STDERR "Warning: No hostname specified; runtime hostname not set.\n";
+      be_report_warning("No hostname specified; runtime hostname not set");
     }
   }
-  elsif ($be_verbose)
+  else
   {
-    print STDERR "Warning: No hostname command found; runtime hostname not set.\n";
+    be_report_warning("No hostname command found; runtime hostname not set");
   }
 
   # Reload SMB configuration.
@@ -1179,9 +1172,6 @@ sub set_immediate
 
 sub set
 {
-  if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
-
-  if ($be_verbose) { print STDERR "Parsing XML.\n"; }
   xml_parse ();
 
   write_smb_conf ();
@@ -1195,9 +1185,10 @@ sub set
 
   if ($be_do_immediate)
   {
-    if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
     set_immediate;
   }
+  
+  be_end();
 }
 
 
@@ -1207,51 +1198,14 @@ sub set
 sub filter
 {
   xml_parse ();
+  be_end();
   xml_print ();
 }
 
 
 # --- Main --- #
 
-# Process options.
-
-while (@ARGV)
-{
-  if    ($ARGV[0] eq "--get"     || $ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif ($ARGV[0] eq "--set"     || $ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif ($ARGV[0] eq "--filter"  || $ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif ($ARGV[0] eq "--help"    || $ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif ($ARGV[0] eq "--version")                     { print "$version\n"; exit(0); }
-  elsif ($ARGV[0] eq "--prefix"  || $ARGV[0] eq "-p")
-  {
-    if ($be_prefix ne "")
-    {
-      print STDERR "Error: You may specify --prefix only once.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    $be_prefix = $ARGV[1];
-
-    if ($be_prefix eq "")
-    {
-      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    shift @ARGV;  # For the argument.
-  }
-  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
-  else
-  {
-    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
-    print STDERR $Usage; exit(1);
-  }
-
-  shift @ARGV;
-}
-
+be_init(@ARGV);
 
 # Do our thing.
 

@@ -305,8 +305,8 @@ sub read_network_interfaces_into_hash
       # NOTE: This will weed out any loopback or dummy interfaces.
       if (not is_in_list($line[1], @cf_interface_list))
       {
-        if ($verbose) { print STDERR "Warning: $line[1] isn't an available, " .
-                            "configured interface.\n"; }
+        be_report_warning(01, "$line[1] isn't an available, " .
+                              "configured interface");
         next;
       }
 
@@ -316,8 +316,8 @@ sub read_network_interfaces_into_hash
       # Also make sure there is a set configuration method.
       if ($line[3] eq "" || be_is_line_comment_start($line[3]))
       {
-        if ($verbose) { print STDERR "Warning: Interface $line[1] has no " .
-                            "config method.\n"; }
+        be_report_warning(02, "Warning: Interface $line[1] has no " .
+                              "config method");
         next;
       }
 
@@ -380,19 +380,17 @@ sub read_network_interfaces
   # * If all else fails, pick the first interface.
 
   # See if only one interface exists.
-  if ( scalar(keys(%ifaces)) == 1 )
+  if (scalar(keys(%ifaces)) == 1)
   {
     $chosen_name = (keys(%ifaces))[0];
 
-    if ( $verbose )
-    { print STDERR "Only one interface, $chosen_name, exists.  It is being " .
-          "selected as the \"primary\" interface.\n"; }
+    be_report_info(03, "Only one interface, $chosen_name, exists.  It is being " .
+                       "selected as the primary interface");
   }
 
-  # For that matter, do any interfaces exist at all.
-  elsif ( scalar(keys(%ifaces)) == 0 )
+  # For that matter, do any interfaces exist at all?
+  elsif (scalar(keys(%ifaces)) == 0)
   {
-    if ($verbose) { print STDERR "Warning: No interfaces found!\n"; }
     return;
   }
 
@@ -402,13 +400,13 @@ sub read_network_interfaces
     $chosen_name = get_key_for_subkeys(\%ifaces, ["gateway"]);
 
     # If need be, look for an interface with a dynamic configuration "method".
-    if ( $chosen_name eq "" )
+    if ($chosen_name eq "")
     {
       $chosen_name = get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
     }
 
     # If an interface hasn't been chosen, then just pick the first available one.
-    if ( $chosen_name eq "" )
+    if ($chosen_name eq "")
     {
       $chosen_name = (keys(%ifaces))[0];
     }
@@ -898,7 +896,7 @@ sub write_primary_interface
   # so configuration is not written.
 
   if ($cf_interface ne "") { write_sysconfig_network_scripts_ifcfg($cf_interface); }
-  elsif ($be_verbose) { print STDERR "Warning: No primary interface specified - config unwritten.\n"; }
+  else { be_report_warning(04, "No primary interface specified - config unwritten"); }
 }
 
 
@@ -1352,7 +1350,7 @@ sub get_immediate
 
   if (not @list)
   {
-    if ($be_verbose) { print STDERR "Warning: Couldn't find any network devices.\n"; }
+    be_report_warning(05, "Could not find any network devices");
     return(0);
   }
   
@@ -1367,11 +1365,7 @@ sub get_immediate
 
 sub get
 {
-  if ($be_progress) { $| = 1; print $progress_max . "\n"; }
-
-  if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
-
-  if ($be_verbose) { print STDERR "Finding interfaces.\n"; }
+  be_report_info(01, "Finding interfaces");
   get_immediate;
 
   read_rc_config; be_print_progress ();
@@ -1380,8 +1374,7 @@ sub get
   read_network_options; be_print_progress ();
   read_primary_interface; be_print_progress ();
 
-  if ($be_verbose) { print STDERR "Printing XML.\n"; }
-  if ($be_progress) { print "\n"; }
+  be_end();
   xml_print ();
 }
 
@@ -1408,30 +1401,27 @@ sub set_immediate
       if (!(system "$ifdown_cmd $cf_interface >/dev/null 2>/dev/null" &&
             system "$ifup_cmd $cf_interface >/dev/null 2>/dev/null"))
       {
-        if ($be_verbose) { print STDERR "Warning: Could not configure interface. Are you root?\n"; }
+        be_report_warning(05, "Could not configure network interface");
       }
-      elsif ($be_verbose)
+      else
       {
-        print STDERR "Primary interface configured.\n";
+        be_report_info(03, "Primary interface configured");
       }
     }
-    elsif ($be_verbose)
+    else
     {
-      print STDERR "Warning: No primary interface given.\n";
+      be_report_warning(06, "No primary interface given");
     }
   }
-  elsif ($be_verbose)
+  else
   {
-    print STDERR "Warning: No interface control utilities found.\n";
+    be_report_warning(07, "No interface control utilities found");
   }
 }
 
 
 sub set
 {
-  if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
-
-  if ($be_verbose) { print STDERR "Parsing XML.\n"; }
   xml_parse ();
 
   $cf_networking = 1;  # This should really be calculated from the old value
@@ -1447,9 +1437,10 @@ sub set
 
   if ($be_do_immediate)
   {
-    if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
     set_immediate;
   }
+  
+  be_end();
 }
 
 
@@ -1459,51 +1450,14 @@ sub set
 sub filter
 {
   xml_parse ();
+  be_end();
   xml_print ();
 }
 
 
 # --- Main --- #
 
-# Process options.
-
-while (@ARGV)
-{
-  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
-  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
-  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
-  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
-  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
-  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
-  {
-    if ($be_prefix ne "")
-    {
-      print STDERR "Error: You may specify --prefix only once.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    $be_prefix = $ARGV[1];
-
-    if ($be_prefix eq "")
-    {
-      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
-      print STDERR $Usage; exit(1);
-    }
-
-    shift @ARGV;  # For the argument.
-  }
-  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
-  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
-  else
-  {
-    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
-    print STDERR $Usage; exit(1);
-  }
-
-  shift @ARGV;
-}
-
+be_init(@ARGV);
 
 # Do our thing.
 
