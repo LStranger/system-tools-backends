@@ -1,3 +1,8 @@
+2001-05-30  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_interface_replace_table): A typo.
+	Bug 3133.
+
 2001-05-30  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_set_global_kw): Made it sane.

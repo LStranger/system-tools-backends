@@ -1988,8 +1988,9 @@ sub xst_network_get_interface_replace_table
       ifaces_get   => \&xst_network_suse70_ifaces_get_existing,
       fn =>
 	    {
-        IFCFG  => "/etc/rc.config",
-        IFACE  => "#iface#",
+        IFCFG       => "/etc/rc.config",
+        IFACE       => "#iface#",
+        PPP_OPTIONS => "/etc/ppp/options"
       },
 	    table =>
           [
@@ -2006,7 +2007,7 @@ sub xst_network_get_interface_replace_table
 #          [ "network",            \&xst_parse_trivial,                   0 ], # not supported.
 #          [ "gateway",            \&xst_parse_sh,      IFCFG, GATEWAY ], # not supported
            [ "remote_address",     \&xst_network_suse70_set_ifconfig_arg,   [IFCFG, IFACE], pointopoint ],
-           [ "update_dns",
+           [ "update_dns",         \&xst_replace_kw,                        PPP_OPTIONS, "usepeerdns" ]
 # dynamic virtual interface stuff will be added later.
       ]
     }
