@@ -38,6 +38,7 @@
 #
 # smbd
 # nmbd
+# ifconfig: check current interfaces and activate/deactivate.
 
 
 
@@ -98,6 +99,10 @@ $cf_hostmatch = 0;  # 0 = all, 1 = first
 $cf_nw_interfaces = {}; # For interfaces and global networking params.
 $cf_nw_global = {};     # These will hold references to hashes.
 
+# Find the tools
+
+$tool_ifconfig = be_locate_tool ("ifconfig");
+$tool_ifup = be_locate_tool ("ifup");
 
 # --- Configuration file manipulation --- #
 
@@ -1068,6 +1073,16 @@ sub xml_print
     shift @iplist;
   }
 
+  be_xml_vspace ();
+  be_xml_print ("<network>\n");
+  be_xml_enter ();
+  foreach $elem (keys (%{$cf_nw_global}))
+  {
+    be_xml_print ("<$elem>$$cf_nw_global{$elem}</$elem>\n");
+  }
+  be_xml_leave ();
+  be_xml_print ("</network>\n");
+  
   foreach $elem (keys (%{$cf_nw_interfaces}))
   { 
     be_xml_vspace ();
@@ -1130,8 +1145,8 @@ sub get_active_interfaces
   my $dev;
   my $interface;
 
-  open IFCONFIG, "ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
-	 open IFCONFIG, "ifconfig | sed 's/:* .*//;/^\$/D' |";
+  open IFCONFIG, "$tool_ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
+	 open IFCONFIG, "$tool_ifconfig | sed 's/:* .*//;/^\$/D' |";
   # another possibility, instead of sed: awk '/^[a-z]/{print $1}'
 
   while (<IFCONFIG>)
@@ -1153,8 +1168,8 @@ sub get_immediate
   # If any of this fails, the worst that can happen is that the reverse names
   # get set to empty strings, which is the expected action when they're unknown.
 
-  my $ip = `ifconfig eth0 2>/dev/null`;
-  if ($ip eq "") { $ip = `ifconfig ppp0 2>/dev/null`; }
+  my $ip = "$tool_ifconfig eth0 2>/dev/null";
+  if ($ip eq "") { $ip = "$tool_ifconfig ppp0 2>/dev/null"; }
 
   $ip =~ /^.*addr:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/m;
   $ip = $1;
@@ -1215,14 +1230,14 @@ sub set_interface_up
 
   # RedHat
 
-  system ("ifup $dev");
+  system ("$tool_ifup $dev");
 }
 
 sub set_interface_down
 {
   my $dev = $_[0];
 
-  system ("ifconfig $dev down");
+  system ("$tool_ifconfig $dev down");
 }
 
 sub set_active_interfaces
@@ -1246,13 +1261,13 @@ sub set_active_interfaces
     %interface = %{$ { $cf_nw_interfaces}{$elem}};
     if ($ifaces{$elem} && ! $$interface{"enabled"})
     {
-	 set_interface_down ($elem);
+	 &set_interface_down ($elem);
 	 next;
     }
 
     if (!$ifaces{$elem} && $$interface{"enabled"})
     {
-	 set_interface_up ($elem);
+	 &set_interface_up ($elem);
     }
   }
 }

@@ -1487,10 +1487,50 @@ sub be_network_get_redhat
   local *IFACE_DIR;
   my (%nw, %ifaces, $fh);
   
+  # for trivial cases:
+  my %trans = (# General stuff.
+			DEVICE => dev,
+			IPADDR => address,
+			NETMASK => netmask,
+			BROADCAST => broadcast,
+			NETWORK => network,
+			MTU => mtu,
+			MRU => mru,
+			
+			# Peer to peer.
+			REMIP => remote_address,
+			
+			# "dialing" interfaces.
+			PAPNAME => login,
+			DISCONNECTTIMEOUT => disconnect_timeout,
+			RETRYTIMEOUT => retry_timeout,
+			
+			# Serial line.
+			MODEMPORT => serial_port,
+			LINESPEED => serial_speed,
+			INITSTRING => serial_init,
+			PPPOPTIONS => ppp_options
+			);
+  
+  my %trans_bool = (# General stuff.
+				ONBOOT => auto,
+				USERCTL => user,
+				DEFROUTE => set_default_gw,
+
+				# "dialing" interfaces.
+				DEBUG => debug,
+				PERSIST => persist,
+				
+				# Serial line.
+				ESCAPECHARS => serial_escapechars,
+				DEFABORT => serial_defabort,
+				HARDFLOWCTL => serial_hwctl
+				);
+  
   if (!(opendir IFACE_DIR, "/etc/sysconfig/network-scripts")) { return 0; }
   
   $nw{"interfaces"} = \%ifaces;
-  
+
   foreach $i (readdir (IFACE_DIR))
   {
     next if not $i =~ /ifcfg-([a-z0-9]+)/;
@@ -1501,47 +1541,47 @@ sub be_network_get_redhat
     # Found an interface file, add another interface hash.
 
     my %iface_hash;
-    my $iface_name = $1;
-    my $iface = $ifaces{$iface_name} = \%iface_hash;
+    my $iface_name = "";
+    # The device for the interface is not related to the file's name by rule.
+    my $tmp_iface_name = $1;
+    my $iface = \%iface_hash;
 
     # Parse the file.
 
+    $$iface{"method"} = "static";
+    
     while (<$fh>)
     {
       @line = split(/[ \n\r\t\"\'=]+/, $_);
       if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
 	 next if be_ignore_line ($line[1]);
-	 
-      if ($line[0] eq "IPADDR")
-      {
-        $$iface{"address"} = $line[1];
-	   if (!exists($$iface{"method"}))
-	   {
-		$$iface{"method"} = "static";
-	   }
-      }
-      elsif ($line[0] eq "NETMASK")
-      {
-        $$iface{"netmask"} = $line[1];
-      }
+
+	 if ($trans{$line[0]})
+	 {
+	   $$iface{$trans{$line[0]}} = $line[1];
+	 }
+	 elsif ($trans_bool{$line[0]})
+	 {
+	   $$iface{$trans_bool{$line[0]}} = be_read_boolean ($line[1])? 1: 0
+	 }
       elsif ($line[0] eq "BOOTPROTO")
       {
         if ($line[1] eq "bootp")   { $$iface{"method"} = "bootp"; }
         elsif ($line[1] eq "dhcp") { $$iface{"method"} = "dhcp"; }
       }
-      elsif ($line[0] eq "ONBOOT")
-      {
-        if (be_read_boolean($line[1]))
-	   {
-		$$iface{"auto"} = 1;  # Set the auto flag.
-	   }
-      }
     }
+    
+    # Just in case the file didn't have a DEVICE parameter.
+    $$iface{"dev"} = $tmp_iface_name if ($$iface{"dev"} eq "");
+  
+    $iface_name = $$iface{"dev"};
+    $ifaces{$iface_name} = $iface;
+    delete $$iface{"dev"};
     
     close ($fh);
   }
-  
+
   closedir (IFACE_DIR);
   
   # Read options.
