@@ -1,15 +1,15 @@
 # Czech translation of gnome-system-tools backends.
 # Copyright (C) 2003 gnome-setup-tools' COPYRIGHT HOLDER
-# Copyright (C) 2003 Miloslav Trmac <mitr@volny.cz>
+# Copyright (C) 2003, 2004 Miloslav Trmac <mitr@volny.cz>
 # This file is distributed under the same license as the gnome-setup-tools package.
-# Miloslav Trmac <mitr@volny.cz>, 2003.
+# Miloslav Trmac <mitr@volny.cz>, 2003, 2004.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-setup-tools VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-12-30 20:47+0100\n"
-"PO-Revision-Date: 2003-12-30 22:34+0100\n"
+"POT-Creation-Date: 2004-01-07 04:58+0100\n"
+"PO-Revision-Date: 2004-01-07 19:52+0100\n"
 "Last-Translator: Miloslav Trmac <mitr@volny.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -135,15 +135,15 @@ msgstr ""
 "této služby musíte  povolit xinetd."
 
 #: service-list.pl.in:49 service-list.pl.in:50
-msgid "Dinamic DNS Client"
+msgid "Dynamic DNS Client"
 msgstr "Klient dynamického DNS"
 
 #: service-list.pl.in:49
-msgid "A Dinamic DNS Name service from www.dyndns.org"
+msgid "A Dynamic DNS Name service from www.dyndns.org"
 msgstr "Služba dynamických jmen DNS z www.dyndns.org"
 
 #: service-list.pl.in:50
-msgid "A Dinamic DNS Name service from www.dhis.org"
+msgid "A Dynamic DNS Name service from www.dhis.org"
 msgstr "Služba dynamických jmen DNS z www.dhis.org"
 
 #: service-list.pl.in:51
@@ -191,7 +191,7 @@ msgid "IPv6 Tunnel Broker"
 msgstr "Tvorba tunelů IPv6"
 
 #: service-list.pl.in:58
-msgid "A IPv6 Dinamic Tunnel Broker"
+msgid "A IPv6 Dynamic Tunnel Broker"
 msgstr "Tvorba dynamických tunelů IPv6"
 
 #: service-list.pl.in:59
@@ -209,7 +209,7 @@ msgstr "podpora myši v konzole"
 #: service-list.pl.in:60
 msgid ""
 "GPM adds mouse support to text-based Linux applications such the Midnight "
-"Commander. Is also allows mouse-based console cut-and-paste operations, and "
+"Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
 msgstr ""
 "GPM přidává podporu myši do textových linuxových aplikací, např. Midnight "
@@ -261,7 +261,10 @@ msgid ""
 "This package loads the selected keyboard map as set in /etc/sysconfig/"
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
 "leave this enabled for most machines."
-msgstr "Tento balíček načítá vybranou mapu klávesnice podle nastavení v /etc/sysconfig/keyboard. Mapu můžete nastavit pomocí nástroje kbdconfig. Pro většinu počítačů byste toto měli nechat povoleno."
+msgstr ""
+"Tento balíček načítá vybranou mapu klávesnice podle nastavení v /etc/"
+"sysconfig/keyboard. Mapu můžete nastavit pomocí nástroje kbdconfig. Pro "
+"většinu počítačů byste toto měli nechat povoleno."
 
 #: service-list.pl.in:68
 msgid ""
@@ -275,8 +278,10 @@ msgid ""
 msgstr "Toto spouští zkoumání hardware a popřípadě nastaví změněný hardware."
 
 #: service-list.pl.in:70 service-list.pl.in:71
-msgid "LIRC is a package that allows you to decode and send"
-msgstr "LIRC je balíček, který vám umožňuje dekódovat a odesílat"
+msgid ""
+"LIRC is a package that allows you to decode and send infra-red signals of "
+"many commonly used remote controls"
+msgstr "LIRC je balíček, který vám umožňuje dekódovat a odesílat infračervené signály mnoha hodně používaných dálkových ovládání"
 
 #: service-list.pl.in:72
 msgid ""
@@ -629,18 +634,18 @@ msgstr ""
 "přístupu, široké možnosti zaznamenávání, schopnost zpřístupňovat služby "
 "podle času a může omezit počet serverů, které lze spustit."
 
-#: service.pl.in:166 service.pl.in:171
+#: service.pl.in:169 service.pl.in:174
 msgid "Halting the system"
 msgstr "Zastavování počítače"
 
-#: service.pl.in:167 service.pl.in:173
+#: service.pl.in:170 service.pl.in:176
 msgid "Text mode"
 msgstr "Textový režim"
 
-#: service.pl.in:168 service.pl.in:172 service.pl.in:176
+#: service.pl.in:171 service.pl.in:175 service.pl.in:179
 msgid "Graphical mode"
 msgstr "Grafický režim"
 
-#: service.pl.in:169 service.pl.in:174
+#: service.pl.in:172 service.pl.in:177
 msgid "Rebooting the system"
 msgstr "Restartování počítače"
