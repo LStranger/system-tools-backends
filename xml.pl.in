@@ -167,73 +167,107 @@ sub xst_xml_scan
 @xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\\\'', "&quot;", '"', "&amp;", '&' );
 
 
-sub xst_xml_entities_to_plain
-{
-  my $in = $_[0];
-  my $out = "";
-  my @xe;
-    
-  $in = $$in;
-    
-  my @elist = ($in =~ /([^&]*)(\&[a-zA-Z_-]+\;)?/mg); # text, entity, text, entity, ...
-    
-  while (@elist)
-  {
-    # Join text.
-	
-    $out = join('', $out, $elist[0]);
-    shift @elist;
+#sub xst_xml_entities_to_plain
+#{
+#  my $in = $_[0];
+#  my $out = "";
+#  my @xe;
+#    
+#  $in = $$in;
+#    
+#  my @elist = ($in =~ /([^&]*)(\&[a-zA-Z_-]+\;)?/mg); # text, entity, text, entity, ...
+#    
+#  while (@elist)
+#  {
+#    # Join text.
+#	
+#    $out = join('', $out, $elist[0]);
+#    shift @elist;
+#
+#    # Find entity and join its text equivalent.
+#    # Unknown entities are simply removed.
+#	
+#    for (@xe = @xst_xml_entities; @xe; )
+#    {
+#      if ($xe[0] eq $elist[0]) { $out = join ('', $out, $xe[1]); last; }
+#      shift @xe; shift @xe;
+#    }
+#	
+#    shift @elist;
+#  }
+#    
+#  return $out;
+#}
+#
+#
+#sub xst_xml_plain_to_entities
+#{
+#  my $in = $_[0];
+#  my $out = "";
+#  my @xe;
+#  my $joined = 0;
+#  
+#  $in = $$in;
+#  
+#  my @clist = split (//, $in);
+#  
+#  while (@clist)
+#  {
+#    # Find character and join its entity equivalent.
+#    # If none found, simply join the character.
+#	
+#    $joined = 0;  # Cumbersome.
+#    
+#    for (@xe = @xst_xml_entities; @xe && !$joined; )
+#    {
+#      if ($xe[1] eq $clist[0])
+#      {
+#        $out = join ('', $out, $xe[0]);
+#        $joined = 1;
+#      }
+#
+#      shift @xe; shift @xe;
+#    }
+#	
+#    if (!$joined) { $out = join ('', $out, $clist[0]); }
+#    shift @clist;
+#  }
+#  
+#  return $out;
+#}
 
-    # Find entity and join its text equivalent.
-    # Unknown entities are simply removed.
-	
-    for (@xe = @xst_xml_entities; @xe; )
-    {
-      if ($xe[0] eq $elist[0]) { $out = join ('', $out, $xe[1]); last; }
-      shift @xe; shift @xe;
-    }
-	
-    shift @elist;
+sub xst_xml_quote
+{
+  my $ret = $_[0];
+  my $i;
+
+  #print STDERR "INI Q: $ret\n";
+  
+  for ($i = 1; @xst_xml_entities[$i] ne undef; $i += 2)
+  {
+    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i - 1]/g;
   }
-    
-  return $out;
+
+  #print STDERR "END Q: $ret\n";
+  
+  return $ret;
 }
 
-
-sub xst_xml_plain_to_entities
+sub xst_xml_unquote
 {
-  my $in = $_[0];
-  my $out = "";
-  my @xe;
-  my $joined = 0;
-  
-  $in = $$in;
-  
-  my @clist = split (//, $in);
-  
-  while (@clist)
-  {
-    # Find character and join its entity equivalent.
-    # If none found, simply join the character.
-	
-    $joined = 0;  # Cumbersome.
-    
-    for (@xe = @xst_xml_entities; @xe && !$joined; )
-    {
-      if ($xe[1] eq $clist[0])
-      {
-        $out = join ('', $out, $xe[0]);
-        $joined = 1;
-      }
+  my $ret = $_[0];
+  my $i;
 
-      shift @xe; shift @xe;
-    }
-	
-    if (!$joined) { $out = join ('', $out, $clist[0]); }
-    shift @clist;
-  }
+  #print STDERR "INI U: $ret\n";
   
-  return $out;
+  for ($i = 0; @xst_xml_entities[$i] ne undef; $i += 2)
+  {
+    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i + 1]/g;
+  }
+
+  #print STDERR "END U: $ret\n";
+  
+  return $ret;
 }
 
 
@@ -255,7 +289,10 @@ sub xst_xml_get_word
       my $retval;
 
       ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
-      $retval = &xst_xml_entities_to_plain (\$retval);
+      #$retval = &xst_xml_entities_to_plain (\$retval);
+      #Lets see if this works.. Chema
+      $retval = &xst_xml_unquote ($retval);
+      print STDERR "*$retval*\n";
       return ($retval);
     }
     
@@ -282,7 +319,9 @@ sub xst_xml_get_size
       my $retval;
 
       ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
-      $retval = &xst_xml_entities_to_plain (\$retval);
+      #$retval = &xst_xml_entities_to_plain (\$retval);
+      #lets see if this works.. Chema
+      $retval = &xst_xml_unquote ($retval);
       if ($retval =~ /Mb$/)
       {
         $retval =~ tr/ Mb//d; 
@@ -312,7 +351,10 @@ sub xst_xml_get_text
     if ($$tree[0] == 0)
     {
       ($retval = $$tree[1]) =~ tr/\n\r\t\f/    /;
-      $retval = &xst_xml_entities_to_plain (\$retval);
+      #$retval = &xst_xml_entities_to_plain (\$retval);
+      #lets see if this works.. Chema
+      $retval = &xst_xml_unquote ($retval);
+      print STDERR "*$retval*\n";
       return ($retval);
     }
     

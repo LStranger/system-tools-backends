@@ -132,35 +132,6 @@ sub xml_parse_image
 		   
 
 # --- XML printing --- #
-
-sub quote
-{
-  my $ret = $_[0];
-  my $i;
- 
-  for ($i = 1; @xst_xml_entities[$i] ne undef; $i += 2)
-  {
-    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i - 1]/g;
-  }
-
-  return $ret;
-}
-
-
-sub unquote
-{
-  my $ret = $_[0];
-  my $i;
- 
-  for ($i = 0; @xst_xml_entities[$i] ne undef; $i += 2)
-  {
-    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i + 1]/g;
-  }
-
-  return $ret;
-}
-
-
 sub xml_print_global_kws
 {
   my $h = $_[0];
