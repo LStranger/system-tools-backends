@@ -1,3 +1,11 @@
+2001-11-22  Hans Petter Jansson  <hpj@ximian.com>
+
+	* time-conf.in (xml_parse_time): Pass ref to master hash to
+	xml_parse_sync().
+	(xml_parse_sync): Store sync_active flag in the master hash,
+	not at the head of the server list.
+	(xml_print): Get the sync_active flag from master hash.
+
 2001-11-19  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot.pl.in (xst_boot_conf_get): removed 'root' global param

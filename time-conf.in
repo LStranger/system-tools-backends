@@ -116,7 +116,7 @@ sub xml_parse_time
   {
     if    ($$tree[0] eq "local_time"){ $$hash{"local_time"} = &xml_parse_local_time ($$tree[1]); }
     elsif ($$tree[0] eq "timezone") { $$hash{"timezone"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "sync")     { $$hash{"sync"} = &xml_parse_sync ($$tree[1]); }
+    elsif ($$tree[0] eq "sync")     { $$hash{"sync"} = &xml_parse_sync ($$tree[1], $hash); }
 
     shift @$tree;
     shift @$tree;
@@ -127,10 +127,10 @@ sub xml_parse_time
 sub xml_parse_sync
 {
   my $tree = $_[0];
+  my $hash = $_[1];
   my @sync;
 
-  push (@sync, &xst_util_read_boolean($$tree[0]->{active}));
-  
+  $$hash{"sync_active"} = &xst_util_read_boolean($$tree[0]->{active});
   shift @$tree;
 
   while (@$tree)
@@ -186,7 +186,7 @@ sub xml_print
   &xst_xml_print_vspace ();
   
   &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<sync active='" . &xst_print_boolean_yesno ($sync_active) . "'>\n");
+  &xst_xml_print_line ("<sync active='" . &xst_print_boolean_yesno ($$h{'sync_active'}) . "'>\n");
   
   &xst_xml_enter ();
   foreach $server (@$sync)
