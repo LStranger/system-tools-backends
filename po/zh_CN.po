@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-06 12:25+0200\n"
-"PO-Revision-Date: 2004-08-06 23:29+0800\n"
+"POT-Creation-Date: 2005-01-22 12:41+0100\n"
+"PO-Revision-Date: 2005-01-22 21:30+0800\n"
 "Last-Translator: Funda Wang <fundawang@linux.net.cn>\n"
 "Language-Team: zh_CN  <i18n-translation@lists.linux.net.cn>\n"
 "MIME-Version: 1.0\n"
@@ -26,7 +26,8 @@ msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
-"向用户空间的程序通知 ACPI 事件：执行相应的命令来响应诸如电源按钮之类的 ACPI 事件。"
+"向用户空间的程序通知 ACPI 事件：执行相应的命令来响应诸如电源按钮之类的 ACPI "
+"事件。"
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
@@ -58,7 +59,8 @@ msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
 msgstr ""
-"apmd 用于监视电池状态，并通过 syslog(8) 进行记录。它还可在电池电量低时关闭计算机。"
+"apmd 用于监视电池状态，并通过 syslog(8) 进行记录。它还可在电池电量低时关闭计"
+"算机。"
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
@@ -95,8 +97,7 @@ msgstr "启动信息记录"
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
-msgstr ""
-"在后台运行并将发送给 /dev/console 设备的字符串都复制到日志文件中"
+msgstr "在后台运行并将发送给 /dev/console 设备的字符串都复制到日志文件中"
 
 #: service-list.pl.in:45
 msgid ""
@@ -105,8 +106,8 @@ msgid ""
 "dropped.  This is the tcp version. You must enable xinetd to use this "
 "service."
 msgstr ""
-"生成字符的一项 xinetd 内部服务。xinetd 内部服务会在连接端掉时不断生成字符。"
-"这是 tcp 版本。要使用此服务，您必须启用 xinetd。"
+"生成字符的一项 xinetd 内部服务。xinetd 内部服务会在连接端掉时不断生成字符。这"
+"是 tcp 版本。要使用此服务，您必须启用 xinetd。"
 
 #: service-list.pl.in:46
 msgid ""
@@ -115,8 +116,8 @@ msgid ""
 "dropped.  This is the udp version. You must enable xinetd to use this "
 "service."
 msgstr ""
-"生成字符的一项 xinetd 内部服务。xinetd 内部服务会在连接断掉时不断生成字符。"
-"这是 udp 版本。要使用此服务，您必须启用 xinetd。"
+"生成字符的一项 xinetd 内部服务。xinetd 内部服务会在连接断掉时不断生成字符。这"
+"是 udp 版本。要使用此服务，您必须启用 xinetd。"
 
 #: service-list.pl.in:47
 msgid "CPU frequency monitor"
@@ -128,8 +129,8 @@ msgid ""
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
 msgstr ""
-"cpufreqd 可用于监视电池的状态并相应的调整 CPU 的频率，以便在节省电池电量"
-"和保持适当的工作效率之间取得一种平衡"
+"cpufreqd 可用于监视电池的状态并相应的调整 CPU 的频率，以便在节省电池电量和保"
+"持适当的工作效率之间取得一种平衡"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -146,8 +147,8 @@ msgid ""
 "UNIX cron, including better security and more powerful configuration options."
 msgstr ""
 "cron 是一个标准的 UNIX 程序，它会按照周期性的预定时间执行用户指定的程序。"
-"vixie cron 在基本 UNIX cron 的基础上添加了一些新特性，"
-"其中包括更好的安全性及更强大的配置选项。"
+"vixie cron 在基本 UNIX cron 的基础上添加了一些新特性，其中包括更好的安全性及"
+"更强大的配置选项。"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
@@ -163,9 +164,8 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
 msgstr ""
-"这是一项 xinetd 内部服务。该服务会获取当前系统事件并按如下格式进行输出："
-"“Wed Nov 13 22:30:27 EST 2002”。"
-"这是 tcp 版本。要使用此服务，您必须启用 xinetd。"
+"这是一项 xinetd 内部服务。该服务会获取当前系统事件并按如下格式进行输出：“Wed "
+"Nov 13 22:30:27 EST 2002”。这是 tcp 版本。要使用此服务，您必须启用 xinetd。"
 
 #: service-list.pl.in:53
 msgid ""
@@ -173,9 +173,8 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
-"这是一项 xinetd 内部服务。该服务会获取当前系统事件并按如下格式进行输出："
-"“Wed Nov 13 22:30:27 EST 2002”。"
-"这是 udp 版本。要使用此服务，您必须启用 xinetd。"
+"这是一项 xinetd 内部服务。该服务会获取当前系统事件并按如下格式进行输出：“Wed "
+"Nov 13 22:30:27 EST 2002”。这是 udp 版本。要使用此服务，您必须启用 xinetd。"
 
 #: service-list.pl.in:54 service-list.pl.in:55
 msgid "Dynamic DNS Client"
@@ -198,16 +197,16 @@ msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
-"将字符回显给客户的一项 xinetd 内部服务。"
-"这是 tcp 版本。要使用此服务，您必须启用 xinetd。"
+"将字符回显给客户的一项 xinetd 内部服务。这是 tcp 版本。要使用此服务，您必须启"
+"用 xinetd。"
 
 #: service-list.pl.in:58
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
-"将字符回显给客户的一项 xinetd 内部服务。"
-"这是 udp 版本。要使用此服务，您必须启用 xinetd。"
+"将字符回显给客户的一项 xinetd 内部服务。这是 udp 版本。要使用此服务，您必须启"
+"用 xinetd。"
 
 #: service-list.pl.in:59
 msgid "Sound mixing server"
@@ -271,8 +270,8 @@ msgid ""
 "Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
 msgstr ""
-"GPM 为像 Midnight Commander 这样基于文本的 Linux 应用程序添加了鼠标支持。"
-"它还允许基于鼠标的控制台剪切/粘贴操作，并支持控制台中的弹出菜单。"
+"GPM 为像 Midnight Commander 这样基于文本的 Linux 应用程序添加了鼠标支持。它还"
+"允许基于鼠标的控制台剪切/粘贴操作，并支持控制台中的弹出菜单。"
 
 #: service-list.pl.in:68
 msgid "Set hard disk parameters"
@@ -282,8 +281,7 @@ msgstr "设置硬盘参数"
 msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
-msgstr ""
-"提供到 Linux ATA/IDE 设备驱动程序子系统支持的各种硬盘控制器的接口。"
+msgstr "提供到 Linux ATA/IDE 设备驱动程序子系统支持的各种硬盘控制器的接口。"
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
@@ -295,8 +293,8 @@ msgid ""
 "software when some significant (usually hardware-related) events take place. "
 "An example is when a USB or Cardbus device has just been plugged in."
 msgstr ""
-"hotplug 是内核使用的一个程序，它可通知用户模式的软件发生了重大事件(通常与硬件相关)。"
-"常见的例子是刚刚插入了 USB 或 Cardbus 设备。"
+"hotplug 是内核使用的一个程序，它可通知用户模式的软件发生了重大事件(通常与硬件"
+"相关)。常见的例子是刚刚插入了 USB 或 Cardbus 设备。"
 
 #: service-list.pl.in:71
 msgid "internet superserver"
@@ -306,8 +304,7 @@ msgstr "Internet 超级服务器"
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
-msgstr ""
-"inetd 允许运行一个守护程序来执行多种功能，这样可以减少系统的负载。"
+msgstr "inetd 允许运行一个守护程序来执行多种功能，这样可以减少系统的负载。"
 
 #: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
@@ -317,8 +314,7 @@ msgstr "IPv4 包过滤和 NAT 的管理工具"
 msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
-msgstr ""
-"Iptables 用于设置、维护和检查 Linux 内核中的 IP 包过滤规则表。"
+msgstr "Iptables 用于设置、维护和检查 Linux 内核中的 IP 包过滤规则表。"
 
 #: service-list.pl.in:73
 msgid "IrDA stack for Linux"
@@ -346,8 +342,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
-"运行 joystick-device-check。joystick-device-check 是一个确保 /dev/js* 设备"
-"结点都适合正在使用的内核。"
+"运行 joystick-device-check。joystick-device-check 是一个确保 /dev/js* 设备结"
+"点都适合正在使用的内核。"
 
 #: service-list.pl.in:77
 msgid ""
@@ -355,8 +351,8 @@ msgid ""
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
 "leave this enabled for most machines."
 msgstr ""
-"此软件包将装入 /etc/sysconfig/keyboard 中设置的选中键盘映射。"
-"您可使用 kbdconfig 工具选择该选项。您应该为大多数计算机启用此选项。"
+"此软件包将装入 /etc/sysconfig/keyboard 中设置的选中键盘映射。您可使用 "
+"kbdconfig 工具选择该选项。您应该为大多数计算机启用此选项。"
 
 #: service-list.pl.in:78
 msgid "Kernel Log Daemon"
@@ -365,21 +361,18 @@ msgstr "内核日志守护程序"
 #: service-list.pl.in:78
 msgid ""
 "klogd is a system daemon which intercepts and logs Linux kernel messages."
-msgstr ""
-"klogd 是一个拦截并记录 Linux 内核消息的系统守护程序。"
+msgstr "klogd 是一个拦截并记录 Linux 内核消息的系统守护程序。"
 
 #: service-list.pl.in:79
 msgid ""
 "This runs the hardware probe, and optionally configures changed hardware."
-msgstr ""
-"这将运行硬件检测，并可选配置更改了的硬件。"
+msgstr "这将运行硬件检测，并可选配置更改了的硬件。"
 
 #: service-list.pl.in:80 service-list.pl.in:81
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
-msgstr ""
-"LIRC 软件包允许您解码并发送许多通用遥控终端的红外信号"
+msgstr "LIRC 软件包允许您解码并发送许多通用遥控终端的红外信号"
 
 #: service-list.pl.in:82
 msgid "Starts misc programs that should be started"
@@ -390,7 +383,8 @@ msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
-"要让 lpr 工作正常，需要启动 lpd 打印守护程序。该守护程序基本只是简单的将打印任务发送给打印机。"
+"要让 lpr 工作正常，需要启动 lpd 打印守护程序。该守护程序基本只是简单的将打印"
+"任务发送给打印机。"
 
 #: service-list.pl.in:84
 msgid "Create devices"
@@ -400,8 +394,7 @@ msgstr "创建设备"
 msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
-msgstr ""
-"脚本将会在 /dev 中创建设备，以便与内核中的驱动程序建立接口"
+msgstr "脚本将会在 /dev 中创建设备，以便与内核中的驱动程序建立接口"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -435,22 +428,21 @@ msgstr "DNS 服务器"
 msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
-msgstr ""
-"named (BIND) 是一个用于将主机名解析为 IP 地址的域名服务器(DNS)。"
+msgstr "named (BIND) 是一个用于将主机名解析为 IP 地址的域名服务器(DNS)。"
 
 #: service-list.pl.in:90
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
-"挂载并卸载全部网络文件系统(NFS)、SMB (Lan Manager/Windows)及 NCP(NetWare)挂载点。"
+"挂载并卸载全部网络文件系统(NFS)、SMB (Lan Manager/Windows)及 NCP(NetWare)挂载"
+"点。"
 
 #: service-list.pl.in:91
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
-msgstr ""
-"在启动时激活/取消配置为启动的全部网络接口。"
+msgstr "在启动时激活/取消配置为启动的全部网络接口。"
 
 #: service-list.pl.in:92
 msgid ""
@@ -458,15 +450,14 @@ msgid ""
 "service provides NFS server functionality, which is configured via the /etc/"
 "exports file."
 msgstr ""
-"NFS 是跨越 TCP/IP 网络的文件共享协议。此服务提供了 NFS 服务器的功能，"
-"您可通过 /etc/exports 文件加以配置。"
+"NFS 是跨越 TCP/IP 网络的文件共享协议。此服务提供了 NFS 服务器的功能，您可通"
+"过 /etc/exports 文件加以配置。"
 
 #: service-list.pl.in:93
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS file locking functionality."
-msgstr ""
-"NFS 是跨越 TCP/IP 网络的文件共享协议。此服务提供了 NFS 服务器的功能，"
+msgstr "NFS 是跨越 TCP/IP 网络的文件共享协议。此服务提供了 NFS 服务器的功能，"
 
 #: service-list.pl.in:94
 msgid "Name service cache daemon"
@@ -492,8 +483,7 @@ msgstr "在网络上更新系统时间"
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
-msgstr ""
-"从网络时间协议(NTP)服务器上检查时间，并相应进行系统时间调整。"
+msgstr "从网络时间协议(NTP)服务器上检查时间，并相应进行系统时间调整。"
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -503,8 +493,7 @@ msgstr "网络时间协议(NTP)服务器"
 msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
-msgstr ""
-"设置并维护系统每日时间与 Internet 标准时间服务器同步的守护程序"
+msgstr "设置并维护系统每日时间与 Internet 标准时间服务器同步的守护程序"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
@@ -532,8 +521,8 @@ msgid ""
 "NFS and NIS. The portmap server must be running on machines which act as "
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
-"Portmapper 将管理被 NFS 和 NIS 协议使用的 RPC 连接。"
-"Portmap 服务器必须在计算机上运行，以便作为 RPC 架构下诸协议的服务器。"
+"Portmapper 将管理被 NFS 和 NIS 协议使用的 RPC 连接。Portmap 服务器必须在计算"
+"机上运行，以便作为 RPC 架构下诸协议的服务器。"
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
@@ -547,8 +536,7 @@ msgstr "点对点协议守护程序"
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
-msgstr ""
-"点对点协议(PPP)提供了通过点对点连接传送数据报的方式。"
+msgstr "点对点协议(PPP)提供了通过点对点连接传送数据报的方式。"
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
@@ -558,8 +546,7 @@ msgstr "隐私增强型 HTTP 代理"
 msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
-msgstr ""
-"保存并恢复系统的熵池，以便进行高质量的随机数生成。"
+msgstr "保存并恢复系统的熵池，以便进行高质量的随机数生成。"
 
 #: service-list.pl.in:109
 msgid ""
@@ -568,8 +555,9 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
-"此脚本将把原始型设备指派为块设备(例如硬盘分区)。像 Oracle 这样的应用程序会用到此功能。"
-"如果您想要设置原始性设备到快设备的映射，可以编辑文件 /etc/sysconfig/rawdevices。"
+"此脚本将把原始型设备指派为块设备(例如硬盘分区)。像 Oracle 这样的应用程序会用"
+"到此功能。如果您想要设置原始性设备到快设备的映射，可以编辑文件 /etc/"
+"sysconfig/rawdevices。"
 
 #: service-list.pl.in:110
 msgid ""
@@ -578,16 +566,16 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
-"这一守护程序将根据服务器订阅的服务级别，定时连接到 Red Hat Network 服务器，"
-"检查更新、通知并执行系统监视任务。"
+"这一守护程序将根据服务器订阅的服务级别，定时连接到 Red Hat Network 服务器，检"
+"查更新、通知并执行系统监视任务。"
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
-"rsync 服务器是对 FTP 有益的补充，因为前者允许进行 CRC 校验等。"
-"要使用此服务器，您必须启用 xinetd。"
+"rsync 服务器是对 FTP 有益的补充，因为前者允许进行 CRC 校验等。要使用此服务"
+"器，您必须启用 xinetd。"
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
@@ -602,35 +590,32 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
-"Samba 软件套装收集了许多应用程序，它实现了 UNIX 系统下的服务器消息块(SMB)协议。"
+"Samba 软件套装收集了许多应用程序，它实现了 UNIX 系统下的服务器消息块(SMB)协"
+"议。"
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
-msgstr ""
-"saslauthd 是一个服务器进程，它可用纯文本验证请求来代表 cyrus-sasl 库。"
+msgstr "saslauthd 是一个服务器进程，它可用纯文本验证请求来代表 cyrus-sasl 库。"
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
-msgstr ""
-"Sendmail 是邮件传送代理，它可将邮件从一台计算机传送到另外一台。"
+msgstr "Sendmail 是邮件传送代理，它可将邮件从一台计算机传送到另外一台。"
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
-msgstr ""
-"列出当前激活服务器的 xinetd 服务。要使用此服务，您必须启用 xinetd。"
+msgstr "列出当前激活服务器的 xinetd 服务。要使用此服务，您必须启用 xinetd。"
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
-msgstr ""
-"列出当前激活服务的 xinetd 服务。要使用此服务，您必须启用 xinetd。"
+msgstr "列出当前激活服务的 xinetd 服务。要使用此服务，您必须启用 xinetd。"
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
@@ -640,15 +625,15 @@ msgstr "获取/设置串口信息"
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
-msgstr ""
-"setserial 程序可设置和/或报告与串口关联的配置信息。"
+msgstr "setserial 程序可设置和/或报告与串口关联的配置信息。"
 
 #: service-list.pl.in:119
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
-"FAM 是文件监视守护程序。它可在文件更改时获得报告。要使用此服务，您必须启用 xinetd。"
+"FAM 是文件监视守护程序。它可在文件更改时获得报告。要使用此服务，您必须启用 "
+"xinetd。"
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
@@ -670,8 +655,7 @@ msgstr "OpenSSH SSH 服务器"
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
-msgstr ""
-"ssh 程序可登录到远程计算机，并在远程计算机上执行命令。"
+msgstr "ssh 程序可登录到远程计算机，并在远程计算机上执行命令。"
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
@@ -693,8 +677,8 @@ msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
-"许多守护程序都需要使用 Syslog 工具将日志消息记录到各种系统日志文件。"
-"所以应该总是运行 syslog。"
+"许多守护程序都需要使用 Syslog 工具将日志消息记录到各种系统日志文件。所以应该"
+"总是运行 syslog。"
 
 #: service-list.pl.in:127
 msgid ""
@@ -703,9 +687,9 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
-"RFC 868 时间服务器。此协议提供了与站点无关的机读日期和时间。"
-"时间服务发回自1900年1月1日午夜起流逝的秒数。"
-"这是 tcp 版本。要使用此服务，您必须启用 xinetd。"
+"RFC 868 时间服务器。此协议提供了与站点无关的机读日期和时间。时间服务发回自"
+"1900年1月1日午夜起流逝的秒数。这是 tcp 版本。要使用此服务，您必须启用 "
+"xinetd。"
 
 #: service-list.pl.in:128
 msgid ""
@@ -714,9 +698,9 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
-"RFC 868 时间服务器。此协议提供了与站点无关的机读日期和时间。"
-"时间服务发回自1900年1月1日午夜起流逝的秒数。"
-"这是 udp 版本。要使用此服务，您必须启用 xinetd。"
+"RFC 868 时间服务器。此协议提供了与站点无关的机读日期和时间。时间服务发回自"
+"1900年1月1日午夜起流逝的秒数。这是 udp 版本。要使用此服务，您必须启用 "
+"xinetd。"
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
@@ -728,8 +712,8 @@ msgid ""
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
-"随机数生成器会从设备驱动程序及其它源中收取环境噪音，并存入熵池。"
-"随后再从该熵池中生成随机数。"
+"随机数生成器会从设备驱动程序及其它源中收取环境噪音，并存入熵池。随后再从该熵"
+"池中生成随机数。"
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -740,7 +724,8 @@ msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
-"vmware 命令将启动基于 Intel X86 的虚拟机。此脚本将管理运行 VMware 软件所需的服务。"
+"vmware 命令将启动基于 Intel X86 的虚拟机。此脚本将管理运行 VMware 软件所需的"
+"服务。"
 
 #: service-list.pl.in:132
 msgid "Web-based administration toolkit"
@@ -758,8 +743,7 @@ msgstr "启动和停止 Samba winbind 守护程序"
 msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
-msgstr ""
-"允许用户只需单击(或输入 ./file.exe)即可运行 Windows(tm)应用程序"
+msgstr "允许用户只需单击(或输入 ./file.exe)即可运行 Windows(tm)应用程序"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
@@ -777,7 +761,8 @@ msgstr "X 字体服务器"
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
-msgstr "Xfs 是 X Window 系统的字体服务器。它为 X Window 系统的显示服务器提供字体。"
+msgstr ""
+"Xfs 是 X Window 系统的字体服务器。它为 X Window 系统的显示服务器提供字体。"
 
 #: service-list.pl.in:137
 msgid ""
@@ -786,33 +771,81 @@ msgid ""
 "available based on time, and can place limits on the number of servers that "
 "can be started, among other things."
 msgstr ""
-"xinetd 是 inetd 的强大替代者。xinetd 有访问控制机制，广泛的日志能力，"
-"基于时间开放服务的能力，并可限制可启动的服务器数。"
+"xinetd 是 inetd 的强大替代者。xinetd 有访问控制机制，广泛的日志能力，基于时间"
+"开放服务的能力，并可限制可启动的服务器数。"
 
-#: service.pl.in:208 service.pl.in:213
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "关闭系统"
 
-#: service.pl.in:209 service.pl.in:215
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "文本模式"
 
-#: service.pl.in:210 service.pl.in:214 service.pl.in:223
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "图形模式"
 
-#: service.pl.in:211 service.pl.in:216
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "重新启动系统"
 
-#: service.pl.in:218
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "启动系统所需的全部服务"
 
-#: service.pl.in:219
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "默认运行级别"
 
-#: service.pl.in:220
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "无网络运行级别"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "监视系统日志"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "使用音频设备"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "访问 CD-ROM 驱动器"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "访问调制解调器设备"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "通过调制解调器设备访问 Internet"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "收发传真"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "访问软盘驱动器"
+
+#: users-conf.in:186
+msgid "Mount removable devices automatically"
+msgstr "自动挂载可移动设备"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "访问磁带驱动器"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "可以获得管理员权限"
+
+#: users-conf.in:459
+msgid "Default"
+msgstr "默认"
+
+#: users-conf.in:460
+msgid "Default profile"
+msgstr "默认配置文件"
