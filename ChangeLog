@@ -1,3 +1,10 @@
+2001-05-24  Chema Celorio  <chema@celorio.com>
+
+	* network.pl.in (xst_network_get_interface_replace_table): added
+	RH 7.1 based on RH 7.0
+
+	* network-conf.in: added RH 7.1
+
 2001-05-23  Chema Celorio  <chema@celorio.com>
 
 	* users-conf.in: added RH 7.1
