@@ -1,3 +1,7 @@
+2001-07-12  Chema Celorio  <chema@celorio.com>
+
+	* configure.in (dnl): try again
+	
 2001-07-12  Tambet Ingo  <tambet@ximian.com>
 
 	* AUTHORS: Fixed my mail address :)
@@ -18,7 +22,7 @@
 2001-07-12  Chema Celorio  <chema@celorio.com>
 
 	* configure.in (dnl): fix the scriptdirs thing
-
+	
 2001-07-11  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_model_find): Implement.

@@ -15,14 +15,12 @@ AC_HEADER_STDC
 dnl ==============================================================
 dnl Set SCRIPTS_DIR 
 dnl ==============================================================
-echo ${prefix}
 if test "x${prefix}" = "xNONE"; then
-  AC_DEFINE_UNQUOTED(SCRIPTS_DIR, "${ac_default_prefix}/${DATADIRNAME}/${PACKAGE}/scripts")
-  scriptsdir="${ac_default_prefix}/share/${PACKAGE}/scripts"
+  scriptsdir="${ac_default_prefix}/share/setup-tool-backends/scripts"
 else
-  AC_DEFINE_UNQUOTED(SCRIPTS_DIR, "${prefix}/${DATADIRNAME}/${PACKAGE}/scripts")
-  scriptsdir="${datadir}/${PACKAGE}/scripts"
+  scriptsdir="${prefix}/share/setup-tool-backends/scripts"
 fi
+
 
 dnl ==============================================================
 dnl END: Set SCRIPTS_DIR
@@ -33,3 +31,12 @@ AC_SUBST(scriptsdir)
 AC_OUTPUT([
 Makefile
 ])
+
+
+echo "
+
+Configuration (BACKENDS):
+
+	The Backends Will be installed in : ${scriptsdir}
+	Compiler:		${CC} 
+"
