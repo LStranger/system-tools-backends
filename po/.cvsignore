@@ -1,2 +1,3 @@
 Makefile.in.in
 po2tbl.sed.in
+setup-tools-backends.pot
