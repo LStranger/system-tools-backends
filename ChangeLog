@@ -1,3 +1,8 @@
+2001-02-08  Tambet Ingo  <tambet@ximian.com>
+
+	* boot.pl.in: New file.
+	* boot-conf.in: Removed stuff which is in boot.pl.in.
+
 2001-02-07  Hans Petter Jansson  <hpj@ximian.com>
 
 	* be.pl.in, boot-conf.in, disks-conf.in, file.pl.in, 

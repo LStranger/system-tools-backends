@@ -20,7 +20,8 @@ xml.pl \
 service.pl \
 util.pl \
 network.pl \
-media.pl
+media.pl \
+boot.pl
 
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh
 

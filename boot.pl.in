@@ -1,0 +1,240 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
+
+# Boot manager configurator. Designed to be architecture and distribution independent.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Tambet Ingo <tambet@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/util.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/xml.pl";
+require "___scriptsdir___/parse.pl";
+require "___scriptsdir___/replace.pl";
+
+
+sub xst_boot_conf_set_images
+{
+  my ($fn, $key, $images) = @_;
+  my $i;
+
+  foreach $i (keys (%$images))
+  {
+    $line = $$images{$i};
+    $image_name = "image";
+    $image_val = $$line{'image'};
+
+    foreach $a (keys (%$line))
+    {
+	 &xst_boot_conf_replace_image ($fn, $image_name, $image_val, $a, $$line{$a}) if $a ne $image_name;
+    }
+  }
+
+}
+
+sub xst_boot_conf_replace_image
+{
+  my ($file, $image_name, $image_val, $var, $value) = @_;
+  my ($fd, @line, @res);
+  my $buff, $i, $found_flag;
+  my $pre_space, $post_comment, $sec_save;
+  my $line_key, $val;
+
+  $buff = &xst_buffer_load ($file);
+
+  &xst_buffer_join_lines ($buff);
+
+  $found_flag = 0;
+  
+  foreach $i (@$buff)
+  {
+    $pre_space = $post_comment = "";
+    
+    chomp $i;
+    $pre_space = $1 if $i =~ s/^([ \t]+)//;
+    $post_comment = $1 if $i =~ s/([ \t]*[\#;].*)//;
+    
+    if ($i ne "")
+    {
+	 if ($i =~ /[ \t]*$image_name[ \t]*=[ \t]*$image_val$/i)
+	 {
+	   $i =~ s/([ \t]*$image_name[ \t]*=[ \t]*$image_val)//i;
+	   $sec_save = $1;
+	   $found_flag = 1;
+	 }
+
+	 if ($found_flag)
+	 {
+	   if ($i =~ /\[[ \t]*[^ \t\]]+[ \t]*\]/)
+	   {
+		$i = "\t$var = $value\n$i";
+		$found_flag = 2;
+	   }
+
+	   if ($found_flag && $i =~ /^$var[ \t]*=/i)
+	   {
+		$i =~ s/^($var[ \t]*=[ \t]*).*/\1$value/i;
+		$found_flag = 2;
+	   }
+	 }
+    }
+
+    if ($found_flag && $sec_save ne "")
+    {
+	 $i = $sec_save . $i;
+	 $sec_save = "";
+    }
+    
+    $i = $pre_space . $i . $post_comment . "\n";
+    last if $found_flag == 2;
+  }
+
+  if (!$found_flag)
+  {
+    push @$buff, "$image_name = $image_val\n";
+    push @$buff, "\t$var = $value\n";
+  }
+
+# '(intent-tabs-mode nil)
+
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+
+sub xst_boot_conf_set
+{
+  my $values_hash = $_[0];
+
+  my %dist_map =
+  (
+   "redhat-6.0" => "redhat-6.2",
+   "redhat-6.1" => "redhat-6.2",
+   "redhat-6.2" => "redhat-6.2",
+   "redhat-7.0" => "redhat-7.0"
+  );
+  
+  my %dist_tables =
+	 (
+	  "redhat-6.2" => {
+	    fn => {
+		 LILO_CONF => "/etc/lilo.conf"},
+	    table => [
+			    [ prompt,  \&xst_replace_keyword_set, LILO_CONF, prompt ],
+			    [ root,    \&xst_replace_sh, LILO_CONF, root ],
+			    [ delay,   \&xst_replace_keyword_set, LILO_CONF, delay ],
+			    [ timeout, \&xst_replace_sh, LILO_CONF, timeout ],
+			    [ default, \&xst_replace_sh, LILO_CONF, default ],
+			    [ image,   \&xst_boot_conf_set_images, LILO_CONF, image ],
+			    ] 
+				 }
+	  );
+
+  my $table = $dist_map{$xst_dist};
+  return undef if !$table;
+
+  return &xst_replace_from_table ($ {$dist_tables{$table}}{"fn"},
+						  $ {$dist_tables{$table}}{"table"});
+}
+
+
+sub xst_boot_lilo_images_get
+{
+  my ($file, $image_other, $key) = @_;
+  my %hash;
+  my $re, $fd, @line;
+  my $found_flag = 0;
+
+  $re = "[ \t]*=[ \t]*";
+  $fd = &xst_open_read_from_names ($file);
+  
+  while (<$fd>)
+  {
+    chomp;
+    s/^[ \t]+//;
+    next if (/^\#/ || /^$/);
+    @line = split ($re);
+    
+    $found_flag = 1 if ($line[0] eq $image_other && $line[1] eq $key);
+
+    if ($found_flag)
+    {
+	 if (/^(image|other)/)
+	 {
+	   last if (!/$key/);
+	 }
+	 
+	 $hash{$line[0]} = $line[1];
+    }
+  }
+
+  return \%hash;
+}
+
+sub xst_boot_conf_get_images
+{
+  my ($fn, $key) = @_;
+  my $images, $i;
+  my @array;
+
+  $images = &xst_parse_split_all ($fn, $key, "[ \t]*=[ \t]*");
+
+  foreach $i (@$images)
+  {
+    push @array, &xst_boot_lilo_images_get ($fn, $key, $i);
+  }
+  
+  return \@array;
+}
+
+sub xst_boot_conf_get
+{
+  my %dist_map =
+  (
+   "redhat-6.0" => "redhat-6.2",
+   "redhat-6.1" => "redhat-6.2",
+   "redhat-6.2" => "redhat-6.2",
+   "redhat-7.0" => "redhat-6.2"
+   );
+  
+  my %dist_tables =
+	 (
+	  "redhat-6.2" => {
+	    fn => {
+		 LILO_CONF => "/etc/lilo.conf" },
+	    table => [
+			    [ prompt,  \&xst_parse_sh, LILO_CONF, prompt ],
+			    [ root,    \&xst_parse_sh, LILO_CONF, root ],
+			    [ delay,   \&xst_parse_sh, LILO_CONF, delay ],
+			    [ timeout, \&xst_parse_sh, LILO_CONF, timeout ],
+			    [ default, \&xst_parse_sh, LILO_CONF, default ],
+			    [ image,   \&xst_boot_conf_get_images, LILO_CONF, image ],
+			    [ other,   \&xst_boot_conf_get_images, LILO_CONF, other ],
+			    ] 
+				 }
+	  );
+
+  my $table = $dist_map{$xst_dist};
+  return undef if !$table;
+
+  return &xst_parse_from_table ($ {$dist_tables{$table}}{"fn"},
+						  $ {$dist_tables{$table}}{"table"});
+}
+

@@ -38,6 +38,7 @@ require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/parse.pl";
+require "___scriptsdir___/boot.pl";
 
 
 # --- Tool information --- #
@@ -49,8 +50,6 @@ $description =<<"end_of_description;";
        Configures Boot manager (Only LILO at the moment).
 end_of_description;
 
-$progress_max = 10;
-
 
 # Find the tools
 
@@ -60,6 +59,7 @@ $tool_lilo = &xst_locate_tool ("lilo");
 # --- XML parsing ---
 
 # Scan XML from standard input to an internal tree.
+
 
 sub xml_parse
 {
@@ -82,10 +82,12 @@ sub xml_parse
   return(\%hash);
 }
 
+
 sub xml_parse_boot
 {
   my $tree = $_[0];
   my $hash = $_[1];
+  my %image;
 
   shift @$tree;  # Skip attributes.
 
@@ -93,11 +95,39 @@ sub xml_parse_boot
   {
     if    ($$tree[0] eq "timeout") { $$hash{"timeout"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "default") { $$hash{"default"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "prompt") { $$hash{"prompt"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "delay") { $$hash{"delay"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "root") { $$hash{"root"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "entry") { &xml_parse_image ($$tree[1], \%image); }
 
     shift @$tree;
     shift @$tree;
   }
+
+  $$hash{"image"} = \%image unless scalar keys %image == 0;
 }
+
+
+sub xml_parse_image
+{
+  my $tree = $_[0];
+  my $image = $_[1];
+  my %hash;
+
+  shift @$tree;
+
+  while (@$tree)
+  {
+    $hash{$$tree[0]} = &xst_xml_get_word ($$tree[1]);
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  $dev = $hash{"label"};
+  $$image{$dev} = \%hash;
+}
+		   
 
 # --- XML printing --- #
 
@@ -114,6 +144,7 @@ sub quote
   return $ret;
 }
 
+
 sub unquote
 {
   my $ret = $_[0];
@@ -126,6 +157,7 @@ sub unquote
 
   return $ret;
 }
+
 
 sub xml_print_scalars
 {
@@ -140,6 +172,7 @@ sub xml_print_scalars
     else { &xst_xml_print ("<$i/>\n"); }
   }
 }
+
 
 sub xml_print_arrays
 {
@@ -160,6 +193,7 @@ sub xml_print_arrays
   }
 }
 
+
 sub xml_print_globals
 {
   my $h = $_[0];
@@ -167,6 +201,7 @@ sub xml_print_globals
 
   &xml_print_scalars ($h, @scalar_keys);
 }
+
 
 sub xml_print_images
 {
@@ -196,6 +231,7 @@ sub xml_print_images
   &xst_xml_vspace ();
 }
 
+
 sub xml_print
 {
   my $h = $_[0];
@@ -222,90 +258,7 @@ sub xml_print
   &xst_xml_print ("</boot>\n");
 }
   
-sub boot_lilo_images_get
-{
-  my ($file, $image_other, $key) = @_;
-  my %hash;
-  my $re, $fd, @line;
-  my $found_flag = 0;
 
-  $re = "[ \t]*=[ \t]*";
-  $fd = &xst_open_read_from_names ($file);
-  
-  while (<$fd>)
-  {
-    chomp;
-    s/^[ \t]+//;
-    next if (/^\#/ || /^$/);
-    @line = split ($re);
-    
-    $found_flag = 1 if ($line[0] eq $image_other && $line[1] eq $key);
-
-    if ($found_flag)
-    {
-	 if (/^(image|other)/)
-	 {
-	   last if (!/$key/);
-	 }
-	 
-	 $hash{$line[0]} = $line[1];
-    }
-  }
-
-  return \%hash;
-}
-
-sub boot_conf_get_images
-{
-  my ($fn, $key) = @_;
-  my $images, $i;
-  my @array;
-
-  $images = &xst_parse_split_all ($fn, $key, "[ \t]*=[ \t]*");
-
-  foreach $i (@$images)
-  {
-    push @array, &boot_lilo_images_get ($fn, $key, $i);
-  }
-  
-  return \@array;
-}
-
-sub boot_conf_get
-{
-  my %dist_attrib =
-	 (
-	  redhat62 => {
-	    fn => {
-		 LILO_CONF => "/etc/lilo.conf" },
-	    table => [
-			    [ prompt,  \&xst_parse_sh, LILO_CONF, prompt ],
-			    [ root,    \&xst_parse_sh, LILO_CONF, root ],
-			    [ delay,   \&xst_parse_sh, LILO_CONF, delay ],
-			    [ timeout, \&xst_parse_sh, LILO_CONF, timeout ],
-			    [ default, \&xst_parse_sh, LILO_CONF, default ],
-			    [ image,   \&boot_conf_get_images, LILO_CONF, image ],
-			    [ other,   \&boot_conf_get_images, LILO_CONF, other ],
-			    ] 
-				 }
-	  );
-  
-  # mapping from regular expression, which will be compared to the string
-  # "$xst_dist,$xst_dist_version,$xst_system" to a string, which will be used as
-  # a the key of the dist_attrib field to use.
-  my %dist_cmp = (
-			   "^redhat.*" => "redhat62"
-			   );
-
-  my ($dist, $hash);
-  
-  $dist = &xst_map_dist (%dist_cmp);
-  return undef if ($dist eq undef);
-  
-  $hash = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
-						   $ {$dist_attrib{$dist}}{"table"});
-  return $hash;
-}
 
 # Top-level actions.
 
@@ -316,7 +269,7 @@ sub get
   &xst_begin ();
   
   # Get information from .conf file
-  $hash = &boot_conf_get ();
+  $hash = &xst_boot_conf_get ();
 
   &xst_end();
   &xml_print ($hash);
@@ -333,15 +286,7 @@ sub set
   &xst_begin ();
   $hash = &xml_parse ();
 
-#  &xst_boot_conf_set ($hash);
-
-  # network interface configuring
-#  &xst_progress (90);
-
-# if ($xst_do_immediate)
-#  {
-#    &set_immediate;
-#  }
+  &xst_boot_conf_set ($hash);
 
   &xst_end ();
 }
