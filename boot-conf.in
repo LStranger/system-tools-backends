@@ -189,6 +189,7 @@ sub xml_print_globals
   }
 }
 
+
 sub xml_print_images
 {
   my ($h, $image) = @_;
@@ -234,8 +235,7 @@ sub xml_print
 
   &xml_print_global_kws ($h);
   &xml_print_globals ($h);
-  &xml_print_images ($h, 'image');
-  &xml_print_images ($h, 'other');
+  &xml_print_images ($h, 'images');
   
   &xst_xml_vspace ();
   &xst_xml_print ("<!-- End of configuration -->\n");

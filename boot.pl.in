@@ -55,6 +55,7 @@ sub xst_boot_parse_global_kw
   return undef;
 }
 
+
 sub xst_boot_parse_global
 {
   my ($file, $key) = @_;
@@ -80,6 +81,42 @@ sub xst_boot_parse_global
 
   close $fd;
   return undef;
+}
+
+
+sub xst_boot_parse_images
+{
+  my $file = $_[0];
+  my ($fd, @line, $re, $found, $hash, @images);
+  my ($key, $val);
+
+  $found = -1;
+  $re = "[ \t]*=[ \t]*";
+  $fd = &xst_open_read_from_names ($file);
+
+  while (<$fd>)
+  {
+    chomp;
+    s/^[ \t]+//;
+    next if (/^\#/ || /^$/); # Remove comments
+
+    @line = split ($re, $_, 2);
+    
+    if ($line[0] =~ /^(image|other)/)
+    {
+      $found++;
+    }
+
+    next if $found < 0;
+
+    $key = $line[0];
+    $val = $line[1];
+
+    $images[$found]{$key} = $val;
+  }
+
+  close $fd;
+  return \@images;
 }
 
 
@@ -171,11 +208,10 @@ sub xst_boot_conf_replace_image
     push @$buff, "\t$var = $value\n";
   }
 
-# '(intent-tabs-mode nil)
-
   &xst_buffer_clean ($buff);
   return &xst_buffer_save ($buff, $file);
 }
+
 
 sub xst_boot_conf_set
 {
@@ -214,55 +250,6 @@ sub xst_boot_conf_set
 }
 
 
-sub xst_boot_lilo_images_get
-{
-  my ($file, $image_other, $key) = @_;
-  my %hash;
-  my $re, $fd, @line;
-  my $found_flag = 0;
-
-  $re = "[ \t]*=[ \t]*";
-  $fd = &xst_open_read_from_names ($file);
-  
-  while (<$fd>)
-  {
-    chomp;
-    s/^[ \t]+//;
-    next if (/^\#/ || /^$/);
-    @line = split ($re);
-    
-    $found_flag = 1 if ($line[0] eq $image_other && $line[1] eq $key);
-
-    if ($found_flag)
-    {
-	 if (/^(image|other)/)
-	 {
-	   last if (!/$key/);
-	 }
-	 
-	 $hash{$line[0]} = $line[1];
-    }
-  }
-
-  return \%hash;
-}
-
-sub xst_boot_conf_get_images
-{
-  my ($fn, $key) = @_;
-  my $images, $i;
-  my @array;
-
-  $images = &xst_parse_split_all ($fn, $key, "[ \t]*=[ \t]*");
-
-  foreach $i (@$images)
-  {
-    push @array, &xst_boot_lilo_images_get ($fn, $key, $i);
-  }
-  
-  return \@array;
-}
-
 sub xst_boot_conf_get
 {
   my %dist_map =
@@ -279,18 +266,17 @@ sub xst_boot_conf_get
 	    fn => {
 		 LILO_CONF => "/etc/lilo.conf" },
 	    table => [
-                [ prompt,  \&xst_boot_parse_global_kw, LILO_CONF, prompt ],
-                [ lba32,   \&xst_boot_parse_global_kw, LILO_CONF, lba32 ],
-                [ root,    \&xst_boot_parse_global, LILO_CONF, root ],
-                [ delay,   \&xst_boot_parse_global, LILO_CONF, delay ],
-                [ timeout, \&xst_boot_parse_global, LILO_CONF, timeout ],
-                [ default, \&xst_boot_parse_global, LILO_CONF, default ],
-                [ append,   \&xst_boot_parse_global, LILO_CONF, append ],
-                [ boot,   \&xst_boot_parse_global, LILO_CONF, boot ],
-                [ 'map',   \&xst_boot_parse_global, LILO_CONF, 'map' ],
-                [ install,   \&xst_boot_parse_global, LILO_CONF, install ],
-                [ image,   \&xst_boot_conf_get_images, LILO_CONF, image ],
-                [ other,   \&xst_boot_conf_get_images, LILO_CONF, other ],
+                [ 'prompt',  \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
+                [ 'lba32',   \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],
+                [ 'root',    \&xst_boot_parse_global, LILO_CONF, 'root' ],
+                [ 'delay',   \&xst_boot_parse_global, LILO_CONF, 'delay' ],
+                [ 'timeout', \&xst_boot_parse_global, LILO_CONF, 'timeout' ],
+                [ 'default', \&xst_boot_parse_global, LILO_CONF, 'default' ],
+                [ 'append',  \&xst_boot_parse_global, LILO_CONF, 'append' ],
+                [ 'boot',    \&xst_boot_parse_global, LILO_CONF, 'boot' ],
+                [ 'map',     \&xst_boot_parse_global, LILO_CONF, 'map' ],
+                [ 'install', \&xst_boot_parse_global, LILO_CONF, 'install' ],
+                [ 'images',  \&xst_boot_parse_images, LILO_CONF ],
                 ] 
                   }
     );
