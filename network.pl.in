@@ -38,17 +38,22 @@ sub xst_network_dialing_get
 {
   my %vars =
       (
-       "Modem" => "device",
-       "Baud" => "speed",
-       "Init1" => "init1",
-       "Init2" => "init2",
-       "Phone" => "phone",
-       "Username" => "login",
-       "Password" => "password",
-       "Dial Command" => "dialcmd",
-       "SetVolume" => "setvol",
-       "Stupid mode" => "stupid",
-       "Inherits" => "inherits"
+       "Inherits"        => "inherits",
+       "Modem"           => "device",
+       "Baud"            => "speed",
+       "Init1"           => "init1",
+       "Init2"           => "init2",
+       "Phone"           => "phone",
+       "Username"        => "login",
+       "Password"        => "password",
+       "Dial Command"    => "dialcmd",
+       "SetVolume"       => "setvol",
+       "Stupid mode"     => "stupid",
+       "Auto Reconnect"  => "persist",
+       "Force Address"   => "address",
+       "Auto DNS"        => "update_dns",
+       "Check Def Route" => "set_default_gw",
+       "XST Device"      => "xst_dev"
        );
   my %title2type =
       (
@@ -325,6 +330,87 @@ sub xst_network_suse70_set_ifconfig_ip
   return &xst_network_suse70_replace_iface_sh ($file, $iface, "IFCONFIG", $val);
 }
 
+sub xst_network_get_new_dialing_dev
+{
+  my ($dial_hash, $type) = @_;
+  my ($dial, $dev, $maxdev);
+
+  $maxdev = -1;
+  foreach $dial (keys %$dial_hash)
+  {
+    $dev = $ {$$dial_hash{$dial}}{"xst_dev"};
+    if ($dev ne "")
+    {
+      if ($dev =~ s/^$type//)
+      {
+        $maxdev = $dev if $dev > $maxdev;
+      }
+    }
+  }
+
+  $maxdev ++;
+  return "$type$maxdev";
+}
+
+sub xst_network_dial2iface
+{
+  my ($dial_hash, $name) = @_;
+  my ($dial, %iface, $i);
+
+  my %map = ("address"        => "address",
+             "update_dns"     => "update_dns",
+             "login"          => "login",
+             "password"       => "password",
+             "serial_port"    => "device",
+             "serial_speed"   => "speed",
+             "set_default_gw" => "set_default_gw",
+             "persist"        => "persist",
+             "phone_number"   => "phone",
+             "dev"            => "xst_dev"
+             );
+
+  $dial = $$dial_hash{$name};
+  if ($$dial{"xst_dev"} eq "")
+  {
+    $$dial{"xst_dev"} = &xst_network_get_new_dialing_dev ($dial_hash, "ppp");
+  }
+  else
+  {
+    $iface{"enabled"} = &xst_network_interface_active ($$dial{"xst_dev"},
+                                                       \&xst_network_active_interfaces_get);
+  }
+
+  foreach $i (keys %map)
+  {
+    $iface{$i} = $$dial{$map{$i}} if exists $$dial{$map{$i}};
+  }
+
+  $iface{"name"} = $iface{"wvsection"} = $name;
+  
+  return \%iface;
+}
+
+sub xst_network_suse70_get_ppp
+{
+  my ($dial, $iface) = @_;
+  my ($d);
+
+  foreach $d (keys %$dial)
+  {
+    $$iface{$d} = &xst_network_dial2iface ($dial, $d);
+  }
+
+  return $iface;
+}
+
+sub xst_network_suse70_set_ppp
+{
+}
+
+sub xst_network_suse70_activate_ppp
+{
+}
+
 sub xst_network_interfaces_get
 {
   my (%dist_attrib, %hash, %fn, @ifaces, $iface);
@@ -444,17 +530,22 @@ sub xst_network_dialing_set
 {
   my %vars =
 	 (
-	  "device" => "Modem",
-	  "speed" => "Baud",
-	  "init1" => "Init1",
-	  "init2" => "Init2",
-	  "phone" => "Phone",
-	  "login" => "Username",
-	  "password" => "Password",
-	  "dialcmd" => "Dial Command",
-	  "setvol" => "SetVolume",
-	  "stupid" => "Stupid mode",
-	  "inherits"=>"Inherits"
+	  "inherits"       => "Inherits",
+	  "device"         => "Modem",
+	  "speed"          => "Baud",
+	  "init1"          => "Init1",
+	  "init2"          => "Init2",
+	  "phone"          => "Phone",
+	  "login"          => "Username",
+	  "password"       => "Password",
+	  "dialcmd"        => "Dial Command",
+	  "setvol"         => "SetVolume",
+	  "stupid"         => "Stupid mode",
+    "persist"        => "Auto Reconnect",
+    "address"        => "Force Address",
+    "update_dns"     => "Auto DNS",
+    "set_default_gw" => "Check Def Route",
+    "xst_dev"        => "XST Device"
 	  );
   my %type2title =
 	 (
@@ -1433,7 +1524,8 @@ sub xst_network_get_parse_table
         [ "smbinstalled",  \&xst_service_sysv_installed,         "smb" ],
         [ "dialinstalled", \&xst_file_tool_installed,            "wvdial" ],
 		    [ "dialing",       \&xst_network_dialing_get,            WVDIAL ],
-		    [ "interface",     \&xst_network_interfaces_get ]
+		    [ "interface_tmp", \&xst_network_interfaces_get ],
+        [ "interface",     \&xst_network_suse70_get_ppp,         "%dialing%", "%interface_tmp%" ],
 		    ]
 			 }
 
@@ -1636,9 +1728,6 @@ sub xst_network_get_interfaces_parse_table
 #          [ "network",            \&xst_parse_trivial,                   0 ], # not supported.
 #          [ "gateway",            \&xst_parse_sh,      IFCFG, GATEWAY ], # not supported
            [ "remote_address",     \&xst_network_suse70_get_ifconfig_arg, [IFCFG, IFACE], pointopoint ],
-           
-# dynamic virtual interface stuff will be added later.
-           
            [ "enabled",            \&xst_network_interface_active,        IFACE,
                                                                 \&xst_network_suse70_active_interfaces_get ]
            ]
@@ -1699,7 +1788,10 @@ sub xst_network_get_replace_table
            [ "winsserver",    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
+           [ "interface",     \&xst_network_suse70_set_ppp,   "%dialing%" ],
            [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
+# We're calling this sepparated cuz we are going to call wvdial.           
+           [ "interface",     \&xst_network_suse70_activate_ppp ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
              },
@@ -2008,7 +2100,6 @@ sub xst_network_get_interface_replace_table
 #          [ "gateway",            \&xst_parse_sh,      IFCFG, GATEWAY ], # not supported
            [ "remote_address",     \&xst_network_suse70_set_ifconfig_arg,   [IFCFG, IFACE], pointopoint ],
            [ "update_dns",         \&xst_replace_kw,                        PPP_OPTIONS, "usepeerdns" ]
-# dynamic virtual interface stuff will be added later.
       ]
     }
   );

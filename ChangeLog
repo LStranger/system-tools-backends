@@ -1,7 +1,21 @@
 2001-05-30  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* parse.pl.in (xst_parse_replace_hash_values): If replaced  value
+	is a reference, set that as the interpolated value, not the
+	string representation.
+
+	* replace.pl.in (xst_replace_ini_bool_onoff): not required any more.
+
 	* network.pl.in (xst_network_get_interface_replace_table): A typo.
 	Bug 3133.
+	(xst_network_dialing_get): Added new wvdial capabilities SuSE 70
+	requires.
+	(xst_network_dialing_set): same.
+	(xst_network_get_new_dialing_dev): Get the latest device from the
+	dialing hash.
+	(xst_network_dial2iface): Convert a dialing profile into a ppp
+	interface, for SuSE 7.0.
+	(xst_network_suse70_get_ppp): Get ppp interfaces from dialing info.
 
 2001-05-30  Tambet Ingo  <tambet@ximian.com>
 

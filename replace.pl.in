@@ -532,17 +532,6 @@ sub xst_replace_ini_bool
   return &xst_replace_ini ($file, $section, $var, $value);
 }
 
-# For those that like on/off instead of yes/no.
-sub xst_replace_ini_bool_onoff
-{
-  my ($file, $section, $var, $value) = @_;
-
-  $value = ($value == 1)? "on": "off";
-
-  return &xst_replace_ini ($file, $section, $var, $value);
-}
-
-
 # Debian /etc/network/interfaces in-line replacing methods.
 
 # From loaded buffer, starting at $line_no, find next debian

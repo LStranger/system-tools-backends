@@ -51,7 +51,14 @@ sub xst_parse_replace_hash_values
       if (exists $$hash{$replace_key}) 
       {
         $value = $$hash{$replace_key};
-        $j =~ s/%$replace_key%/$value/g;
+        if (ref $value)
+        {
+          $j = $value;
+        }
+        else
+        {
+          $j =~ s/%$replace_key%/$value/g;
+        }
       }
       else
       {
