@@ -1932,6 +1932,7 @@ sub set_immediate
           &xst_report ("compat", "Mounting $shares[8]");
           if ($shares[5] eq "smb")
           {
+            $shares[1] =~ tr/\///d;
             system "$smbmount_tool //$shares[0]/$shares[1] $shares[8] -o password=$shares[7],username=$shares[6]";
           }
           else
