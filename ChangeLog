@@ -1,5 +1,12 @@
 2001-03-08  Hans Petter Jansson
 
+	* xml.pl.in (xst_xml_quote): return() -> return, makes code look
+	more uniform.
+	(xst_xml_get_word): Missing semicolon added.
+	(xst_xml_get_text): Missing semicolon added.
+
+2001-03-08  Hans Petter Jansson
+
 	* debug.pl.in (xst_debug_open_output_file): Implement.
 	  (xst_debug_print_string_to_file): Implement.
 	  (xst_debug_print_indent): Print to file. More efficient.
