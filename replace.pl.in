@@ -211,6 +211,28 @@ sub xst_replace_sh_bool
   return &xst_replace_sh ($file, $key, $value);
 }
 
+# Get a fully qualified hostname from a $key shell var in $file
+# and set the hostname part. e.g.: suse70's /etc/rc.config's FQHOSTNAME.
+sub xst_replace_sh_set_hostname
+{
+  my ($file, $key, $value);
+  my ($domain);
+
+  $domain = &xst_parse_sh_get_domain ($file, $key);
+  return &xst_replace_sh ($file, $key, "$value.$domain");
+}
+
+# Get a fully qualified hostname from a $key shell var in $file
+# and set the domain part. e.g.: suse70's /etc/rc.config's FQHOSTNAME.
+sub xst_replace_sh_set_domain
+{
+  my ($file, $key);
+  my ($hostname);
+
+  $hostname = &xst_parse_sh_get_hostname ($file, $key);
+  return &xst_replace_sh ($file, $key, "$hostname.$value");
+}
+
 # Quick trick to set a keyword $key in $file.
 sub xst_replace_kw
 {

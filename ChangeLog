@@ -1,3 +1,40 @@
+2001-05-18  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* users-conf.in: Added suse-7.0
+
+	* service.pl.in (xst_service_sysv_get_paths): an
+	explanation comment I found useful to set.
+
+	* replace.pl.in (xst_replace_sh_set_hostname): Implemented.
+	(xst_replace_sh_set_domain): Implemented.
+
+	* parse.pl.in (xst_parse_sh_split): Implemented. After
+	taking a sh value, it splits it, returning ref to arr.
+	(xst_parse_sh_get_hostname): Implemented.
+	(xst_parse_sh_get_domain): Implemented.
+
+	* network.pl.in (xst_network_suse70_ifaces_get_existing):
+	Implemented.
+	(xst_network_suse70_parse_iface_num): Implemented. Not used.
+	(xst_network_suse70_parse_iface_auto): Implemented.
+	(xst_network_suse70_replace_iface_auto): Implemented.
+	(xst_network_suse70_parse_iface_sh): Implemented.
+	(xst_network_suse70_replace_iface_sh): Implemented.
+	(xst_network_suse70_get_ifconfig_arg): Implemented.
+	(xst_network_suse70_set_ifconfig_arg): Implemented.
+	(xst_network_suse70_set_ifconfig_ip): Implemented.
+	(xst_network_suse70_interface_activate_by_dev): Implemented.
+	(xst_network_suse70_interface_activate): Implemented.
+	(xst_network_suse70_interface_delete): Implemented.
+	(xst_network_suse70_parse_bootproto): Implemented.
+	(xst_network_suse70_replace_bootproto): Guess what? Implemented.
+	suse-7.0 parse/replace tables implemented too.
+
+	* network-conf.in (xml_print, xml_parse): Got rid of "forward"
+	option, and added "gateway" option, for those broken distros.
+
+	* file.pl.in (xst_file_run): Trivial style changes.
+
 2001-05-17  Hans Petter Jansson  <hpj@ximian.com>
 
 	* disks-conf.in (get_fdisk): Omit entries for extended partitions.

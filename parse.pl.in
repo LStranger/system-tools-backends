@@ -422,6 +422,42 @@ sub xst_parse_sh_bool
   return (&xst_read_boolean ($ret)? 1: 0);
 }
 
+# Get an sh value and then split with $re, returning ref to resulting array.
+sub xst_parse_sh_split
+{
+  my ($file, $key, $re) = @_;
+  my (@ret, $val);
+
+  $val = &xst_parse_sh ($file, $key);
+  @ret = split ($re, $val);
+
+  return \@ret;
+}
+
+# Get a fully qualified hostname from a $key shell var in $file
+# and extract the hostname from there. e.g.: suse70's /etc/rc.config's FQHOSTNAME.
+sub xst_parse_sh_get_hostname
+{
+  my ($file, $key);
+  my ($val);
+
+  $val = &xst_paprse_sh_split ($file, $key, "\\.");
+
+  return $$val[0];
+}
+
+# Get a fully qualified hostname from a $key shell var in $file
+# and extract the domain from there. e.g.: suse70's /etc/rc.config's FQHOSTNAME.
+sub xst_parse_sh_get_domain
+{
+  my ($file, $key);
+  my ($val);
+
+  $val = &xst_parse_sh_split ($file, $key, "\\.");
+
+  return join ".", @$val[1..$#$val];
+}
+
 # For files which are a list of /bin/sh shell variable exports. (eg export GATEWAY=10.10.10.1)
 sub xst_parse_sh_export
 {

@@ -444,12 +444,12 @@ sub xst_file_buffer_join_lines
 
 sub xst_file_run
 {
-  my ($tool_name, $tool_path, @argline);
-  my $command;
+  my ($cmd) = @_;
+  my ($command, $tool_name, $tool_path, @argline);
 
   &xst_report_enter ();
   
-  ($tool_name, @argline) = split(/ /, $_[0]);
+  ($tool_name, @argline) = split("[ \t]+", $cmd);
 
   $tool_path = &xst_file_locate_tool ($tool_name);
   if ($tool_path eq "")

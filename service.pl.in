@@ -41,6 +41,7 @@ sub xst_service_sysv_get_paths
 {
   my %dist_map =
       (
+       # xst_dist => [rc.X dirs location, init.d scripts location]
        "redhat-5.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
        "redhat-6.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
        "redhat-6.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
