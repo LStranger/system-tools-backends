@@ -1,3 +1,15 @@
+2001-03-21  Michael Meeks  <michael@ximian.com>
+
+	* Makefile.am: add print bits.
+
+	* print-conf.in: Add.
+
+	* print.pl.in: Add.
+
+	* parse.pl.in (xst_shell_escape): split from
+	(xst_parse_sh): here.
+	(xst_parse_sh_export): impl.
+
 2001-03-21  Tambet Ingo  <tambet@ximian.com>
 
 	* users-conf.in (xml_scan): We need raw xml and slightly modified from xst_xml_scan.

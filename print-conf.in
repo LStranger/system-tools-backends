@@ -1,0 +1,248 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Print configurator. Designed to be architecture and distribution independent.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#          Michael Vogt <mvo@debian.org> (Debian Support)
+#          Arturo Espinosa <arturo@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/resolv.conf
+# /etc/host.conf
+# /etc/hosts
+# /etc/sysconfig/print
+# /etc/rc.config
+# /etc/smb.conf
+
+# Running programs affected:
+#
+# smbd
+# nmbd
+# ifconfig: check current printers and activate/deactivate.
+
+
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/platform.pl";
+require "___scriptsdir___/util.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/xml.pl";
+require "___scriptsdir___/print.pl";
+
+
+# Debug stuff
+#$xst_prefix = "/tmp/y";
+#open STDERR, ">/tmp/err";
+
+# --- Tool information --- #
+
+$name = "print";
+$version = "0.1.0";
+@platforms = ("redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0");
+
+$description =<<"end_of_description;";
+       Configures the lpr subsystem.
+end_of_description;
+
+$progress_max = 10;
+
+
+# --- XML parsing ---
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  my $tree, %hash;
+  # Scan XML to tree.
+
+  $tree = &xst_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "print" tag.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "print") { &xml_parse_print ($$tree[1], \%hash); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return(\%hash);
+}
+
+# <print>...</print>
+
+sub xml_parse_print
+{
+  my $tree = $_[0];
+  my $hash = $_[1];
+  my (@searchdomain, @nameserver, @order, %statichost, %printer, %dialing);
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "printer") { &xml_parse_printer ($$tree[1], \%printer); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  $$hash{"printer"} = \%printer unless scalar keys %printer == 0;
+}
+
+# <printer>...</printer>
+
+sub xml_parse_printer
+{
+  my $tree = $_[0];
+  my $printer = $_[1];
+  my %hash;
+  my $dev;
+
+  shift @$tree;
+
+  # FIXME: needs expansion.
+  while (@$tree)
+  {
+    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  $dev = $hash{"name"};
+  $$printer{$dev} = \%hash;
+}
+
+# --- XML printing --- #
+
+sub xml_print_section
+{
+  my ($h, $name) = @_;
+  my $i, $val, $section;
+
+  $section = $$h{$name};
+  &xst_xml_print_line ("<$name>\n");
+  &xst_xml_enter ();
+  foreach $i (keys (%$section)) {
+    $val = &xst_xml_quote ($$h{$name}{$i});
+    &xst_xml_print_line ("<$i>$val</$i>\n");
+  }
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</$name>\n");
+    
+}
+
+sub xml_print_printer
+{
+  my ($h, $spool) = @_;
+  my $i, $val, $section;
+
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<printer>\n");
+  &xst_xml_enter ();
+
+  &xst_xml_print_line ("<name>$spool</name>\n");
+
+  &xml_print_section ($h, 'lpr');
+  &xml_print_section ($h, 'rhs-general');
+  &xml_print_section ($h, 'rhs-postscript');
+  &xml_print_section ($h, 'rhs-textonly');
+  
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</printer>\n");  
+}
+
+sub xml_print
+{
+  my $h = $_[0];
+  my $i, $val;
+
+  &xst_xml_print_begin ();
+  &xst_xml_print_line ("<print>\n");
+  &xst_xml_enter ();
+
+  foreach $i (keys (%$h)) {
+      &xml_print_printer ($$h{$i}, $i);
+  }
+
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</print>\n");
+
+  &xst_xml_print_end ();
+}
+
+
+# Top-level actions.
+
+
+sub get
+{
+  my $hash;
+
+  # print printer stuff
+  $hash = &xst_print_conf_get ();
+
+  &xst_end();
+  &xml_print ($hash);
+}
+
+
+sub set
+{
+  my $hash;
+  
+  $hash = &xml_parse ();
+
+  # check the success result of this.
+  &xst_print_conf_set ($hash);
+
+  &xst_end ();
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+{
+  my $hash;
+  
+  $hash = &xml_parse ();
+  &xst_end ();
+  &xml_print ($hash);
+}
+
+
+# --- Main --- #
+
+&xst_init ($name, $version, $description, @ARGV);
+&xst_platform_ensure_supported (@platforms);
+
+# Do our thing.
+
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }

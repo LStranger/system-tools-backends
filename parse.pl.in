@@ -276,14 +276,9 @@ sub xst_parse_split_hash
   return \%res;
 }
 
-# For files which are a list of /bin/sh shell variable declarations. (ie GATEWAY=10.10.10.1)
-sub xst_parse_sh
+sub xst_shell_escape
 {
-  my ($file, $key) = @_;
-  my $ret;
-
-  $ret = &xst_parse_split_first_str ($file, $key, "[ \t]*=[ \t]*",
-                                     \&xst_parse_chomp_line_hash_comment);
+  my $ret = $_[0];
 
   # Quote shell special chars.
   $ret =~ s/\\\"/\\_/g;
@@ -297,6 +292,19 @@ sub xst_parse_sh
   return $ret;
 }
 
+# For files which are a list of /bin/sh shell variable declarations. (ie GATEWAY=10.10.10.1)
+sub xst_parse_sh
+{
+  my ($file, $key) = @_;
+  my $ret;
+
+  $ret = &xst_parse_split_first_str ($file, $key, "[ \t]*=[ \t]*",
+                                     \&xst_parse_chomp_line_hash_comment);
+
+
+  return &xst_shell_escape ($ret);
+}
+
 # Same, but interpret the returing value as a bool. (ie NETWORKING=yes)
 sub xst_parse_sh_bool
 {
@@ -307,6 +315,32 @@ sub xst_parse_sh_bool
 
   return undef if ($ret eq undef);
   return (&xst_read_boolean ($ret)? 1: 0);
+}
+
+# For files which are a list of /bin/sh shell variable exports. (eg export GATEWAY=10.10.10.1)
+sub xst_parse_sh_export
+{
+  my ($file, $key) = @_;
+  my ($fd, @line, @res);
+
+  $fd = &xst_open_read_from_names ($file);
+  $all = 0 if !$fd;
+  
+  while (($line = &xst_parse_chomp_line_std ($fd)) != -1) {
+    $line = $$line;
+    $line =~s/#.*//;
+    next if $line eq "";
+
+    if ($line =~ /^export $key=(.*)/) {
+        my $val = $1;
+        chomp ($val);
+        close $fd;
+        return $val;
+    }
+  }
+
+  close $fd;
+  return undef;
 }
 
 # Search for $keyword in $file, delimited by $re (default " ") or EOL.

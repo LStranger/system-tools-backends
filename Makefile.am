@@ -5,7 +5,8 @@ backends = \
 	shares-conf \
 	time-conf \
 	users-conf \
-	boot-conf 
+	boot-conf \
+	print-conf
 
 PERLBODY = \
 	gettext.pl.in \
@@ -20,7 +21,8 @@ PERLBODY = \
 	util.pl.in \
 	network.pl.in \
 	boot.pl.in \
-	debug.pl.in 
+	debug.pl.in \
+	print.pl.in
 
 perl_libs = \
 	$(PERLBODY:.pl.in=.pl)
