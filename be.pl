@@ -95,6 +95,12 @@ sub be_print_version
 }
 
 
+# --- Paths to config files --- #
+
+
+@hosts_names =             ( "/etc/hosts" );
+
+
 # --- Operation modifying variables --- #
 
 # Variables are set to their default value, which may be overridden by user. Note
@@ -731,6 +737,64 @@ sub be_create_path
 	  }
       }
   }
+
+
+# --- Configuration utilities --- #
+
+
+# be_ensure_local_host_entry (<ip>, <hostname>)
+#
+# Given a text IP and hostname, add the hostname as an alias for the local
+# hosts (provided) IP to the /etc/hosts database. This is required for tools
+# like nmblookup to work on a computer with no reverse name or DNS.
+
+sub be_ensure_local_host_entry
+{
+  my $local_ip = @_[0];
+  my $local_hostname = @_[1];
+  local *INFILE;
+  local *OUTFILE;
+  my $written = 0;
+
+  if ($local_ip eq "" || $local_hostname eq "") { return; }
+
+  # Find the file.
+  
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@hosts_names);
+  if (not *OUTFILE) { return; }  # We didn't find it.
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    print "line: $line[0], ip: $local_ip\n";
+
+    if ($line[0] ne "" && (not be_ignore_line($line[0])) &&
+#       ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) &&
+        $line[0] eq $local_ip)
+    {
+      # Found $local_ip. Add $local_hostname to its list, if it's not already there.
+
+      shift @line;
+
+      be_push_unique(\@line, $local_hostname);
+
+      printf OUTFILE ("%-16s", $local_ip);
+      for $alias (@line) { print OUTFILE " $alias"; }
+      print OUTFILE "\n";
+
+      $written = 1;
+    }
+    else { print OUTFILE; }
+  }
+
+  # If the IP wasn't present, add the entry at the end.
+
+  if (!$written) { printf OUTFILE ("%-16s %s\n", $local_ip, $local_hostname); }
+}
 
 
 # --- XML parsing --- #

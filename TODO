@@ -6,7 +6,3 @@
 * networking-conf.in:
 
   - Update the /etc/hosts entry for local host's IP. Needed for nmblookup.
-
-* nameresolution-conf.in:
-
-  - Update the /etc/hosts entry for local host's name. Needed for nmblookup.

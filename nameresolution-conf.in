@@ -1137,6 +1137,27 @@ sub set_immediate
 }
 
 
+sub set_local_host_entry
+{
+  # Temporary solution to find IP address. Ideally we want to define the
+  # hostname for all IPs we have.
+
+  my $ip = `ifconfig eth0 2>/dev/null`;
+  if ($ip eq "") { $ip = `ifconfig ppp0 2>/dev/null`; }
+
+  $ip =~ /^.*addr:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/m;
+  $ip = $1;
+
+  if ($ip eq "")
+  {
+    be_report_warning(01, "Couldn't find a configured network device");
+    return(0);
+  }
+
+  be_ensure_local_host_entry ($ip, $cf_hostname);
+}
+
+
 sub set
 {
   xml_parse ();
@@ -1153,8 +1174,9 @@ sub set
   if ($be_do_immediate)
   {
     set_immediate;
+    set_local_host_entry;
   }
-  
+
   be_end();
 }
 
