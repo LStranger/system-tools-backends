@@ -34,6 +34,37 @@
 
 	* report.pl.in (xst_report_enter): Ugly hack to avoid po warnings.
 
+2001-05-23  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* replace.pl.in (xst_replace_pump_get_next_option): More pump
+	stuff.
+	(xst_replace_pump_option_locate): Implemented.
+	(xst_replace_pump_get_device): Implemented.
+	(xst_replace_pump_add_device): Implemented.
+	(xst_replace_pump_iface_option_str): Implemented.
+	(xst_replace_pump_iface_kw): Implemented.
+	(xst_replace_pump_iface_kw_not): Implemented.
+
+	* parse.pl.in (xst_parse_from_table): eliminated dumb paranoia.
+	(xst_parse_shell_unescape): Name change. This function unescapes.
+	(xst_parse_shell_escape): Taken for replace, to use in other places.
+	
+	Pump stuff that may be useful for dhcpd.conf some day:
+	(xst_parse_pump_get_next_option): Implemented.
+	(xst_parse_pump_get_device): Implemented.
+	(xst_parse_pump_get_iface_option_ref): Implemented.
+	(xst_parse_pump_get_iface_kw): Implemented.
+	(xst_parse_pump_get_iface_kw_not): Implemented.
+
+	* network.pl.in (xst_network_pump_iface_supported): check if
+	the iface is a type that pump supports.
+	(xst_network_pump_get_nodns): Implemented.
+	(xst_network_pump_set_nodns): Implemented.
+	Added pump support to all distros that make use of it. peerdns
+	inteface tag deprecated.
+
+	* network-conf.in (xml_print): print new tag smartdhcpcd.
+
 2001-05-23  Hans Petter Jansson  <hpj@ximian.com>
 
 	* shares-conf.in: XML tags: browseable -> browse, writable -> write.
