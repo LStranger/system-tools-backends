@@ -3933,7 +3933,6 @@ sub gst_network_get_parse_table
         [ "smbinstalled",  \&gst_service_sysv_installed,  "smb" ],
         [ "smartdhcpcd",   \&gst_file_tool_installed,     "pump" ],
         [ "dialinstalled", \&gst_file_tool_installed,     "wvdial" ],
-		    [ "dialing",       \&gst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&gst_network_interfaces_get ]
 		    ]
 			 },
@@ -3969,7 +3968,6 @@ sub gst_network_get_parse_table
         [ "smbinstalled",  \&gst_service_sysv_installed,  "smb" ],
         [ "smartdhcpcd",   \&gst_file_tool_installed,     "pump" ],
         [ "dialinstalled", \&gst_file_tool_installed,     "wvdial" ],
- 		    [ "dialing",       \&gst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&gst_network_interfaces_get ]
 		    ]
 			 },
@@ -4009,7 +4007,6 @@ sub gst_network_get_parse_table
         [ "smbinstalled",  \&gst_service_sysv_installed,  "smb" ],
         [ "smartdhcpcd",   \&gst_file_tool_installed,     "pump" ],
         [ "dialinstalled", \&gst_file_tool_installed,     "wvdial" ],
- 		    [ "dialing",       \&gst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&gst_network_interfaces_get ]
 		    ]
 			 },
@@ -4046,7 +4043,6 @@ sub gst_network_get_parse_table
            [ "smbinstalled",  \&gst_service_sysv_installed,  "samba" ],
            [ "smartdhcpcd",   \&gst_file_tool_installed,     "pump" ],
            [ "dialinstalled", \&gst_file_tool_installed,     "wvdial" ],
-           [ "dialing",       \&gst_network_dialing_get,     WVDIAL ],
            [ "interface",     \&gst_network_interfaces_get ]
            ]
              },
@@ -4088,7 +4084,6 @@ sub gst_network_get_parse_table
         [ "smbuse",        \&gst_service_sysv_get_status_any,    "smbd",    "nmbd" ],
         [ "smbinstalled",  \&gst_service_sysv_installed,         "smb" ],
         [ "dialinstalled", \&gst_file_tool_installed,            "wvdial" ],
-		    [ "dialing",       \&gst_network_dialing_get,            WVDIAL ],
 		    [ "interface_tmp", \&gst_network_interfaces_get ],
         [ "interface",     \&gst_network_suse70_get_ppp,         "%dialing%", "%interface_tmp%" ],
 		    ]
@@ -4159,7 +4154,6 @@ sub gst_network_get_parse_table
         [ "smbinstalled",  \&gst_service_sysv_installed,  "smb" ],
         [ "smartdhcpcd",   \&gst_file_tool_installed,     "pump" ],
         [ "dialinstalled", \&gst_file_tool_installed,     "wvdial" ],
-		    [ "dialing",       \&gst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&gst_network_interfaces_get ]
 		    ]
 			 },
@@ -5159,7 +5153,6 @@ sub gst_network_get_replace_table
            [ "winsserver",    \&gst_replace_ini,              SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&gst_service_sysv_set_status,  91, "smb", "%smbuse%" ],
-           [ "dialing",       \&gst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ],
            [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
            ]
@@ -5195,7 +5188,6 @@ sub gst_network_get_replace_table
            [ "winsserver",    \&gst_replace_ini,              SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&gst_service_sysv_set_status,  91, "smb", "%smbuse%" ],
-           [ "dialing",       \&gst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ],
            [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
            ]
@@ -5235,7 +5227,6 @@ sub gst_network_get_replace_table
            [ "winsserver",    \&gst_replace_ini,              SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&gst_service_sysv_set_status,  91, "smb", "%smbuse%" ],
-           [ "dialing",       \&gst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ],
            [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
            ]
@@ -5268,7 +5259,6 @@ sub gst_network_get_replace_table
            [ "winsserver",    \&gst_replace_ini,              SMB_CONF,    "global", "wins server" ],
            [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
            [ "smbuse",        \&gst_service_sysv_set_status,  91, "samba" ],
-           [ "dialing",       \&gst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ]
            ]
              },
@@ -5306,7 +5296,6 @@ sub gst_network_get_replace_table
         [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
         [ "smbuse",        \&gst_service_sysv_set_status,  20, "smb", "%smbuse%" ],
         [ "interface",     \&gst_network_suse70_set_ppp,   [WVDIAL, "%dialing%"] ],
-        [ "dialing",       \&gst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
 # We're calling this sepparated cuz we are going to call wvdial to activate.           
         [ "interface",     \&gst_network_suse70_activate_ppp ],
         [ "interface",     \&gst_network_interfaces_set,	 OLD_HASH ],
@@ -5375,7 +5364,6 @@ sub gst_network_get_replace_table
            [ "winsserver",    \&gst_replace_ini,              SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&gst_service_sysv_set_status,  91, "smb", "%smbuse%" ],
-           [ "dialing",       \&gst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ],
            [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
            ]

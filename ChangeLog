@@ -1,5 +1,10 @@
 2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* network.pl.in: remove "dialing" tags, not needed, no UI for this,
+	and wvdialconf could block under certain circumstances. Closes #123216
+
+2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* network.pl.in (gst_network_enable_isdn): added, handles ISDN
 	connections. (gst_network_enable_iface_with_config): use it
 
