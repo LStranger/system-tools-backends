@@ -7,44 +7,55 @@ msgid ""
 msgstr ""
 "Project-Id-Version: es\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-01-14 17:19+0100\n"
-"PO-Revision-Date: 2004-01-14 17:21+0100\n"
+"POT-Creation-Date: 2004-04-08 10:49+0200\n"
+"PO-Revision-Date: 2004-04-08 10:54+0200\n"
 "Last-Translator: Francisco Javier F. Serrador <serrador@cvs.gnome.org>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.0.2\n"
+"X-Generator: KBabel 1.3.1\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
 #: service-list.pl.in:36
+msgid "ACPI event handler"
+msgstr "Manipulador de eventos ACPI"
+
+#: service-list.pl.in:36
+msgid ""
+"Notifies user-space programs of ACPI events: executes arbitrary commands in "
+"response to ACPI events such as power buttons."
+msgstr ""
+"Notifica a los programas en espacio de usuario los eventos ACPI: ejecuta comandos arbitrarios en "
+"respuesta a eventos ACPI como botones de encendido."
+
+#: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
 msgstr "Arquitectura avanzada de sonido Linux"
 
-#: service-list.pl.in:37 service-list.pl.in:61
+#: service-list.pl.in:38 service-list.pl.in:62
 msgid "web server"
 msgstr "servidor web"
 
-#: service-list.pl.in:37 service-list.pl.in:61
-msgid ""
-"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+#: service-list.pl.in:38 service-list.pl.in:62
+msgid "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr "Apache es un servidor WWW. Se usa para servir archivos HTML y CGI."
 
-#: service-list.pl.in:38
+#: service-list.pl.in:39
 msgid "Run missed scheduled jobs at startup"
 msgstr "Ejecutar los trabajos programados no efectuados al inicio"
 
-#: service-list.pl.in:38
-msgid "Run cron jobs that were left out due to downtime"
-msgstr ""
-"Ejecutar los trabajos cron que se dejaron debido al tiempo que estuvo apagado"
-
 #: service-list.pl.in:39
+msgid "Run cron jobs that were left out due to downtime"
+msgstr "Ejecutar los trabajos cron que se dejaron debido al tiempo que estuvo apagado"
+
+#: service-list.pl.in:40
 msgid "Automatic power management daemon"
 msgstr "Demonio de gestión de energía"
 
-#: service-list.pl.in:39
+#: service-list.pl.in:40
 msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
@@ -53,11 +64,11 @@ msgstr ""
 "de syslog(8). También puede usarse para apagar el equipo cuando la batería "
 "está baja."
 
-#: service-list.pl.in:40
+#: service-list.pl.in:41
 msgid "Runs a command at a given time"
 msgstr "Ejecuta un comando a una hora determinada"
 
-#: service-list.pl.in:40
+#: service-list.pl.in:41
 msgid ""
 "Runs commands scheduled by the at command at the time specified when at was "
 "run, and runs batch commands when the load average is low enough."
@@ -66,15 +77,15 @@ msgstr ""
 "at se ejecutó, y ejecuta comandos por lotes cuando la carga de trabajo es "
 "suficientemente baja."
 
-#: service-list.pl.in:41
+#: service-list.pl.in:42
 msgid "BinFormat Support"
 msgstr "Soporte de formatos binarios"
 
-#: service-list.pl.in:41
+#: service-list.pl.in:42
 msgid "Support for running non ELF binaries on Linux"
 msgstr "Soporte para ejecutar binarios no ELF en Linux"
 
-#: service-list.pl.in:42
+#: service-list.pl.in:43
 msgid ""
 "An xinetd internal service which generate characters. The xinetd internal "
 "service which continuously generates characters until the connection is "
@@ -85,7 +96,7 @@ msgstr ""
 "que genera caracteres continuamente hasta que la conexión de abandona. Esta "
 "es la versión tcp. Debe activar xinetd para usar este servicio."
 
-#: service-list.pl.in:43
+#: service-list.pl.in:44
 msgid ""
 "An xinetd internal service which generate characters. The xinetd internal "
 "service which continuously generates characters until the connection is "
@@ -96,15 +107,15 @@ msgstr ""
 "que genera caracteres continuamente hasta que la conexión de abandona. Esta "
 "es la versión udp. Debe activar xinetd para usar este servicio."
 
-#: service-list.pl.in:44
+#: service-list.pl.in:45
 msgid "daemon to execute scheduled commands"
 msgstr "demonio para ejecutar comandos programados"
 
-#: service-list.pl.in:45
+#: service-list.pl.in:46
 msgid "Run scheduled jobs"
 msgstr "Ejecuta tareas programadas"
 
-#: service-list.pl.in:45
+#: service-list.pl.in:46
 msgid ""
 "cron is a standard UNIX program that runs user-specified programs at "
 "periodic scheduled times. vixie cron adds a number of features to the basic "
@@ -115,11 +126,11 @@ msgstr ""
 "serie de características al cron de UNIX básico, incluyendo mejor seguridad "
 "y opciones de configuración más potentes."
 
-#: service-list.pl.in:46
+#: service-list.pl.in:47
 msgid "Common Unix Printing System"
 msgstr "Common Unix Printing System"
 
-#: service-list.pl.in:47
+#: service-list.pl.in:48
 msgid ""
 "An internal xinetd service which gets the current system time then prints it "
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
@@ -129,7 +140,7 @@ msgstr ""
 "imprime en un formato como este: Mie Nov 13 22:30:27 EST 2002. Esta es la "
 "versión tcp. Debe activar xinetd para usar este servicio."
 
-#: service-list.pl.in:48
+#: service-list.pl.in:49
 msgid ""
 "An internal xinetd service which gets the current system time then prints it "
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
@@ -139,23 +150,23 @@ msgstr ""
 "imprime en un formato como este: Mie Nov 13 22:30:27 EST 2002. Esta es la "
 "versión udp. Debe activar xinetd para usar este servicio."
 
-#: service-list.pl.in:49 service-list.pl.in:50
+#: service-list.pl.in:50 service-list.pl.in:51
 msgid "Dynamic DNS Client"
 msgstr "Cliente dinámico DNS"
 
-#: service-list.pl.in:49
+#: service-list.pl.in:50
 msgid "A Dynamic DNS Name service from www.dyndns.org"
 msgstr "Un servicio de nombres DNS dinámico de www.dyndns.org"
 
-#: service-list.pl.in:50
+#: service-list.pl.in:51
 msgid "A Dynamic DNS Name service from www.dhis.org"
 msgstr "Un servicio de nombres DNS dinámico de www.dhis.org"
 
-#: service-list.pl.in:51
+#: service-list.pl.in:52
 msgid "Dict Dictionary Server"
 msgstr "Servicor de diccionario Dict"
 
-#: service-list.pl.in:52
+#: service-list.pl.in:53
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the tcp version. You must enable xinetd to use this service."
@@ -164,7 +175,7 @@ msgstr ""
 "los clientes. Esta es la versión tcp. Debe activar xinetd para usar este "
 "servicio."
 
-#: service-list.pl.in:53
+#: service-list.pl.in:54
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the udp version. You must enable xinetd to use this service."
@@ -172,58 +183,61 @@ msgstr ""
 "Un servicio interno xinetd que devuelve caracteres de eco a los clientes. "
 "Esta es la versión upd. Debes activar xinetd para usar este servicio."
 
-#: service-list.pl.in:54
+#: service-list.pl.in:55
 msgid "Exim SMTP Server"
 msgstr "Servidor SMTP exim"
 
-#: service-list.pl.in:55
+#: service-list.pl.in:56
 msgid "file alteration monitor"
 msgstr "monitor de alteración de archivos"
 
-#: service-list.pl.in:56
+#: service-list.pl.in:57
 msgid "Firstboot is a druid style program that runs on the first time"
 msgstr "Firstboot es un programa asistentente que se ejecuta la primera vez"
 
-#: service-list.pl.in:57
+#: service-list.pl.in:58
 msgid "Mail Fetcher"
 msgstr "Extractor de correo"
 
-#: service-list.pl.in:57
+#: service-list.pl.in:58
 msgid "A Mail Fetcher from external Servers"
 msgstr "Un extractor de correo para servidores externos"
 
-#: service-list.pl.in:58
+#: service-list.pl.in:59
 msgid "IPv6 Tunnel Broker"
 msgstr "Broker de túneles IPv6"
 
-#: service-list.pl.in:58
+#: service-list.pl.in:59
 msgid "A IPv6 Dynamic Tunnel Broker"
 msgstr "Un Broker de túneles dinámicos IPv6"
 
-#: service-list.pl.in:59
+#: service-list.pl.in:60
 msgid "GNOME Display Manager"
 msgstr "Gestor de pantallas Gnome"
 
-#: service-list.pl.in:59
+#: service-list.pl.in:60
 msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
 msgstr "gdm proporciona el equivalente de GNOME de un inicio de sesión."
 
-#: service-list.pl.in:60
+#: service-list.pl.in:61
 msgid "console mouse support"
 msgstr "soporte de ratón para consola"
 
-#: service-list.pl.in:60
+#: service-list.pl.in:61
 msgid ""
 "GPM adds mouse support to text-based Linux applications such the Midnight "
 "Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
-msgstr "GPM añade soporte de ratón a las aplicaciones de Linux basadas en texto como Midnight Commander. También permite operaciones de cortar y pegar para la consola, e incluye soporte para menús emergentes en la consola."
+msgstr ""
+"GPM añade soporte de ratón a las aplicaciones de Linux basadas en texto como "
+"Midnight Commander. También permite operaciones de cortar y pegar para la "
+"consola, e incluye soporte para menús emergentes en la consola."
 
-#: service-list.pl.in:62
+#: service-list.pl.in:63
 msgid "internet superserver"
 msgstr "superservidor de internet"
 
-#: service-list.pl.in:62
+#: service-list.pl.in:63
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
@@ -231,11 +245,11 @@ msgstr ""
 "inetd permite ejecutar un demonio para invocar algunos otros, reduciendo la "
 "carga en el sistema"
 
-#: service-list.pl.in:63
+#: service-list.pl.in:64
 msgid "administration tool for IPv4 packet filtering and NAT"
 msgstr "herramienta de administración para filtrado de paquetes IPv4 y NAT"
 
-#: service-list.pl.in:63
+#: service-list.pl.in:64
 msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
@@ -243,24 +257,37 @@ msgstr ""
 "Iptables se usa para configurar, mantener e inspeccionar las tablas de "
 "reglas de filtrado de paquetes IP en el kernel Linux."
 
-#: service-list.pl.in:64
+#: service-list.pl.in:65
 msgid "IrDA stack for Linux"
 msgstr "Pila IrDA para Linux"
 
-#: service-list.pl.in:65
+#: service-list.pl.in:66
 msgid "The Internet Key Exchange protocol"
 msgstr "El protocolo de intercambio de claves de Internet"
 
-#: service-list.pl.in:65
-msgid "The Internet Key Exchange protocol openbsd implementation"
-msgstr ""
-"La implementación openbsd del protocolo de intercambio de claves de Internet"
-
 #: service-list.pl.in:66
+msgid "The Internet Key Exchange protocol openbsd implementation"
+msgstr "La implementación openbsd del protocolo de intercambio de claves de Internet"
+
+#: service-list.pl.in:67
 msgid "start and stop ISDN services"
 msgstr "iniciar y parar servicios RDSI"
 
-#: service-list.pl.in:67
+#: service-list.pl.in:68
+msgid "Check and fix joystick device nodes"
+msgstr "Comprueba y arregla nodos de dispositivos joystick"
+
+#: service-list.pl.in:68
+msgid ""
+"Runs joystick-device-check.  joystick-device-check is a program which "
+"ensures that the /dev/js* device nodes are correct for the kernel version in "
+"use."
+msgstr ""
+"Ejecuta joystick-device-check. joystick-device-check es un programa que "
+"se asegura de que los nodos de dispositivo /dev/js* sean correctos para "
+"la versión del núcleo que esté en uso."
+
+#: service-list.pl.in:69
 msgid ""
 "This package loads the selected keyboard map as set in /etc/sysconfig/"
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
@@ -270,27 +297,27 @@ msgstr ""
 "sysconfig/keyboard. Esto puede seleccionarse con la utilidad kbdconfig. "
 "Debería dejar esto activado para la mayoría de los equipos."
 
-#: service-list.pl.in:68
-msgid ""
-"klogd is a system daemon which intercepts and logs Linux kernel messages."
+#: service-list.pl.in:70
+msgid "klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr ""
 "klogd es un demonio del sistema que intercepta y registra los mensajes del "
 "núcleo Linux."
 
-#: service-list.pl.in:69
-msgid ""
-"This runs the hardware probe, and optionally configures changed hardware."
+#: service-list.pl.in:71
+msgid "This runs the hardware probe, and optionally configures changed hardware."
 msgstr ""
 "Esto ejecuta el sondeo de hardware, y opcionalmente configura el hardware "
 "que ha cambiado."
 
-#: service-list.pl.in:70 service-list.pl.in:71
+#: service-list.pl.in:72 service-list.pl.in:73
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
-msgstr "LIRC es un paquete que permite decodificar y enviar señales infrarrojas de muchos controles remotos comunes"
+msgstr ""
+"LIRC es un paquete que permite decodificar y enviar señales infrarrojas de "
+"muchos controles remotos comunes"
 
-#: service-list.pl.in:72
+#: service-list.pl.in:74
 msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
@@ -299,23 +326,23 @@ msgstr ""
 "correcta. Es básicamente un servidor que administra los trabajos de "
 "impresión a las impresoras."
 
-#: service-list.pl.in:73
+#: service-list.pl.in:75
 msgid "Syslog Replacement"
 msgstr "Reemplazo de Syslog"
 
-#: service-list.pl.in:73
+#: service-list.pl.in:75
 msgid "Modern logging daemon"
 msgstr "Demonio de registro moderno"
 
-#: service-list.pl.in:74
+#: service-list.pl.in:76
 msgid "tools for managing Linux kernel modules"
 msgstr "herramientas para gestión de módulos del núcleo Linux"
 
-#: service-list.pl.in:75
+#: service-list.pl.in:77
 msgid "dns server"
 msgstr "servidor dns"
 
-#: service-list.pl.in:75
+#: service-list.pl.in:77
 msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
@@ -323,7 +350,7 @@ msgstr ""
 "named (BIND) es el Servicio de Nombres de Dominio (DNS) que se usa para "
 "resilver nombres de hosts a direcciones IP."
 
-#: service-list.pl.in:76
+#: service-list.pl.in:78
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
@@ -331,7 +358,7 @@ msgstr ""
 "Monta y desmonta todos los puntos de monteje de sistemas de archivos de red "
 "(NFS), SMB (LAn Manager/Windows) y NCP (Netware)."
 
-#: service-list.pl.in:77
+#: service-list.pl.in:79
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
@@ -339,7 +366,7 @@ msgstr ""
 "Activa/Desactiva todos los interfaces de red configurados para iniciarse a "
 "la vez que el sistema."
 
-#: service-list.pl.in:78
+#: service-list.pl.in:80
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS server functionality, which is configured via the /etc/"
@@ -349,7 +376,7 @@ msgstr ""
 "IP. Este servicio proporciona funcionalidad de servicor NFS, que se "
 "configura por medio del archivo «/etc/exports»."
 
-#: service-list.pl.in:79
+#: service-list.pl.in:81
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS file locking functionality."
@@ -357,31 +384,41 @@ msgstr ""
 "NFS es un protocolo popular para compartir archivos a través de redes TCPO/"
 "IP. Este servicio proporciona funcionalidad de bloqueo de archivos por NFS."
 
-#: service-list.pl.in:80
+#: service-list.pl.in:82
 msgid "ntpd is the NTPv4 daemon."
 msgstr "ntpd es el demonio NTPv4"
 
-#: service-list.pl.in:81
+#: service-list.pl.in:83
+msgid "Update the system time over the network"
+msgstr "Actualizar la hora del sistema a través de la red"
+
+#: service-list.pl.in:83
+msgid ""
+"Checks the time from a Network Time Protocol (ntp) server and adjusts the "
+"system time accordingly."
+msgstr "Comprueba la hora desde un servidor NTP y ajusta la hora del sistema de acuerdo con él."
+
+#: service-list.pl.in:84
 msgid "HTTP caching proxy"
 msgstr "proxy caché HTTP"
 
-#: service-list.pl.in:82
+#: service-list.pl.in:85
 msgid "PCMCIA Services"
 msgstr "Servcios PCMCIA"
 
-#: service-list.pl.in:83
+#: service-list.pl.in:86
 msgid "Caching-Only DNS Server"
 msgstr "Servidor DNS de sólo de caché"
 
-#: service-list.pl.in:84
+#: service-list.pl.in:87
 msgid "IPsec tunnel implementation"
 msgstr "Implementación de túneles IPSec"
 
-#: service-list.pl.in:85
+#: service-list.pl.in:88
 msgid "DARPA port to RPC program number mapper"
 msgstr "Puerto DARPA para el papeador de números de puerto RPC"
 
-#: service-list.pl.in:85
+#: service-list.pl.in:88
 msgid ""
 "The portmapper manages RPC connections, which are used by protocols such as "
 "NFS and NIS. The portmap server must be running on machines which act as "
@@ -391,19 +428,19 @@ msgstr ""
 "NFS y NIS. El servidor portmap debe estar en ejecución en las máquinas que "
 "actúan como servidores para protocolos que usen el mecanismo RPC."
 
-#: service-list.pl.in:86
+#: service-list.pl.in:89
 msgid "Mail Transport Agent"
 msgstr "Agente de transporte de correo"
 
-#: service-list.pl.in:87
+#: service-list.pl.in:90
 msgid "database server"
 msgstr "servidor de bases de datos"
 
-#: service-list.pl.in:88
+#: service-list.pl.in:91
 msgid "Point to Point Protocol daemon"
 msgstr "Demonio del protocolo punto a punto"
 
-#: service-list.pl.in:88
+#: service-list.pl.in:91
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
@@ -411,11 +448,11 @@ msgstr ""
 "El protocolo punto a punto proporciona un método para transmitir datagramas "
 "sobre enlaces punto a punto."
 
-#: service-list.pl.in:89
+#: service-list.pl.in:92
 msgid "Privacy enhancing HTTP Proxy"
 msgstr "Proxy HTTP para mejora de privacidad"
 
-#: service-list.pl.in:90
+#: service-list.pl.in:93
 msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
@@ -423,7 +460,7 @@ msgstr ""
 "Guarda y restablece el almacén de entropía del sistema para generar números "
 "aleatorios de mayor calidad."
 
-#: service-list.pl.in:91
+#: service-list.pl.in:94
 msgid ""
 "This scripts assignes raw devices to block devices (such as hard drive "
 "partitions). This is for the use of applications such as Oracle. You can set "
@@ -435,7 +472,7 @@ msgstr ""
 "Oracle. Puede configurar el dispositivo raw a un dispositivo de bloques "
 "mapeandolo mediante el archivo /etc/sysconfig/rawdevices."
 
-#: service-list.pl.in:92
+#: service-list.pl.in:95
 msgid ""
 "This is a daemon which handles the task of connecting periodically to the "
 "Red Hat Network servers to check for updates, notifications and perform "
@@ -447,7 +484,7 @@ msgstr ""
 "realizar tareas de monitorización del sistema de acuerdo con el  nivel de "
 "servicio con el que el servidor está suscrito."
 
-#: service-list.pl.in:93
+#: service-list.pl.in:96
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
@@ -455,7 +492,7 @@ msgstr ""
 "El servidor rsync es una buena adición para un servicor ftp, ya que permite "
 "sumas de comprobación crc, etc. Debe activar xinetd para usar este servicio."
 
-#: service-list.pl.in:94
+#: service-list.pl.in:97
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
@@ -463,7 +500,7 @@ msgstr ""
 "saslauthd es un proceso de servidor que se encarga de la autenticación en "
 "texto plano como parte de la biblioteca cyrus-sasl."
 
-#: service-list.pl.in:95
+#: service-list.pl.in:98
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
@@ -471,7 +508,7 @@ msgstr ""
 "Sendmail es un agente de transporte de correo, que es el programa que mueve "
 "correo desde una máquina a otra."
 
-#: service-list.pl.in:96
+#: service-list.pl.in:99
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
@@ -479,7 +516,7 @@ msgstr ""
 "Un servicio interno xinetd, listando servidores activos. Debe activar xinetd "
 "para usar este servicio."
 
-#: service-list.pl.in:97
+#: service-list.pl.in:100
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
@@ -487,11 +524,11 @@ msgstr ""
 "Un servicio interno xinetd, listando servicios activos. Debe activar xinetd "
 "para usar este servicio."
 
-#: service-list.pl.in:98
+#: service-list.pl.in:101
 msgid "get/set serial port information"
 msgstr "obtener/establecer la información del puerto serie"
 
-#: service-list.pl.in:98
+#: service-list.pl.in:101
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
@@ -499,7 +536,7 @@ msgstr ""
 "setserial es un programa diseñado para establecer y/o informar de la "
 "configuración asociada con un puerto serie."
 
-#: service-list.pl.in:99
+#: service-list.pl.in:102
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
@@ -508,24 +545,23 @@ msgstr ""
 "informes acerca de cuando cambian los archivos. Debe activar xinetd para "
 "usar este servicio."
 
-#: service-list.pl.in:100
+#: service-list.pl.in:103
 msgid "control and monitor storage systems using S.M.A.R.T."
-msgstr ""
-"control y monitorización de sistemas de almacenamiento usando S.M.A.R.T."
+msgstr "control y monitorización de sistemas de almacenamiento usando S.M.A.R.T."
 
-#: service-list.pl.in:101
+#: service-list.pl.in:104
 msgid "Perl-based spam filter using text analysis"
 msgstr "Filtro de spam basado en Perl usando análisis textual"
 
-#: service-list.pl.in:102
+#: service-list.pl.in:105
 msgid "Simple Network Management Protocol (SNMP) Daemon"
 msgstr "Demonio del protocolo de gestión de redes (SNMP)"
 
-#: service-list.pl.in:103 service-list.pl.in:104
+#: service-list.pl.in:106 service-list.pl.in:107
 msgid "OpenSSH SSH server"
 msgstr "Servidor SSH OpenSSH"
 
-#: service-list.pl.in:103
+#: service-list.pl.in:106
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
@@ -533,15 +569,15 @@ msgstr ""
 "ssh es un programa para iniciar sesión en una máquina remota y para ejecutar "
 "comandos en una máquina remota."
 
-#: service-list.pl.in:104
+#: service-list.pl.in:107
 msgid "OpenSSH server daemon"
 msgstr "Demonio del servidor OpenSSH"
 
-#: service-list.pl.in:105
+#: service-list.pl.in:108
 msgid "Linux system logging utilities"
 msgstr "Utilidades de registro del sistema Linux"
 
-#: service-list.pl.in:105
+#: service-list.pl.in:108
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
@@ -549,7 +585,7 @@ msgstr ""
 "Sysklogd proporciona dos utilidades del sistema que proporcionan soporte "
 "para el registro del sistema y captura de los mensajes del núcleo."
 
-#: service-list.pl.in:106
+#: service-list.pl.in:109
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
@@ -558,7 +594,7 @@ msgstr ""
 "varios archivos de registro del sistema. Es una buena idea ejecutar siempre "
 "syslog."
 
-#: service-list.pl.in:107
+#: service-list.pl.in:110
 msgid ""
 "An RFC 868 time server. This protocol provides a site-independent, machine "
 "readable date and time. The Time service sends back to the originating "
@@ -570,7 +606,7 @@ msgstr ""
 "segundos desde el uno de enero de 1900. Esta es la versión tcp. Debe activar "
 "xinetd para usar este servicio."
 
-#: service-list.pl.in:108
+#: service-list.pl.in:111
 msgid ""
 "An RFC 868 time server. This protocol provides a site-independent, machine "
 "readable date and time. The Time service sends back to the originating "
@@ -582,11 +618,11 @@ msgstr ""
 "segundos desde el uno de enero de 1900. Esta es la versión udp. Debe activar "
 "xinetd para usar este servicio."
 
-#: service-list.pl.in:109
+#: service-list.pl.in:112
 msgid "kernel random number source devices"
 msgstr "dispositivos de generación de números aleatorios del núcleo"
 
-#: service-list.pl.in:109
+#: service-list.pl.in:112
 msgid ""
 "The  random  number  generator  gathers environmental noise from device "
 "drivers and other sources into an entropy pool. From this entropy pool "
@@ -596,11 +632,11 @@ msgstr ""
 "dispositivos y otras fuentes para crear un pool de entropía. Desde este pool "
 "de entropía se crean números aleatorios."
 
-#: service-list.pl.in:110
+#: service-list.pl.in:113
 msgid "Intel(TM) x86(TM)-based virtual machine"
 msgstr "La máquina virtual Intel(TM) x86(TM)"
 
-#: service-list.pl.in:110
+#: service-list.pl.in:113
 msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
@@ -608,15 +644,15 @@ msgstr ""
 "El comando vmware inicia una máquina virtual basada en Intel X86. Este "
 "script gestiona los servicios necesarios para ejecutar el software VMWare."
 
-#: service-list.pl.in:111
+#: service-list.pl.in:114
 msgid "Web-based administration toolkit"
 msgstr "Conjunto de herramientas de administración por web"
 
-#: service-list.pl.in:112
+#: service-list.pl.in:115
 msgid "Starts and stops the Samba winbind daemon"
 msgstr "Inicia y detiene el demonio winbind de Samba"
 
-#: service-list.pl.in:113
+#: service-list.pl.in:116
 msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
@@ -624,11 +660,11 @@ msgstr ""
 "Permite a los usuarios ejecutar aplicaciones Windows (tm) tan sólo pulsando "
 "en ellas (o teleando ./file.exe)"
 
-#: service-list.pl.in:114
+#: service-list.pl.in:117
 msgid "X font server"
 msgstr "Servidor de tipografías X"
 
-#: service-list.pl.in:114
+#: service-list.pl.in:117
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
@@ -636,7 +672,7 @@ msgstr ""
 "XFs es el servidor de tipos del sistema X Window. Suministra tipografías "
 "para los servidores de pantalla de X Window System"
 
-#: service-list.pl.in:115
+#: service-list.pl.in:118
 msgid ""
 "xinetd is a powerful replacement for inetd. xinetd has access control "
 "machanisms, extensive logging capabilities, the ability to make services "
@@ -648,18 +684,31 @@ msgstr ""
 "disponibles basándose en la hora y puede poner límites al número de "
 "servidores que pueden iniciarse, entre otras cosas."
 
-#: service.pl.in:169 service.pl.in:174
+#: service.pl.in:180 service.pl.in:185
 msgid "Halting the system"
 msgstr "Deteniendo el sistema"
 
-#: service.pl.in:170 service.pl.in:176
+#: service.pl.in:181 service.pl.in:187
 msgid "Text mode"
 msgstr "Modo texto"
 
-#: service.pl.in:171 service.pl.in:175 service.pl.in:179
+#: service.pl.in:182 service.pl.in:186 service.pl.in:194
 msgid "Graphical mode"
 msgstr "Modo gráfico"
 
-#: service.pl.in:172 service.pl.in:177
+#: service.pl.in:183 service.pl.in:188
 msgid "Rebooting the system"
 msgstr "Reiniciando el sistema"
+
+#: service.pl.in:190
+msgid "Starts all system neccesary services"
+msgstr "Inicia todos los servicios necesarios del sistema"
+
+#: service.pl.in:191
+msgid "Default runlevel"
+msgstr "Nivel de ejecución predeterminado"
+
+#: service.pl.in:192
+msgid "Networkless runlevel"
+msgstr "Nivel de ejecución sin red"
+
