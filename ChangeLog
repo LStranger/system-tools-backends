@@ -1,3 +1,7 @@
+2003-12-30  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* autogen.sh, configure.in: changes for passing distcheck
+
 2003-12-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Makefile.am, configure.in, boot-conf.in, boot.pl.in: added
