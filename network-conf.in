@@ -322,6 +322,19 @@ sub list_ifaces
   &gst_xml_print_end ("network-ifaces");
 }
 
+sub detect_modem
+{
+  my ($tool) = @_;
+  my (%hash);
+
+  $$hash {"device"} = &gst_network_autodetect_modem ();
+  &gst_report_end ();
+  
+  &gst_xml_print_begin ("network-modem-device");
+  &gst_xml_print_hash ($hash);
+  &gst_xml_print_end ("network-modem-device");
+}
+
 
 # --- Main --- #
 
@@ -336,8 +349,9 @@ $directives = {
                       "List interfaces and active/inactive status." ],
   "enable_iface" => [ \&enable_iface, [ "interface", "enabled" ],
                       "Immediatly enable or disable a given interface. " .
-                      "interface is the file tag value, enabled is 1 or 0." ]
-    };
+                      "interface is the file tag value, enabled is 1 or 0." ],
+  "detect_modem" => [ \&detect_modem, [], "Detects the modem device." ]
+};
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);
 &gst_platform_ensure_supported ($tool, @platforms);

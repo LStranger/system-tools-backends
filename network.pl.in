@@ -41,6 +41,42 @@ require "$SCRIPTSDIR/service.pl$DOTIN";
 require "$SCRIPTSDIR/util.pl$DOTIN";
 require "$SCRIPTSDIR/xml.pl$DOTIN";
 
+# Tries to detect modem in a closed list of devices
+sub gst_network_autodetect_modem
+{
+  my (@arr) = ("/dev/modem", "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3");
+  local *INFILE, *OUTFILE;
+  local $SIG{ALRM} = sub {}; 
+
+  foreach $i (@arr) {
+    open INFILE, "$i";
+    open OUTFILE, ">$i";
+
+    print OUTFILE "AT\n";
+
+#    select((select(DEV), $| = 1)[0]);
+    alarm 1;
+    $nread = sysread (INFILE, $buffer, 3);
+    if ($nread) {
+      do {
+        if ($buffer =~ /^OK/g)
+        {
+          alarm;
+          close INFILE;
+          close OUTFILE;
+          return $i;
+        }
+      } while (sysread (INFILE, $buffer, 999));
+    }
+    alarm;
+
+    $buffer = "";
+
+    close INFILE;
+    close OUTFILE;
+  }
+}
+
 # Parse <interface>...</interface>. Put here so it can be shared with internetsharing.
 sub gst_network_xml_parse_interface
 {
