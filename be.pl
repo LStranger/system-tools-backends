@@ -1,12 +1,12 @@
 #!/usr/bin/env perl
 #-*-perl-*-
 
-# Common stuff for the helix-setup-tools backends.
+# Common stuff for the ximian-setup-tools backends.
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
-# Authors: Hans Petter Jansson <hpj@helixcode.com>
-#          Arturo Espinosa <arturo@helixcode.com>
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#          Arturo Espinosa <arturo@ximian.com>
 #          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
 #          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
 #
