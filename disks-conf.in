@@ -824,6 +824,20 @@ sub scan_scsi_bus
    close (PROC_SCSI_FILE);
 }
 
+sub scan_floppy
+{
+   #FIXME: I don't like it
+   $floppy = `grep fd /proc/devices | wc -l`;
+   chomp $floopy;
+   if ($floppy >= 1) {
+      $dev="/dev/fd0";
+      &update_disk_data ($dev, "media", "floppy"); 
+   } elsif (system ("fdisk /dev/fd1 > /dev/null 2>&1")) {
+      $dev="/dev/fd1";
+      &update_disk_data ($dev, "media", "floppy");
+   }
+}
+
 # fdisk -l <disk device>
 #
 # <&filtered lines>
@@ -852,28 +866,23 @@ sub sort_by_start
 
 sub get_fdisk
 {
+  my $check_dev = shift;
+
   my $fdisk_tool;
 
-  # Okay, so this is strictly not portable either. Patches welcome.
-
-  #my @check_devs = ( "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/hdd",
-  #                  "/dev/hde", "/dev/hdf", "/dev/hdg", "/dev/hdh",
-  #
-  #                  "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd",
-  #                  "/dev/sde", "/dev/sdf",
-  #                  
-  #                  "/dev/eda", "/dev/edb", "/dev/edc", "/dev/edd",
-  #                  
-  #                   "/dev/xda", "/dev/xdb" );
-  
   for ($i = 0; $cf_disks[$i]; $i++) {
      if (($cf_disks[$i])->{media} =~ /disk/) {
-	push (@check_devs, ($cf_disks[$i])->{device});
+	if ($check_dev) {
+	   if (($cf_disks[$i])->{device} eq $check_dev) {
+	      push (@check_devs, ($cf_disks[$i])->{device});
+	   }
+	} else {
+	   push (@check_devs, ($cf_disks[$i])->{device});
+	}
      }
   }
 
   $fdisk_tool = &gst_file_locate_tool("fdisk");
-  #my @check_devs = ("/dev/hdc"); # debug
 
   for $dev (@check_devs)
   {
@@ -882,11 +891,9 @@ sub get_fdisk
     &gst_report ("disks_partition_probe", $dev);
 
     $fd = &gst_file_run_pipe_read ("fdisk -l $dev");
-    #$fd = &gst_file_open_read_from_names ("/tmp/fdisk"); # debug
     # We want to cache fdisk work!
     
     my @fdisk_data = <$fd>; 
-    #close ($fd); # debug
     my ($block_size, $dev_size);
     my $unit = "";
 
@@ -1114,19 +1121,7 @@ sub get_fdisk
 
     &gst_report ("disks_size_query", $dev);
     
-    # Floppy disk support
-    $floppy = `grep fd /proc/devices | wc -l`;
-    chomp $floopy;
-    if ($floppy >= 1)
-    {
-       $dev="/dev/fd0";
-       &update_disk_data ($dev, "media", "floppy"); 
-    } elsif (system ("fdisk /dev/fd1 > /dev/null 2>&1")) {
-       $dev="/dev/fd1";
-       &update_disk_data ($dev, "media", "floppy");
-    }
-
-    &gst_print_progress();
+    &gst_print_progress ();
   }
 }
 
@@ -1254,6 +1249,78 @@ sub sort_by_media
    }
 }
 
+sub xml_print_common 
+{
+   my ($disk) = @_;
+
+   &gst_xml_print_line ("<device>" . %$disk->{device} . "</device>\n");
+   if (%$disk->{alias}) { &gst_xml_print_line ("<alias>" . %$disk->{alias} . "</alias>\n"); }
+   if (%$disk->{size}) {
+      # The frontend wants KB
+      &gst_xml_print_line ("<size>" . %$disk->{size}*(%$disk->{block_size}/1024) . "</size>\n");
+   }
+   if (%$disk->{media}) { &gst_xml_print_line ("<media>" . %$disk->{media} . "</media>\n"); }
+   if (%$disk->{model}) { &gst_xml_print_line ("<model>" . %$disk->{model} . "</model>\n"); }
+   &gst_xml_print_state_tag ("present", %$disk->{present}); 
+   if (%$disk->{type})  { &gst_xml_print_line ("<type>" .  %$disk->{type} . "</type>\n"); }
+   if (%$disk->{point}) { &gst_xml_print_line ("<point>" . %$disk->{point} . "</point>\n"); }
+}
+
+sub xml_print_cdrom
+{
+   my ($disk) = @_;
+
+   &gst_xml_print_state_tag ("play-audio",   %$disk->{"play-audio"});
+   &gst_xml_print_state_tag ("write-cdr",    %$disk->{"write-cdr"});
+   &gst_xml_print_state_tag ("write-cdrw",   %$disk->{"write-cdrw"});
+   &gst_xml_print_state_tag ("read-dvd",     %$disk->{"read-dvd"});
+   &gst_xml_print_state_tag ("write-dvdr",   %$disk->{"write-dvdr"});
+   &gst_xml_print_state_tag ("write-dvdram", %$disk->{"write-dvdram"});
+}
+
+sub xml_print_partitions
+{
+   my ($disk, $partitions) = @_;
+
+   while (@$partitions)
+   {
+      my $partition = $$partitions[0];
+
+      &gst_xml_print_vspace ();
+      &gst_xml_print_line ("<partition>\n");
+      &gst_xml_enter ();
+
+      &gst_xml_print_line ("<device>" . %$partition->{device} . "</device>\n");
+      if (%$partition->{alias}) { &gst_xml_print_line ("<alias>" . %$partition->{alias} . "</alias>\n"); }
+      if (%$partition->{type})  { &gst_xml_print_line ("<type>" .  %$partition->{type} .  "</type>\n"); }
+      if (%$partition->{point}) { &gst_xml_print_line ("<point>" . %$partition->{point} . "</point>\n"); }
+      if (%$partition->{label}) { &gst_xml_print_line ("<label>" . %$partition->{label} . "</label>\n"); }
+      if (%$partition->{size}) {
+	 # The frontend wants KB 
+	 &gst_xml_print_line ("<size>" . %$partition->{size}*(%$disk->{block_size}/1024) . "</size>\n");
+      }
+
+      if (%$partition->{start}) { &gst_xml_print_line ("<start>" . %$partition->{start} . "</start>\n"); }
+      if (%$partition->{end}) { &gst_xml_print_line ("<end>" . %$partition->{end} . "</end>\n"); }
+
+      #&gst_xml_print_state_tag ("bootable", %$partition->{bootable});
+      #&gst_xml_print_state_tag ("integritycheck", %$partition->{check});
+	
+      &gst_xml_print_state_tag ("mounted", %$partition->{mounted});
+      if (%$partition->{free}) {
+	 # The frontend wants KB
+         &gst_xml_print_line ("<free>" . %$partition->{free}*(%$disk->{block_size}/1024) . "</free>\n");
+      }        
+      &gst_xml_print_state_tag ("listed", %$partition->{listed});
+      #&gst_xml_print_state_tag ("detected", %$partition->{detected});
+
+      &gst_xml_leave ();
+      &gst_xml_print_line ("</partition>\n");
+        
+      shift @$partitions;
+   }
+}
+
 sub xml_print
 {
   # print Dumper (@cf_disks);
@@ -1263,7 +1330,6 @@ sub xml_print
   &gst_xml_print_line ("<!-- Local fixed media and partitions -->\n");
   &gst_xml_print_vspace ();
 
-  #my @disks = @cf_disks;
   my @disks = sort sort_by_media (@cf_disks);
 
   while (@disks)
@@ -1276,69 +1342,17 @@ sub xml_print
       &gst_xml_print_line ("<disk>\n");
       &gst_xml_enter ();
 
-      &gst_xml_print_line ("<device>" . %$disk->{device} . "</device>\n");
-      if (%$disk->{alias}) { &gst_xml_print_line ("<alias>" . %$disk->{alias} . "</alias>\n"); }
+      &xml_print_common ($disk);
       
-      if (%$disk->{size}) { 
-          # The frontend wants KB
-          &gst_xml_print_line ("<size>" . %$disk->{size}*(%$disk->{block_size}/1024) . "</size>\n"); 
-      }
-      if (%$disk->{media}) { &gst_xml_print_line ("<media>" . %$disk->{media} . "</media>\n"); }
-      if (%$disk->{model}) { &gst_xml_print_line ("<model>" . %$disk->{model} . "</model>\n"); }
-      &gst_xml_print_state_tag ("present", %$disk->{present}); 
-      if (%$disk->{type})  { &gst_xml_print_line ("<type>" .  %$disk->{type} . "</type>\n"); }
-      if (%$disk->{point}) { &gst_xml_print_line ("<point>" . %$disk->{point} . "</point>\n"); }
       if (%$disk->{media} =~ /cdrom/) { 
-	 &gst_xml_print_state_tag ("play-audio",   %$disk->{"play-audio"});
-	 &gst_xml_print_state_tag ("write-cdr",    %$disk->{"write-cdr"});
-	 &gst_xml_print_state_tag ("write-cdrw",   %$disk->{"write-cdrw"});
-	 &gst_xml_print_state_tag ("read-dvd",     %$disk->{"read-dvd"});
-	 &gst_xml_print_state_tag ("write-dvdr",   %$disk->{"write-dvdr"});
-	 &gst_xml_print_state_tag ("write-dvdram", %$disk->{"write-dvdram"});
+	 &xml_print_cdrom ($disk);
       }
       if (%$disk->{dma}) { &gst_xml_print_state_tag ("dma", %$disk->{dma}); }
       
       my $partitions = %$disk->{partitions};
+
+      &xml_print_partitions ($disk, $partitions);
       
-      while (@$partitions)
-      {
-        my $partition = $$partitions[0];
-
-        &gst_xml_print_vspace ();
-        &gst_xml_print_line ("<partition>\n");
-        &gst_xml_enter ();
-
-        &gst_xml_print_line ("<device>" . %$partition->{device} . "</device>\n");
-	if (%$partition->{alias}) { &gst_xml_print_line ("<alias>" . %$partition->{alias} . "</alias>\n"); }
-        if (%$partition->{type})  { &gst_xml_print_line ("<type>" .  %$partition->{type} .  "</type>\n"); }
-        if (%$partition->{point}) { &gst_xml_print_line ("<point>" . %$partition->{point} . "</point>\n"); }
-        if (%$partition->{label}) { &gst_xml_print_line ("<label>" . %$partition->{label} . "</label>\n"); }
-        if (%$partition->{size})
-        {
-          # The frontend wants KB 
-          &gst_xml_print_line ("<size>" . %$partition->{size}*(%$disk->{block_size}/1024) . "</size>\n");
-        }
-
-	if (%$partition->{start}) { &gst_xml_print_line ("<start>" . %$partition->{start} . "</start>\n"); }
-	if (%$partition->{end}) { &gst_xml_print_line ("<end>" . %$partition->{end} . "</end>\n"); }
-
-	#&gst_xml_print_state_tag ("bootable", %$partition->{bootable});
-	#&gst_xml_print_state_tag ("integritycheck", %$partition->{check});
-        &gst_xml_print_state_tag ("mounted", %$partition->{mounted});
-        if (%$partition->{free})
-        {
-          # The frontend wants KB
-          &gst_xml_print_line ("<free>" . %$partition->{free}*(%$disk->{block_size}/1024) . "</free>\n");
-        }        
-        &gst_xml_print_state_tag ("listed", %$partition->{listed});
-	#&gst_xml_print_state_tag ("detected", %$partition->{detected});
-
-        &gst_xml_leave ();
-        &gst_xml_print_line ("</partition>\n");
-        
-        shift @$partitions;
-      }
-
       &gst_xml_leave ();
       &gst_xml_print_line ("</disk>\n");
       &gst_xml_print_vspace ();
@@ -1360,7 +1374,8 @@ sub get
   my @storages;
   &scan_ide_bus (\@storages);
   &scan_scsi_bus (\@storages);
-  &get_fdisk;
+  &scan_floppy ();
+  &get_fdisk ();
   &read_fstab;
 
   &gst_report_end ();
@@ -1665,6 +1680,63 @@ sub cdrom_disc_info
    &gst_xml_print_end ("disc_info");
 }	       
 
+sub get_disk_info
+{
+   my ($device, $present) = @_;
+
+   my $is_present;
+   
+   if (sysopen (HANDLE, $device, O_RDONLY|O_NONBLOCK)) {
+      $is_present = 1;
+      close HANDLE;
+   } else {
+      $is_present = 0;
+   }
+   
+   if ($present) {
+      # We only want to know if the device is attached
+      &gst_xml_print_line ("<device>" . $device . "</device>\n");
+      &gst_xml_print_state_tag ("present", $is_present);
+
+      return;
+   } else {
+      if (!$is_present) {
+	 &gst_xml_print_line ("<device>" . $device . "</device>\n");
+	 &gst_xml_print_state_tag ("present", $is_present);
+
+	 return;
+      }
+   }
+   
+   for ($i = 0; $cf_disks[$i]; $i++) {
+
+      #delete ($cf_disks[$i]->{partitions});
+      delete ($cf_disks[$i]);
+   }
+
+   @cf_disks = ();
+   
+   $cf_disks[0]->{device} = $device;
+   $cf_disks[0]->{media} = "disk";
+
+   &get_fdisk ($device);
+   &read_fstab;
+
+   my $disk = $cf_disks[0];
+   &xml_print_common ($disk);
+   my $partitions = %$disk->{partitions};
+   &xml_print_partitions ($disk, $partitions);
+}
+
+sub disk_info
+{
+   my ($tool, $device, $present) = @_;
+
+   &gst_report_end ();
+   &gst_xml_print_begin ("disk_info");
+   &get_disk_info ($device, $present);
+   &gst_xml_print_end ("disk_info");
+}
    
 # --- Calculates the speed of a device in human readable Kib/sec, Mib/sec, etc.--- #
 sub get_dev_speed
@@ -1865,6 +1937,8 @@ $directives = {
                        "Return the speed of a device in kb/s" ],
   "cdrom_disc_info" => [ \&cdrom_disc_info, ["device", "alias"],
                        "Return info about the cdrom discs"],
+  "disk_info"       => [ \&disk_info, ["device", "present"], 
+                       "Return info about disks"],
   "mount"           => [ \&mount_fs, ["device", "media", "typefs", "point", "mounted", "listed", "uid"], 
                        "Immediatly mount or umount a given partition"],
 };
