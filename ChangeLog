@@ -1,3 +1,10 @@
+2001-07-13  Tambet Ingo  <tambet@ximian.com>
+
+	* display-conf.in (check_version): Implement. Check version
+	and bail out on versions lower than 4.0.0
+
+	* x.pl.in (x_version): Now it actually works.
+
 2001-07-12  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_rh62_interface_activate_by_dev):

@@ -117,6 +117,19 @@ sub xml_print
   &xst_xml_print_end ();
 }
 
+sub check_version
+{
+  # Currently supports ONLY X versions higher than 4.0.0
+  my $min_version = 400;
+  my $version = &x_version ();
+
+  if ( $version < $min_version) {
+    # TODO: Give error.
+    &xst_end ();
+    exit (2);
+  }
+}
+
 # Top-level actions.
 
 sub get
@@ -147,7 +160,7 @@ sub filter
 sub test
 {
   # TODO: $testX_cmd should be something better (obviously :)
-  my $testX_cmd = "/home/tambet/work/ximian-setup-tools/src/display/testX";
+  my $testX_cmd = "___scriptsdir___/testX";
   my $tmp_file = "/tmp/XF86Config-tmp";
   my $real_file = &distro_file ();
 
@@ -180,4 +193,5 @@ $directives = {
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);
 &xst_platform_ensure_supported ($tool, @platforms);
+&check_version ();
 &xst_run ($tool);

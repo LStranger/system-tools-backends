@@ -115,7 +115,7 @@ sub x_version
   my $version;
   my $command = &xst_file_locate_tool ("X");
 
-  open (FD, "$command -version  |");
+  open (FD, "$command -version 2>&1 |");
   while (<FD>) {
     if (/^XFree86 Version (\d+)\.(\d+)\.(\d+)/) {
       $version = $1 . $2 . $3;
@@ -124,8 +124,6 @@ sub x_version
   }
   close (FD);
 
-  $version = 403;
-  
   return $version;
 }
   
