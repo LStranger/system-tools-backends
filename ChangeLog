@@ -1,3 +1,8 @@
+2003-03-04  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* boot-lilo.pl.in: lilo needs the vga settings in the "vga" entry, not
+	  in the "append" entry. Fixed
+
 2003-02-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Release 0.23.0

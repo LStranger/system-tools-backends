@@ -39,7 +39,7 @@ require "$SCRIPTSDIR/partition.pl$DOTIN";
 
 my @lilo_global_vars = qw (default prompt delay timeout append boot root);
 my @lilo_common_image_vars = qw (label);
-my @lilo_image_vars = (@lilo_common_image_vars, qw (image append root));
+my @lilo_image_vars = (@lilo_common_image_vars, qw (image append root vga));
 my @lilo_other_vars = (@lilo_common_image_vars, qw (other));
 
 sub xst_boot_lilo_verify_entrylabel
@@ -221,7 +221,15 @@ sub xst_boot_lilo_parse_entries
     $val =~ s/\"//g;    
     $val =~ s/[ \t]+$//;
 
-    $entries[$found]{$key} = $val;
+    #if the variable is "vga", we append it to the "append" var
+    if ($key eq "vga")
+    {
+      $entries[$found]{"append"} .= " vga=" . $val. " ";
+    }
+    else
+    {
+      $entries[$found]{$key} .= $val;
+    }
   }
 
   &xst_file_close ($fd);
@@ -421,6 +429,14 @@ sub xst_boot_lilo_edit_entry
   my $end = &xst_boot_lilo_find_entry ($buff, $lineno + 1);
   $end = scalar @$buff if ($end < 0);
 
+  # extract the "vga" var from the "append" var, this is done this way for
+  # compatibility with grub
+  if ($entry->{"append"} =~ /[ \t]*vga[ \t]*=[ \t]*(((0x)?[0-9][0-9][0-9]|ask))/)
+  {
+      $entry->{"vga"} = $1;
+      $entry->{"append"} =~ s/[ \t]*vga[ \t]*=[ \t]*((0x)?[0-9][0-9][0-9]|ask)//;
+  }
+
   for ($lineno; $lineno < $end; $lineno++)
   {
     # Get the variable.
@@ -500,6 +516,14 @@ sub xst_boot_lilo_add_entry
   $line = $value . " = " . $$entry{$value} . "\n";
   push @$buff, $line;
   delete $$entry{$value};
+  
+  # extract the "vga" var from the "append" var, this is done this way for
+  # compatibility with grub
+  if ($entry->{"append"} =~ /[ \t]*vga[ \t]*=[ \t]*(((0x)?[0-9][0-9][0-9]|ask))/)
+  {
+    $entry->{"vga"} = $1;
+    $entry->{"append"} =~ s/[ \t]*vga[ \t]*=[ \t]*((0x)?[0-9][0-9][0-9]|ask)//;
+  }
 
   # Parameters for entry
   foreach $key (keys %$entry)
