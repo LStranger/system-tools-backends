@@ -214,7 +214,10 @@ sub xst_filesys_info_get_network_host  # filesys_info
 
 sub xst_filesys_info_set_network_host  # filesys_info, network_host
 {
-  &xst_filesys_info_set ($_[0], 'network_host', $_[1]);
+  my ($info, $host) = @_;
+
+  $host =~ s/^\/+//;
+  &xst_filesys_info_set ($info, 'network_host', $host);
 }
 
 sub xst_filesys_info_get_network_path  # filesys_info
@@ -224,7 +227,10 @@ sub xst_filesys_info_get_network_path  # filesys_info
 
 sub xst_filesys_info_set_network_path  # filesys_info, network_path
 {
-  &xst_filesys_info_set ($_[0], 'network_path', $_[1]);
+  my ($info, $path) = @_;
+
+  $path = "/" . $path if (!($path =~ /^\//));
+  &xst_filesys_info_set ($info, 'network_path', $path);
 }
 
 sub xst_filesys_info_get_uuid          # filesys_info
@@ -259,7 +265,7 @@ sub xst_filesys_info_set_fs            # filesys_info, fs
 
 sub xst_filesys_info_get_dump          # filesys_info
 {
-  return $_[0]->{'dump'};
+  return $_[0]->{'dump'} || "0";
 }
 
 sub xst_filesys_info_set_dump          # filesys_info, dump
@@ -269,7 +275,7 @@ sub xst_filesys_info_set_dump          # filesys_info, dump
 
 sub xst_filesys_info_get_priority      # filesys_info
 {
-  return $_[0]->{'priority'};
+  return $_[0]->{'priority'} || "0";
 }
 
 sub xst_filesys_info_set_priority      # filesys_info, priority
@@ -570,6 +576,7 @@ sub xst_filesys_entry_identify
       $device =~ /([^:]+):(.+)/;
       $network_host = $1;
       $network_path = $2;
+      $network_path = "/" . $network_path if (!($network_path =~ /^\//));
       $device = "";
     }
     elsif ($fs eq "smbfs")
@@ -577,6 +584,7 @@ sub xst_filesys_entry_identify
       $device =~ /[\\\/]*([^\\\/]+)[\\\/]+(.+)/;
       $network_host = $1;
       $network_path = $2;
+      $network_path = "/" . $network_path if (!($network_path =~ /^\//));
       $device = "";
     }
   }
@@ -846,8 +854,8 @@ sub xst_filesys_info_print_device
   {
     if (&xst_filesys_info_get_fs ($info) eq "smbfs")
     {
-      $device = "//" . &xst_filesys_info_get_network_host ($info) .
-              "/"  . &xst_filesys_info_get_network_path ($info);
+      $device = "//" . &xst_filesys_info_get_network_host ($info)
+                     . &xst_filesys_info_get_network_path ($info);
     }
     else
     {
@@ -999,6 +1007,8 @@ sub xst_filesys_fstab_replace  # filename, table
 #      print "found.\n";
     }
   }
+
+#  print "---\n";
 
   for $old_info (@$old_table)
   {

@@ -1,5 +1,14 @@
 2001-06-04  Hans Petter Jansson  <hpj@ximian.com>
 
+	* filesys.pl.in (xst_filesys_info_set_network_host): Nicen input slightly.
+	  (xst_filesys_info_set_network_path): Nicen input slightly.
+	  (xst_filesys_info_get_dump): Return 0 if empty.
+	  (xst_filesys_info_get_priority): Return 0 if empty.
+	  (xst_filesys_entry_identify): Ensure return values agree with changes
+	  in xst_filesys_info_set_network_*().
+
+2001-06-04  Hans Petter Jansson  <hpj@ximian.com>
+
 	* shares-conf.in (remove_shares_from_filesys_table): Implement.
 	  (set): Remove shares from filesys table.
 
