@@ -1166,6 +1166,18 @@ sub set_immediate
       be_report_info(2, "SMB told to reload its configuration");
     }
   }
+  # Debian; different location.
+  elsif (-f "/etc/init.d/samba")
+  {
+    if (system "/etc/rc.d/init.d/samba restart >/dev/null 2>/dev/null")
+    {
+      be_report_warning(6, "SMB restart failed");
+    }
+    else
+    {
+      be_report_info(2, "SMB restarted with new configuration");
+    }
+  }
   else
   {
     be_report_warning(8, "Could not find a way to restart SMB services");
