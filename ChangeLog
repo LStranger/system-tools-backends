@@ -1,3 +1,8 @@
+2001-02-12  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in: Fixed bug which would cause [global] section to
+	  not be written in some cases.
+
 2001-02-10  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in: (xst_network_get_interface_{replace,parse}_table) added wvdial support.

@@ -683,12 +683,12 @@ sub write_smb_conf
       @buf = ();
       push @buf, $_;
     }
-    elsif ($line[0] eq "printable" && not &xst_ignore_line($line[1]))
+    elsif ($line[0] eq "printable" && !&xst_ignore_line($line[1]))
     {
       $printable = &xst_read_boolean($line[1]);
       push @buf, $_;
     }
-    elsif ($line[0] eq "security" && not &xst_ignore_line($line[1]) &&
+    elsif ($line[0] eq "security" && !&xst_ignore_line($line[1]) &&
            $section =~ /^global/i)
     {
       push @buf, "   security = share\n";
@@ -699,7 +699,19 @@ sub write_smb_conf
       push @buf, $_;
     }
   }
+
+  # Print section left in the buffer.
+
+  if ($printable || $section =~ /^global/i || $section =~ /^homes/i)
+  {
+    print OUTFILE join('', @buf);
+  }
   
+  if ($section =~ /^global/i && !$wrote_security)
+  {
+    print OUTFILE "   security = share\n";
+  }
+
   # Now, print our exports at the end.
   
   my @shares = @cf_exports_list;
