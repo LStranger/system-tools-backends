@@ -1,3 +1,8 @@
+2001-09-19 Tambet Ingo   <tambet@ximian.com>
+
+	* display-conf.in (distro_file): Rewrote to support possible irregular
+	file config file locations in the future.
+
 Sun Sep 16 13:30:28 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* configure.in: set filesdir variable too.
@@ -19,7 +24,7 @@ Wed Sep 12 21:42:03 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 	supported distros and removed bogus ones. Report an error if
 	distro is not listed.
 
-2001-09-17    <tambet@ximian.com>
+2001-09-17 Tambet Ingo   <tambet@ximian.com>
 
 	* x.pl.in (x_update_section): Fixed bug which messed up config file
 	when adding new (sub)sections.

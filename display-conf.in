@@ -60,9 +60,26 @@ end_of_description;
 
 # --- Platform handling --- #
 
-$filemap = {
-  XFree3 => '/etc/X11/XF86Config',
-  XFree4 => '/etc/X11/XF86Config-4',
+$standard_locations =
+{
+  'XFree3' => '/etc/X11/XF86Config',
+  'XFree4' => '/etc/X11/XF86Config-4',
+};
+
+# Most of these (well, all but Red Hat) could, and probably are
+# wrong. FIXME
+$platmap =
+{
+  'redhat-6.0'     => $standard_locations,
+  'redhat-6.1'     => $standard_locations,
+  'redhat-6.2'     => $standard_locations,
+  'redhat-7.0'     => $standard_locations,
+  'redhat-7.1'     => $standard_locations,
+  'debian-2.2'     => $standard_locations,
+  'debian-woody'   => $standard_locations,
+  'mandrake-7.2'   => $standard_locations,
+  'suse-7.0'       => $standard_locations,
+  'turbolinux-7.0' => $standard_locations,
 };
 
 @display_sections = qw(Device Monitor Screen Display ServerLayout);
@@ -70,9 +87,10 @@ $filemap = {
 sub distro_file
 {
   my $x_version = &x_version ();
-  my $file = ($x_version->{'number'} >= 400) ? 'XFree4' : 'XFree3';
+  my $ver = ($x_version->{'number'} >= 400) ? 'XFree4' : 'XFree3';
+  my $tmp = $platmap->{$xst_dist};
 
-  return $filemap->{$file};
+  return $tmp->{$ver};
 }
 
 # --- XML parsing ---
