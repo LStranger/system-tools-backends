@@ -505,6 +505,13 @@ sub xst_xml_get_text
   return $retval;
 }
 
+sub xst_xml_get_attribute
+{
+  my ($tree, $attr) = @_;
+
+  return $$tree[0]->{$attr};
+}
+
 sub xst_xml_get_state
 {
   my ($tree) = @_;

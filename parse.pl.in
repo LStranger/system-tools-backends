@@ -1294,20 +1294,50 @@ sub xst_parse_pump_get_iface_kw_not
   return 1;
 }
 
-# Read a variable out of an XML document. The varpath is the dot-separated path to the
+# Read a variable out of an XML document. The varpath is the '/'-separated path to the
 # XML tag. If the name of a property is passed, that property of the leaf tag is read,
 # otherwise the tag's PCDATA.
 sub xst_parse_xml
 {
   my ($file, $varpath, $property) = @_;
-  my ($tree, @path);
+  my ($tree, $branch, @path);
 
-  $tree = &xst_xml_scan ($file);
-  @path = split /./, $varpath;
+  $branch = $tree = &xst_xml_scan ($file);
+  @path = split /\//, $varpath;
 
   for $elem (@path)
   {
-    
+#    print $elem . "\n";
+
+    next if ($elem eq "");
+    my @children = @$branch;
+    shift @children;  # Attributes
+    $branch = undef;
+
+    while (@children)
+    {
+#      print "  " . @children [0] . "\n";
+
+      if (@children [0] eq $elem)
+      {
+        shift @children;
+        $branch = shift @children;
+#        print "  -> " . $branch . "\n";
+        last;
+      }
+
+      shift @children;
+      shift @children;
+    }
+
+    last if ($branch == undef);
   }
-  
+
+  if ($branch)
+  {
+    return &xst_xml_get_attribute ($branch, $property) if $property ne "";
+    return &xst_xml_get_pcdata ($branch);
+  }
+
+  return undef;
 }
