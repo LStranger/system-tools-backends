@@ -1343,7 +1343,7 @@ sub xst_replace_alchemist
 
 sub xst_replace_alchemist_print
 {
-  my ($file, $printer, $varpath, $type, $value);
+  my ($file, $printer, $varpath, $type, $value) = @_;
 
   $varpath = "printconf/print_queues/" . $printer . "/" . $varpath;
   return &xst_replace_alchemist ($file, $varpath, $type, $value);
@@ -1352,7 +1352,7 @@ sub xst_replace_alchemist_print
 # This could be split up.
 sub xst_replace_alchemist_print_option
 {
-  my ($file, $printer, $name, $type, $value);
+  my ($file, $printer, $name, $type, $value) = @_;
   my ($varpath, $model, $branch, $fd, $compressed, $options, $option);
 
   ($model, $compressed) = &xst_xml_model_scan ($file);
@@ -1368,7 +1368,7 @@ sub xst_replace_alchemist_print_option
     my $opt_node = &xst_xml_model_find ($o, "name");
     next if (!$opt_node);
 
-    if (&xst_xml_model_get_attribute ($opt_branch, "VALUE") eq $name)
+    if (&xst_xml_model_get_attribute ($opt_node, "VALUE") eq $name)
     {
       $option = $o;
       last;

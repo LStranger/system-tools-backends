@@ -1,5 +1,21 @@
 2001-07-19  Hans Petter Jansson  <hpj@ximian.com>
 
+	* xml.pl.in (xst_xml_scan_make_kid_array): Accept '.' in attribute values.
+	  (xst_xml_model_ensure): Simplify slightly.
+
+	* parse.pl.in (xst_xml_parse_alchemist_print_option): The variable naming
+	  the XML node to get attribute from was wrong.
+
+	* replace.pl.in (xst_xml_replace_alchemist_print_option): The variable
+	  naming the XML node to set attribute on was wrong.
+
+	* print.pl.in (xst_print_remove_printer_rh71): Implement empty shell for
+	  now.
+	  (xst_print_get_printer_parse_table): Additions and fixes.
+	  (xst_print_get_printer_replace_table): Ditto.
+
+2001-07-19  Hans Petter Jansson  <hpj@ximian.com>
+
 	* parse.pl.in (xst_parse_xml_child_names): Return array, not reference.
 	  Fixed comparison to be against input list, not output.
 	  (xst_parse_alchemist): Set args. Alchemist attr is always VALUE.
