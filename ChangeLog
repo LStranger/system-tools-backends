@@ -1,5 +1,14 @@
 2001-05-24  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network.pl.in (xst_network_suse70_interface_activate): Fixed
+	bug that prevented ifaces from activation/deactivation in suse70.
+
+	* parse.pl.in (xst_parse_replace_files): return () if $values
+	is undef.
+	(xst_parse_from_table): Don't unshift files if none were passed.
+
+	* replace.pl.in (xst_replace_from_table): same.
+
 	* report.pl.in (xst_report_enter): Ugly hack to avoid po warnings.
 
 2001-05-23  Hans Petter Jansson  <hpj@ximian.com>

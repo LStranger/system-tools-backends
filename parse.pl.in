@@ -57,6 +57,7 @@ sub xst_parse_replace_files
   my ($values, $fn_hash) = @_;
   my @ret;
 
+  return () if $values eq undef;
   $values = [$values] if !ref $values;
 
   foreach $i (@$values)
@@ -79,14 +80,15 @@ sub xst_parse_from_table
   my ($fn, $table) = @_;
   my %hash;
   my ($key, $proc, @param);
-  my ($i, @cp);
+  my ($i, @cp, @files);
 
   foreach $i (@$table)
   {
     @cp = @$i;
     $key = shift (@cp);
     $proc = shift (@cp);
-    unshift @cp, &xst_parse_replace_files (shift (@cp), $fn);
+    @files = &xst_parse_replace_files (shift (@cp), $fn);
+    unshift @cp, @files if $#files >= 0;
 
     &xst_parse_replace_hash_values (\@cp, \%hash);
     &xst_report_enter ();

@@ -37,7 +37,7 @@ sub xst_replace_from_table
 {
   my ($fn, $table, $values_hash, $old_hash) = @_;
   my ($key, $proc, @param);
-  my ($i, @cp, $res, $res2);
+  my ($i, @cp, @files, $res, $res2);
 
   $$fn{"OLD_HASH"} = $old_hash;
   
@@ -48,7 +48,8 @@ sub xst_replace_from_table
     if (exists $$values_hash{$key})
     {
       $proc = shift (@cp);
-      unshift @cp, &xst_parse_replace_files (shift (@cp), $fn);
+      @files = &xst_parse_replace_files (shift (@cp), $fn);
+      unshift @cp, @files if $#files >= 0;
       push (@cp, $$values_hash{$key});
 	 
       &xst_debug_print_line ("xst_replace_from_table: $key");

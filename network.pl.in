@@ -432,10 +432,10 @@ sub xst_network_get_file
 
 sub xst_network_run_hostname
 {
-  my $hostname = $_[0];
+  my ($hostname) = @_;
 
   &xst_report_enter ();
-  &xst_report ("network_hostname_set");
+  &xst_report ("network_hostname_set", $hostname);
   &xst_file_run ("hostname $hostname");
   &xst_report_leave ();
 }
@@ -569,11 +569,11 @@ sub xst_network_suse70_interface_activate
 
   if ($old_hash)
   {
-    $dev = $hash{"dev"} if ($enabled != $$old_hash{"enabled"});
+    $dev = $$hash{"dev"} if ($enabled != $$old_hash{"enabled"});
   }
   else
   {
-    $dev = $hash{"dev"};
+    $dev = $$hash{"dev"};
   }
   
   if ($dev)

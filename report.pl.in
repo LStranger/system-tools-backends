@@ -207,7 +207,7 @@ sub xst_report
      "network_dialing_get"      => ["info",  _("Loading ISP configurations.")],
      "network_iface_active_get" => ["info",  _("Finding active interfaces.")],
      "network_iface_is_active"  => ["info",  _("Checking if interface [%s] is active.")],
-     "network_hostname_set"     => ["info",  _("Setting hostname.")],
+     "network_hostname_set"     => ["info",  _("Setting hostname to [%s].")],
      "network_dialing_set"      => ["info",  _("Saving ISP configurations.")],
      "network_remove_pap"       => ["info",  _("Removing entry [%s] from [%s].")],
      "network_iface_set"        => ["info",  _("Configuring interface [%s].")],
