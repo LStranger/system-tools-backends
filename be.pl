@@ -595,38 +595,66 @@ sub be_ip_calc_broadcast
 # --- File operations --- #
 
 
+# be_locate_tool
+#
+# Tries to locate a command-line utility from a set of built-in paths
+# and a set of user paths (found in the environment). The path (or a negative
+# entry) is cached in a hash, to avoid searching for it repeatedly.
+
 @be_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin",
                       "/usr/bin", "/usr/local/bin" );
+
+%be_tool_paths = {};
 
 sub be_locate_tool
 {
   my $found = "";
   my @user_paths;
 
-  # Extract user paths to try.
-
-  @user_paths = ($ENV{PATH} =~ /([^:]+):/mg);
-
-  # Try user paths.
-
-  for $path (@user_paths)
+  $found = %be_tool_paths->{$_[0]};
+  if ($found eq "0")
   {
-    if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
+    # Negative cache hit. At this point, the failure has already been reported
+    # once.
+    return "";
   }
 
-  # Try builtin paths.
-
-  for $path (@be_builtin_paths)
+  if ($found eq "")
   {
-    if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
-  }
+    # Nothing found in cache. Look for real.
 
-  if (!$found)
-  {
-    be_report_warning(96, "Couldn't find $_[0] tool in any of " .
-      join (", ", @be_builtin_paths) . " : " . join (", ", @user_paths));
-  }
+    # Extract user paths to try.
 
+    @user_paths = ($ENV{PATH} =~ /([^:]+):/mg);
+
+    # Try user paths.
+
+    for $path (@user_paths)
+    {
+      if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
+    }
+
+    # Try builtin paths.
+
+    for $path (@be_builtin_paths)
+    {
+      if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
+    }
+
+    # Report success/failure and update cache.
+
+    if ($found)
+    {
+      %be_tool_paths->{$_[0]} = $found;
+      be_report_info(97, "Found $_[0] tool");
+    }
+    else
+    {
+      %be_tool_paths->{$_[0]} = "0";
+      be_report_warning(96, "Couldn't find $_[0] tool");
+    }
+  }
+  
   return($found);
 }
 
@@ -797,6 +825,36 @@ sub be_create_path
 	  }
       }
   }
+
+
+# --- Command-line utilities --- #
+
+
+# be_run (<command line>)
+#
+# Assumes the first word on the command line is the command-line utility
+# to run, and tries to locate it, replacing it with its full path. The path
+# is cached in a hash, to avoid searching for it repeatedly. Output
+# redirection is appended, to make the utility perfectly silent. The
+# preprocessed command line is run, and its exit value is returned.
+#
+# Example: "mkswap /dev/hda3" -> "/sbin/mkswap /dev/hda3 >/dev/null 2>/dev/null".
+
+sub be_run
+{
+  my ($tool_name, $tool_path, @argline);
+
+  ($tool_name, @argline) = split(/ /, @_[0]);
+
+  $tool_path = be_locate_tool($tool_name);
+  if ($tool_path eq "")
+  {
+    # Not found at all.
+    return;
+  }
+
+  return(system("$tool_path @argline 2>/dev/null >/dev/null"));
+}
 
 
 # --- Service/daemon utilities --- #
