@@ -75,6 +75,24 @@ sub xst_print_progress  # Compat with old $progress_max use.
 # --- Report printing --- #
 
 
+sub xst_report_begin
+{
+  my ($tool) = @_;
+  
+  &xst_report ("begin");
+  &xst_report_enter ();
+  &xst_progress_begin ();
+}
+
+
+sub xst_report_end
+{
+  &xst_progress_end ();
+  &xst_report_leave ();
+  &xst_report ("end");
+}
+
+
 sub xst_report_set_threshold
 {
   $xst_report_threshold = $_[0];
@@ -237,6 +255,7 @@ sub xst_report
      
      "boot_lilo_failed"         => ["warn",  _("Failed to run lilo.")],
      "boot_lilo_success"        => ["info",  _("Succesfully executed lilo.")],
+     "boot_conf_read_failed"    => ["error", _("Failed to open boot configuration file [%s].")],
 
      "disks_fstab_add"          => ["info",  _("Adding [%s] to fstab.")],
      "disks_partition_probe"    => ["info",  _("Looking for partitions on [%s].")],

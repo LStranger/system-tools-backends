@@ -1,3 +1,19 @@
+2001-08-17  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* boot.pl.in (xst_boot_parse_global_kw): Report that no lilo.conf
+	was found.
+	(xst_boot_parse_global): same.
+	(xst_boot_parse_images): same.
+
+	* general.pl.in (xst_directive_run): Send a begin report whenever
+	a directive is run, except for "end".
+	Some other function name changes.
+
+	* *.in: s/&xst_end (/&xst_report_end (/;
+	
+	* report.pl.in (xst_report_begin): Moved from general.pl.in:xst_begin.
+	(xst_report_end): same.
+
 Thu Aug 16 02:02:18 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* platform.pl.in (xst_platform_ensure_supported): Removed extra

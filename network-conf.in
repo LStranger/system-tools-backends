@@ -259,7 +259,7 @@ sub get
   $hash = &xst_network_conf_get ();
   &xst_network_ensure_loopback ($hash);
 
-  &xst_end();
+  &xst_report_end ();
   &xml_print ($hash);
 }
 
@@ -270,7 +270,7 @@ sub set
   
   $hash = &xml_parse ();
   &xst_network_conf_set ($hash);
-  &xst_end ();
+  &xst_report_end ();
 }
 
 
@@ -282,7 +282,7 @@ sub filter
   my $hash;
   
   $hash = &xml_parse ();
-  &xst_end ();
+  &xst_report_end ();
   &xml_print ($hash);
 }
 
@@ -296,7 +296,7 @@ sub enable_iface
     $iface_set = $dist_attrib{"iface_set"};
     &$iface_set (\%hash, undef, $enabled, 1);
     # Don't forget to do xst_end when the reports are over!
-    &xst_end ();
+    &xst_report_end ();
     # XML output would come here, but this directive returns no XML.
 }
 

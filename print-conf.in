@@ -209,7 +209,7 @@ sub get
   my $hash;
 
   $hash = &xst_print_conf_get ();
-  &xst_end();
+  &xst_report_end ();
   &xml_print ($hash);
 }
 
@@ -220,7 +220,7 @@ sub set
   
   $hash = &xml_parse ();
   &xst_print_conf_set ($hash);
-  &xst_end ();
+  &xst_report_end ();
 }
 
 
@@ -232,7 +232,7 @@ sub filter
   my $hash;
   
   $hash = &xml_parse ();
-  &xst_end ();
+  &xst_report_end ();
   &xml_print ($hash);
 }
 

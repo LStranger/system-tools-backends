@@ -182,23 +182,6 @@ sub xst_print_version
 
 # --- Initialization and finalization --- #
 
-sub xst_begin
-{
-  my ($tool) = @_;
-  
-  &xst_report ("begin");
-  &xst_report_enter ();
-  &xst_progress_begin ();
-}
-
-
-sub xst_end
-{
-  &xst_progress_end ();
-  &xst_report_leave ();
-  &xst_report ("end");
-}
-
 
 sub xst_set_operation
 {
@@ -277,7 +260,7 @@ sub xst_merge_std_directives
        "platform_set" => [ \&xst_platform_set,    ["platform"],
                            "Force the selected platform. platform arg must be one of the listed in the" .
                            "reports." ],
-       "interface"    => [ \&xst_print_interface, [],
+       "interface"    => [ \&xst_interface_directive, [],
                            "Print XML showing backend capabilities." ],
        "end"          => [ \&xst_end_directive,   [],
                            "Finish gracefuly and exit with success." ]
@@ -333,7 +316,7 @@ sub xst_init
     elsif ($arg eq "--set"       || $arg eq "-s") { &xst_set_operation (\%tool, "set"); }
     elsif ($arg eq "--filter"    || $arg eq "-f") { &xst_set_operation (\%tool, "filter"); }
     elsif ($arg eq "--directive" || $arg eq "-d") { &xst_set_op_directive (\%tool, shift @args); }
-    elsif ($arg eq "--interface" || $arg eq "-i") { &xst_print_interface (\%tool, 0); }
+    elsif ($arg eq "--interface" || $arg eq "-i") { &xst_interface_print  (\%tool, 0); }
     elsif ($arg eq "--help"      || $arg eq "-h") { &xst_print_usage   (\%tool, 0); }
     elsif ($arg eq "--version")                   { &xst_print_version (\%tool, 0); }
     elsif ($arg eq "--prefix"    || $arg eq "-p") { &xst_set_prefix    (\%tool, shift @args); }
@@ -367,7 +350,7 @@ sub xst_init
   # Set up subsystems.
 
   &xst_platform_guess (\%tool) if !$tool{"platform"};
-  &xst_begin (\%tool);
+  &xst_report_begin ();
 
   return \%tool;
 }
@@ -380,7 +363,8 @@ sub xst_end_directive
   exit (0);
 }
 
-sub xst_print_interface_comment
+
+sub xst_interface_print_comment
 {
   my ($name, $directive) = @_;
   my %std_comments =
@@ -412,7 +396,7 @@ sub xst_print_interface_comment
 }
 
 # if $exit_code is provided (ne undef), exit with that code at the end.
-sub xst_print_interface
+sub xst_interface_print
 {
   my ($tool, $exit_code) = @_;
   my ($directives, $key);
@@ -428,7 +412,7 @@ sub xst_print_interface
     
     &xst_xml_container_enter ("directive");
     &xst_xml_print_line ("<name>$key</name>");
-    &xst_print_interface_comment ($key, $$directives{$key});
+    &xst_interface_print_comment ($key, $$directives{$key});
 
     while ($arg = shift (@args))
     {
@@ -454,12 +438,21 @@ sub xst_print_interface
 }
 
 
+sub xst_interface_directive
+{
+  my ($tool) = @_;
+
+  &xst_report_end ();
+  &xst_interface_print ($tool);
+}
+
+
 sub xst_directive_fail
 {
   my (@report_args) = @_;
   
   &xst_report (@report_args);
-  &xst_end ();
+  &xst_report_end ();
   &xst_xml_print_request_end ();
   &xst_debug_close_all ();
 }
@@ -510,6 +503,8 @@ sub xst_directive_run
   ($key, @args) = split ("::", $line);
   $directives = $$tool{"directives"};
 
+  &xst_report_begin () unless $key eq "end";
+
   if (!exists $$directives{$key})
   {
     &xst_directive_fail ("directive_unsup", $key);
@@ -558,6 +553,8 @@ sub xst_run
       }
     }
   }
+
+  &xst_report_end ();
 
   if ($$tool{"directive"})
   {

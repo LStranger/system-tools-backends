@@ -423,7 +423,7 @@ sub get
   &get_fdisk;  &xst_print_progress();
   &get_swap_entries; &xst_print_progress();
   
-  &xst_end();
+  &xst_report_end ();
   &xml_print ();
 }
 
@@ -545,7 +545,7 @@ sub set
   }
 
   &set_swap_entries;
-  &xst_end();
+  &xst_report_end ();
 }
 
 
@@ -555,7 +555,7 @@ sub set
 sub filter
 {
   &xml_parse ();
-  &xst_end();
+  &xst_report_end ();
   &xml_print ();
 }
 

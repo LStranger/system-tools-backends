@@ -162,7 +162,7 @@ sub get
 
   &get_package; &xst_print_progress();
   
-  &xst_end();
+  &xst_report_end ();
   &xml_print ();
 }
 

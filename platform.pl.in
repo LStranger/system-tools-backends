@@ -301,13 +301,13 @@ sub xst_platform_set
     {
       $$tool{"platform"} = $xst_dist = $platform;
       &xst_report ("platform_success", $platform);
-      &xst_end ();
+      &xst_report_end ();
       return;
     }
   }
 
   &xst_report ("platform_unsup", $platform);
-  &xst_end ();
+  &xst_report_end ();
 }
 
 1;

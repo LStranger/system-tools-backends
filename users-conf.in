@@ -1149,7 +1149,7 @@ sub get
   my ($hash);
   
   $hash = &read ();
-  &xst_end ();
+  &xst_report_end ();
   &xml_print ($hash);
 }
 
@@ -1167,7 +1167,7 @@ sub set
     &write_profiles ($hash);
   }
 
-  &xst_end ();
+  &xst_report_end ();
 }
 
 
@@ -1180,7 +1180,7 @@ sub filter
   my ($hash);
   
   $hash = &xml_parse ($tool);
-  &xst_end();
+  &xst_report_end ();
   &xml_print ($hash);
 }
 

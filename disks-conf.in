@@ -766,7 +766,7 @@ sub get
   &get_fdisk;
   &read_fstab;
 
-  &xst_end();
+  &xst_report_end ();
   &xml_print ();
 }
 
@@ -843,7 +843,7 @@ sub set
     &set_immediate;
   }
   
-  &xst_end();
+  &xst_report_end ();
 }
 
 
@@ -853,7 +853,7 @@ sub set
 sub filter
 {
   &xml_parse ();
-  &xst_end();
+  &xst_report_end ();
   &xml_print ();
 }
 

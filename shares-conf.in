@@ -566,7 +566,7 @@ sub get
   $$config{"smb_exports"} = $smb_exports;
   $$config{"nfs_exports"} = $nfs_exports;
 
-  &xst_end();
+  &xst_report_end ();
   &xml_print ($config);
 }
 
@@ -599,7 +599,7 @@ sub set
   &xst_share_replace_smb_conf    (&distro_file ("smb.conf"), $$config{"smb_exports"});
   &xst_share_replace_nfs_exports (&distro_file ("exports"),  $$config{"nfs_exports"});
 
-  &xst_end ();
+  &xst_report_end ();
 }
 
 sub filter
@@ -607,7 +607,7 @@ sub filter
   my $config;
 
   $config = &xml_parse ();
-  &xst_end ();
+  &xst_report_end ();
   &xml_print ($config);
 }
 
@@ -616,7 +616,7 @@ sub scan
   my %config;
 
   $config{"imports"} = &xst_share_scan_network_imports ();
-  &xst_end ();
+  &xst_report_end ();
   &xml_print (\%config);
 }
 

@@ -130,7 +130,7 @@ sub get
 
   &x_config_fix ($config, 1);
 
-  &xst_end();
+  &xst_report_end ();
   &xml_print ($config);
 }
 
@@ -141,14 +141,14 @@ sub set
   &x_config_fix ($xml_config, 0);
   
   &x_config_set (&distro_file (), $config, $xml_config);
-  &xst_end ();
+  &xst_report_end ();
 }
 
 sub filter
 {
   my $config = &xml_parse ();
   
-  &xst_end ();
+  &xst_report_end ();
   &xml_print ($config);
 }
 
@@ -171,7 +171,7 @@ sub test
   $res = &xst_file_run ("$testX_cmd --config=$tmp_file");
   $res = &xst_file_run ("rm -f $tmp_file");
   
-  &xst_end ();
+  &xst_report_end ();
 }
 
 sub probe

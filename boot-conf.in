@@ -212,7 +212,7 @@ sub get
   my $hash = &xst_boot_conf_get;
   &xst_boot_conf_fix ($hash);
   
-  &xst_end;
+  &xst_report_end ();
   &xml_print ($hash);
 }
 
@@ -234,7 +234,7 @@ sub set
     1;
   }
   
-  &xst_end;
+  &xst_report_end ();
 }
 
 
@@ -243,7 +243,7 @@ sub filter
 {
   my $hash = &xml_parse;
 
-  &xst_end;
+  &xst_report_end ();
   &xml_print ($hash);
 }
 

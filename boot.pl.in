@@ -64,6 +64,11 @@ sub xst_boot_parse_global_kw
   return undef unless &xst_boot_known_var ($key, \@global_vars, 0);
   
   $fd = &xst_file_open_read_from_names ($file);
+  if (! $fd)
+  {
+    &xst_report ("boot_conf_read_failed", $file);
+    return undef;
+  }
 
   while (<$fd>)
   {
@@ -93,6 +98,11 @@ sub xst_boot_parse_global
   
   $re = "[ \t]*=[ \t]*";
   $fd = &xst_file_open_read_from_names ($file);
+  if (! $fd)
+  {
+    &xst_report ("boot_conf_read_failed", $file);
+    return undef;
+  }
 
   while (($line = <$fd>))
   {
@@ -124,6 +134,11 @@ sub xst_boot_parse_images
 
   my $found = -1;
   $fd = &xst_file_open_read_from_names ($file);
+  if (! $fd)
+  {
+    &xst_report ("boot_conf_read_failed", $file);
+    return undef;
+  }
 
   while (($line = <$fd>))
   {
