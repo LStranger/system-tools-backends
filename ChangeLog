@@ -1,5 +1,9 @@
 2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* Release 0.31.1
+
+2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* configure.in: updated intltool version to 0.28
 	* Makefile.am: added OrigTree.pm to EXTRA_DIST
 	* .cvsignore: added intltool-*
