@@ -26,11 +26,14 @@
 
 
 BEGIN {
-# require "___scriptsdir___/general.pl";
-# require "___scriptsdir___/platform.pl";
-# require "___scriptsdir___/util.pl";
-# require "___scriptsdir___/file.pl";
-require "___scriptsdir___/xml.pl";
+  $SCRIPTSDIR = "$SCRIPTSDIR";
+  $SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+  
+# require "$SCRIPTSDIR/general.pl";
+# require "$SCRIPTSDIR/platform.pl";
+# require "$SCRIPTSDIR/util.pl";
+# require "$SCRIPTSDIR/file.pl";
+  require "$SCRIPTSDIR/xml.pl";
 }
 
 

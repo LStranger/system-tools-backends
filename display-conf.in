@@ -32,8 +32,11 @@
 
 
 BEGIN {
-require "___scriptsdir___/platform.pl";
-require "___scriptsdir___/x.pl";
+  $SCRIPTSDIR = "$SCRIPTSDIR";
+  $SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+  
+  require "$SCRIPTSDIR/platform.pl";
+  require "$SCRIPTSDIR/x.pl";
 }
 
 use File::Copy;
@@ -158,7 +161,7 @@ sub filter
 
 sub test
 {
-  my $testX_cmd = "___scriptsdir___/testX";
+  my $testX_cmd = "$SCRIPTSDIR/testX";
   my $real_file = &distro_file ();
 
   my $tmp_file;

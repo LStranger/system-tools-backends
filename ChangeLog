@@ -1,3 +1,9 @@
+Wed Aug 22 22:16:03 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* *-conf.in: Check for ___scriptsdir___ value. If it is
+	___scriptsdir__, then require files on the pwd. This way we
+	can call backend-conf.in directly, and without make installing.
+
 2001-08-23  Hans Petter Jansson  <hpj@ximian.com>
 
 	* report.pl.in: Add report messages for filesys mount/unmount.

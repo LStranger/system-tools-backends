@@ -51,8 +51,11 @@
 
 
 BEGIN {
-require "___scriptsdir___/general.pl";
-require "___scriptsdir___/xml.pl";
+  $SCRIPTSDIR = "$SCRIPTSDIR";
+  $SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+  
+  require "$SCRIPTSDIR/general.pl";
+  require "$SCRIPTSDIR/xml.pl";
 }
 
 
