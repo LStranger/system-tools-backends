@@ -187,9 +187,9 @@ sub gst_service_get_verbose_runlevels
                       "3" => _("Text mode"),
                       "6" => _("Rebooting the system")
                      },
-     "gentoo"     => {"boot"      => _(,
-                      "default"   => "lelele",
-                      "nonetwork" => "lilili"
+     "gentoo"     => {"boot"      => _("Starts all system neccesary services"),
+                      "default"   => _("Default runlevel"),
+                      "nonetwork" => _("Networkless runlevel")
                      },
      "slackware-9.1.0" => {"4" => _("Graphical mode") }
     );
