@@ -253,6 +253,7 @@ sub xst_boot_conf_replace_image
   {
     if ($i =~ /$name[ \t]*=[ \t]*$image{$name}/) # Found the image.
     {
+      delete $image{$name};
       $found++;
       next;
     }
@@ -292,6 +293,20 @@ sub xst_boot_conf_replace_image
     }
   }
 
+  if (!$found)
+  {
+    push @$buff, "\n$name=$image{$name}\n";
+    delete $image{$name};
+    
+    foreach $key (keys %image)
+    {
+      $i = "\t$key=$image{$key}\n" if $image{$key};
+      $i = "\t$key\n" unless $image{$key};
+
+      push @$buff, $i;
+    }
+  }
+  
   &xst_buffer_clean ($buff);
   return &xst_buffer_save ($buff, $file);
 }

@@ -6,6 +6,7 @@
 	(xst_boot_replace_from_table): My own version of xst_replace_from_table.
 	(xst_boot_conf_set_images): Rewrote this and
 	(xst_boot_conf_replace_image): this.
+	(xst_boot_conf_replace_image): Now it adds new images too.
 
 2001-02-20  Tambet Ingo  <tambet@ximian.com>
 
