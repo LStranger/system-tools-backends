@@ -535,7 +535,7 @@ sub xml_parse
     $tree = xml_scan;
     
     # Walk the tree recursively and extract configuration parameters.
-    # This is the top level - find and enter the "networking" tag.
+    # This is the top level - find and enter the "memory" tag.
     
     while (@$tree)
       {
@@ -594,7 +594,7 @@ sub xml_parse_swapinfo
 	  }
 	elsif (@$tree[0] eq 'size') 
 	  { 
-	    $entry->{size} = xml_get_word (@$tree[1]);
+	    $entry->{size} = xml_get_size (@$tree[1]);
 	  }
 	elsif (@$tree[0] eq 'isfile') 
 	  { 
@@ -640,6 +640,35 @@ sub xml_get_word
     return("");
   }
 
+# Compresses node into a size and returns it.
+
+sub xml_get_size
+  {
+    my $tree = @_[0];
+
+    shift @$tree;		# Skip attributes.
+
+    while (@$tree)
+      {
+        if (@$tree[0] == 0)
+          {
+            my $retval;
+
+            ($retval = @$tree[1]) =~ tr/ \n\r\t\f//d;
+            $retval = xml_entities_to_plain(\$retval);
+            if ($retval =~ /Mb$/)
+              {
+                $retval =~ tr/ Mb//d; 
+                $retval *= 1024; }
+            return($retval);
+          }
+
+        shift @$tree;
+        shift @$tree;
+      }
+
+    return("");
+  }
 
 # Replaces misc. whitespace with spaces and returns text.
 
@@ -685,6 +714,13 @@ sub xml_print
                             print_boolean_yesno ($entry->{enabled}), 
                             "'/>\n";
       indent; indent; print "<priority>$entry->{priority}</priority>\n";
+      indent; indent; print "<isfile state='",
+                            print_boolean_truefalse ($entry->{is_file}),
+                            "'/>\n";
+      indent; indent; print "<size>$entry->{size}</size>\n";
+      indent; indent; print "<isnew state='",
+                            print_boolean_truefalse ($entry->{is_new}),
+                            "'/>\n";
       indent; print "</swapdev>\n\n";
     }
 
@@ -697,6 +733,42 @@ sub xml_print
 
 
 # --- Get (read) config --- #
+
+sub get_swap_size
+  {
+    my ($device) = $_[0];
+    my ($is_file) = $_[1];
+    my ($size) = 0;
+
+    if ($is_file && -f $device)
+      {
+        # Is file, get file size.
+        open(FD, "/usr/bin/stat $device |");
+        while (<FD>)
+          {
+            if (/(\s+)Size: (\d+)/)
+              {
+                 $size = $2 / 1024 / 1024; 	#size from bytes to Mb
+                 $size .= " Mb";
+              }
+          }
+      }
+    elsif ($is_file == 0)
+      {
+        # Is partition, get size.
+        open(FD, "/bin/df $device |");
+        while (<FD>)
+          {
+            if (/\/dev\/sda4(\s+)(\d+)(\s+)(\d+)/)
+              {
+                 $size = sprintf("%d Mb", $4 / 1024);		#size from Kb to Mb
+              }
+          }
+      }
+
+    return $size;
+  }
+
 
 sub get_swap_entries
   {
@@ -716,6 +788,9 @@ sub get_swap_entries
 	my (@option_list) = split /\,/, $options;
 	my ($priority) = -1;
 	my ($enabled);
+        my ($size);
+        my ($is_new) = 0;
+        my ($is_file) = 1;
 
 	next if $type ne 'swap';
 
@@ -731,6 +806,13 @@ sub get_swap_entries
 	    $enabled = 1;
 	  }
 
+        if ($device =~ /^(#?)\/dev\//)
+          {
+            $is_file = 0;
+          }
+
+        $size = get_swap_size($device, $is_file);
+
 	foreach $item (@option_list)
 	  {
 	    my ($key, $value) = split /\=/, $item;
@@ -741,7 +823,10 @@ sub get_swap_entries
 	push @cf_swapinfo, { 
 			    "device" => $device, 
 			    "enabled" => $enabled, 
-			    "priority" => $priority
+			    "priority" => $priority,
+                            "is_file" => $is_file,
+                            "size" => $size,
+                            "is_new" => $is_new
 			   };
       }
   }
@@ -770,16 +855,29 @@ sub get
 
 sub setup_swap_files
   {
+    system ("/sbin/swapoff -a");	# To make sure removed swap spaces get removed
     foreach $entry (@cf_swapinfo)
       {
 	if ($entry->{is_new})
 	  {
-	    if ($entry->{is_file} && !-f $entry->{device})
+	    if ($entry->{is_file})
 	      {
 		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$entry->{size}");
 	      }
 
-	    system ("/sbin/mkswap $entry->{device}");
+	    system ("/sbin/mkswap $entry->{device} >/dev/null 2>/dev/null");
+	  }
+
+	elsif ($entry->{is_file})
+	  {
+	    my ($size) = get_swap_size($entry->{device}, $entry->{is_file});
+	    $size =~ tr/ Mb$//d;	# Remove Mb from the end
+	    $size *= 1024;		# Make it to Kb
+	    if ($size != $entry->{size})
+	      {
+		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$entry->{size}");
+		system ("/sbin/mkswap $entry->{device} >/dev/null 2>/dev/null");
+	      }
 	  }
 
 	if ($entry->{priority} == -1)
@@ -793,11 +891,7 @@ sub setup_swap_files
 
 	if ($entry->{enabled}) 
 	  {
-	    system ("/sbin/swapon $entry->{device} $priority");
-	  }
-	else
-	  {
-	    system ("/sbin/swapoff $entry->{device}");
+	    system ("/sbin/swapon $entry->{device} $priority >/dev/null 2>/dev/null");
 	  }
       }
   }
