@@ -1428,6 +1428,14 @@ sub gst_service_bsd_installed
   return 0;
 }
 
+sub gst_service_gentoo_installed
+{
+  my ($service) = @_;
+
+  return 1 if ( -f "/etc/init.d/$service");
+  return 0;
+}
+
 sub gst_service_installed
 {
   my ($service) = @_;
@@ -1436,6 +1444,7 @@ sub gst_service_installed
 
   return &gst_service_sysv_installed ($service) if (($type eq "sysv") || ($type eq "file-rc"));
   return &gst_service_bsd_installed ($service) if ($type eq "bsd");
+  return &gst_service_gentoo_installed ($service) if ($type eq "gentoo");
 }
 
 sub gst_service_list_any_installed
@@ -1470,5 +1479,22 @@ sub gst_service_bsd_set_status
   {
     &gst_service_run_script ($script, "stop");
     &gst_file_run ("chmod ugo-x $script");
+  }
+}
+
+sub gst_service_gentoo_set_status
+{
+  my ($script, $active) = @_;
+  my (@arr);
+
+  if ($active)
+  {
+    &gst_file_run ("rc-update add $script default");
+    &gst_file_run ("/etc/init.d/$script start");
+  }
+  else
+  {
+    &gst_file_run ("rc-update del $script default");
+    &gst_file_run ("/etc/init.d/$script stop");
   }
 }

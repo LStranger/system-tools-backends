@@ -446,7 +446,7 @@ sub conf_get_parse_table
    "slackware-9.0.0" => "debian-2.2",
    "slackware-9.1.0" => "debian-2.2",
 
-   "gentoo"          => "redhat-7.0",
+   "gentoo"          => "gentoo",
 
    "pld-1.0"         => "pld-1.0",
    "pld-1.1"         => "pld-1.0",
@@ -581,7 +581,25 @@ sub conf_get_parse_table
               [ "sync_active",  \&gst_service_sysv_get_status, "ntpd" ],
               [ "ntpinstalled", \&gst_service_sysv_installed, "ntpd" ],
               ]
-                }
+          },
+
+       "gentoo" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+         [
+          [ "local_time",   \&time_get_local_time ],
+          [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+          [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+          [ "sync_active",  \&gst_service_gentoo_get_status, "ntpd" ],
+          [ "ntpinstalled", \&gst_service_installed, "ntpd" ],
+          ]
+        },
        );
 
   my $dist = $dist_map {$gst_dist};
@@ -626,7 +644,7 @@ sub conf_get_replace_table
    "slackware-9.0.0" => "debian-2.2",
    "slackware-9.1.0" => "debian-2.2",
 
-   "gentoo"          => "redhat-7.0",
+   "gentoo"          => "gentoo",
 
    "pld-1.0"         => "pld-1.0",
    "pld-1.1"         => "pld-1.0",
@@ -753,7 +771,24 @@ sub conf_get_replace_table
               [ "local_time",   \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
               [ "sync_active",  \&gst_service_sysv_set_status, 90, "ntpd", "%sync_active%" ],
               ]
-                }
+        },
+
+       "gentoo" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+         [
+          [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+          [ "local_time",   \&time_set_local_time ],
+          [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+          [ "sync_active",  \&gst_service_gentoo_set_status, "ntpd", "%sync_active%" ],
+          ]
+        },
        );
 
   my $dist = $dist_map {$gst_dist};

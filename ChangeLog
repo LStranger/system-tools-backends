@@ -1,3 +1,9 @@
+2004-04-03  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* service.pl.in (gst_service_gentoo_installed) 
+	  (gst_service_gentoo_set_status): added
+	* time-conf.in: added full service for gentoo
+
 2004-04-02  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* service.pl.in, services-conf.in: added --set for gentoo init,
