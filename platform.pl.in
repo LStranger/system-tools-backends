@@ -30,119 +30,112 @@ sub check_debian
 {
   my $ver;
 
-  open DEBIAN, "/etc/debian_version" or return 0;
+  open DEBIAN, "/etc/debian_version" or return -1;
   chomp ($ver = <DEBIAN>);
   close DEBIAN;
-  $xst_dist = "debian-$ver";
-  return 1;
+  return "debian-$ver";
 }
 
 
 sub check_redhat
 {
-  open RELEASE, "/etc/redhat-release" or return 0;
+  open RELEASE, "/etc/redhat-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
     if (/^Red Hat Linux.*\s+([0-9.]+)\s+.*/)
     {
-      $xst_dist = "redhat-$1";
       close RELEASE;
-      return 1;
+      return "redhat-$1";
     }
   }
   close RELEASE;
-  return 0;
+  return -1;
 }
 
 
 sub check_caldera
 {
-  open INSTALLED, "/etc/.installed" or return 0;
+  open INSTALLED, "/etc/.installed" or return -1;
   while (<INSTALLED>)
   {
     chomp;
     if (/^OpenLinux-(.*)-.*/)
     {
-      $xst_dist = "caldera-$1";
       close INSTALLED;
-      return 1;
+      return "caldera-$1";
     }
   }
   close INSTALLED;
-  return 0;
+  return -1;
 }
 
 
 sub check_suse
 {
-  open RELEASE, "/etc/SuSE-release" or return 0;
+  open RELEASE, "/etc/SuSE-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
     if (/^VERSION\s*=\s*(\S+)/)
     {
-      $xst_dist = "suse-$1";
       close RELEASE;
-      return 1;
+      return "suse-$1";
     }
   }
   close RELEASE;
-  return 0;
+  return -1;
 }
 
 
 sub check_mandrake
 {
-  open MANDRAKE, "/etc/mandrake-release" or return 0;
+  open MANDRAKE, "/etc/mandrake-release" or return -1;
   while (<MANDRAKE>)
   {
     chomp;
     if (/^Linux Mandrake release (\S+)/)
     {
-      $xst_dist = "mandrake-$1";
       close MANDRAKE;
-      return 1;
+      return "mandrake-$1";
     }
   }
   close MANDRAKE;
-  return 0;
+  return -1;
 }
 
 
 sub check_turbolinux
 {
-  open RELEASE, "/etc/turbolinux-release" or return 0;
+  open RELEASE, "/etc/turbolinux-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
     if (/release\s([0-9.]+)\s.*/)
     {
-      $xst_dist = "turbolinux-$1";
       close RELEASE;
-      return 1;
+      return "turbolinux-$1";
     }
   }
   close RELEASE;
-  return 0;
+  return -1;
 }
 
 
 sub check_linuxppc
 {
-  open RELEASE, "/etc/redhat-release" or return 0;
+  open RELEASE, "/etc/redhat-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
     if (/^LinuxPPC\s+(\S+)/)
     {
-      $xst_dist = "linuxppc-$1";
       close RELEASE;
-      return 1;
+      return "linuxppc-$1";
     }
   }
   close RELEASE;
-  return 0;
+  return -1;
 }
 
 
@@ -179,13 +172,22 @@ sub xst_platform_guess
   # if the system is linux, &set $xst_dist and $xst_dist_version
   if ($xst_system =~ /linux/)
   {
-       &check_debian
-    || &check_caldera
-    || &check_suse
-    || &check_mandrake 
-    || &check_linuxppc 
-    || &check_redhat         # Red Hat check must run after Mandrake
-    || &check_turbolinux;
+    # Red Hat check must run after Mandrake
+    my @checks = (\&check_debian, \&check_caldera, \&check_suse, \&check_mandrake,
+                  \&check_linuxppc, \&check_redhat, \&check_turbolinux);
+    my ($check, $dist);
+
+    foreach $check (@checks)
+    {
+      $dist = &$check ();
+      if ($dist != -1)
+      {
+        $xst_dist = $dist;
+        return;
+      }
+    }
+
+    $xst_dist = "unknown";
   }
 }
 
@@ -217,7 +219,7 @@ sub xst_platform_ensure_supported
 
   if ($xst_dist)
   {
-    &xst_report ("platform_unsup");
+    &xst_report ("platform_unsup", $xst_dist);
     if (!$xst_report_threshold && !$xst_verbose)
     {
       print STDERR "Fatal error: Your platform is not supported.\n";

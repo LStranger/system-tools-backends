@@ -147,7 +147,7 @@ sub xst_report
      "compat"   => ["info", _("%s.")],
 
      "platform_list"            => ["sys",   _("Supported: [%s]")],
-     "platform_unsup"           => ["error", _("Your platform is not supported.")],
+     "platform_unsup"           => ["error", _("Your platform [%s] is not supported.")],
      "platform_undet"           => ["error", _("Unable to determine host platform.")],
      "platform_success"         => ["sys",   _("Configuring for platform [%s].")],
 

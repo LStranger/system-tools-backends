@@ -1,3 +1,10 @@
+2001-05-16  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* platform.pl.in (xst_platform_guess): Changed code so xst_dist = "unknown"
+	if none of the checks passed.
+	(check_*): they all now return -1 if failed, or dist string if success. No
+	more global manipulation.
+
 2001-05-15  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* replace.pl.in (xst_replace_interfaces_stanza_value): function renamed
