@@ -1,5 +1,13 @@
 2001-09-05  Tambet Ingo  <tambet@ximian.com>
 
+	* time-conf.in: Use perl functions to copy, move and delete.
+
+	* file.pl.in: ditto.
+
+	* debug.pl.in (xst_debug_rotate_try): ditto.
+
+	* x.pl.in: s/TODO (reporting)/Implement $1/g;
+
 	* report.pl.in (xst_report): Implement.
 	(xst_report): use dynamical report message table.
 

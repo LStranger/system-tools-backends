@@ -339,8 +339,10 @@ ModeLine "1920x1440@75" 297.0 1920 2064 2288 2640   1440 1441 1444 1500 -hsync +
                         );
 BEGIN {
   &xst_report_table ({
-    'x_version' => ['info', _('Detected X version [%s].')],
-    'x_parse'   => ['info', _('Configuration file [%s] successfully parsed')],
+    'x_version'      => ['info',  _('Detected X version [%s].')],
+    'x_parse'        => ['info',  _('Configuration file [%s] successfully parsed')],
+    'x_parse_error'  => ['error', _('Error parsing keyword [%s]')],
+    'x_general_warn' => ['warn',  _('Internal error: [%s]')],
   }
                      );
 }
@@ -471,8 +473,8 @@ sub x_parse_unique_string
   return;
 
  ERROR:
-
-  # TODO: give error!
+  &xst_report ('x_parse_error', $kw);
+  &xst_debug_print_line ("x_parse_unique_string: error parsing $kw");
 }
 
 sub x_xml_parse_unique
@@ -534,8 +536,8 @@ sub x_parse_unique_int
   return;
 
  ERROR:
-
-  # TODO: give error!
+  &xst_report ('x_parse_error', $kw);
+  &xst_debug_print_line ("x_parse_unique_int: error parsing $kw");
 }
 
 sub x_update_unique_int
@@ -593,8 +595,8 @@ sub x_parse_list_string
   return;
 
  ERROR:
-
-  #TODO: Give error!
+  &xst_report ('x_parse_error', $kw);
+  &xst_debug_print_line ("x_parse_list_string: error parsing $kw");
 }
 
 sub x_xml_parse_list
@@ -680,8 +682,8 @@ sub x_parse_list_int
   return;
 
  ERROR:
-
-  #TODO: Give error!
+  &xst_report ('x_parse_error', $kw);
+  &xst_debug_print_line ("x_parse_list_int: error parsing $kw");
 }
 
 sub x_update_list_int
@@ -747,8 +749,8 @@ sub x_parse_serverlayout_screen
   return;
 
  ERROR:
-
-  #TODO: Give error!
+  &xst_report ('x_parse_error', $kw);
+  &xst_debug_print_line ("x_parse_serverlayout_screen: error parsing $kw");
 }
 
 sub x_xml_print_serverlayout_screen
@@ -836,8 +838,8 @@ sub x_parse_modeline
   return;
 
  ERROR:
-  # TODO: Give error!
-
+  &xst_report ('x_parse_error', $kw);
+  &xst_debug_print_line ("x_parse_modeline: error parsing $kw");
 }
 
 sub x_xml_parse_modeline
@@ -885,8 +887,9 @@ sub x_xml_print_modeline
         }
       }
       else {
-        # TODO: Give warning
-        1;
+        my $msg = "unknown data type $type";
+        &xst_report ('x_general_warn', $msg);
+        &xst_debug_print_line ("x_xml_print_modeline: $msg");
       }
     }
     &xst_xml_container_leave ();
@@ -975,8 +978,8 @@ sub x_parse_range_hz
   return;
 
  ERROR:
-
-  # TODO: Give error
+  &xst_report ('x_parse_error', $kw);
+  &xst_debug_print_line ("x_parse_range_hz: error parsing $kw");
 }
 
 sub x_xml_parse_range_hz
@@ -1128,11 +1131,8 @@ sub x_parse
         last;
       };
       
-      /^End(Sub)?Section/i and do {
-        if (scalar @section_stack <= 1) {
-          # TODO: Give error: mismatching end of section
-          1;
-        } else {       
+      /^(End(Sub)?Section)/i and do {
+        if (scalar @section_stack > 1) {
           shift @section_stack;
           $section_ptr = $section_stack[0];
 
@@ -1143,7 +1143,7 @@ sub x_parse
       };
 
       (scalar @section_stack <= 1) and do {
-        # TODO: Give error: token outside sections.
+        # Inside unknown section
         last;
       };
 
@@ -1195,8 +1195,9 @@ sub x_xml_print_section
     }
 
     else {
-      # TODO: Give warning
-      1;
+      my $msg = "unknown keyword $key in section $section";
+      &xst_report ('x_general_warn', $msg);
+      &xst_debug_print_line ("x_xml_print_section: $msg");
     }
   }
 
@@ -1223,6 +1224,7 @@ sub x_xml_parse_section
     if (exists $keywords->{$$tree[0]}) {
       $func = $keywords->{$$tree[0]}{'xml_parse'};
       if ($func eq "") {
+        
         # TODO:
         # print STDERR "$tree->[0]\n";
         1;
@@ -1265,8 +1267,9 @@ sub x_xml_parse
     }
 
     else {
-      # TODO: Probably give a warning.
-      1;
+      my $msg = "received unknown xml tag $$tree[0]";
+      &xst_report ('x_general_warn', $msg);
+      &xst_debug_print_line ("x_xml_parse: $msg");
     }
 
     shift @$tree;
@@ -1392,8 +1395,9 @@ sub x_update_add_section
     }
 
     else {
-      # TODO: Give warning
-      1;
+      my $msg = "unknown keyword $key in section $section";
+      &xst_report ('x_general_warn', $msg);
+      &xst_debug_print_line ("x_update_add_section: $msg");
     }
   }
 
@@ -1479,8 +1483,9 @@ sub x_update_section
       }
 
       else {
-        # TODO: Give warning
-        1;
+        my $msg = "unknown keyword $kw in section $section_name";
+        &xst_report ('x_general_warn', $msg);
+        &xst_debug_print_line ("x_update_section: $msg");
       }
     }
   }

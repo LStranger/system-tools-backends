@@ -22,6 +22,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+use File::Path;
+use File::Copy;
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
@@ -155,13 +157,13 @@ sub xst_file_backup_rotate_dirs
     my $i;
 
     $xst_file_backup_dir_rotation_was_made = 1;
-    &xst_file_run ("rm -Rf $backup_tool_dir/9");
+    rmtree ("$backup_tool_dir/9");
 
     for ($i = 8; $i; $i--)
     {
       if (stat ("$backup_tool_dir/$i"))
       {
-        &xst_file_run ("mv $backup_tool_dir/$i $backup_tool_dir/" . ($i+1));
+        move ("$backup_tool_dir/$i", "$backup_tool_dir/" . ($i+1));
       }
     }
 
@@ -198,7 +200,7 @@ sub xst_file_backup
   if (!stat ("$backup_tool_dir/1/$backup_file"))
   {
     &xst_file_create_path_for_file ("$backup_tool_dir/1/$backup_file");
-    &xst_file_run ("cp $backup_file $backup_tool_dir/1/$backup_file");
+    copy ($backup_file, "$backup_tool_dir/1/$backup_file");
     &xst_report ("file_backup_success", $backup_tool_dir);
   }
   
@@ -345,7 +347,7 @@ sub xst_file_open_filter_write_from_names
 
   &xst_file_create_path ("$tmp_path");
   unlink ("$tmp_path/$xst_name-$filename");
-  &xst_file_run ("cp $name $tmp_path/$xst_name-$filename");
+  copy ($name, "$tmp_path/$xst_name-$filename");
 
   open (INFILE, "$tmp_path/$xst_name-$filename");
 

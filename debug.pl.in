@@ -21,6 +21,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+use File::Path;
+use File::Copy;
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
@@ -202,14 +204,14 @@ sub xst_debug_rotate_try
 
     if (stat ("$debug_tool_dir/9"))
     {
-      &xst_file_run ("rm -Rf $debug_tool_dir/9");
+      rmtree ("$debug_tool_dir/9");
     }
 
     for ($i = 8; $i; $i--)
     {
       if (stat ("$debug_tool_dir/$i"))
       {
-        &xst_file_run ("mv $debug_tool_dir/$i $debug_tool_dir/" . ($i+1));
+        move ("$debug_tool_dir/$i", "$debug_tool_dir/" . ($i+1));
       }
     }
     

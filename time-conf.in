@@ -34,6 +34,7 @@
 #
 # date
 
+use File::Copy;
 
 BEGIN {
   $SCRIPTSDIR = "___scriptsdir___";
@@ -349,9 +350,9 @@ sub time_set_rh62_zone
     unlink $localtime;  # Important, since it might be a symlink.
     
     &xst_report_enter ();
-    $res = &xst_file_run("cp $tz $localtime");
+    $res = copy ($tz, $localtime);
     &xst_report_leave ();
-    return -1 if $res;
+    return -1 unless $res;
     return 0;
   }
 
