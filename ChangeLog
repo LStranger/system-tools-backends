@@ -1,3 +1,12 @@
+2001-07-17  Hans Petter Jansson  <hpj@ximian.com>
+
+	* file.pl.in (xst_file_open_write_compressed): Implement.
+
+	* replace.pl.in (xst_replace_xml_pcdata): Allow compressed files.
+	  (xst_replace_xml_attribute): Ditto.
+
+	* xml.pl.in (xst_xml_model_scan): Ditto.
+
 2001-07-16  Hans Petter Jansson  <hpj@ximian.com>
 
 	* print.pl.in (xst_print_printers_get_rh71): Implement.

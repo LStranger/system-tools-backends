@@ -530,7 +530,7 @@ sub xst_xml_model_scan_recurse
 sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
 {
   my ($file) = @_;
-  my ($doc, @tree);
+  my ($doc, $tree, $compressed);
 
   $file = $xst_input_file if $file eq undef;
 
@@ -540,6 +540,11 @@ sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
     if (!$doc)
     {
       $doc = &xst_xml_read_file ($file);
+      $compressed = 0;
+    }
+    else
+    {
+      $compressed = 1;
     }
   }
   else
@@ -550,7 +555,7 @@ sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
   @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)/mg); # pcdata, tag, pcdata, tag, ...
   $tree = &xst_xml_model_scan_recurse;
 
-  return $tree;
+  return ($tree, $compressed);
 }
 
 # Quote/unquote.

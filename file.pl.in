@@ -327,6 +327,57 @@ sub xst_file_open_filter_write_from_names
 }
 
 
+sub xst_file_open_write_compressed
+{
+  local *FILE;
+  my ($name, $fullname, $gzip);
+
+  $gzip = &xst_file_locate_tool ("gzip");
+  return undef if (!$gzip);
+
+  &xst_report_enter ();
+    
+  # Find out where it lives.
+    
+  foreach $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+    
+  if ($name eq "")
+  {
+    $name = $_[0];
+    (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
+    &xst_report ("file_open_write_create", "@_", $fullname);
+  }
+  else
+  {
+    (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
+    &xst_report ("file_open_write_success", $fullname);
+  }
+    
+  ($name = "$xst_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+  &xst_file_create_path_for_file ($name);
+    
+  # Make a backup if the file already exists - if the user specified a prefix,
+  # it might not.
+    
+  if (stat ($name))
+  {
+    &xst_file_backup ($name);
+  }
+
+  &xst_report_leave ();
+  
+  # Truncate and return filehandle.
+
+  if (!open (FILE, "| $gzip -c > $name"))
+  {
+    &xst_report ("file_open_write_failed",  $name);
+    return;
+  }
+
+  return *FILE;
+}
+
+
 sub xst_file_remove
 {
   my ($name) = @_;
