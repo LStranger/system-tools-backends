@@ -5,7 +5,8 @@ nameresolution-conf \
 network-conf \
 shares-conf \
 time-conf \
-users-conf
+users-conf \
+boot-conf
 
 perl_libs = \
 be.pl \
@@ -26,7 +27,8 @@ nameresolution-conf.in \
 network-conf.in \
 shares-conf.in \
 time-conf.in \
-users-conf.in
+users-conf.in \
+boot-conf.in
 
 CLEANFILES = $(backends) $(perl_libs)
 

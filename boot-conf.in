@@ -1,0 +1,363 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
+
+# Boot manager configurator. Designed to be architecture and distribution independent.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Tambet Ingo <tambet@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/lilo.conf
+
+# Running programs affected:
+#
+# lilo
+
+require "___scriptsdir___/be.pl";
+require "___scriptsdir___/parse.pl";
+
+# --- Tool information --- #
+
+$name = "boot";
+$version = "0.1.0";
+
+$description =<<"end_of_description;";
+       Configures Boot manager (Only LILO at the moment).
+end_of_description;
+
+$progress_max = 10;
+
+
+# Find the tools
+
+$tool_lilo = &be_locate_tool ("lilo");
+
+
+# --- XML parsing ---
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  my $tree, %hash;
+  # Scan XML to tree.
+
+  $tree = &be_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "boot" tag.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "boot") { &xml_parse_boot ($$tree[1], \%hash); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return(\%hash);
+}
+
+sub xml_parse_boot
+{
+  my $tree = $_[0];
+  my $hash = $_[1];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if    ($$tree[0] eq "timeout") { $$hash{"timeout"} = &be_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "default") { $$hash{"default"} = &be_xml_get_word ($$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+# --- XML printing --- #
+
+sub quote
+{
+  my $ret = $_[0];
+  my $i;
+ 
+  for ($i = 1; @be_xml_entities[$i] ne undef; $i += 2)
+  {
+    $ret =~ s/$be_xml_entities[$i]/$be_xml_entities[$i - 1]/g;
+  }
+
+  return $ret;
+}
+
+sub unquote
+{
+  my $ret = $_[0];
+  my $i;
+ 
+  for ($i = 0; @be_xml_entities[$i] ne undef; $i += 2)
+  {
+    $ret =~ s/$be_xml_entities[$i]/$be_xml_entities[$i + 1]/g;
+  }
+
+  return $ret;
+}
+
+sub xml_print_scalars
+{
+  my ($h, @scalar_keys) = @_;
+  my $i, $val;
+
+  while ($i = shift @scalar_keys)
+  {
+    $val = &quote ($$h{$i});
+
+    if (exists $$h{$i}) { &be_xml_print ("<$i>$val</$i>\n"); }
+    else { &be_xml_print ("<$i/>\n"); }
+  }
+}
+
+sub xml_print_arrays
+{
+  my ($h, @array_keys) = @_;
+  my $i, $j, $val;
+  
+  foreach $i (@array_keys)
+  {
+    if (exists $$h{$i})
+    {
+	 &be_xml_vspace ();
+	 foreach $j (@{$$h{$i}})
+	 {
+	   $val = &quote ($j);
+	   &be_xml_print ("<$i>$val</$i>\n");
+	 }
+    }
+  }
+}
+
+sub xml_print_globals
+{
+  my $h = $_[0];
+  my @scalar_keys = (timeout, default);
+
+  &xml_print_scalars ($h, @scalar_keys);
+}
+
+sub xml_print_images
+{
+  my ($h, $image) = @_;
+  my $i, $val, $array;
+
+  $array = $$h{$image};
+
+  foreach $entry (@$array)
+  {
+    &be_xml_vspace ();
+    &be_xml_print ("<entry>\n");
+    &be_xml_enter ();
+    
+    foreach $i (keys %$entry)
+    {
+	 $val = &quote ($$entry{$i});
+
+	 if ($val eq "") { &be_xml_print ("<$i/>\n"); }
+	 else { &be_xml_print ("<$i>$val</$i>\n"); }
+    }
+
+    &be_xml_leave ();
+    &be_xml_print ("</entry>\n");
+  }
+  
+  &be_xml_vspace ();
+}
+
+sub xml_print
+{
+  my $h = $_[0];
+  
+  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+  print "<!DOCTYPE boot []>\n\n";
+  print "<boot>\n";
+  &be_xml_vspace ();
+  &be_xml_enter ();
+
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- Configuration starts here -->\n");
+  &be_xml_vspace ();
+
+  &xml_print_globals ($h);
+  &xml_print_images ($h, 'image');
+  &xml_print_images ($h, 'other');
+  
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- End of configuration -->\n");
+  &be_xml_vspace ();
+
+  &be_xml_leave ();
+  &be_xml_print ("</boot>\n");
+}
+  
+sub boot_lilo_images_get
+{
+  my ($file, $image_other, $key) = @_;
+  my %hash;
+  my $re, $fd, @line;
+  my $found_flag = 0;
+
+  $re = "[ \t]*=[ \t]*";
+  $fd = &be_open_read_from_names ($file);
+  
+  while (<$fd>)
+  {
+    chomp;
+    s/^[ \t]+//;
+    next if (/^\#/ || /^$/);
+    @line = split ($re);
+    
+    $found_flag = 1 if ($line[0] eq $image_other && $line[1] eq $key);
+
+    if ($found_flag)
+    {
+	 if (/^(image|other)/)
+	 {
+	   last if (!/$key/);
+	 }
+	 
+	 $hash{$line[0]} = $line[1];
+    }
+  }
+
+  return \%hash;
+}
+
+sub boot_conf_get_images
+{
+  my ($fn, $key) = @_;
+  my $images, $i;
+  my @array;
+
+  $images = &xst_parse_split_all ($fn, $key, "[ \t]*=[ \t]*");
+
+  foreach $i (@$images)
+  {
+    push @array, &boot_lilo_images_get ($fn, $key, $i);
+  }
+  
+  return \@array;
+}
+
+sub boot_conf_get
+{
+  my %dist_attrib =
+	 (
+	  redhat62 => {
+	    fn => {
+		 LILO_CONF => "/etc/lilo.conf" },
+	    table => [
+			    [ timeout, \&xst_parse_sh, LILO_CONF, timeout ],
+			    [ default, \&xst_parse_sh, LILO_CONF, default ],
+			    [ image,   \&boot_conf_get_images, LILO_CONF, image ],
+			    [ other,   \&boot_conf_get_images, LILO_CONF, other ],
+			    ] 
+				 }
+	  );
+  
+  # mapping from regular expression, which will be compared to the string
+  # "$be_dist,$be_dist_version,$be_system" to a string, which will be used as
+  # a the key of the dist_attrib field to use.
+  my %dist_cmp = (
+			   "^redhat.*" => "redhat62"
+			   );
+
+  my ($dist, $hash);
+  
+  $dist = &be_map_dist (%dist_cmp);
+  return undef if ($dist eq undef);
+  
+  $hash = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
+						   $ {$dist_attrib{$dist}}{"table"});
+  return $hash;
+}
+
+# Top-level actions.
+
+sub get
+{
+  my $hash;
+
+  &be_begin ();
+  
+  # Get information from .conf file
+  $hash = &boot_conf_get ();
+
+  &be_end();
+  &xml_print ($hash);
+}
+
+
+# --- Set (write) config --- #
+
+
+sub set
+{
+  my $hash;
+  
+  &be_begin ();
+  $hash = &xml_parse ();
+
+#  &xst_boot_conf_set ($hash);
+
+  # network interface configuring
+#  &be_progress (90);
+
+# if ($be_do_immediate)
+#  {
+#    &set_immediate;
+#  }
+
+  &be_end ();
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+sub filter
+{
+  my $hash;
+  
+  &be_begin ();
+  $hash = &xml_parse ();
+  &be_end ();
+  &xml_print ($hash);
+}
+
+
+# --- Main --- #
+
+&be_init ($name, $version, $description, @ARGV);
+
+# Do our thing.
+
+if    ($be_operation eq "get")    { &get; }
+elsif ($be_operation eq "set")    { &set; }
+elsif ($be_operation eq "filter") { &filter; }
