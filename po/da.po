@@ -62,7 +62,7 @@ msgstr "Advanced Linux Sound Architecture"
 
 #: ../service-list.pl.in:38 ../service-list.pl.in:70
 msgid "web server"
-msgstr "Web-server"
+msgstr "Webserver"
 
 #: ../service-list.pl.in:38 ../service-list.pl.in:70
 msgid ""
@@ -231,7 +231,7 @@ msgstr "En dynamisk DNS-navnetjeneste fra www.dhis.org"
 
 #: ../service-list.pl.in:56
 msgid "Dict Dictionary Server"
-msgstr "Dict-ordbogs-server"
+msgstr "Dict-ordbogsserver"
 
 #: ../service-list.pl.in:57
 msgid ""
@@ -901,39 +901,39 @@ msgstr "Kørselsniveau uden netværk"
 
 #: ../users-conf.in:179
 msgid "Monitor system logs"
-msgstr "Overvåg systemlogfiler"
+msgstr "Overvåge systemlogfiler"
 
 #: ../users-conf.in:180
 msgid "Use audio devices"
-msgstr "Benyt lydenheder"
+msgstr "Anvende lydkort"
 
 #: ../users-conf.in:181
 msgid "Access to CD-ROM drives"
-msgstr "Tilgang til cd-rom-drev"
+msgstr "Adgang til cdrom-drev"
 
 #: ../users-conf.in:182
 msgid "Access to modem devices"
-msgstr "Tilgang til modemenheder"
+msgstr "Adgang til modemer"
 
 #: ../users-conf.in:183
 msgid "Connect to Internet through modem devices"
-msgstr "Tilslut til internettet gennem modemenheder"
+msgstr "Oprette forbindelse til internettet vha. modem"
 
 #: ../users-conf.in:184
 msgid "Send and receive faxes"
-msgstr "Send og modtag faxer"
+msgstr "Sende og modtage faxer"
 
 #: ../users-conf.in:185
 msgid "Access to floppy drives"
-msgstr "Tilgang til diskettedrev"
+msgstr "Adgang til diskettedrev"
 
 #: ../users-conf.in:186
 msgid "Mount removable devices automatically"
-msgstr "Montér flytbare enheder automatisk"
+msgstr "Montere flytbare enheder automatisk"
 
 #: ../users-conf.in:187
 msgid "Access to tape drives"
-msgstr "Tilgang til bånddrev"
+msgstr "Adgang til bånddrev"
 
 #: ../users-conf.in:188
 msgid "Be able to get administrator privileges"
