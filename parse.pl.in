@@ -292,6 +292,7 @@ sub xst_parse_split_hash
     chomp;
     s/^[ \t]+//;
     s/[ \t]+$//;
+    s/\#.*$//;
     next if (/^$/);
     @line = split ($key_re, $_, 2);
 
