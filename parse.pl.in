@@ -72,14 +72,14 @@ sub xst_parse_split
 
     if (shift (@line) eq $key)
     {
-	 if ($all) {
-	   push @res, $line[0];
-	 }
-	 else
-	 {
-	   close $fd;
-	   return $line[0];
-	 }
+      if ($all) {
+        push @res, $line[0];
+      }
+      else
+      {
+        close $fd;
+        return $line[0];
+      }
     }
   }
 
@@ -168,29 +168,29 @@ sub xst_parse_chat
   {
     while (<$fd>)
     {
-	 # We'll be emptying $_ as we "scan".
-	 chomp;
-	 while ($_ ne "")
-	 {
-	   # If it uses quotes. FIXME: Assuming they surround the whole string.
-	   if (/^\'/)
-	   {
-		s/\'([^\']*)\' ?//;
-		$found = $1;
-	   }
-	   else
-	   {
-		s/([^ \t]*) ?//;
-		$found = $1;
-	   }
+      # We'll be emptying $_ as we "scan".
+      chomp;
+      while ($_ ne "")
+      {
+        # If it uses quotes. FIXME: Assuming they surround the whole string.
+        if (/^\'/)
+        {
+          s/\'([^\']*)\' ?//;
+          $found = $1;
+        }
+        else
+        {
+          s/([^ \t]*) ?//;
+          $found = $1;
+        }
 
-	   # If it looks like what we're looking for, return what matched the parens.
-	   if ($found =~ /$re/i)
-	   {
-		close $fd;
-		return $1;
-	   }
-	 }
+        # If it looks like what we're looking for, return what matched the parens.
+        if ($found =~ /$re/i)
+        {
+          close $fd;
+          return $1;
+        }
+      }
     }
 
     close $fd;
@@ -269,15 +269,15 @@ sub xst_parse_ini
     next if (/^$/);
     if (/\[[ \t]*$section[ \t]*\]/i)
     {
-	 s/\[[ \t]*$section[ \t]*\][ \t]*//i;
-	 $found_section_flag = 1;
+      s/\[[ \t]*$section[ \t]*\][ \t]*//i;
+      $found_section_flag = 1;
     }
 
     if ($found_section_flag && /^$var[ \t]*=/i)
     {
       s/^$var[ \t]*=[ \t]*//i;
-	 $res = $_;
-	 last;
+      $res = $_;
+      last;
     }
   }
 
