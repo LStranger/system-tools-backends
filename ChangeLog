@@ -1,3 +1,10 @@
+2001-02-19  Chema Celorio  <chema@celorio.com>
+
+	* be.pl.in (xst_buffer_save): remove this function it is
+	duplicated in file.pl
+	(xst_buffer_load): ditto
+	(xst_buffer_clean): ditto
+
 2001-02-19  Arturo Espinosa  <arturo@ximian.com>
 
 	* network.pl: Ensure local host entry, by checking the internal

@@ -848,66 +848,6 @@ sub xst_open_filter_write_from_names
     return(*INFILE, *OUTFILE);
   }
 
-
-# Open $file and put it into @buffer, for in-line editting.
-# \%buffer on success, undef on error.
-sub xst_buffer_load
-{
-  my $file = $_[0];
-  my @buffer;
-  my $fd;
-  
-  $fd = &xst_open_read_from_names ($file);
-  return undef if !$fd;
-
-  @buffer = (<$fd>);
-
-  return \@buffer;
-}
-
-
-# Take a $buffer and save it in $file. -1 is error, 0 success.
-sub xst_buffer_save
-{
-  my ($buffer, $file) = @_;
-  my $fd, $i;
-
-  #debuging
-
-  print STDERR "\nfile:$file\n";
-  
-  foreach $i (@$buffer)
-  {
-    print STDERR "|" . $i;
-  }
-
-  #debuging
-  
-  $fd = &xst_open_write_from_names ($file);
-  return -1 if !$fd;
-
-  foreach $i (@$buffer)
-  {
-    print $fd $i;
-  }
-
-  close $fd;
-
-  return 0;
-}
-
-# Erase all empty string elements from the $buffer.
-sub xst_buffer_clean
-{
-  my $buffer = $_[0];
-  my $i;
-
-  for ($i = 0; $i <= $#$buffer; $i++)
-  {
-    splice (@$buffer, $i, 1) if $$buffer[$i] eq "";
-  }
-}
-
 sub xst_buffer_join_lines
 {
   my $buffer = $_[0];
