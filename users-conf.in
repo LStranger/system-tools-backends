@@ -75,13 +75,13 @@ $progress_max = 3;
 
 # Where are the tools?
 
-$cmd_usermod  = &be_locate_tool ("usermod");
-$cmd_userdel  = &be_locate_tool ("userdel");
-$cmd_useradd  = &be_locate_tool ("useradd");	
-$cmd_groupdel = &be_locate_tool ("groupdel");
-$cmd_groupadd = &be_locate_tool ("groupadd");
-$cmd_groupmod = &be_locate_tool ("groupmod");
-$cmd_gpasswd  = &be_locate_tool ("gpasswd");	
+$cmd_usermod  = &xst_locate_tool ("usermod");
+$cmd_userdel  = &xst_locate_tool ("userdel");
+$cmd_useradd  = &xst_locate_tool ("useradd");	
+$cmd_groupdel = &xst_locate_tool ("groupdel");
+$cmd_groupadd = &xst_locate_tool ("groupadd");
+$cmd_groupmod = &xst_locate_tool ("groupmod");
+$cmd_gpasswd  = &xst_locate_tool ("gpasswd");	
 
 
 # --- Internal configuration variables --- #
@@ -206,15 +206,15 @@ sub read_login_defs
   local *FILE;
   my @line;
 	
-  $ifh = &be_open_read_from_names(@login_defs_names);
+  $ifh = &xst_open_read_from_names(@login_defs_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
 
   while (<FILE>)
   {
-    next if &be_ignore_line ($_);
+    next if &xst_ignore_line ($_);
     chomp;
-    $_ = &be_xml_plain_to_entities (\$_);
+    $_ = &xst_xml_plain_to_entities (\$_);
     @line = split (/[ \t]+/, $_);
     $login_defs{$login_defs_prop_map{$line[0]}} = $line[1];
   }
@@ -232,7 +232,7 @@ sub read_passwd_shadow
 
   # Find the passwd file.
 
-  $ifh = &be_open_read_from_names(@passwd_names);
+  $ifh = &xst_open_read_from_names(@passwd_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
     $passwd_last_modified = (stat (FILE))[9]; # &get the mtime.
@@ -245,7 +245,7 @@ sub read_passwd_shadow
   while (<FILE>)
   {
     chomp;
-    $_ = &be_xml_plain_to_entities (\$_);
+    $_ = &xst_xml_plain_to_entities (\$_);
     @line = split ':', $_, -1;
     unshift @line, sprintf ("%06d", $i);
     $copy = [@line];
@@ -259,7 +259,7 @@ sub read_passwd_shadow
 	
   # Find the shadow file.
 
-  *FILE = &be_open_read_from_names(@shadow_names);
+  *FILE = &xst_open_read_from_names(@shadow_names);
   if (*FILE) {
     my ($login, $passwd);
     my $passwd_pos = $users_prop_map{"password"};
@@ -288,7 +288,7 @@ sub read_group
 
   # Find the file.
 
-  $ifh = &be_open_read_from_names(@group_names);
+  $ifh = &xst_open_read_from_names(@group_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
   $group_last_modified = (stat (FILE))[9]; # &get the mtime.
@@ -301,7 +301,7 @@ sub read_group
   while (<FILE>)
   {
     chomp;
-    $_ = &be_xml_plain_to_entities (\$_);
+    $_ = &xst_xml_plain_to_entities (\$_);
     @line = split ':', $_, -1;
     unshift @line, sprintf ("%06d", $i);
     @a = split ',', pop @line;
@@ -325,13 +325,13 @@ sub write_group_passwd
   @parse_users = @users;
   $parse_passwd_last_modified = $passwd_last_modified;
   &read_passwd_shadow;
-  &be_progress(10);
+  &xst_progress(10);
 
   %parse_groups_hash = %groups_hash;
   @parse_groups = @groups;
   $parse_group_last_modified = $group_last_modified;
   &read_group;
-  &be_progress(20);
+  &xst_progress(20);
 	
 #	if ($passwd_last_modified > $parse_passwd_last_modified) 
 #	{
@@ -359,35 +359,35 @@ sub write_group_passwd
 	  $groups_all{$i} |= 2;
 	}
 	
-	&be_progress(25);
+	&xst_progress(25);
 	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  &del_user ($users_hash{$i}) if ($users_all{$i} == 1);
 	}
 	
-	&be_progress(35);
+	&xst_progress(35);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
 	  &del_group ($groups_hash{$i}) if ($groups_all{$i} == 1);
 	}
 	
-	&be_progress(45);
+	&xst_progress(45);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
 	  &add_group ($parse_groups_hash{$i}) if ($groups_all{$i} == 2);
 	}
 	
-	&be_progress(55);
+	&xst_progress(55);
 	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  &add_user ($parse_users_hash{$i}) if ($users_all{$i} == 2);
 	}
 
-	&be_progress(70);
+	&xst_progress(70);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
@@ -397,7 +397,7 @@ sub write_group_passwd
 		}
 	}
 	
-	&be_progress(85);
+	&xst_progress(85);
 	
 	foreach $i (sort (keys (%users_all)))
 	{
@@ -407,7 +407,7 @@ sub write_group_passwd
 		}
 	}
 	
-	&be_progress(95);
+	&xst_progress(95);
 }
 
 sub del_user
@@ -518,7 +518,7 @@ sub xml_parse
 	
   # Scan XML to tree.
 
-  $parse_tree = $tree = &be_xml_scan;
+  $parse_tree = $tree = &xst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "users" tag.
@@ -549,7 +549,7 @@ sub xml_parse_users
 		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1]); }
 		else
 		{
-		  &be_report_warning(1, "Unexpected tag " . $$tree[0] . " while parsing users");
+		  &xst_report_warning(1, "Unexpected tag " . $$tree[0] . " while parsing users");
 		}
 
     shift @$tree;
@@ -571,7 +571,7 @@ sub xml_parse_login_defs
 		}
 		else
 		{
-		  &be_report_warning(2, "Unexpected tag " . $$tree[0] . " while parsing logindefs");
+		  &xst_report_warning(2, "Unexpected tag " . $$tree[0] . " while parsing logindefs");
 		}
 		
 		shift @$tree;
@@ -585,7 +585,7 @@ sub xml_parse_passwd_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	&be_report_warning(3, "passwd_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
+	&xst_report_warning(3, "passwd_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
 	$passwd_last_modified = $$tree[1];
 }	
 
@@ -595,7 +595,7 @@ sub xml_parse_group_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	&be_report_warning(4, "group_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
+	&xst_report_warning(4, "group_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
 	$group_last_modified = $$tree[1];
 }	
 
@@ -610,7 +610,7 @@ sub xml_parse_userdb
 	  if ($$tree[0] eq "user") { &xml_parse_user ($$tree[1]); }
 		else
 		{
-		  &be_report_warning(5, "Unexpected tag " . $$tree[0] . " while parsing userdb");
+		  &xst_report_warning(5, "Unexpected tag " . $$tree[0] . " while parsing userdb");
 		}
 
     shift @$tree;
@@ -629,11 +629,11 @@ sub xml_parse_user
 	{
 		if ($users_prop_map{$$tree[0]} ne undef)
 		{
-		  $line[$users_prop_map{$$tree[0]}] = &be_xml_entities_to_plain(\$$tree[1][2]);
+		  $line[$users_prop_map{$$tree[0]}] = &xst_xml_entities_to_plain(\$$tree[1][2]);
 		}
 		else
 		{
-		  &be_report_warning(6, "Unexpected tag " . $$tree[0] . " while parsing user");
+		  &xst_report_warning(6, "Unexpected tag " . $$tree[0] . " while parsing user");
 		}
 		
 		shift @$tree;
@@ -655,7 +655,7 @@ sub xml_parse_groupdb
     if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1]); }
     else
     {
-      &be_report_warning(7, "Unexpected tag " . $$tree[0] . " while parsing groupdb");
+      &xst_report_warning(7, "Unexpected tag " . $$tree[0] . " while parsing groupdb");
     }
 
     shift @$tree;
@@ -679,7 +679,7 @@ sub xml_parse_group
 		}
 		else
 		{
-		  &be_report_warning(9, "Unexpected tag " . $$tree[0] . " while parsing group");
+		  &xst_report_warning(9, "Unexpected tag " . $$tree[0] . " while parsing group");
 		}
 		
 		shift @$tree;
@@ -695,7 +695,7 @@ sub xml_parse_group
 		}
 		else
 		{
-		  &be_report_warning(8, "Unexpected tag " . $$a[0] . " while parsing users");
+		  &xst_report_warning(8, "Unexpected tag " . $$a[0] . " while parsing users");
 		}
 		shift @$a;
 		shift @$a;
@@ -714,53 +714,53 @@ sub xml_print_nis
 {
   my ($key, $i, $j, $k);
   
-  &be_xml_print ("<nis_userdb>\n");
-	&be_xml_enter ();
+  &xst_xml_print ("<nis_userdb>\n");
+	&xst_xml_enter ();
 	foreach $i (@users)
 	{
-          &be_xml_vspace ();
-	  &be_xml_print ("<user>\n");
-		&be_xml_enter ();
+          &xst_xml_vspace ();
+	  &xst_xml_print ("<user>\n");
+		&xst_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n");
+		  &xst_xml_print ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n");
 		}
-		&be_xml_leave ();
-		&be_xml_print ("</user>\n");
+		&xst_xml_leave ();
+		&xst_xml_print ("</user>\n");
 	}
-	&be_xml_leave ();
+	&xst_xml_leave ();
   
-  &be_xml_vspace ();
-  &be_xml_print ("</nis_userdb>\n");
+  &xst_xml_vspace ();
+  &xst_xml_print ("</nis_userdb>\n");
 	
-  &be_xml_print ("<!-- Now the groups -->\n");
-  &be_xml_vspace ();
+  &xst_xml_print ("<!-- Now the groups -->\n");
+  &xst_xml_vspace ();
 	
-	&be_xml_print ("<nis_groupdb>\n");
-	&be_xml_enter ();
+	&xst_xml_print ("<nis_groupdb>\n");
+	&xst_xml_enter ();
 	foreach $i (@groups)
 	{
-    &be_xml_vspace ();
-	  &be_xml_print ("<group>\n");
-		&be_xml_enter ();
+    &xst_xml_vspace ();
+	  &xst_xml_print ("<group>\n");
+		&xst_xml_enter ();
 		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
-			&be_xml_print ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
+			&xst_xml_print ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
 		}
-		&be_xml_print ("<users>\n");
-		&be_xml_enter ();
+		&xst_xml_print ("<users>\n");
+		&xst_xml_enter ();
 		$k = $$i[$groups_prop_map{"users"}];
 		foreach $j (@$k)
 		{
-			&be_xml_print ("<user>$j</user>\n");
+			&xst_xml_print ("<user>$j</user>\n");
 		}
-		&be_xml_leave ();
-		&be_xml_print ("</users>\n");
+		&xst_xml_leave ();
+		&xst_xml_print ("</users>\n");
 
-		&be_xml_leave ();
-		&be_xml_print ("</group>\n");
+		&xst_xml_leave ();
+		&xst_xml_print ("</group>\n");
 	}
-	&be_xml_leave ();
-  &be_xml_vspace ();
-  &be_xml_print ("</nis_groupdb>\n");
+	&xst_xml_leave ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("</nis_groupdb>\n");
 }
 
 sub xml_print
@@ -770,88 +770,88 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE users []>\n\n";
   print "<users>\n";
-  &be_xml_enter ();
+  &xst_xml_enter ();
 
-  &be_xml_vspace ();
-  &be_xml_print ("<!-- login.defs configuration starts here -->\n");
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<!-- login.defs configuration starts here -->\n");
+  &xst_xml_vspace ();
 
-  &be_xml_print ("<logindefs>\n");
-	&be_xml_enter ();
+  &xst_xml_print ("<logindefs>\n");
+	&xst_xml_enter ();
 	foreach $key (keys %login_defs)
 	{
 	  if ($key ne "") {
-	    &be_xml_print ("<$key>" . $login_defs{$key} . "</$key>\n");
+	    &xst_xml_print ("<$key>" . $login_defs{$key} . "</$key>\n");
 	  }
 	}
-	&be_xml_leave ();
-	&be_xml_print ("</logindefs>\n");
-	&be_xml_vspace ();
-  &be_xml_print ("<!-- Now the users -->\n");
-  &be_xml_vspace ();
+	&xst_xml_leave ();
+	&xst_xml_print ("</logindefs>\n");
+	&xst_xml_vspace ();
+  &xst_xml_print ("<!-- Now the users -->\n");
+  &xst_xml_vspace ();
 	
-  &be_xml_print ("<!-- When was the passwd file last modified (since the epoch)? -->\n");
-  &be_xml_vspace ();
-  &be_xml_print ("<passwd_last_modified>$passwd_last_modified</passwd_last_modified>\n");
-  &be_xml_vspace ();
+  &xst_xml_print ("<!-- When was the passwd file last modified (since the epoch)? -->\n");
+  &xst_xml_vspace ();
+  &xst_xml_print ("<passwd_last_modified>$passwd_last_modified</passwd_last_modified>\n");
+  &xst_xml_vspace ();
 	
-	&be_xml_print ("<userdb>\n");
-	&be_xml_enter ();
+	&xst_xml_print ("<userdb>\n");
+	&xst_xml_enter ();
 	foreach $i (@users)
 	{
-          &be_xml_vspace ();
-	  &be_xml_print ("<user>\n");
-		&be_xml_enter ();
+          &xst_xml_vspace ();
+	  &xst_xml_print ("<user>\n");
+		&xst_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n");
+		  &xst_xml_print ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n");
 		}
-		&be_xml_leave ();
-		&be_xml_print ("</user>\n");
+		&xst_xml_leave ();
+		&xst_xml_print ("</user>\n");
 	}
-	&be_xml_leave ();
-  &be_xml_vspace ();
-  &be_xml_print ("</userdb>\n");
+	&xst_xml_leave ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("</userdb>\n");
 	
-  &be_xml_print ("<!-- Now the groups -->\n");
-  &be_xml_vspace ();
+  &xst_xml_print ("<!-- Now the groups -->\n");
+  &xst_xml_vspace ();
 	
-  &be_xml_print ("<!-- When was the group file last modified (since the epoch)? -->\n");
-  &be_xml_vspace ();
-  &be_xml_print ("<group_last_modified>$group_last_modified</group_last_modified>\n");
-  &be_xml_vspace ();
+  &xst_xml_print ("<!-- When was the group file last modified (since the epoch)? -->\n");
+  &xst_xml_vspace ();
+  &xst_xml_print ("<group_last_modified>$group_last_modified</group_last_modified>\n");
+  &xst_xml_vspace ();
 	
-	&be_xml_print ("<groupdb>\n");
-	&be_xml_enter ();
+	&xst_xml_print ("<groupdb>\n");
+	&xst_xml_enter ();
 	foreach $i (@groups)
 	{
-    &be_xml_vspace ();
-	  &be_xml_print ("<group>\n");
-		&be_xml_enter ();
+    &xst_xml_vspace ();
+	  &xst_xml_print ("<group>\n");
+		&xst_xml_enter ();
 		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
-			&be_xml_print ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
+			&xst_xml_print ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
 		}
-		&be_xml_print ("<users>\n");
-		&be_xml_enter ();
+		&xst_xml_print ("<users>\n");
+		&xst_xml_enter ();
 		$k = $$i[$groups_prop_map{"users"}];
 		foreach $j (@$k)
 		{
-			&be_xml_print ("<user>$j</user>\n");
+			&xst_xml_print ("<user>$j</user>\n");
 		}
-		&be_xml_leave ();
-		&be_xml_print ("</users>\n");
+		&xst_xml_leave ();
+		&xst_xml_print ("</users>\n");
 
-		&be_xml_leave ();
-		&be_xml_print ("</group>\n");
+		&xst_xml_leave ();
+		&xst_xml_print ("</group>\n");
 	}
-	&be_xml_leave ();
-  &be_xml_vspace ();
-  &be_xml_print ("</groupdb>\n");
+	&xst_xml_leave ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("</groupdb>\n");
 
   # This for test purposes only
   &xml_print_nis () if $TEST_NIS;
 
-  &be_xml_vspace ();
-	&be_xml_leave ();
+  &xst_xml_vspace ();
+	&xst_xml_leave ();
   print "</users>\n";
 }
 
@@ -860,13 +860,13 @@ sub xml_print
 
 sub get
 {
-  &be_report_info(1, "Getting user database");
+  &xst_report_info(1, "Getting user database");
 
-  &read_login_defs (); &be_print_progress ();
-  &read_group (); &be_print_progress ();
-  &read_passwd_shadow (); &be_print_progress ();
+  &read_login_defs (); &xst_print_progress ();
+  &read_group (); &xst_print_progress ();
+  &read_passwd_shadow (); &xst_print_progress ();
 
-  &be_end();
+  &xst_end();
   &xml_print ();
 }
 
@@ -874,12 +874,12 @@ sub set
 {
   &xml_parse ();
 
-  if ($be_do_immediate)
+  if ($xst_do_immediate)
   {
     &write_group_passwd ();
   }
 
-  &be_end();
+  &xst_end();
 }
 
 
@@ -889,17 +889,17 @@ sub set
 sub filter
 {
   &xml_parse ();
-  &be_end();
+  &xst_end();
   &xml_print ();
 }
 
 
 # --- Main --- #
 
-&be_init($name, $version, $description, @ARGV);
+&xst_init($name, $version, $description, @ARGV);
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { &get; }
-elsif ($be_operation eq "set")    { &set; }
-elsif ($be_operation eq "filter") { &filter; }
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }

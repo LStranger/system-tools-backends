@@ -31,7 +31,7 @@
 
 # Boolean <-> strings conversion.
 
-sub be_read_boolean
+sub xst_read_boolean
 {
   if ($_[0] eq "true" ||
       $_[0] eq "yes" ||
@@ -44,21 +44,21 @@ sub be_read_boolean
 }
 
 
-sub be_print_boolean_yesno
+sub xst_print_boolean_yesno
 {
   if ($_[0] == 1) { return "yes"; }
   return "no";
 }
 
 
-sub be_print_boolean_truefalse
+sub xst_print_boolean_truefalse
 {
   if ($_[0] == 1) { return "true"; }
   return "false";
 }
 
 
-sub be_print_boolean_onoff
+sub xst_print_boolean_onoff
 {
   if ($_[0] == 1) { return "on"; }
   return "off";
@@ -69,7 +69,7 @@ sub be_print_boolean_onoff
 # I'm sure there's a smarter way to do this. Should only be used for small
 # lists, as it's O(N^2). Larger lists with unique members should use a hash.
 
-sub be_push_unique
+sub xst_push_unique
 {
   my $arr = $_[0];
   my $found;
@@ -92,21 +92,21 @@ sub be_push_unique
 }
 
 
-sub be_ignore_line
+sub xst_ignore_line
 {
   if (($_[0] =~ /^\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return 1; }
   return 0;
 }
 
 
-# &be_item_is_in_list
+# &xst_item_is_in_list
 #
 # Given:
 #   * A scalar value.
 #   * An array.
 # this function will return 1 if the scalar value is in the array, 0 otherwise.
 
-sub be_item_is_in_list
+sub xst_item_is_in_list
 {
   my $value = shift @_;
 
@@ -119,7 +119,7 @@ sub be_item_is_in_list
 }
 
 
-# &be_get_key_for_subkeys
+# &xst_get_key_for_subkeys
 #
 # Given:
 #   * A hash-table with its values containing references to other hash-tables,
@@ -129,7 +129,7 @@ sub be_item_is_in_list
 # sub-hash-table) seeing if one of them matches up with an item in the
 # match_list.  If so, the key will be returned.
 
-sub be_get_key_for_subkeys
+sub xst_get_key_for_subkeys
 {
   my %hash = %{$_[0]};
   my @match_list = @{$_[1]};
@@ -147,7 +147,7 @@ sub be_get_key_for_subkeys
 }
 
 
-# &be_get_key_for_subkey_and_subvalues
+# &xst_get_key_for_subkey_and_subvalues
 #
 # Given:
 #   * A hash-table with its values containing references to other hash-tables,
@@ -160,7 +160,7 @@ sub be_get_key_for_subkeys
 #   * sub-key equals match_key.
 #   * sub-key associated sub-value is contained in the match_list.
 
-sub be_get_key_for_subkey_and_subvalues
+sub xst_get_key_for_subkey_and_subvalues
 {
   my %hash = %{$_[0]};
   my $key;
@@ -187,11 +187,11 @@ sub be_get_key_for_subkey_and_subvalues
 # --- IP calculation --- #
 
 
-# &be_ip_calc_network (<IP>, <netmask>)
+# &xst_ip_calc_network (<IP>, <netmask>)
 #
 # Calculates the network address and returns it as a string.
 
-sub be_ip_calc_network
+sub xst_ip_calc_network
 {
   my @ip_reg1;
   my @ip_reg2;
@@ -208,11 +208,11 @@ sub be_ip_calc_network
 }
 
 
-# &be_ip_calc_network (<IP>, <netmask>)
+# &xst_ip_calc_network (<IP>, <netmask>)
 #
 # Calculates the broadcast address and returns it as a string.
 
-sub be_ip_calc_broadcast
+sub xst_ip_calc_broadcast
 {
   my @ip_reg1;
   my @ip_reg2;

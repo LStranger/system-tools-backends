@@ -54,7 +54,7 @@ $progress_max = 10;
 
 # Find the tools
 
-$tool_lilo = &be_locate_tool ("lilo");
+$tool_lilo = &xst_locate_tool ("lilo");
 
 
 # --- XML parsing ---
@@ -66,7 +66,7 @@ sub xml_parse
   my $tree, %hash;
   # Scan XML to tree.
 
-  $tree = &be_xml_scan;
+  $tree = &xst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "boot" tag.
@@ -91,8 +91,8 @@ sub xml_parse_boot
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "timeout") { $$hash{"timeout"} = &be_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "default") { $$hash{"default"} = &be_xml_get_word ($$tree[1]); }
+    if    ($$tree[0] eq "timeout") { $$hash{"timeout"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "default") { $$hash{"default"} = &xst_xml_get_word ($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -106,9 +106,9 @@ sub quote
   my $ret = $_[0];
   my $i;
  
-  for ($i = 1; @be_xml_entities[$i] ne undef; $i += 2)
+  for ($i = 1; @xst_xml_entities[$i] ne undef; $i += 2)
   {
-    $ret =~ s/$be_xml_entities[$i]/$be_xml_entities[$i - 1]/g;
+    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i - 1]/g;
   }
 
   return $ret;
@@ -119,9 +119,9 @@ sub unquote
   my $ret = $_[0];
   my $i;
  
-  for ($i = 0; @be_xml_entities[$i] ne undef; $i += 2)
+  for ($i = 0; @xst_xml_entities[$i] ne undef; $i += 2)
   {
-    $ret =~ s/$be_xml_entities[$i]/$be_xml_entities[$i + 1]/g;
+    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i + 1]/g;
   }
 
   return $ret;
@@ -136,8 +136,8 @@ sub xml_print_scalars
   {
     $val = &quote ($$h{$i});
 
-    if (exists $$h{$i}) { &be_xml_print ("<$i>$val</$i>\n"); }
-    else { &be_xml_print ("<$i/>\n"); }
+    if (exists $$h{$i}) { &xst_xml_print ("<$i>$val</$i>\n"); }
+    else { &xst_xml_print ("<$i/>\n"); }
   }
 }
 
@@ -150,11 +150,11 @@ sub xml_print_arrays
   {
     if (exists $$h{$i})
     {
-	 &be_xml_vspace ();
+	 &xst_xml_vspace ();
 	 foreach $j (@{$$h{$i}})
 	 {
 	   $val = &quote ($j);
-	   &be_xml_print ("<$i>$val</$i>\n");
+	   &xst_xml_print ("<$i>$val</$i>\n");
 	 }
     }
   }
@@ -177,23 +177,23 @@ sub xml_print_images
 
   foreach $entry (@$array)
   {
-    &be_xml_vspace ();
-    &be_xml_print ("<entry>\n");
-    &be_xml_enter ();
+    &xst_xml_vspace ();
+    &xst_xml_print ("<entry>\n");
+    &xst_xml_enter ();
     
     foreach $i (keys %$entry)
     {
 	 $val = &quote ($$entry{$i});
 
-	 if ($val eq "") { &be_xml_print ("<$i/>\n"); }
-	 else { &be_xml_print ("<$i>$val</$i>\n"); }
+	 if ($val eq "") { &xst_xml_print ("<$i/>\n"); }
+	 else { &xst_xml_print ("<$i>$val</$i>\n"); }
     }
 
-    &be_xml_leave ();
-    &be_xml_print ("</entry>\n");
+    &xst_xml_leave ();
+    &xst_xml_print ("</entry>\n");
   }
   
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
 }
 
 sub xml_print
@@ -203,23 +203,23 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE boot []>\n\n";
   print "<boot>\n";
-  &be_xml_vspace ();
-  &be_xml_enter ();
+  &xst_xml_vspace ();
+  &xst_xml_enter ();
 
-  &be_xml_vspace ();
-  &be_xml_print ("<!-- Configuration starts here -->\n");
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<!-- Configuration starts here -->\n");
+  &xst_xml_vspace ();
 
   &xml_print_globals ($h);
   &xml_print_images ($h, 'image');
   &xml_print_images ($h, 'other');
   
-  &be_xml_vspace ();
-  &be_xml_print ("<!-- End of configuration -->\n");
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<!-- End of configuration -->\n");
+  &xst_xml_vspace ();
 
-  &be_xml_leave ();
-  &be_xml_print ("</boot>\n");
+  &xst_xml_leave ();
+  &xst_xml_print ("</boot>\n");
 }
   
 sub boot_lilo_images_get
@@ -230,7 +230,7 @@ sub boot_lilo_images_get
   my $found_flag = 0;
 
   $re = "[ \t]*=[ \t]*";
-  $fd = &be_open_read_from_names ($file);
+  $fd = &xst_open_read_from_names ($file);
   
   while (<$fd>)
   {
@@ -291,7 +291,7 @@ sub boot_conf_get
 	  );
   
   # mapping from regular expression, which will be compared to the string
-  # "$be_dist,$be_dist_version,$be_system" to a string, which will be used as
+  # "$xst_dist,$xst_dist_version,$xst_system" to a string, which will be used as
   # a the key of the dist_attrib field to use.
   my %dist_cmp = (
 			   "^redhat.*" => "redhat62"
@@ -299,7 +299,7 @@ sub boot_conf_get
 
   my ($dist, $hash);
   
-  $dist = &be_map_dist (%dist_cmp);
+  $dist = &xst_map_dist (%dist_cmp);
   return undef if ($dist eq undef);
   
   $hash = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
@@ -313,12 +313,12 @@ sub get
 {
   my $hash;
 
-  &be_begin ();
+  &xst_begin ();
   
   # Get information from .conf file
   $hash = &boot_conf_get ();
 
-  &be_end();
+  &xst_end();
   &xml_print ($hash);
 }
 
@@ -330,20 +330,20 @@ sub set
 {
   my $hash;
   
-  &be_begin ();
+  &xst_begin ();
   $hash = &xml_parse ();
 
 #  &xst_boot_conf_set ($hash);
 
   # network interface configuring
-#  &be_progress (90);
+#  &xst_progress (90);
 
-# if ($be_do_immediate)
+# if ($xst_do_immediate)
 #  {
 #    &set_immediate;
 #  }
 
-  &be_end ();
+  &xst_end ();
 }
 
 
@@ -353,19 +353,19 @@ sub filter
 {
   my $hash;
   
-  &be_begin ();
+  &xst_begin ();
   $hash = &xml_parse ();
-  &be_end ();
+  &xst_end ();
   &xml_print ($hash);
 }
 
 
 # --- Main --- #
 
-&be_init ($name, $version, $description, @ARGV);
+&xst_init ($name, $version, $description, @ARGV);
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { &get; }
-elsif ($be_operation eq "set")    { &set; }
-elsif ($be_operation eq "filter") { &filter; }
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }

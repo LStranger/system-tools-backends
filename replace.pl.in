@@ -99,7 +99,7 @@ sub xst_replace_split
   my $pre_space, $post_comment;
   my $line_key, $val;
 
-  $buff = &be_buffer_load ($file);
+  $buff = &xst_buffer_load ($file);
   
   foreach $i (@$buff)
   {
@@ -135,8 +135,8 @@ sub xst_replace_split
     push (@$buff, &set_value ($key, $i, $re) . "\n");
   }
 
-  &be_buffer_clean ($buff);
-  return &be_buffer_save ($buff, $file);
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
 }
 
 sub xst_replace_join_all
@@ -193,7 +193,7 @@ sub xst_replace_line_first
   my ($file, $value) = @_;
   my $fd;
 
-  $fd = &be_open_write_from_names ($file);
+  $fd = &xst_open_write_from_names ($file);
   return -1 if !$fd;
 
   print $fd $value;
@@ -231,9 +231,9 @@ sub xst_replace_ini
   my $pre_space, $post_comment, $sec_save;
   my $line_key, $val;
 
-  $buff = &be_buffer_load ($file);
+  $buff = &xst_buffer_load ($file);
 
-  &be_buffer_join_lines ($buff);
+  &xst_buffer_join_lines ($buff);
   
   foreach $i (@$buff)
   {
@@ -284,7 +284,7 @@ sub xst_replace_ini
     push @$buff, "$var = $value\n";
   }
 
-  &be_buffer_clean ($buff);
-  return &be_buffer_save ($buff, $file);
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
 }
 

@@ -34,7 +34,7 @@ sub check_debian
   open DEBIAN, "/etc/debian_version" or return 0;
   chomp ($ver = <DEBIAN>);
   close DEBIAN;
-  $be_dist = 'debian-$ver';
+  $xst_dist = 'debian-$ver';
   return 1;
 }
 
@@ -47,7 +47,7 @@ sub check_redhat
     chomp;
     if (/^Red Hat Linux.*\s+([0-9.]+)\s+.*/)
     {
-      $be_dist = "redhat-$1";
+      $xst_dist = "redhat-$1";
       close RELEASE;
       return 1;
     }
@@ -65,7 +65,7 @@ sub check_caldera
     chomp;
     if (/^OpenLinux-(.*)-.*/)
     {
-      $be_dist = "caldera-$1";
+      $xst_dist = "caldera-$1";
       close INSTALLED;
       return 1;
     }
@@ -83,7 +83,7 @@ sub check_suse
     chomp;
     if (/^VERSION\s*=\s*(\S+)/)
     {
-      $be_dist = "suse-$1";
+      $xst_dist = "suse-$1";
       close RELEASE;
       return 1;
     }
@@ -101,7 +101,7 @@ sub check_mandrake
     chomp;
     if (/^Linux Mandrake release (\S+)/)
     {
-      $be_dist = "mandrake-$1";
+      $xst_dist = "mandrake-$1";
       close MANDRAKE;
       return 1;
     }
@@ -119,7 +119,7 @@ sub check_turbolinux
     chomp;
     if (/release\s([0-9.]+)\s.*/)
     {
-      $be_dist = "turbolinux-$1";
+      $xst_dist = "turbolinux-$1";
       close RELEASE;
       return 1;
     }
@@ -137,7 +137,7 @@ sub check_linuxppc
     chomp;
     if (/^LinuxPPC\s+(\S+)/)
     {
-      $be_dist = "linuxppc-$1";
+      $xst_dist = "linuxppc-$1";
       close RELEASE;
       return 1;
     }
@@ -147,7 +147,7 @@ sub check_linuxppc
 }
 
 
-sub be_platform_guess
+sub xst_platform_guess
 {
   my $dir = "___scriptsdir___";
   
@@ -158,7 +158,7 @@ sub be_platform_guess
     # FIXME: is this check for success correct? Taken from perlfunc.
     if ($? >> 8)
     {
-      &be_report_warning ("Couldn't guess system.");
+      &xst_report_warning ("Couldn't guess system.");
       return;
     }
   }
@@ -172,11 +172,11 @@ sub be_platform_guess
     open FILE, "$dir/guess_system.sh 2>/dev/null |";
   }
 
-  chomp ($be_system = <FILE>);
+  chomp ($xst_system = <FILE>);
   close FILE;
 
-  # if the system is linux, &set $be_dist and $be_dist_version
-  if ($be_system =~ /linux/)
+  # if the system is linux, &set $xst_dist and $xst_dist_version
+  if ($xst_system =~ /linux/)
   {
        &check_debian
     || &check_caldera

@@ -145,7 +145,7 @@ sub xst_network_interfaces_set
 
   return 0;
   
-  $dist = &be_map_dist (%dist_cmp);
+  $dist = &xst_map_dist (%dist_cmp);
   
   %fn = %{$ {$dist_attrib{$dist}}{"fn"}};
   $proc = $ {$dist_attrib{$dist}}{"ifaces_get"};
@@ -171,7 +171,7 @@ sub xst_network_conf_set
   my $values_hash = $_[0];
   
   # mapping from regular expression, which will be compared to the string
-  # "$be_dist,$be_dist_version,$be_system" to a string, which will be used as
+  # "$xst_dist,$xst_dist_version,$xst_system" to a string, which will be used as
   # a the key of the dist_attrib field to use.
   my %dist_cmp = (
 			   "^redhat.*" => "redhat62"
@@ -179,7 +179,7 @@ sub xst_network_conf_set
 
   my ($dist, $res);
   
-  $dist = &be_map_dist (%dist_cmp);
+  $dist = &xst_map_dist (%dist_cmp);
   return if ($dist eq undef); # fixme: warn the user
 	 
   # maybe report if there was a problem
@@ -189,14 +189,14 @@ sub xst_network_conf_set
 }
 
 
-# be_ensure_local_host_entry (<hostname>)
+# xst_ensure_local_host_entry (<hostname>)
 #
 # Given a hostname, add the hostname as an alias for the loopback IP, in the
 # /etc/hosts database. This is required for tools like nmblookup to work on
 # a computer with no reverse name or DNS. The name is added as the first alias,
 # which usually means it'll be returned by a lookup on the loopback IP.
 
-sub be_ensure_local_host_entry
+sub xst_ensure_local_host_entry
 {
   my $local_ip = "127.0.0.1";
   my $local_hostname = @_[0];
@@ -208,7 +208,7 @@ sub be_ensure_local_host_entry
 
   # Find the file.
 
-  ($ifh, $ofh) = &be_open_filter_write_from_names (@hosts_names);
+  ($ifh, $ofh) = &xst_open_filter_write_from_names (@hosts_names);
   if (!$ofh) { return; }  # We didn't find it.
   *INFILE = $ifh; *OUTFILE = $ofh;
 
@@ -219,7 +219,7 @@ sub be_ensure_local_host_entry
     @line = split(/[ \n\r\t]+/, $_);
     if ($line[0] eq "") { shift @line; }  # Leading whitespace. He.
 
-    if ($line[0] ne "" && (not &be_ignore_line ($line[0])) &&
+    if ($line[0] ne "" && (not &xst_ignore_line ($line[0])) &&
 #       ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) &&
         $line[0] eq $local_ip)
     {
@@ -291,7 +291,7 @@ sub xst_network_get_parse_table
     }
   );
 
-  my $table = $dist_map{$be_dist};
+  my $table = $dist_map{$xst_dist};
   if ($table) { return $dist_tables{$table}; }
 
   # FIXME: This is a fatal error, and should make us bail.
@@ -342,7 +342,7 @@ sub xst_network_get_replace_table
     }
   );
 
-  my $table = $dist_map{$be_dist};
+  my $table = $dist_map{$xst_dist};
   if ($table) { return $dist_tables{$table}; }
 
   # FIXME: This is a fatal error, and should make us bail.
@@ -400,7 +400,7 @@ sub xst_network_get_interfaces_parse_table
     }
   );
 
-  my $table = $dist_map{$be_dist};
+  my $table = $dist_map{$xst_dist};
   if ($table) { return %{$dist_tables{$table}}; }
 
   # FIXME: This is a fatal error, and should make us bail.
@@ -459,7 +459,7 @@ sub xst_network_get_interfaces_replace_table
     }
   );
 
-  my $table = $dist_map{$be_dist};
+  my $table = $dist_map{$xst_dist};
   if ($table) { return $dist_tables{$table}; }
 
   # FIXME: This is a fatal error, and should make us bail.

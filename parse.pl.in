@@ -61,7 +61,7 @@ sub xst_parse_split
   my ($file, $key, $re, $all) = @_;
   my ($fd, @line, @res);
 
-  $fd = &be_open_read_from_names ($file);
+  $fd = &xst_open_read_from_names ($file);
   $all = 0 if !$fd;
   
   while (<$fd>)
@@ -112,7 +112,7 @@ sub xst_parse_split_first_bool
   $ret = &xst_parse_split_first_str (@_);
 
   return undef if ($ret eq undef);
-  return (&be_read_boolean ($ret)? 1: 0);
+  return (&xst_read_boolean ($ret)? 1: 0);
 }
 
 # After getting the first field, split that with $sep matching separators. (ie order hosts,bind)
@@ -140,7 +140,7 @@ sub xst_parse_sh_bool
   $ret = &xst_parse_sh (@_);
 
   return undef if ($ret eq undef);
-  return (&be_read_boolean ($ret)? 1: 0);
+  return (&xst_read_boolean ($ret)? 1: 0);
 }
 
 # A file containing the desired value in its first line. (ie /etc/hostname)
@@ -149,7 +149,7 @@ sub xst_parse_line_first
   my ($file) = @_;
   my ($fd, $res);
 
-  $fd = &be_open_read_from_names ($file);
+  $fd = &xst_open_read_from_names ($file);
   return undef if !$fd;
 
   chomp ($res = <$fd>);
@@ -164,7 +164,7 @@ sub xst_parse_chat
   my ($file, $re) = @_;
   my ($fd, $found);
 
-  $fd = &be_open_read_from_names ("$file");
+  $fd = &xst_open_read_from_names ("$file");
   if ($fd)
   {
     while (<$fd>)
@@ -206,7 +206,7 @@ sub xst_parse_split_hash
   my ($file, $key_re, $value_re) = @_;
   my ($fd, @line, %res, $key);
 
-  $fd = &be_open_read_from_names ($file);
+  $fd = &xst_open_read_from_names ($file);
   
   while (<$fd>)
   {
@@ -262,7 +262,7 @@ sub xst_parse_ini
   my ($fd, $res);
   my $found_section_flag = 0;
 
-  $fd = &be_open_read_from_names ($file);
+  $fd = &xst_open_read_from_names ($file);
   $res = undef;
   
   while (($_ = &xst_parse_ini_line_read ($fd)) != -1)

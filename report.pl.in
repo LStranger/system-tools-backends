@@ -29,18 +29,18 @@ require "___scriptsdir___/general.pl";
 # --- Progress printing --- #
 
 
-$be_progress_current = 0;  # Compat with old $progress_max use.
-$be_progress_last_percentage = 0;
+$xst_progress_current = 0;  # Compat with old $progress_max use.
+$xst_progress_last_percentage = 0;
 
 
-sub be_progress
+sub xst_progress
 {
   $prc = @_[0];
 
-  if ($prc < $be_progress_last_percentage)
+  if ($prc < $xst_progress_last_percentage)
   {
     # Don't go backwards.
-    $prc = $be_progress_last_percentage;
+    $prc = $xst_progress_last_percentage;
   }
 
   if ($prc >= 100)
@@ -49,93 +49,93 @@ sub be_progress
     $prc = 99;
   }
 
-  if ($be_progress) { printf "%03d percent done.\n", $prc; }
+  if ($xst_progress) { printf "%03d percent done.\n", $prc; }
 
-  $be_progress_last_percentage = $prc;
+  $xst_progress_last_percentage = $prc;
 }
 
 
-sub be_progress_begin { &be_progress (0); }
+sub xst_progress_begin { &xst_progress (0); }
 
 
-sub be_progress_end { &be_progress (99); }
+sub xst_progress_end { &xst_progress (99); }
 
 
-sub be_print_progress  # Compat with old $progress_max use.
+sub xst_print_progress  # Compat with old $progress_max use.
 {
   my $prc;
 
-  $be_progress_current++;
-  &be_progress (($be_progress_current * 100) / $progress_max);
+  $xst_progress_current++;
+  &xst_progress (($xst_progress_current * 100) / $progress_max);
 }
 
 
 # --- Report printing --- #
 
 
-sub be_report
+sub xst_report
 {
-  if ($be_reporting)
+  if ($xst_reporting)
   {
     printf "%1d%02d %s.\n", @_[0], @_[1], @_[2];
   }
 }
 
 
-sub be_report_begin
+sub xst_report_begin
 {
-  &be_report (1, 00, "Start of work report");
+  &xst_report (1, 00, "Start of work report");
 }
 
 
-sub be_report_end
+sub xst_report_end
 {
-  &be_report (1, 01, "End of work report");
-  if ($be_reporting) { print "\n"; }
+  &xst_report (1, 01, "End of work report");
+  if ($xst_reporting) { print "\n"; }
 }
 
 
-sub be_report_info
+sub xst_report_info
 {
-  if ($be_verbose)
+  if ($xst_verbose)
   {
     printf STDERR "%s.\n", @_[1];
   }
 
-  &be_report (2, @_[0], @_[1]);
+  &xst_report (2, @_[0], @_[1]);
 }
 
 
-sub be_report_warning
+sub xst_report_warning
 {
-  if ($be_verbose)
+  if ($xst_verbose)
   {
     printf STDERR "Warning: %s.\n", @_[1];
   }
 
-  &be_report (3, @_[0], @_[1]);
+  &xst_report (3, @_[0], @_[1]);
 }
 
 
-sub be_report_error
+sub xst_report_error
 {
-  if ($be_verbose)
+  if ($xst_verbose)
   {
     printf STDERR "Error: %s.\n", @_[1];
   }
 
-  &be_report (4, @_[0], @_[1]);
+  &xst_report (4, @_[0], @_[1]);
 }
 
 
-sub be_report_fatal
+sub xst_report_fatal
 {
-  if ($be_verbose)
+  if ($xst_verbose)
   {
     printf STDERR "Fatal error: %s.\n", @_[1];
   }
 
-  &be_report (5, @_[0], @_[1]);
+  &xst_report (5, @_[0], @_[1]);
 }
 
 1;

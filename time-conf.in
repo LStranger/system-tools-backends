@@ -101,13 +101,13 @@ sub read_ntp_conf
   
   # Find the file.
   
-  $ifh = &be_open_read_from_names(@ntp_conf_names);
+  $ifh = &xst_open_read_from_names(@ntp_conf_names);
   if (not $ifh) { return; }
   *FILE = $ifh;
 
   # Parse the file.
   
-  &be_report_info(13, "Reading time server list");
+  &xst_report_info(13, "Reading time server list");
   
   while (<FILE>)
   {
@@ -115,7 +115,7 @@ sub read_ntp_conf
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace.
     
     if ($line[0] eq "server" && $line[1] ne "127.127.1.0")  # Disregard loopback.
-    { &be_push_unique(\@cf_servers, $line[1]); }
+    { &xst_push_unique(\@cf_servers, $line[1]); }
   }
 }
 
@@ -128,13 +128,13 @@ sub write_ntp_conf
 
   # Find the file.
 
-  ($ifh, $ofh) = &be_open_filter_write_from_names(@ntp_conf_names);
+  ($ifh, $ofh) = &xst_open_filter_write_from_names(@ntp_conf_names);
   if (not $ofh) { return; }  # No point if we can't write.
   *INFILE = $ifh; *OUTFILE = $ofh;
 
   # Write the file, preserving as much as possible from INFILE.
 
-  &be_report_info(11, "Saving time server list");
+  &xst_report_info(11, "Saving time server list");
 
   while (<INFILE>)
   {
@@ -185,13 +185,13 @@ sub write_ntp_step_tickers
 
   # Find the file (it might very well not exist beforehand).
 
-  $ofh = &be_open_write_from_names(@ntp_step_tickers_names);
+  $ofh = &xst_open_write_from_names(@ntp_step_tickers_names);
   if (not $ofh) { return; }
   *FILE = $ofh;
 
   # Write the file.
 
-  &be_report_info(12, "Saving time server preload list");
+  &xst_report_info(12, "Saving time server preload list");
 
   for $elem (@cf_servers) { print FILE "$elem\n"; }
 
@@ -213,7 +213,7 @@ sub write_localtime
   my ($tz, $name);
   my $zonebase = "/usr/share/zoneinfo/";
 
-  &be_report_info(10, "Setting timezone");
+  &xst_report_info(10, "Setting timezone");
 
   $tz = "$zonebase$cf_timezone";
 
@@ -224,10 +224,10 @@ sub write_localtime
     $name = "/etc/localtime";
 
     (my $fullname = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
-    &be_report_info(1, "Writing timezone configuration to \"$fullname\"");
+    &xst_report_info(1, "Writing timezone configuration to \"$fullname\"");
 
     ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
-    &be_create_path($name);
+    &xst_create_path($name);
 
     # Make a backup if the file already exists - if the user specified a prefix,
     # it might not.
@@ -237,13 +237,13 @@ sub write_localtime
       # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
       # to specify a $name list somehow, in the future.
 
-      &be_run("cp $name $name.confsave");
+      &xst_run("cp $name $name.confsave");
     }
 
     # Replace the timezone info file.
 
     unlink $name;  # Important, since it might be a symlink.
-    &be_run("cp $tz $name");
+    &xst_run("cp $tz $name");
   }
 }
 
@@ -257,7 +257,7 @@ sub xml_parse
 {
   # Scan XML to tree.
 
-  $tree = &be_xml_scan;
+  $tree = &xst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "networking" tag.
@@ -284,13 +284,13 @@ sub xml_parse_time
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "year")     { $cf_year = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "month")    { $cf_month = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "monthday") { $cf_mday = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "hour")     { $cf_hour = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "minute")   { $cf_minute = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "second")   { $cf_second = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "timezone") { $cf_timezone = &be_xml_get_word($$tree[1]); }
+    if    ($$tree[0] eq "year")     { $cf_year = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "month")    { $cf_month = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "monthday") { $cf_mday = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "hour")     { $cf_hour = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "minute")   { $cf_minute = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "second")   { $cf_second = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "timezone") { $cf_timezone = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "synchronization") { &xml_parse_synchronization($$tree[1]); }
 
     shift @$tree;
@@ -303,12 +303,12 @@ sub xml_parse_synchronization
 {
   my $tree = $_[0];
 
-  $cf_sync_active = &be_read_boolean($$tree[0]->{active});
+  $cf_sync_active = &xst_read_boolean($$tree[0]->{active});
   shift @$tree;
 
   while (@$tree)
   {
-    if ($$tree[0] eq "server")  { &be_push_unique(\@cf_servers, &be_xml_get_word($$tree[1])); }
+    if ($$tree[0] eq "server")  { &xst_push_unique(\@cf_servers, &xst_xml_get_word($$tree[1])); }
     
     shift @$tree;
     shift @$tree;
@@ -324,45 +324,45 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE time []>\n\n";
   print "<time>\n";
-  &be_xml_enter ();
+  &xst_xml_enter ();
 
-  &be_xml_vspace ();
-  &be_xml_print ("<!-- Configuration starts here -->\n");
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<!-- Configuration starts here -->\n");
+  &xst_xml_vspace ();
 
-  &be_xml_print ("<year>$cf_year</year>\n");
-  &be_xml_print ("<month>$cf_month</month>\n");
-  &be_xml_print ("<monthday>$cf_mday</monthday>\n");
+  &xst_xml_print ("<year>$cf_year</year>\n");
+  &xst_xml_print ("<month>$cf_month</month>\n");
+  &xst_xml_print ("<monthday>$cf_mday</monthday>\n");
   
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
   
-  &be_xml_print ("<hour>$cf_hour</hour>\n");
-  &be_xml_print ("<minute>$cf_minute</minute>\n");
-  &be_xml_print ("<second>$cf_second</second>\n");
+  &xst_xml_print ("<hour>$cf_hour</hour>\n");
+  &xst_xml_print ("<minute>$cf_minute</minute>\n");
+  &xst_xml_print ("<second>$cf_second</second>\n");
 
-  &be_xml_vspace ();
-  &be_xml_print ("<timezone>$cf_timezone</timezone>\n");
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<timezone>$cf_timezone</timezone>\n");
+  &xst_xml_vspace ();
   
-  &be_xml_vspace ();
-  &be_xml_print ("<synchronization active='", &be_print_boolean_yesno($cf_sync_active), "'>\n");
+  &xst_xml_vspace ();
+  &xst_xml_print ("<synchronization active='", &xst_print_boolean_yesno($cf_sync_active), "'>\n");
   
-  &be_xml_enter ();
+  &xst_xml_enter ();
   
   for $server (@cf_servers)
   {
-    &be_xml_print ("<server>$server</server>\n");
+    &xst_xml_print ("<server>$server</server>\n");
   }
   
-  &be_xml_leave ();
+  &xst_xml_leave ();
   
-  &be_xml_print ("</synchronization>\n");
-  &be_xml_vspace ();
+  &xst_xml_print ("</synchronization>\n");
+  &xst_xml_vspace ();
   
-  &be_xml_print ("<!-- End of configuration -->\n");
-  &be_xml_vspace ();
+  &xst_xml_print ("<!-- End of configuration -->\n");
+  &xst_xml_vspace ();
 
-  &be_xml_leave ();
+  &xst_xml_leave ();
   print "</time>\n";
 }
 
@@ -378,12 +378,12 @@ sub get_zone
   my $size_search;
   my $size_test;
 
-  *TZLIST = &be_open_read_from_names(@zoneinfo_db_names);
+  *TZLIST = &xst_open_read_from_names(@zoneinfo_db_names);
   if (not *TZLIST) { return; }
 
-  $diff_tool = &be_locate_tool("diff");
+  $diff_tool = &xst_locate_tool("diff");
 
-  &be_report_info(8, "Scanning timezones");
+  &xst_report_info(8, "Scanning timezones");
 
   # Get the filesize for /etc/localtime so that we don't have to execute
   # a diff for every file, only for file with the correct size. This speeds
@@ -398,8 +398,8 @@ sub get_zone
 
 
     # See if this zone file matches the installed one.
-    &be_report_info(9, "Scanning timezones: $zone");
-    &be_print_progress();
+    &xst_report_info(9, "Scanning timezones: $zone");
+    &xst_print_progress();
 
     $size_test = (stat("/usr/share/zoneinfo/$zone"))[7];
     if ($size_test eq $size_search)
@@ -423,7 +423,7 @@ sub get_time
 {
   my $datetext;
   
-  &be_report_info(7, "Querying system clock");
+  &xst_report_info(7, "Querying system clock");
   
   $datetext = `date +%Y.%m.%d.%H:%M.%S.%z`;
   
@@ -441,17 +441,17 @@ sub check_servers
     if (!system "/etc/rc.d/init.d/xntpd status >/dev/null 2>/dev/null")
     {
       $cf_sync_active = 1;
-      &be_report_info(2, "Found XNTPD enabled");
+      &xst_report_info(2, "Found XNTPD enabled");
     }
     else
     {
       $cf_sync_active = 0;
-      &be_report_info(3, "Found XNTPD disabled");
+      &xst_report_info(3, "Found XNTPD disabled");
     }
   }
   else
   {
-    &be_report_warning(1, "Could not find a way to check XNTPD status");
+    &xst_report_warning(1, "Could not find a way to check XNTPD status");
   }
 }
 
@@ -459,11 +459,11 @@ sub check_servers
 sub get
 {
   &get_zone ();
-  &read_ntp_conf (); &be_print_progress ();
-  &get_time (); &be_print_progress ();
-  &check_servers (); &be_print_progress ();
+  &read_ntp_conf (); &xst_print_progress ();
+  &get_time (); &xst_print_progress ();
+  &check_servers (); &xst_print_progress ();
 
-  &be_end();
+  &xst_end();
   &xml_print ();
 }
 
@@ -473,9 +473,9 @@ sub get
 
 sub set_time
 {
-  &be_report_info(6, "Setting system clock");
+  &xst_report_info(6, "Setting system clock");
 
-  &be_run(sprintf("date %02d%02d%02d%02d%04d.%02d >/dev/null 2>/dev/null",
+  &xst_run(sprintf("date %02d%02d%02d%02d%04d.%02d >/dev/null 2>/dev/null",
                  $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_year, $cf_second));
 }
 
@@ -484,13 +484,13 @@ sub restart_servers
 {
   if ($cf_sync_active)
   {
-    &be_report_info(4, "Restarting XNTPD with new configuration");
-    &be_service_restart(81, "", "xntpd");
+    &xst_report_info(4, "Restarting XNTPD with new configuration");
+    &xst_service_restart(81, "", "xntpd");
   }
   else
   {
-    &be_report_info(5, "Stopping XNTPD");
-    &be_service_disable(15, "", "xntpd");
+    &xst_report_info(5, "Stopping XNTPD");
+    &xst_service_disable(15, "", "xntpd");
   }
 }
 
@@ -499,17 +499,17 @@ sub set
 {
   &xml_parse ();
 
-  &write_ntp_conf (); &be_progress (10);
-  &write_ntp_step_tickers (); &be_progress (20);
-  &write_localtime (); &be_progress (30);
+  &write_ntp_conf (); &xst_progress (10);
+  &write_ntp_step_tickers (); &xst_progress (20);
+  &write_localtime (); &xst_progress (30);
 
-  if ($be_do_immediate)
+  if ($xst_do_immediate)
   {
-    &set_time; &be_progress (50);
-    &restart_servers; &be_progress (80);
+    &set_time; &xst_progress (50);
+    &restart_servers; &xst_progress (80);
   }
   
-  &be_end();
+  &xst_end();
 }
 
 
@@ -519,17 +519,17 @@ sub set
 sub filter
 {
   &xml_parse ();
-  &be_end();
+  &xst_end();
   &xml_print ();
 }
 
 
 # --- Main --- #
 
-be_init($name, $version, $description, @ARGV);
+xst_init($name, $version, $description, @ARGV);
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { &get; }
-elsif ($be_operation eq "set")    { &set; }
-elsif ($be_operation eq "filter") { &filter; }
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }

@@ -66,11 +66,11 @@ $progress_max = 3;
 
 # Where are the tools?
 
-$cmd_swapon = &be_locate_tool ("swapon");
-$cmd_swapoff = &be_locate_tool ("swapoff");
-$cmd_mkswap = &be_locate_tool ("mkswap");
-$cmd_fdisk = &be_locate_tool ("fdisk");
-$cmd_dd = &be_locate_tool ("dd");
+$cmd_swapon = &xst_locate_tool ("swapon");
+$cmd_swapoff = &xst_locate_tool ("swapoff");
+$cmd_mkswap = &xst_locate_tool ("mkswap");
+$cmd_fdisk = &xst_locate_tool ("fdisk");
+$cmd_dd = &xst_locate_tool ("dd");
 
 
 # --- Internal configuration variables --- #
@@ -88,7 +88,7 @@ sub xml_parse
   {
     # Scan XML to tree.
     
-    $tree = &be_xml_scan;
+    $tree = &xst_xml_scan;
     
     # Walk the tree recursively and extract configuration parameters.
     # This is the top level - find and enter the "memory" tag.
@@ -140,30 +140,30 @@ sub xml_parse_swapinfo
       {
 	if ($$tree[0] eq 'device') 
 	  { 
-	    $entry->{device} = &be_xml_get_word ($$tree[1]);
+	    $entry->{device} = &xst_xml_get_word ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'enabled') 
 	  {
 	    $node = $$tree[1];
-	    $entry->{enabled} = &be_read_boolean ($$node[0]->{state});
+	    $entry->{enabled} = &xst_read_boolean ($$node[0]->{state});
 	  }
 	elsif ($$tree[0] eq 'priority') 
 	  { 
-	    $entry->{priority} = &be_xml_get_word ($$tree[1]);
+	    $entry->{priority} = &xst_xml_get_word ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'size') 
 	  { 
-	    $entry->{size} = &be_xml_get_size ($$tree[1]);
+	    $entry->{size} = &xst_xml_get_size ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'isfile') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_file} = &be_read_boolean ($$node[0]->{state});
+	    $entry->{is_file} = &xst_read_boolean ($$node[0]->{state});
 	  }
 	elsif ($$tree[0] eq 'isnew') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_new} = &be_read_boolean ($$node[0]->{state});
+	    $entry->{is_new} = &xst_read_boolean ($$node[0]->{state});
 	  }
 	
 	shift @$tree;
@@ -181,53 +181,53 @@ sub xml_print
     print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
     print "<!DOCTYPE memory []>\n\n";
     print "<memory>\n";
-    &be_xml_enter ();
+    &xst_xml_enter ();
 
-    &be_xml_vspace ();
-    &be_xml_print ("<!-- Configuration starts here -->\n");
-    &be_xml_vspace ();
+    &xst_xml_vspace ();
+    &xst_xml_print ("<!-- Configuration starts here -->\n");
+    &xst_xml_vspace ();
 
     foreach $entry (@cf_memory) {
-      &be_xml_print ("<memsize>$entry->{MemTotal}</memsize>\n");
-      &be_xml_print ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
+      &xst_xml_print ("<memsize>$entry->{MemTotal}</memsize>\n");
+      &xst_xml_print ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
     }
 
-    &be_xml_vspace ();
+    &xst_xml_vspace ();
 
     foreach $entry (@cf_partition) {
-      &be_xml_print ("<partition>\n");
-			&be_xml_enter;
-      &be_xml_print ("<device>$entry->{device}</device>\n");
-      &be_xml_print ("<size>$entry->{size}</size>\n");
-			&be_xml_leave;
-      &be_xml_print ("</partition>\n");
+      &xst_xml_print ("<partition>\n");
+			&xst_xml_enter;
+      &xst_xml_print ("<device>$entry->{device}</device>\n");
+      &xst_xml_print ("<size>$entry->{size}</size>\n");
+			&xst_xml_leave;
+      &xst_xml_print ("</partition>\n");
     }
 
-    &be_xml_vspace ();
+    &xst_xml_vspace ();
 
     foreach $entry (@cf_swapinfo) {
-      &be_xml_print ("<swapdev>\n");
-			&be_xml_enter;
-      &be_xml_print ("<device>$entry->{device}</device>\n");
-      &be_xml_print ("<enabled state='", 
-                            &be_print_boolean_yesno ($entry->{enabled}), 
+      &xst_xml_print ("<swapdev>\n");
+			&xst_xml_enter;
+      &xst_xml_print ("<device>$entry->{device}</device>\n");
+      &xst_xml_print ("<enabled state='", 
+                            &xst_print_boolean_yesno ($entry->{enabled}), 
                             "'/>\n");
-      &be_xml_print ("<priority>$entry->{priority}</priority>\n");
-      &be_xml_print ("<isfile state='",
-                            &be_print_boolean_truefalse ($entry->{is_file}),
+      &xst_xml_print ("<priority>$entry->{priority}</priority>\n");
+      &xst_xml_print ("<isfile state='",
+                            &xst_print_boolean_truefalse ($entry->{is_file}),
                             "'/>\n");
-      &be_xml_print ("<size>$entry->{size}</size>\n");
-      &be_xml_print ("<isnew state='",
-                            &be_print_boolean_truefalse ($entry->{is_new}),
+      &xst_xml_print ("<size>$entry->{size}</size>\n");
+      &xst_xml_print ("<isnew state='",
+                            &xst_print_boolean_truefalse ($entry->{is_new}),
                             "'/>\n");
-			&be_xml_leave;
-      &be_xml_print ("</swapdev>\n\n");
+			&xst_xml_leave;
+      &xst_xml_print ("</swapdev>\n\n");
     }
 
-    &be_xml_print ("<!-- End of configuration -->\n");
-    &be_xml_vspace ();
+    &xst_xml_print ("<!-- End of configuration -->\n");
+    &xst_xml_vspace ();
 
-    &be_xml_leave ();
+    &xst_xml_leave ();
     print "</memory>\n";
   }
 
@@ -242,7 +242,7 @@ sub get_memory
   my $ifh;
   local *FILE;
 
-  $ifh = &be_open_read_from_names(@meminfo_names);
+  $ifh = &xst_open_read_from_names(@meminfo_names);
   if (not $ifh) { return; } # We didn't find it.
   *FILE = $ifh;
 
@@ -285,7 +285,7 @@ sub get_fdisk
   {
     my $disk, $device, $point, $fs, $options, $check, $size, $bootable;
     
-    &be_report_info(01, "Looking for partitions on $dev");
+    &xst_report_info(01, "Looking for partitions on $dev");
 
     open(FDISK_HD, "$cmd_fdisk -l $dev 2>/dev/null |");
     while (<FDISK_HD>)
@@ -317,7 +317,7 @@ sub get_fdisk
     }
     close(FDISK_HD);
 
-    &be_report_info(02, "Querying size of $dev");
+    &xst_report_info(02, "Querying size of $dev");
 
 #    open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
 #    ($size) = (<FDISK_HD> =~ /([0-9]+)/);
@@ -365,7 +365,7 @@ sub get_swap_entries
     my $fstab_file;
     local *FSTAB_FILE;
 
-    $fstab_file = &be_open_read_from_names (@fstab_names);
+    $fstab_file = &xst_open_read_from_names (@fstab_names);
     if (!$fstab_file) { return; }
     *FSTAB_FILE = $fstab_file;
 
@@ -381,7 +381,7 @@ sub get_swap_entries
 
 	next if $type ne 'swap';
 
-	&be_report_info(03, "Found swap entry $device");
+	&xst_report_info(03, "Found swap entry $device");
 
 	if ($device =~ /^#(.*)/)
 	  {
@@ -421,13 +421,13 @@ sub get_swap_entries
 
 sub get
 {
-    &be_report_info(04, "Getting swap entries");
+    &xst_report_info(04, "Getting swap entries");
 
-    &get_memory; &be_print_progress();
-    &get_fdisk;  &be_print_progress();
-    &get_swap_entries; &be_print_progress();
+    &get_memory; &xst_print_progress();
+    &get_fdisk;  &xst_print_progress();
+    &get_swap_entries; &xst_print_progress();
     
-    &be_end();
+    &xst_end();
     &xml_print ();
   }
 
@@ -439,7 +439,7 @@ sub setup_swap_files
   my $command;
 
   $command = "$cmd_swapoff -a";  # To make sure removed swap spaces &get removed
-  &be_run ($command);
+  &xst_run ($command);
     
   my $num_done = 0;
 
@@ -454,11 +454,11 @@ sub setup_swap_files
          $size *= 1024;		# Make it to Kb
 
          $command = "$cmd_dd if=/dev/null of=$entry->{device} bs=1024 count=$size";
-         &be_run ($command);
+         &xst_run ($command);
        }
 
        $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
-       &be_run ($command);
+       &xst_run ($command);
     }
 
     elsif ($entry->{is_file})
@@ -470,10 +470,10 @@ sub setup_swap_files
       if ($size != $entry->{size})
       {
         $command = "$cmd_dd if=/dev/zero of=$entry->{device} bs=1024 count=$size";
-        &be_run ($command);
+        &xst_run ($command);
 
         $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
-        &be_run ($command);
+        &xst_run ($command);
       }
     }
 
@@ -489,11 +489,11 @@ sub setup_swap_files
     if ($entry->{enabled})
     {
       $command = "$cmd_swapon $entry->{device} $priority >/dev/null 2>/dev/null";
-      &be_run ($command);
+      &xst_run ($command);
     }
 	
     $num_done++;
-    &be_progress(90 / ($#cf_swapinfo - $num_done + 2));
+    &xst_progress(90 / ($#cf_swapinfo - $num_done + 2));
   }
 }
 
@@ -505,7 +505,7 @@ sub set_swap_entries
     my ($priority_str);
 
     ($fstab_in_file, $fstab_out_file) = 
-      &be_open_filter_write_from_names (@fstab_names);
+      &xst_open_filter_write_from_names (@fstab_names);
     if (!$fstab_out_file) { return; }
     *FSTAB_IN_FILE = $fstab_in_file; *FSTAB_OUT_FILE = $fstab_out_file;
 
@@ -543,13 +543,13 @@ sub set
   {
     &xml_parse ();
     
-    if ($be_do_immediate)
+    if ($xst_do_immediate)
       {
 	&setup_swap_files;
       }
 
     &set_swap_entries;
-    &be_end();
+    &xst_end();
   }
 
 
@@ -559,17 +559,17 @@ sub set
 sub filter
   {
     &xml_parse ();
-    &be_end();
+    &xst_end();
     &xml_print ();
   }
 
 
 # --- Main --- #
 
-be_init($name, $version, $description, @ARGV);
+xst_init($name, $version, $description, @ARGV);
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { &get; }
-elsif ($be_operation eq "set")    { &set; }
-elsif ($be_operation eq "filter") { &filter; }
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }

@@ -152,40 +152,40 @@ sub xst_media_xml_print
 {
   my @devices = @_;
 
-  &be_xml_vspace ();
-  &be_xml_print ("<media>\n");
-  &be_xml_enter ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<media>\n");
+  &xst_xml_enter ();
 
   for $dev (@devices)
   {
-    &be_xml_vspace ();
-    &be_xml_print ("<device>\n");
-    &be_xml_enter ();
-    &be_xml_print ("<name>" . $dev->{"device"} . "</name>\n"); 
-    &be_xml_print ("<type>" . $dev->{"media"} . "</type>\n"); 
-    &be_xml_print ("<interface>" . $dev->{"type"} . "</interface>\n"); 
-    &be_xml_print ("<driver>" . $dev->{"driver"} . "</driver>\n"); 
-    &be_xml_print ("<model>" . $dev->{"model"} . "</model>\n");
+    &xst_xml_vspace ();
+    &xst_xml_print ("<device>\n");
+    &xst_xml_enter ();
+    &xst_xml_print ("<name>" . $dev->{"device"} . "</name>\n"); 
+    &xst_xml_print ("<type>" . $dev->{"media"} . "</type>\n"); 
+    &xst_xml_print ("<interface>" . $dev->{"type"} . "</interface>\n"); 
+    &xst_xml_print ("<driver>" . $dev->{"driver"} . "</driver>\n"); 
+    &xst_xml_print ("<model>" . $dev->{"model"} . "</model>\n");
 
     if ($dev->{"media"} ne "disk")
     {
-      &be_xml_vspace ();
+      &xst_xml_vspace ();
       if ($dev->{"point_listed"})
       {
-        &be_xml_print ("<point_listed>" . $dev->{"point_listed"} . "</point_listed>\n");
+        &xst_xml_print ("<point_listed>" . $dev->{"point_listed"} . "</point_listed>\n");
       }
 
-      be_xml_print_state ("mounted", $dev->{"is_mounted"}); print "\n";
+      xst_xml_print_state ("mounted", $dev->{"is_mounted"}); print "\n";
     }
 
-    &be_xml_leave ();
-    &be_xml_print ("</device>\n");
-    &be_xml_vspace ();
+    &xst_xml_leave ();
+    &xst_xml_print ("</device>\n");
+    &xst_xml_vspace ();
   }
 
-  &be_xml_leave ();
-  &be_xml_print ("</media>\n");
-  &be_xml_vspace ();
+  &xst_xml_leave ();
+  &xst_xml_print ("</media>\n");
+  &xst_xml_vspace ();
 }
 
 

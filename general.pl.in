@@ -35,19 +35,19 @@ require "___scriptsdir___/platform.pl";
 # and disables creation of directories and writing of previously non-existent
 # files.
 
-$be_name = "";       # Short name of tool.
-$be_version = "";    # Version of tool - [major.minor.revision].
-$be_operation = "";  # Major operation user wants to perform - [get | set | filter].
+$xst_name = "";       # Short name of tool.
+$xst_version = "";    # Version of tool - [major.minor.revision].
+$xst_operation = "";  # Major operation user wants to perform - [get | set | filter].
 
-$be_prefix = "";
-$be_verbose = 0;
-$be_do_immediate = 1;
+$xst_prefix = "";
+$xst_verbose = 0;
+$xst_do_immediate = 1;
 
 
 # --- Generic part of usage text --- #
 
 
-my $be_usage_generic =<<"end_of_usage_generic;";
+my $xst_usage_generic =<<"end_of_usage_generic;";
        Major operations (specify one of these):
 
        -g --get      Prints the current configuration to standard output, as
@@ -100,130 +100,130 @@ end_of_usage_generic;
 # --- Auto-informative printing --- #
 
 
-sub be_print_usage
+sub xst_print_usage
 {
   my $i;
 
-  print STDERR "Usage: $be_name-conf <--get | --set | --filter | --help | --version>\n";
+  print STDERR "Usage: $xst_name-conf <--get | --set | --filter | --help | --version>\n";
 
-  for ($i = (length $be_name); $i > 0; $i--) { print STDERR " "; }
+  for ($i = (length $xst_name); $i > 0; $i--) { print STDERR " "; }
   print STDERR "             [--disable-immediate] [--prefix <location>]\n";
 
-  for ($i = (length $be_name); $i > 0; $i--) { print STDERR " "; }
+  for ($i = (length $xst_name); $i > 0; $i--) { print STDERR " "; }
   print STDERR "             [--progress] [--report] [--verbose]\n\n";
 
-  print STDERR $be_description . "\n";
+  print STDERR $xst_description . "\n";
 
-  print STDERR $be_usage_generic . "\n";
+  print STDERR $xst_usage_generic . "\n";
 }
 
 
-sub be_print_version
+sub xst_print_version
 {
-  print "$be_name $be_version\n";
+  print "$xst_name $xst_version\n";
 }
 
 
 # --- Initialization and finalization --- #
 
 
-sub be_begin
+sub xst_begin
 {
   $| = 1;
-  &be_report_begin ();
-  &be_progress_begin ();
+  &xst_report_begin ();
+  &xst_progress_begin ();
 
-  if (!$be_dist) { &be_platform_guess (); }
+  if (!$xst_dist) { &xst_platform_guess (); }
 
-  if ($be_dist)
+  if ($xst_dist)
   {
-    &be_report_info (95, "Configuring for platform $be_dist");
+    &xst_report_info (95, "Configuring for platform $xst_dist");
   }
   else
   {
-    &be_report_fatal (95, "Unknown or unsupported platform");
-    &be_end ();
+    &xst_report_fatal (95, "Unknown or unsupported platform");
+    &xst_end ();
     exit (2);
   }
 }
 
 
-sub be_end
+sub xst_end
 {
-  &be_progress_end ();
-  &be_report_end ();
+  &xst_progress_end ();
+  &xst_report_end ();
 }
 
 
-sub be_set_operation
+sub xst_set_operation
 {
-  if ($be_operation ne "")
+  if ($xst_operation ne "")
   {
     print STDERR "Error: You may specify only one major operation.\n\n";
     print STDERR $Usage;
     exit (1);
   }
 
-  $be_operation = $_[0];
+  $xst_operation = $_[0];
 }
 
 
-sub be_init
+sub xst_init
 {
   my @args = @_;
 
-  $be_name = @args[0];
-  $be_version = @args[1];
-  $be_description = @args[2];
+  $xst_name = @args[0];
+  $xst_version = @args[1];
+  $xst_description = @args[2];
   shift @args; shift @args; shift @args;
 
   while (@args)
   {
-    if    ($args[0] eq "--get"    || $args[0] eq "-g") { &be_set_operation ("get"); }
-    elsif ($args[0] eq "--set"    || $args[0] eq "-s") { &be_set_operation ("set"); }
-    elsif ($args[0] eq "--filter" || $args[0] eq "-f") { &be_set_operation ("filter"); }
-    elsif ($args[0] eq "--help"   || $args[0] eq "-h") { &be_print_usage (); exit (0); }
-    elsif ($args[0] eq "--version")                    { &be_print_version (); exit (0); }
+    if    ($args[0] eq "--get"    || $args[0] eq "-g") { &xst_set_operation ("get"); }
+    elsif ($args[0] eq "--set"    || $args[0] eq "-s") { &xst_set_operation ("set"); }
+    elsif ($args[0] eq "--filter" || $args[0] eq "-f") { &xst_set_operation ("filter"); }
+    elsif ($args[0] eq "--help"   || $args[0] eq "-h") { &xst_print_usage (); exit (0); }
+    elsif ($args[0] eq "--version")                    { &xst_print_version (); exit (0); }
     elsif ($args[0] eq "--prefix" || $args[0] eq "-p")
     {
-      if ($be_prefix ne "")
+      if ($xst_prefix ne "")
       {
         print STDERR "Error: You may specify --prefix only once.\n\n";
-        &be_print_usage (); exit (1);
+        &xst_print_usage (); exit (1);
       }
 
-      $be_prefix = $args[1];
+      $xst_prefix = $args[1];
 
-      if ($be_prefix eq "")
+      if ($xst_prefix eq "")
       {
         print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
-        &be_print_usage (); exit (1);
+        &xst_print_usage (); exit (1);
       }
 
       shift @args;  # For the argument.
     }
-    elsif ($args[0] eq "--platform")                    { $be_dist = $args[1]; shift @args; }
-    elsif ($args[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-    elsif ($args[0] eq "--verbose" || $args[0] eq "-v") { $be_verbose = 1; }
-    elsif ($args[0] eq "--progress")                    { $be_progress = 1; }
-    elsif ($args[0] eq "--report")                      { $be_reporting = 1; }
+    elsif ($args[0] eq "--platform")                    { $xst_dist = $args[1]; shift @args; }
+    elsif ($args[0] eq "--disable-immediate")           { $xst_do_immediate = 0; }
+    elsif ($args[0] eq "--verbose" || $args[0] eq "-v") { $xst_verbose = 1; }
+    elsif ($args[0] eq "--progress")                    { $xst_progress = 1; }
+    elsif ($args[0] eq "--report")                      { $xst_reporting = 1; }
     else
     {
       print STDERR "Error: Unrecognized option '$args[0]'.\n\n";
-      &be_print_usage (); exit (1);
+      &xst_print_usage (); exit (1);
     }
 
     shift @args;
   }
 
-  if ($be_operation eq "")
+  if ($xst_operation eq "")
   {
     print STDERR "Error: No operation specified.\n\n";
-    &be_print_usage ();
+    &xst_print_usage ();
     exit (1);
   }
 
-  &be_begin ();
+  &xst_begin ();
 }
 
 1;

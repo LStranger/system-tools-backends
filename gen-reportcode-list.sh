@@ -22,7 +22,7 @@ do
   echo
   echo
 
-  grep be_report_info $i | sed "s/.*be_report_info *[(] *//" | \
+  grep xst_report_info $i | sed "s/.*xst_report_info *[(] *//" | \
     sed "s/, *\"/ /" | sed "s/\" *[)]\;.*//" | \
     ( while read line;
     do
@@ -37,7 +37,7 @@ do
       echo $code $desc
     done ) | sort
 
-  grep be_report_warning $i | sed "s/.*be_report_warning *[(] *//" | \
+  grep xst_report_warning $i | sed "s/.*xst_report_warning *[(] *//" | \
     sed "s/, *\"/ /" | sed "s/\" *[)]\;.*//" | \
     ( while read line;
     do
@@ -52,7 +52,7 @@ do
       echo $code $desc
     done ) | sort
 
-  grep be_report_error $i | sed "s/.*be_report_error *[(] *//" | \
+  grep xst_report_error $i | sed "s/.*xst_report_error *[(] *//" | \
     sed "s/, *\"/ /" | sed "s/\" *[)]\;.*//" | \
     ( while read line;
     do
@@ -67,7 +67,7 @@ do
       echo $code $desc
     done ) | sort
 
-  grep be_report_fatal $i | sed "s/.*be_report_fatal *[(] *//" | \
+  grep xst_report_fatal $i | sed "s/.*xst_report_fatal *[(] *//" | \
     sed "s/, *\"/ /" | sed "s/\" *[)]\;.*//" | \
     ( while read line;
     do

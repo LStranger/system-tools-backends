@@ -64,22 +64,22 @@ $progress_max = 10;
 # Find the tools
 # FIXME: Should not be done here.
 
-$tool_ifconfig = &be_locate_tool ("ifconfig");
-$tool_ifup = &be_locate_tool ("ifup");
+$tool_ifconfig = &xst_locate_tool ("ifconfig");
+$tool_ifup = &xst_locate_tool ("ifup");
 
 # --- Configuration file manipulation --- #
 
 # --- Name resolution utilities --- #
 
 
-# &be_ensure_local_host_entry (<hostname>)
+# &xst_ensure_local_host_entry (<hostname>)
 #
 # Given a hostname, add the hostname as an alias for the loopback IP, in the
 # /etc/hosts database. This is required for tools like nmblookup to work on
 # a computer with no reverse name or DNS. The name is added as the first alias,
 # which usually means it'll be returned by a lookup on the loopback IP.
 
-sub be_ensure_local_host_entry
+sub xst_ensure_local_host_entry
 {
   my $local_ip = "127.0.0.1";
   my $local_hostname = @_[0];
@@ -91,7 +91,7 @@ sub be_ensure_local_host_entry
 
   # Find the file.
 
-  ($ifh, $ofh) = &be_open_filter_write_from_names(@hosts_names);
+  ($ifh, $ofh) = &xst_open_filter_write_from_names(@hosts_names);
   if (!$ofh) { return; }  # We didn't find it.
   *INFILE = $ifh; *OUTFILE = $ofh;
 
@@ -102,7 +102,7 @@ sub be_ensure_local_host_entry
     @line = split(/[ \n\r\t]+/, $_);
     if ($line[0] eq "") { shift @line; }  # Leading whitespace. He.
 
-    if ($line[0] ne "" && (not &be_ignore_line($line[0])) &&
+    if ($line[0] ne "" && (not &xst_ignore_line($line[0])) &&
 #       ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) &&
         $line[0] eq $local_ip)
     {
@@ -140,7 +140,7 @@ sub xml_parse
   my $tree, %hash;
   # Scan XML to tree.
 
-  $tree = &be_xml_scan;
+  $tree = &xst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "network" tag.
@@ -168,21 +168,21 @@ sub xml_parse_network
 
   while (@$tree)
   {
-       if ($$tree[0] eq "auto")            { $$hash{"auto"} = &be_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "forward")         { $$hash{"forward"} = &be_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &be_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "gateway")         { $$hash{"gateway"} = &be_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "gateway_dev")     { $$hash{"gateway_dev"} = &be_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &be_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "nameserver")      { push (@nameserver, &be_xml_get_word ($$tree[1])); }
-    elsif ($$tree[0] eq "searchdomain")    { push (@searchdomain, &be_xml_get_word ($$tree[1])); }
-    elsif ($$tree[0] eq "domainname")      { $$hash{"domainname"} = &be_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "order")           { push (@order, &be_xml_get_word ($$tree[1])); }
-    elsif ($$tree[0] eq "hostmatch")       { $$hash{"hostmatch"} = &be_xml_get_text ($$tree[1]); }
+       if ($$tree[0] eq "auto")            { $$hash{"auto"} = &xst_xml_get_text ($$tree[1]); }
+    elsif ($$tree[0] eq "forward")         { $$hash{"forward"} = &xst_xml_get_text ($$tree[1]); }
+    elsif ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "gateway")         { $$hash{"gateway"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "gateway_dev")     { $$hash{"gateway_dev"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "nameserver")      { push (@nameserver, &xst_xml_get_word ($$tree[1])); }
+    elsif ($$tree[0] eq "searchdomain")    { push (@searchdomain, &xst_xml_get_word ($$tree[1])); }
+    elsif ($$tree[0] eq "domainname")      { $$hash{"domainname"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "order")           { push (@order, &xst_xml_get_word ($$tree[1])); }
+    elsif ($$tree[0] eq "hostmatch")       { $$hash{"hostmatch"} = &xst_xml_get_text ($$tree[1]); }
     elsif ($$tree[0] eq "statichost")      { &xml_parse_statichost ($$tree[1], \%statichost); }
-    elsif ($$tree[0] eq "workgroup")       { $$hash{"workgroup"} = &be_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "description")     { $$hash{"description"} = &be_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &be_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "workgroup")       { $$hash{"workgroup"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "description")     { $$hash{"description"} = &xst_xml_get_text ($$tree[1]); }
+    elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "interface")       { &xml_parse_interface ($$tree[1], \%interface); }
 
     shift @$tree;
@@ -209,8 +209,8 @@ sub xml_parse_statichost
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "ip")    { $ip = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "alias") { push(@alias, &be_xml_get_word($$tree[1])); }
+    if    ($$tree[0] eq "ip")    { $ip = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "alias") { push(@alias, &xst_xml_get_word($$tree[1])); }
 
     shift @$tree;
     shift @$tree;
@@ -235,7 +235,7 @@ sub xml_parse_interface
   
   while (@$tree)
   {
-    $hash{$$tree[0]} = &be_xml_get_word ($$tree[1]);
+    $hash{$$tree[0]} = &xst_xml_get_word ($$tree[1]);
 
     shift @$tree;
     shift @$tree;
@@ -253,9 +253,9 @@ sub quote
   my $ret = $_[0];
   my $i;
  
-  for ($i = 1; @be_xml_entities[$i] ne undef; $i += 2)
+  for ($i = 1; @xst_xml_entities[$i] ne undef; $i += 2)
   {
-    $ret =~ s/$be_xml_entities[$i]/$be_xml_entities[$i - 1]/g;
+    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i - 1]/g;
   }
 
   return $ret;
@@ -266,9 +266,9 @@ sub unquote
   my $ret = $_[0];
   my $i;
  
-  for ($i = 0; @be_xml_entities[$i] ne undef; $i += 2)
+  for ($i = 0; @xst_xml_entities[$i] ne undef; $i += 2)
   {
-    $ret =~ s/$be_xml_entities[$i]/$be_xml_entities[$i + 1]/g;
+    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i + 1]/g;
   }
 
   return $ret;
@@ -282,7 +282,7 @@ sub xml_print_scalars
   while ($i = shift @scalar_keys)
   {
     $val = &quote ($$h{$i});
-    &be_xml_print ("<$i>$val</$i>\n") if exists $$h{$i};
+    &xst_xml_print ("<$i>$val</$i>\n") if exists $$h{$i};
   }
 }
 
@@ -295,11 +295,11 @@ sub xml_print_arrays
   {
     if (exists $$h{$i})
     {
-	 &be_xml_vspace ();
+	 &xst_xml_vspace ();
 	 foreach $j (@{$$h{$i}})
 	 {
 	   $val = &quote ($j);
-	   &be_xml_print ("<$i>$val</$i>\n");
+	   &xst_xml_print ("<$i>$val</$i>\n");
 	 }
     }
   }
@@ -310,21 +310,21 @@ sub xml_print_statichost
   my ($h) = $_[0];
   my $statichost, $i, $j, $val;
   
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
   foreach $i (keys %{$$h{"statichost"}})
   {
     $statichost = $ {$$h{"statichost"}}{$i};
-    &be_xml_print ("<statichost>\n");
-    &be_xml_enter ();
+    &xst_xml_print ("<statichost>\n");
+    &xst_xml_enter ();
     $val = &quote ($i);
-    &be_xml_print ("<ip>$val</ip>\n");
+    &xst_xml_print ("<ip>$val</ip>\n");
     foreach $j (@$statichost)
     {
 	 $val = &quote ($j);
-	 &be_xml_print ("<alias>$val</alias>\n");
+	 &xst_xml_print ("<alias>$val</alias>\n");
     }
-    &be_xml_leave ();
-    &be_xml_print ("</statichost>\n");
+    &xst_xml_leave ();
+    &xst_xml_print ("</statichost>\n");
   }
 }
 
@@ -336,18 +336,18 @@ sub xml_print_interfaces
   foreach $i (keys %{$$h{"interface"}})
   { 
     $interface = $ {$$h{"interface"}}{$i};
-    &be_xml_vspace ();
-    &be_xml_print ("<interface>\n");
-    &be_xml_enter ();
+    &xst_xml_vspace ();
+    &xst_xml_print ("<interface>\n");
+    &xst_xml_enter ();
     
     foreach $j (keys (%$interface))
     {
 	 $val = &quote ($$interface{$j});
-      &be_xml_print ("<$j>$val</$j>\n");
+      &xst_xml_print ("<$j>$val</$j>\n");
     }
     
-    &be_xml_leave ();
-    &be_xml_print ("</interface>\n");
+    &xst_xml_leave ();
+    &xst_xml_print ("</interface>\n");
   } 
 }
 
@@ -365,12 +365,12 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE network []>\n\n";
   print "<network>\n";
-  &be_xml_vspace ();
-  &be_xml_enter ();
+  &xst_xml_vspace ();
+  &xst_xml_enter ();
 
-  &be_xml_vspace ();
-  &be_xml_print ("<!-- Configuration starts here -->\n");
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<!-- Configuration starts here -->\n");
+  &xst_xml_vspace ();
 
   # Hostname, domain, search domains, nameservers.
 
@@ -379,12 +379,12 @@ sub xml_print
   &xml_print_statichost ($h);
   &xml_print_interfaces ($h);
   
-  &be_xml_vspace ();
-  &be_xml_print ("<!-- End of configuration -->\n");
-  &be_xml_vspace ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<!-- End of configuration -->\n");
+  &xst_xml_vspace ();
 
-  &be_xml_leave ();
-  &be_xml_print ("</network>\n");
+  &xst_xml_leave ();
+  &xst_xml_print ("</network>\n");
 }
 
 
@@ -395,12 +395,12 @@ sub get
 {
   my $hash;
 
-  &be_begin ();
+  &xst_begin ();
   
   # network interface stuff
   $hash = &xst_network_conf_get ();
 
-  &be_end();
+  &xst_end();
   &xml_print ($hash);
 }
 
@@ -462,23 +462,23 @@ sub set_immediate
 
   if ($cf_hostname ne "")
   {
-    if (&be_run("hostname $cf_hostname >/dev/null 2>/dev/null"))
+    if (&xst_run("hostname $cf_hostname >/dev/null 2>/dev/null"))
     {
-      &be_report_warning(3, "Failed to set runtime hostname");
+      &xst_report_warning(3, "Failed to set runtime hostname");
     }
     else
     {
-      &be_report_info(1, "Runtime hostname set");
+      &xst_report_info(1, "Runtime hostname set");
     }
   }
   else
   {
-    &be_report_warning(4, "No hostname specified; runtime hostname not set");
+    &xst_report_warning(4, "No hostname specified; runtime hostname not set");
   }
 
   # Reload SMB configuration.
   
-  &be_service_restart(80, "-D", "samba", "smb", "smbd");
+  &xst_service_restart(80, "-D", "samba", "smb", "smbd");
 
   # Activate or deactivate network interfaces
 
@@ -499,11 +499,11 @@ sub set_immediate
 # 
 #   if ($ip eq "")
 #   {
-#     &be_report_warning(01, "Couldn't find a configured network device");
+#     &xst_report_warning(01, "Couldn't find a configured network device");
 #     return(0);
 #   }
 # 
-#   &be_ensure_local_host_entry ($ip, $cf_hostname);
+#   &xst_ensure_local_host_entry ($ip, $cf_hostname);
 # }
 
 
@@ -511,21 +511,21 @@ sub set
 {
   my $hash;
   
-  &be_begin ();
+  &xst_begin ();
   $hash = &xml_parse ();
 
   &xst_network_conf_set ($hash);
-#  &be_ensure_local_host_entry ($$hash{"hostname"});
+#  &xst_ensure_local_host_entry ($$hash{"hostname"});
 
   # network interface configuring
- # &set_interfaces (); &be_progress (90);
+ # &set_interfaces (); &xst_progress (90);
 
-#  if ($be_do_immediate)
+#  if ($xst_do_immediate)
 #  {
 #    &set_immediate;
 #  }
 
-  &be_end ();
+  &xst_end ();
 }
 
 
@@ -536,19 +536,19 @@ sub filter
 {
   my $hash;
   
-  &be_begin ();
+  &xst_begin ();
   $hash = &xml_parse ();
-  &be_end ();
+  &xst_end ();
   &xml_print ($hash);
 }
 
 
 # --- Main --- #
 
-&be_init ($name, $version, $description, @ARGV);
+&xst_init ($name, $version, $description, @ARGV);
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { &get; }
-elsif ($be_operation eq "set")    { &set; }
-elsif ($be_operation eq "filter") { &filter; }
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }

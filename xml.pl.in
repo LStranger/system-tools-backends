@@ -30,58 +30,58 @@ require "___scriptsdir___/util.pl";
 # --- XML print formatting  --- #
 
 
-# &be_xml_enter: Call after entering a block. Increases indent level.
-# &be_xml_leave: Call before leaving a block. Decreases indent level.
-# &be_xml_indent: Call before printing a line. Indents to current level. 
-# &be_xml_vspace: Ensures there is a vertical space of one and only one line.
-# &be_xml_print: Indent, then print all arguments. Just for sugar.
+# &xst_xml_enter: Call after entering a block. Increases indent level.
+# &xst_xml_leave: Call before leaving a block. Decreases indent level.
+# &xst_xml_indent: Call before printing a line. Indents to current level. 
+# &xst_xml_vspace: Ensures there is a vertical space of one and only one line.
+# &xst_xml_print: Indent, then print all arguments. Just for sugar.
 
 
-$be_indent_level = 0;
-$be_have_vspace = 0;
+$xst_indent_level = 0;
+$xst_have_vspace = 0;
 
 
-sub be_xml_enter
+sub xst_xml_enter
 {
-  $be_indent_level += 2;
+  $xst_indent_level += 2;
 }
 
 
-sub be_xml_leave
+sub xst_xml_leave
 {
-  $be_indent_level -= 2;
+  $xst_indent_level -= 2;
 }
 
 
-sub be_xml_indent
+sub xst_xml_indent
 {
   my $i;
-  for ($i = 0; $i < $be_indent_level; $i++) { print " "; }
-  $be_have_vspace = 0;
+  for ($i = 0; $i < $xst_indent_level; $i++) { print " "; }
+  $xst_have_vspace = 0;
 }
 
 
-sub be_xml_vspace
+sub xst_xml_vspace
 {
-  if (not $be_have_vspace)
+  if (not $xst_have_vspace)
   {
     print "\n";
-    $be_have_vspace = 1;
+    $xst_have_vspace = 1;
   }
 }
 
 
-sub be_xml_print
+sub xst_xml_print
 {
-  &be_xml_indent;
+  &xst_xml_indent;
   print @_;
 }
 
 
-sub be_xml_print_state
+sub xst_xml_print_state
 {
-  &be_xml_indent;
-  print "<" . @_[0] . " state='" . &be_print_boolean_truefalse (@_[1]) . "'/>";
+  &xst_xml_indent;
+  print "<" . @_[0] . " state='" . &xst_print_boolean_truefalse (@_[1]) . "'/>";
 }
 
 
@@ -90,7 +90,7 @@ sub be_xml_print_state
 
 # This code tries to replace XML::Parser scanning from stdin in tree mode.
 
-sub be_xml_scan_make_kid_array
+sub xst_xml_scan_make_kid_array
 {
   my %hash = {};
   my @sublist;
@@ -103,21 +103,21 @@ sub be_xml_scan_make_kid_array
 }
 
 
-sub be_xml_scan_recurse
+sub xst_xml_scan_recurse
 {
   my @list;
   if (@_) { @list = $_[0]->[0]; }
   
-  while (@be_xml_scan_list)
+  while (@xst_xml_scan_list)
   {
-    $el = $be_xml_scan_list[0]; shift @be_xml_scan_list;
+    $el = $xst_xml_scan_list[0]; shift @xst_xml_scan_list;
 
     if (($el eq "") || $el =~ /^\<[!?].*\>$/s) { next; }  # Empty strings, PI and DTD must go.
     if ($el =~ /^\<.*\/\>$/s)  # Empty.
     {
       $el =~ /^\<([a-zA-Z_-]+).*\/\>$/s;
       push (@list, $1);
-      push (@list, &be_xml_scan_make_kid_array ($el));
+      push (@list, &xst_xml_scan_make_kid_array ($el));
     }
     elsif ($el =~ /^\<\/.*\>$/s)  # End.
     {
@@ -127,8 +127,8 @@ sub be_xml_scan_recurse
     {
       $el =~ /^\<([a-zA-Z_-]+).*\>$/s;
       push (@list, $1);
-      $sublist = &be_xml_scan_make_kid_array ($el);
-      push (@list, &be_xml_scan_recurse ($sublist));
+      $sublist = &xst_xml_scan_make_kid_array ($el);
+      push (@list, &xst_xml_scan_recurse ($sublist));
       next;
     }
     elsif ($el ne "")  # PCDATA.
@@ -142,33 +142,33 @@ sub be_xml_scan_recurse
 }
 
 
-sub be_xml_scan
+sub xst_xml_scan
 {
   my $doc; my @tree; my $i;
 
-  if ($be_input_file eq "") 
+  if ($xst_input_file eq "") 
   {
     $doc .= $i while ($i = <STDIN>);
   }
   else
   {
-    open INPUT_FILE, $be_input_file;
+    open INPUT_FILE, $xst_input_file;
     $doc .= $i while ($i = <INPUT_FILE>);
     close INPUT_FILE;
   }
 
-  @be_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
+  @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
     
-  $tree = &be_xml_scan_recurse;
+  $tree = &xst_xml_scan_recurse;
     
   return $tree;
 }
 
 
-@be_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\\\'', "&quot;", '"' );
+@xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\\\'', "&quot;", '"' );
 
 
-sub be_xml_entities_to_plain
+sub xst_xml_entities_to_plain
 {
   my $in = $_[0];
   my $out = "";
@@ -188,7 +188,7 @@ sub be_xml_entities_to_plain
     # Find entity and join its text equivalent.
     # Unknown entities are simply removed.
 	
-    for (@xe = @be_xml_entities; @xe; )
+    for (@xe = @xst_xml_entities; @xe; )
     {
       if ($xe[0] eq $elist[0]) { $out = join ('', $out, $xe[1]); last; }
       shift @xe; shift @xe;
@@ -201,7 +201,7 @@ sub be_xml_entities_to_plain
 }
 
 
-sub be_xml_plain_to_entities
+sub xst_xml_plain_to_entities
 {
   my $in = $_[0];
   my $out = "";
@@ -219,7 +219,7 @@ sub be_xml_plain_to_entities
 	
     $joined = 0;  # Cumbersome.
     
-    for (@xe = @be_xml_entities; @xe && !$joined; )
+    for (@xe = @xst_xml_entities; @xe && !$joined; )
     {
       if ($xe[1] eq $clist[0])
       {
@@ -243,7 +243,7 @@ sub be_xml_plain_to_entities
 
 # Compresses node into a word and returns it.
 
-sub be_xml_get_word
+sub xst_xml_get_word
 {
   my $tree = $_[0];
   
@@ -256,7 +256,7 @@ sub be_xml_get_word
       my $retval;
 
       ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
-      $retval = &be_xml_entities_to_plain (\$retval);
+      $retval = &xst_xml_entities_to_plain (\$retval);
       return ($retval);
     }
     
@@ -270,7 +270,7 @@ sub be_xml_get_word
 
 # Compresses node into a size and returns it.
 
-sub be_xml_get_size
+sub xst_xml_get_size
 {
   my $tree = $_[0];
 
@@ -283,7 +283,7 @@ sub be_xml_get_size
       my $retval;
 
       ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
-      $retval = &be_xml_entities_to_plain (\$retval);
+      $retval = &xst_xml_entities_to_plain (\$retval);
       if ($retval =~ /Mb$/)
       {
         $retval =~ tr/ Mb//d; 
@@ -302,7 +302,7 @@ sub be_xml_get_size
 
 # Replaces misc. whitespace with spaces and returns text.
 
-sub be_xml_get_text
+sub xst_xml_get_text
 {
   my $tree = $_[0];
   
@@ -313,7 +313,7 @@ sub be_xml_get_text
     if ($$tree[0] == 0)
     {
       ($retval = $$tree[1]) =~ tr/\n\r\t\f/    /;
-      $retval = &be_xml_entities_to_plain (\$retval);
+      $retval = &xst_xml_entities_to_plain (\$retval);
       return ($retval);
     }
     

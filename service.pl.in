@@ -29,7 +29,7 @@ require "___scriptsdir___/file.pl";
 # --- Service/daemon utilities --- #
 
 
-# &be_service_enable (<sysv pri>, <args>, <name>, <name>, ...)
+# &xst_service_enable (<sysv pri>, <args>, <name>, <name>, ...)
 #
 # Enables a service permanently, using the SYSV scheme if present, and
 # more direct means if it is not.
@@ -38,7 +38,7 @@ require "___scriptsdir___/file.pl";
 # <args> is the arguments to pass if started directly.
 # <name> ... are names to look for in sysv dirs and, failing that, of binaries.
 
-sub be_service_enable
+sub xst_service_enable
 {
   my ($pri, $args, $name, $path, $fullname);
 
@@ -78,7 +78,7 @@ sub be_service_enable
   {
     for $coin (@_)
     {
-      $fullname = &be_locate_tool ($coin);
+      $fullname = &xst_locate_tool ($coin);
       if ($fullname) { last; }
     }
 
@@ -129,7 +129,7 @@ sub be_service_enable
 }
 
 
-# &be_service_disable (<sysv pri>, <args>, <name>, <name>, ...)
+# &xst_service_disable (<sysv pri>, <args>, <name>, <name>, ...)
 #
 # Disables a service permanently, using the SYSV scheme if present, and
 # more direct means if it is not.
@@ -138,7 +138,7 @@ sub be_service_enable
 # <args> is the arguments to pass if stopped directly. [NOT USED YET]
 # <name> ... are names to look for in sysv dirs and, failing that, of binaries.
 
-sub be_service_disable
+sub xst_service_disable
 {
   my ($pri, $args, $name, $path, $fullname);
 
@@ -178,7 +178,7 @@ sub be_service_disable
   {
 #    for $coin (@_)
 #    {
-#      $fullname = &be_locate_tool($coin);
+#      $fullname = &xst_locate_tool($coin);
 #      if ($fullname) { last; }
 #    }
 #
@@ -229,7 +229,7 @@ sub be_service_disable
 }
 
 
-# &be_service_restart (<sysv pri>, <args>, <name>, <name>, ...)
+# &xst_service_restart (<sysv pri>, <args>, <name>, <name>, ...)
 #
 # Enables a service permanently, using the SYSV scheme if present, and
 # more direct means if it is not. If already enabled, it is restarted, useful
@@ -239,7 +239,7 @@ sub be_service_disable
 # <args> is the arguments to pass if started directly.
 # <name> ... are names to look for in sysv dirs and, failing that, of binaries.
 
-sub be_service_restart
+sub xst_service_restart
 {
   my ($pri, $args, $name, $path, $fullname);
 
@@ -280,7 +280,7 @@ sub be_service_restart
   {
     for $coin (@_)
     {
-      $fullname = &be_locate_tool($coin);
+      $fullname = &xst_locate_tool($coin);
       if ($fullname) { last; }
     }
 

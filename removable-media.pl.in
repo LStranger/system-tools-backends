@@ -50,13 +50,13 @@ sub xst_removable_media_get_list
 
 sub xst_removable_media_xml_print
 {
-  &be_xml_vspace ();
-  &be_xml_print ("<removables>\n");
-  &be_xml_enter ();
+  &xst_xml_vspace ();
+  &xst_xml_print ("<removables>\n");
+  &xst_xml_enter ();
 
   
 
-  &be_xml_leave ();
-  &be_xml_print ("</removables>\n");
-  &be_xml_vspace ();
+  &xst_xml_leave ();
+  &xst_xml_print ("</removables>\n");
+  &xst_xml_vspace ();
 }

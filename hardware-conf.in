@@ -159,7 +159,7 @@ sub xml_parse
   {
     # Scan XML to tree.
     
-    $tree = &be_xml_scan;
+    $tree = &xst_xml_scan;
     
     # Walk the tree recursively and extract configuration parameters.
     # This is the top level - find and enter the "networking" tag.
@@ -211,30 +211,30 @@ sub xml_parse_swapinfo
       {
 	if ($$tree[0] eq 'device') 
 	  { 
-	    $entry->{device} = &be_xml_get_word ($$tree[1]);
+	    $entry->{device} = &xst_xml_get_word ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'enabled') 
 	  {
 	    $node = $$tree[1];
-	    $entry->{enabled} = &be_read_boolean ($$node[0]->{state});
+	    $entry->{enabled} = &xst_read_boolean ($$node[0]->{state});
 	  }
 	elsif ($$tree[0] eq 'priority') 
 	  { 
-	    $entry->{priority} = &be_xml_get_word ($$tree[1]);
+	    $entry->{priority} = &xst_xml_get_word ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'size') 
 	  { 
-	    $entry->{size} = &be_xml_get_word ($$tree[1]);
+	    $entry->{size} = &xst_xml_get_word ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'isfile') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_file} = &be_read_boolean ($$node[0]->{state});
+	    $entry->{is_file} = &xst_read_boolean ($$node[0]->{state});
 	  }
 	elsif ($$tree[0] eq 'isnew') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_new} = &be_read_boolean ($$node[0]->{state});
+	    $entry->{is_new} = &xst_read_boolean ($$node[0]->{state});
 	  }
 	
 	shift @$tree;
@@ -253,15 +253,15 @@ sub xml_print
     print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
     print "<!DOCTYPE memory []>\n\n";
     print "<hardware>\n";
-    &be_xml_enter ();
+    &xst_xml_enter ();
 
-    &be_xml_vspace ();
-    &be_xml_print ("<!-- Configuration starts here -->\n");
-    &be_xml_vspace ();
+    &xst_xml_vspace ();
+    &xst_xml_print ("<!-- Configuration starts here -->\n");
+    &xst_xml_vspace ();
 
     foreach $entry (@cf_hardware)
       {
-	&be_xml_print ("<device id='$entry->{id}'>\n");
+	&xst_xml_print ("<device id='$entry->{id}'>\n");
 
       LOOP: while (($key, $value) = each %$entry)
 	  {
@@ -273,10 +273,10 @@ sub xml_print
 	      $_ = $key;
 	      /^ports/ && do 
 		{
-		  &be_xml_enter;
+		  &xst_xml_enter;
 		  foreach $range (@$value)
 		    {
-		      &be_xml_print ("<io low='$range->{low}' high='$range->{high}'/>\n");
+		      &xst_xml_print ("<io low='$range->{low}' high='$range->{high}'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -284,7 +284,7 @@ sub xml_print
 		{
 		  foreach $number (@$value)
 		    {
-		      &be_xml_print ("<interrupt number='$number'/>\n");
+		      &xst_xml_print ("<interrupt number='$number'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -292,7 +292,7 @@ sub xml_print
 		{
 		  foreach $channel (@$value)
 		    {
-		      &be_xml_print ("<dma channel='$channel'/>\n");
+		      &xst_xml_print ("<dma channel='$channel'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -300,25 +300,25 @@ sub xml_print
 		{
 		  foreach $mode (@$value)
 		    {
-		      &be_xml_print ("<mode>$mode</mode>\n");
+		      &xst_xml_print ("<mode>$mode</mode>\n");
 		    }
 		  last SWITCH;
 		};
 	      (/^id/ || /^io/ || /^irq/) && next LOOP;
 
-	      &be_xml_print ("<$key>$value</$key>\n");
-				&be_xml_leave;
+	      &xst_xml_print ("<$key>$value</$key>\n");
+				&xst_xml_leave;
 	    }
 	  }
 
-	&be_xml_print ("</device>\n");
-	&be_xml_vspace ();
+	&xst_xml_print ("</device>\n");
+	&xst_xml_vspace ();
       }
 
-    &be_xml_print ("<!-- End of configuration -->\n");
-    &be_xml_vspace ();
+    &xst_xml_print ("<!-- End of configuration -->\n");
+    &xst_xml_vspace ();
 
-    &be_xml_leave ();
+    &xst_xml_leave ();
     print "</hardware>\n";
   }
 
@@ -339,7 +339,7 @@ sub read_conf_modules
     local (*CONF_MODULES_FILE);
     my (%real_names);
 
-    *CONF_MODULES_FILE = &be_open_read_from_names (@conf_modules_names);
+    *CONF_MODULES_FILE = &xst_open_read_from_names (@conf_modules_names);
 
   LINE: while (<CONF_MODULES_FILE>)
       {
@@ -399,7 +399,7 @@ sub read_XF86Config
     my (%section_handler_table) = 
       ( 'InputDevice' => \&handle_input_device );
 
-    *XF86CONFIG_FILE = &be_open_read_from_names (@XF86Config_names);
+    *XF86CONFIG_FILE = &xst_open_read_from_names (@XF86Config_names);
 
     while (<XF86CONFIG_FILE>)
       {
@@ -718,7 +718,7 @@ sub combine
 
     foreach $entry (@cf_ioports)
       {
-	&be_push_unique ($hardware{$entry->{device}}->{ports}, $entry)
+	&xst_push_unique ($hardware{$entry->{device}}->{ports}, $entry)
 	  if exists $hardware{$entry->{device}};
       }
 
@@ -726,7 +726,7 @@ sub combine
       {
 	foreach $device (@$devices)
 	  {
-	    &be_push_unique ($hardware{$device}->{interrupts}, $irq)
+	    &xst_push_unique ($hardware{$device}->{interrupts}, $irq)
 	      if exists $hardware{$device};
 	  }
       }
@@ -735,7 +735,7 @@ sub combine
       {
 	foreach $device (@$devices)
 	  {
-	    &be_push_unique ($hardware{$device}->{dma}, $channel)
+	    &xst_push_unique ($hardware{$device}->{dma}, $channel)
 	      if exists $hardware{$device};
 	  }
       }
@@ -745,12 +745,12 @@ sub combine
 
 sub get
   {
-    if ($be_verbose) 
+    if ($xst_verbose) 
       { 
 	print STDERR "Getting system configuration, generating XML output.\n";
       }
     
-    if ($be_verbose) { print STDERR "Getting swap entries.\n"; }
+    if ($xst_verbose) { print STDERR "Getting swap entries.\n"; }
 
     # For each basic type of device, read all the information about it
     # from all the different sources. FIXME: Perhaps we should read in
@@ -774,7 +774,7 @@ sub get
 
     &combine;
 
-    if ($be_verbose) { print STDERR "Printing XML.\n"; }
+    if ($xst_verbose) { print STDERR "Printing XML.\n"; }
     &xml_print ();
   }
 
@@ -785,17 +785,17 @@ sub get
 
 sub set
   {
-    if ($be_verbose) 
+    if ($xst_verbose) 
       { 
 	print STDERR "Setting system configuration from XML input.\n"; 
       }
 
-    if ($be_verbose) { print STDERR "Parsing XML.\n"; }
+    if ($xst_verbose) { print STDERR "Parsing XML.\n"; }
     &xml_parse ();
     
-    if ($be_do_immediate)
+    if ($xst_do_immediate)
       {
-	if ($be_verbose) 
+	if ($xst_verbose) 
 	  { 
 	    print STDERR 
 	      "Changing running configuration via local utilities.\n"; 
@@ -821,21 +821,21 @@ sub filter
 
 while (@ARGV)
   {
-    if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { &be_set_operation("get"); }
-    elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { &be_set_operation("set"); }
-    elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { &be_set_operation("filter"); }
+    if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { &xst_set_operation("get"); }
+    elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { &xst_set_operation("set"); }
+    elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { &xst_set_operation("filter"); }
     elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print STDERR $Usage; exit(0); }
     elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
       {
-	if ($be_prefix ne "")
+	if ($xst_prefix ne "")
 	  {
 	    print STDERR "Error: You may specify --prefix only once.\n\n";
 	    print STDERR $Usage; exit(1);
 	  }
 	
-	$be_prefix = $ARGV[1];
+	$xst_prefix = $ARGV[1];
 	
-	if ($be_prefix eq "")
+	if ($xst_prefix eq "")
 	  {
 	    print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
 	    print STDERR $Usage; exit(1);
@@ -843,8 +843,8 @@ while (@ARGV)
 	
 	shift @ARGV;		# For the argument.
       }
-    elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
-    elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
+    elsif ($ARGV[0] eq "--disable-immediate")           { $xst_do_immediate = 0; }
+    elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $xst_verbose = 1; }
     else
       {
 	print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
@@ -857,9 +857,9 @@ while (@ARGV)
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { &get; }
-elsif ($be_operation eq "set")    { &set; }
-elsif ($be_operation eq "filter") { &filter; }
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }
 else
   {
     print STDERR "Error: No operation specified.\n\n";

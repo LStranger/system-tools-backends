@@ -1,5 +1,16 @@
 2001-02-07  Hans Petter Jansson  <hpj@ximian.com>
 
+	* be.pl.in, boot-conf.in, disks-conf.in, file.pl.in, 
+	  gen-reportcode-list.sh, general.pl.in, guess_system.sh, 
+	  hardware-conf.in, media.pl.in, memory-conf.in, 
+	  nameresolution-conf.in, network-conf.in, network.pl.in, 
+	  networking-conf.in, parse.pl.in, platform.pl.in, 
+	  removable-media.pl.in, replace.pl.in, report.pl.in, 
+	  service.pl.in, shares-conf.in, time-conf.in, users-conf.in,
+	  util.pl.in, xml.pl.in: be_ -> xst_
+
+2001-02-07  Hans Petter Jansson  <hpj@ximian.com>
+
 	* be.pl.in: Refactored into obsoletion.
 
 	* file.pl.in, general.pl.in, platform.pl.in, report.pl.in,
@@ -182,4 +193,3 @@
 
 	* Added ChangeLog 
 	
-

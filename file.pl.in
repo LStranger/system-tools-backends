@@ -31,14 +31,14 @@ require "___scriptsdir___/report.pl";
 # --- File operations --- #
 
 
-# be_rotate_backups
+# xst_rotate_backups
 #
 # Given a name (full path) to a file, rotates its backups (up to 9), called
 # name.xstsave.[1-9]. 9 is the oldest backup (which will be rotated out), and
 # 1 is the most recent backup, which will be created on a call to this
 # function.
 
-sub be_rotate_backups
+sub xst_rotate_backups
 {
   my ($name, $i);
 
@@ -48,44 +48,44 @@ sub be_rotate_backups
   {
     if (stat ("$name.xstsave.$i"))
     {
-      be_run ("cp $name.xstsave.$i $name.xstsave." . ($i+1));
+      xst_run ("cp $name.xstsave.$i $name.xstsave." . ($i+1));
     }
   }
 
-  be_run ("cp $name $name.xstsave.1");
+  xst_run ("cp $name $name.xstsave.1");
 }
 
 
-sub be_open_read_from_names
+sub xst_open_read_from_names
 {
   local *FILE;
   my $fname = "";
     
   foreach $name (@_)
   {
-    if (open (FILE, "$be_prefix/$name"))
+    if (open (FILE, "$xst_prefix/$name"))
     {
       # FIXME: Remove debug.
-      print STDERR "be_open_read_from_names:$name\n" if $be_verbose;
+      print STDERR "xst_open_read_from_names:$name\n" if $xst_verbose;
       $fname = $name;
       last;
     }
   }
   
-  (my $fullname = "$be_prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
+  (my $fullname = "$xst_prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
 
   if ($fname eq "") 
   { 
-    &be_report_warning (99, "Could not read \[@_\]");
+    &xst_report_warning (99, "Could not read \[@_\]");
     return;
   }
 
-  &be_report_info (99, "Reading options from \[$fullname\]");
+  &xst_report_info (99, "Reading options from \[$fullname\]");
   return *FILE;
 }
 
 
-sub be_open_write_from_names
+sub xst_open_write_from_names
 {
   local *FILE;
   my $name;
@@ -102,26 +102,26 @@ sub be_open_write_from_names
     # If we have a prefix, but couldn't locate the file relative to '/',
     # take the first name in the array and let that be created in $prefix.
 	
-    if ($be_prefix eq "")
+    if ($xst_prefix eq "")
     {
-      &be_report_warning (98, "No file to replace: \[@_\]");
+      &xst_report_warning (98, "No file to replace: \[@_\]");
       return (0);
     }
     else
     {
       $name = $_[0];
-      (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-      &be_report_warning (97, "Could not find \[@_\]. Writing to \[$fullname\]");
+      (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
+      &xst_report_warning (97, "Could not find \[@_\]. Writing to \[$fullname\]");
     }
   }
   else
   {
-    (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-    &be_report_info (98, "Found \[$name\]. Writing to \[$fullname\]");
+    (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
+    &xst_report_info (98, "Found \[$name\]. Writing to \[$fullname\]");
   }
     
-  ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-  &be_create_path ($name);
+  ($name = "$xst_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+  &xst_create_path ($name);
     
   # Make a backup if the file already exists - if the user specified a prefix,
   # it might not.
@@ -131,14 +131,14 @@ sub be_open_write_from_names
     # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
     # to specify a $name list somehow, in the future.
 
-    &be_rotate_backups ($name);
+    &xst_rotate_backups ($name);
   }
 
   # Truncate and return filehandle.
 
   if (!open (FILE, ">$name"))
   {
-    &be_report_error (99, "Failed to write to \[$name\]");
+    &xst_report_error (99, "Failed to write to \[$name\]");
     return;
   }
 
@@ -146,7 +146,7 @@ sub be_open_write_from_names
 }
 
 
-sub be_open_filter_write_from_names
+sub xst_open_filter_write_from_names
 {
   local *INFILE;
   local *OUTFILE;
@@ -165,24 +165,24 @@ sub be_open_filter_write_from_names
 	
     if ($prefix eq "")
     {
-      &be_report_warning (98, "No file to patch: \[@_\]");
+      &xst_report_warning (98, "No file to patch: \[@_\]");
       return(0, 0);
     }
     else
     {
       $name = $_[0];
-      (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-      &be_report_warning (97, "Could not find \[@_\]. Patching \[$fullname\]");
+      (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
+      &xst_report_warning (97, "Could not find \[@_\]. Patching \[$fullname\]");
     }
   }
   else
   {
-    (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-    &be_report_info (98, "Found \[$name\]. Patching \[$fullname\]");
+    (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
+    &xst_report_info (98, "Found \[$name\]. Patching \[$fullname\]");
   }
     
-  ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-  &be_create_path ($name);
+  ($name = "$xst_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+  &xst_create_path ($name);
 
   # Make a backup if the file already exists - if the user specified a prefix,
   # it might not.
@@ -192,7 +192,7 @@ sub be_open_filter_write_from_names
     # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
     # to specify a $name list somehow, in the future.
 	
-    &be_rotate_backups ($name);
+    &xst_rotate_backups ($name);
   }
     
   # Return filehandles. Backup file is used as filter input. It might be
@@ -203,7 +203,7 @@ sub be_open_filter_write_from_names
     
   if (!open (OUTFILE, ">$name"))
   {
-    &be_report_error (99, "Failed to write to \[$name\]");
+    &xst_report_error (99, "Failed to write to \[$name\]");
     return;
   }
     
@@ -214,13 +214,13 @@ sub be_open_filter_write_from_names
 # Open $file and put it into @buffer, for in-line editting.
 # \%buffer on success, undef on error.
 
-sub be_buffer_load
+sub xst_buffer_load
 {
   my $file = $_[0];
   my @buffer;
   my $fd;
   
-  $fd = &be_open_read_from_names ($file);
+  $fd = &xst_open_read_from_names ($file);
   return undef if !$fd;
 
   @buffer = (<$fd>);
@@ -231,7 +231,7 @@ sub be_buffer_load
 
 # Take a $buffer and save it in $file. -1 is error, 0 success.
 
-sub be_buffer_save
+sub xst_buffer_save
 {
   my ($buffer, $file) = @_;
   my $fd, $i;
@@ -245,7 +245,7 @@ sub be_buffer_save
     print STDERR "|" . $i;
   }
 
-  $fd = &be_open_write_from_names ($file);
+  $fd = &xst_open_write_from_names ($file);
   return -1 if !$fd;
 
   # FIXME: Remove debug.
@@ -263,7 +263,7 @@ sub be_buffer_save
 
 # Erase all empty string elements from the $buffer.
 
-sub be_buffer_clean
+sub xst_buffer_clean
 {
   my $buffer = $_[0];
   my $i;
@@ -275,7 +275,7 @@ sub be_buffer_clean
 }
 
 
-sub be_buffer_join_lines
+sub xst_buffer_join_lines
 {
   my $buffer = $_[0];
   my $i;
@@ -293,7 +293,7 @@ sub be_buffer_join_lines
 }
 
 
-sub be_create_path
+sub xst_create_path
 {
   my $path;
   
@@ -315,7 +315,7 @@ sub be_create_path
 # --- Command-line utilities --- #
 
 
-# &be_run (<command line>)
+# &xst_run (<command line>)
 #
 # Assumes the first word on the command line is the command-line utility
 # to run, and tries to locate it, replacing it with its full path. The path
@@ -325,13 +325,13 @@ sub be_create_path
 #
 # Example: "mkswap /dev/hda3" -> "/sbin/mkswap /dev/hda3 >/dev/null 2>/dev/null".
 
-sub be_run
+sub xst_run
 {
   my ($tool_name, $tool_path, @argline);
 
   ($tool_name, @argline) = split(/ /, @_[0]);
 
-  $tool_path = &be_locate_tool ($tool_name);
+  $tool_path = &xst_locate_tool ($tool_name);
   if ($tool_path eq "")
   {
     # Not found at all.
@@ -342,23 +342,23 @@ sub be_run
 }
 
 
-# &be_locate_tool
+# &xst_locate_tool
 #
 # Tries to locate a command-line utility from a set of built-in paths
 # and a set of user paths (found in the environment). The path (or a negative
 # entry) is cached in a hash, to avoid searching for it repeatedly.
 
-@be_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin",
+@xst_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin",
                       "/usr/bin", "/usr/local/bin" );
 
-%be_tool_paths = {};
+%xst_tool_paths = {};
 
-sub be_locate_tool
+sub xst_locate_tool
 {
   my $found = "";
   my @user_paths;
 
-  $found = %be_tool_paths->{$_[0]};
+  $found = %xst_tool_paths->{$_[0]};
   if ($found eq "0")
   {
     # Negative cache hit. At this point, the failure has already been reported
@@ -383,7 +383,7 @@ sub be_locate_tool
 
     # Try builtin paths.
 
-    for $path (@be_builtin_paths)
+    for $path (@xst_builtin_paths)
     {
       if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
     }
@@ -392,13 +392,13 @@ sub be_locate_tool
 
     if ($found)
     {
-      %be_tool_paths->{$_[0]} = $found;
-      &be_report_info (97, "Found $_[0] tool");
+      %xst_tool_paths->{$_[0]} = $found;
+      &xst_report_info (97, "Found $_[0] tool");
     }
     else
     {
-      %be_tool_paths->{$_[0]} = "0";
-      &be_report_warning (96, "Couldn't find $_[0] tool");
+      %xst_tool_paths->{$_[0]} = "0";
+      &xst_report_warning (96, "Couldn't find $_[0] tool");
     }
   }
   
