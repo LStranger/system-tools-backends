@@ -45,35 +45,19 @@ require "$SCRIPTSDIR/xml.pl$DOTIN";
 sub gst_network_autodetect_modem
 {
   my (@arr) = ("/dev/modem", "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3");
-  local *INFILE, *OUTFILE;
-  local $SIG{ALRM} = sub {}; 
 
-  foreach $i (@arr) {
-    open INFILE, "$i";
-    open OUTFILE, ">$i";
+  $pid = `pidof pppd 2>/dev/null`;
 
-    print OUTFILE "AT\n";
+  if ($pid =~ /\d/) {
+      return;
+  }
+  
+  foreach $tty (@arr) {
+    $temp = `pppd lcp-max-configure 1 nodetach noauth nocrtscts $tty connect \"chat -t1 \'\' AT OK\" 2>/dev/null`;
 
-#    select((select(DEV), $| = 1)[0]);
-    alarm 1;
-    $nread = sysread (INFILE, $buffer, 3);
-    if ($nread) {
-      do {
-        if ($buffer =~ /^OK/g)
-        {
-          alarm;
-          close INFILE;
-          close OUTFILE;
-          return $i;
-        }
-      } while (sysread (INFILE, $buffer, 999));
+    if ($temp =~ /established/) {
+      return $tty;
     }
-    alarm;
-
-    $buffer = "";
-
-    close INFILE;
-    close OUTFILE;
   }
 }
 
