@@ -397,7 +397,7 @@ sub get_zone
     be_report_info(9, "Scanning timezones : $zone");
 
    $size_test = (stat("/usr/share/zoneinfo/$zone"))[7];
-   #if ($size_test eq $size_search)
+   if ($size_test eq $size_search)
    {
       if (!system "$diff_tool /usr/share/zoneinfo/$zone /etc/localtime >/dev/null 2>/dev/null")
       {
