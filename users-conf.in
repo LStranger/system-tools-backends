@@ -172,6 +172,20 @@ for ($i = 0; $groups_prop_array[$i] ne ""; $i += 2)
   $groups_prop_map {$groups_prop_array[$i + 1]} = $groups_prop_array[$i];
 }
 
+# Please, keep this list sorted
+%groups_desc_map = (
+  # TRANSLATORS: this is a list of infinitive actions
+  "adm"       => _("Monitorize system logs"),
+  "audio"     => _("Use audio devices"),
+  "cdrom"     => _("Access to CD-ROM drives"),
+  "dialout"   => _("Access to modem devices"),
+  "dip"       => _("Connect to internet through modem devices"),
+  "fax"       => _("Send and receive faxes"),
+  "floppy"    => _("Access to floppy drives"),
+  "tape"      => _("Access to tape drives"),
+  "wheel"     => _("Be able to get administrator privileges"),
+);
+
 %login_defs_prop_map = ();
 %profiles_prop_map = ();
 
@@ -1391,7 +1405,7 @@ sub xml_print
 {
   my ($hash) = @_;
   my ($key, $value, $i, $j, $k);
-  my ($passwd_last_modified, $users);
+  my ($passwd_last_modified, $users, $desc);
 
   $passwd_last_modified = $$hash{"passwd_last_modified"};
   $users = $$hash{"users"};
@@ -1446,6 +1460,11 @@ sub xml_print
     {
       &gst_xml_print_pcdata ($groups_prop_map{$j}, $$i[$j]);
 		}
+
+		# Add the description based on the group name
+		$desc = $groups_desc_map{$$i[1]};
+		&gst_xml_print_pcdata ("allows_to", $desc) if ($desc ne undef);
+
 		&gst_xml_container_enter ('users');
 		$k = $$i[$groups_prop_map{"users"}];
 		foreach $j (@$k)

@@ -1,3 +1,12 @@
+2004-09-14  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* shares-conf.in: made "/etc/exports" the default NFS exports file
+	for all distros, this is pretty standard
+	* share.pl.in, shares-conf.in: small fixes, made it work (at least 
+	the SMB exports) with all the distributions that network-conf 
+	already supports
+	* users-conf.in: Added <allows_to> tag for some groups.
+
 2004-09-13  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* Release 1.0

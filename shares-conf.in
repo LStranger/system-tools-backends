@@ -63,12 +63,18 @@ BEGIN {
 $name = "shares";
 $version = "@VERSION@";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0", "redhat-7.1",
-              "redhat-7.2",
+              "redhat-7.2", "redhat-8.0", "redhat-9",
               "openna-1.0",
-              "mandrake-7.2",
-              "debian-2.2", "debian-woody",
-              "suse-7.0", "turbolinux-7.0",
-              "freebsd-4", "freebsd-5", "freebsd-6");
+              "mandrake-7.1", "mandrake-7.2", "mandrake-9.0", "mandrake-9.1", "mandrake-9.2",
+              "mandrake-10.0", "mandrake-10.1",
+              "blackpanther-4.0",
+              "debian-2.2", "debian-3.0", "debian-sarge",
+              "suse-7.0", "suse-9.0",
+              "turbolinux-7.0", "fedora-1", "fedora-2",
+              "pld-1.0", "pld-1.1", "pld-1.99",
+              "conectiva-9", "conectiva-10",
+              "slackware-9.1.0", "slackware-10.0.0",
+              "gentoo", "freebsd-4", "freebsd-5", "freebsd-6");
 
 $description =<<"end_of_description;";
        Configures network shares for import or export.
@@ -626,9 +632,16 @@ sub get_configured_imports
 sub get_configured_exports
 {
   my ($smb_exports, $nfs_exports);
+  my (%dist_attrib, $smb_conf, $exports);
+  
+  %dist_attrib = &gst_network_get_parse_table ();
+  $smb_conf    = $dist_attrib{"fn"}{"SMB_CONF"};
 
-  $smb_exports = &gst_share_parse_smb_conf    (&distro_file ("smb.conf"));
-  $nfs_exports = &gst_share_parse_nfs_exports (&distro_file ("exports"));
+  # This is pretty standard
+  $exports     = "/etc/exports";
+
+  $smb_exports = &gst_share_parse_smb_conf    ($smb_conf);
+  $nfs_exports = &gst_share_parse_nfs_exports ($exports);
 
   return ($smb_exports, $nfs_exports);
 }
@@ -641,7 +654,7 @@ sub get
   my $config = {};
 
   $tools = &get_installed_tools ();
-  $imports = &get_configured_imports ();
+#  $imports = &get_configured_imports ();
   ($smb_exports, $nfs_exports) = &get_configured_exports ();
 
   $$config{"tools"}       = $tools;
