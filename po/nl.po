@@ -9,13 +9,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-12-24 04:45+0100\n"
-"PO-Revision-Date: 2004-12-24 14:16+0100\n"
+"POT-Creation-Date: 2005-01-07 04:31+0100\n"
+"PO-Revision-Date: 2005-01-10 14:31+0100\n"
 "Last-Translator: Ronald van Engelen <ronalde@lacocina.nl>\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=\n"
-"Content-Transfer-Encoding: "
+"Content-Transfer-Encoding: \n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -44,16 +44,18 @@ msgstr "webserver"
 msgid ""
 "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr ""
-"Apache is een server voor het World Wide Web en wordt gebruikt om "
-"HTML-bestanden en CGI-scripts aan te bieden."
+"Apache is een server voor het World Wide Web en wordt gebruikt om HTML-"
+"bestanden en CGI-scripts aan te bieden."
 
 #: service-list.pl.in:39
 msgid "Run missed scheduled jobs at startup"
-msgstr "Voer geplande opdrachten uit die niet uitgevoerd zijn bij het opstarten"
+msgstr ""
+"Voer geplande opdrachten uit die niet uitgevoerd zijn bij het opstarten"
 
 #: service-list.pl.in:39
 msgid "Run cron jobs that were left out due to downtime"
-msgstr "Voer cron-opdrachten uit die vanwege problemen niet eerder uitgevoerd zijn"
+msgstr ""
+"Voer cron-opdrachten uit die vanwege problemen niet eerder uitgevoerd zijn"
 
 #: service-list.pl.in:40
 msgid "Automatic power management daemon"
@@ -65,8 +67,8 @@ msgid ""
 "can also be used for shutting down the machine when the battery is low."
 msgstr ""
 "apmd wordt gebruikt om de accustatus bij te houden en die te loggen via "
-"syslog(8). Het kan ook gebruikt worden om de machine uit te zetten "
-"als de accu bijna leeg is."
+"syslog(8). Het kan ook gebruikt worden om de machine uit te zetten als de "
+"accu bijna leeg is."
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
@@ -77,8 +79,8 @@ msgid ""
 "Runs commands scheduled by the at command at the time specified when at was "
 "run, and runs batch commands when the load average is low enough."
 msgstr ""
-"Voert opdrachten uit wanneer at gestart wordt op het met at ingestelde tijdstip"
-"en voert opdrachten uit die geen invoer nodig hebben wanneer de "
+"Voert opdrachten uit wanneer at gestart wordt op het met at ingestelde "
+"tijdstipen voert opdrachten uit die geen invoer nodig hebben wanneer de "
 "systeembelasting laag genoeg is."
 
 #: service-list.pl.in:42
@@ -87,8 +89,9 @@ msgstr "Geluidsmenger"
 
 #: service-list.pl.in:42
 msgid "This program adjusts the settings of an audio mixing device"
-msgstr "Dit programma past de instellingen aan van een apparaat voor het"
-"mengen van geluid"
+msgstr ""
+"Dit programma past de instellingen aan van een apparaat voor hetmengen van "
+"geluid"
 
 #: service-list.pl.in:43
 msgid "BinFormat Support"
@@ -97,8 +100,8 @@ msgstr "Ondersteuning voor het binaire bestandsformaat BinFormat"
 #: service-list.pl.in:43
 msgid "Support for running non ELF binaries on Linux"
 msgstr ""
-"Ondersteuning voor het uitvoeren van binaire bestanden onder Linux"
-"die niet ingedeeld zijn in het ELF-formaat"
+"Ondersteuning voor het uitvoeren van binaire bestanden onder Linuxdie niet "
+"ingedeeld zijn in het ELF-formaat"
 
 #: service-list.pl.in:44
 msgid "Boot messages recorder"
@@ -173,8 +176,7 @@ msgstr "Common·Unix·Printing·System"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr ""
-"Afdruksysteem gebaseerd op het Internet·Printing·Protocol (IPP), versie  1.1"
+msgstr "Afdruksysteem gebaseerd op het Internet·Printing·Protocol (IPP), versie  1.1"
 
 #: service-list.pl.in:52
 msgid ""
@@ -182,9 +184,10 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
 msgstr ""
-"De TCP-versie van de interne xinetd dienst die de huidige systeemtijd opvraagt "
-"en weergeeft in een formaat zoals het volgende: 'Woe Nov 13 22:30:27 CET 2002'."
-"U dient xinetd aan te zetten om deze dienst te kunnen gebruiken."
+"De TCP-versie van de interne xinetd dienst die de huidige systeemtijd "
+"opvraagt en weergeeft in een formaat zoals het volgende: 'Woe Nov 13 "
+"22:30:27 CET 2002'.U dient xinetd aan te zetten om deze dienst te kunnen "
+"gebruiken."
 
 #: service-list.pl.in:53
 msgid ""
@@ -192,9 +195,10 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
-"De UDP-versie van de interne xinetd dienst die de huidige systeemtijd opvraagt "
-"en weergeeft in een formaat zoals het volgende: 'Woe Nov 13 22:30:27 CET 2002'."
-"U dient xinetd aan te zetten om deze dienst te kunnen gebruiken."
+"De UDP-versie van de interne xinetd dienst die de huidige systeemtijd "
+"opvraagt en weergeeft in een formaat zoals het volgende: 'Woe Nov 13 "
+"22:30:27 CET 2002'.U dient xinetd aan te zetten om deze dienst te kunnen "
+"gebruiken."
 
 #: service-list.pl.in:54 service-list.pl.in:55
 msgid "Dynamic DNS Client"
@@ -247,8 +251,7 @@ msgstr "Houdt bestandswijzigingen bij"
 #: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
 msgstr ""
-"Firstboot is een assisterend programma dat de eerste keer "
-"wordt uitgevoerd"
+"Firstboot is een assisterend programma dat de eerste keer wordt uitgevoerd"
 
 #: service-list.pl.in:63
 msgid "Text-to-speech system"
@@ -293,8 +296,8 @@ msgid ""
 "includes support for pop-up menus on the console."
 msgstr ""
 "GPM voegt muis-ondersteuning toe aan tekst-gebaseerde Linux-toepassingen "
-"zoals de Midnight Commander. Het ondersteunt muis-operaties, zoals "
-"knippen en plakken en het bedienen van pop-up menu's in de console."
+"zoals de Midnight Commander. Het ondersteunt muis-operaties, zoals knippen "
+"en plakken en het bedienen van pop-up menu's in de console."
 
 #: service-list.pl.in:68
 msgid "Set hard disk parameters"
@@ -305,8 +308,9 @@ msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
 msgstr ""
-"Voorziet in een interface naar verschillende harde schijf IOCTLs die ondersteund "
-"worden door het standaard Linux ATA/IDE-stuurprogramma deelsysteem."
+"Voorziet in een interface naar verschillende harde schijf IOCTLs die "
+"ondersteund worden door het standaard Linux ATA/IDE-stuurprogramma "
+"deelsysteem."
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
@@ -331,9 +335,7 @@ msgstr "internet superserver"
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
-msgstr ""
-"inetd maakt het mogelijk dat één daemon meerdere andere opstart, zodat de "
-"belasting van het systeem wordt beperkt."
+msgstr "inetd maakt het mogelijk dat één daemon meerdere andere opstart, zodat de belasting van het systeem wordt beperkt."
 
 #: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
@@ -373,8 +375,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
-"Voert joystick-device-check uit.  Dit programma controleert of "
-"de /dev/js* apparaatbestanden juist zijn voor de gebruikte kernel."
+"Voert joystick-device-check uit.  Dit programma controleert of de /dev/js* "
+"apparaatbestanden juist zijn voor de gebruikte kernel."
 
 #: service-list.pl.in:77
 msgid ""
@@ -419,9 +421,9 @@ msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
-"lpd is een afdrukdaemon die nodig is om lpr goed te laten werken. Het is "
-"een server die verantwoordelijk is voor het sturen van "
-"afdrukopdrachten naar de printer(s)."
+"lpd is een afdrukdaemon die nodig is om lpr goed te laten werken. Het is een "
+"server die verantwoordelijk is voor het sturen van afdrukopdrachten naar de "
+"printer(s)."
 
 #: service-list.pl.in:84
 msgid "Create devices"
@@ -432,8 +434,8 @@ msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
 msgstr ""
-"Script dat de apparaatbestanden in /dev aanmaakt die worden gebruikt "
-"als interface voor stuurprogramma's in de kernel"
+"Script dat de apparaatbestanden in /dev aanmaakt die worden gebruikt als "
+"interface voor stuurprogramma's in de kernel"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -468,8 +470,8 @@ msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
-"named (BIND) is een Domain Name Server (DNS) die wordt gebruikt om de "
-"IP-adressen bij hostnamen op te zoeken."
+"named (BIND) is een Domain Name Server (DNS) die wordt gebruikt om de IP-"
+"adressen bij hostnamen op te zoeken."
 
 #: service-list.pl.in:90
 msgid ""
@@ -484,8 +486,8 @@ msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
 msgstr ""
-"Activeert en de-activeert alle netwerkapparaten die zijn ingesteld om "
-"bij het opstarten te starten."
+"Activeert en de-activeert alle netwerkapparaten die zijn ingesteld om bij "
+"het opstarten te starten."
 
 #: service-list.pl.in:92
 msgid ""
@@ -503,7 +505,8 @@ msgid ""
 "service provides NFS file locking functionality."
 msgstr ""
 "NFS is een populair protocol voor het delen van bestanden over TCP/IP-"
-"netwerken. Deze dienst verschaft functionaliteit voor NFS bestandsvergrendeling."
+"netwerken. Deze dienst verschaft functionaliteit voor NFS "
+"bestandsvergrendeling."
 
 #: service-list.pl.in:94
 msgid "Name service cache daemon"
@@ -512,8 +515,8 @@ msgstr "Name service cache daemon"
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
 msgstr ""
-"Daemon die een buffer bijhoudt voor de meest voorkomende "
-"naamdienst-verzoeken."
+"Daemon die een buffer bijhoudt voor de meest voorkomende naamdienst-"
+"verzoeken."
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
@@ -565,8 +568,8 @@ msgstr "IPsec-tunnel implementatie"
 
 #: service-list.pl.in:103
 msgid "DARPA port to RPC program number mapper"
-msgstr "Programma voor het omzetten van DARPA-poortnummers naar "
-"RPC-programmanummers"
+msgstr ""
+"Programma voor het omzetten van DARPA-poortnummers naar RPC-programmanummers"
 
 #: service-list.pl.in:103
 msgid ""
@@ -575,8 +578,8 @@ msgid ""
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
 "De poortomzetter (portmapper) beheert RPC-verbindingen die worden gebruikt "
-"door protocollen zoals NFS en NIS. De portmap-server moet actief zijn "
-"op machines die werken als server voor protocollen die gebruik maken van het "
+"door protocollen zoals NFS en NIS. De portmap-server moet actief zijn op "
+"machines die werken als server voor protocollen die gebruik maken van het "
 "RPC-mechanisme."
 
 #: service-list.pl.in:104
@@ -591,9 +594,7 @@ msgstr "Point-to-Point Protocol daemon"
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
-msgstr ""
-"Het Point-to-Point Protocol (PPP) verschaft een methode om gegevens uit te "
-"wisselen over seriële PPP-verbindingen."
+msgstr "Het Point-to-Point Protocol (PPP) verschaft een methode om gegevens uit te wisselen over seriële PPP-verbindingen."
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
@@ -653,40 +654,40 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
-"Samba is een verzameling van programma's die het "
-"Server Message Block-protocol implementeren voor Unix-systemen."
+"Samba is een verzameling van programma's die het Server Message Block-"
+"protocol implementeren voor Unix-systemen."
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
-"saslauthd is een serverproces voor het afhandelen van verzoeken in platte tekst "
-"voor authenticatie, in opdracht van de cyrus sasl-bibliotheek."
+"saslauthd is een serverproces voor het afhandelen van verzoeken in platte "
+"tekst voor authenticatie, in opdracht van de cyrus sasl-bibliotheek."
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
-"Sendmail is een Mail Transport Agent, waarmee e-mail van de ene machine "
-"naar de andere verplaatst wordt."
+"Sendmail is een Mail Transport Agent, waarmee e-mail van de ene machine naar "
+"de andere verplaatst wordt."
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
-"Een xinetd-interne dienst die een opsomming geeft van actieve servers."
-"U dient xinetd aan te zetten om deze dienst te gebruiken."
+"Een xinetd-interne dienst die een opsomming geeft van actieve servers.U "
+"dient xinetd aan te zetten om deze dienst te gebruiken."
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
 msgstr ""
-"Een xinetd-interne dienst die een opsomming geeft van actieve diensten."
-"U dient xinetd aan te zetten om deze dienst te gebruiken."
+"Een xinetd-interne dienst die een opsomming geeft van actieve diensten.U "
+"dient xinetd aan te zetten om deze dienst te gebruiken."
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
@@ -696,18 +697,16 @@ msgstr "opvragen en/of instellen van informatie van seriële poorten"
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
-msgstr ""
-"setserial is een programma dat is ontworpen om configuratie-informatie over "
-"een bepaalde seriële poort in te stellen en/of weer te geven."
+msgstr "setserial is een programma dat is ontworpen om configuratie-informatie over een bepaalde seriële poort in te stellen en/of weer te geven."
 
 #: service-list.pl.in:119
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
-"FAM is een daemon voor bestandscontrole en kan worden gebruikt om "
-"op de hoogte te worden gesteld als bestanden veranderen. U dient xinetd "
-"aan te zetten om deze dienst te gebruiken."
+"FAM is een daemon voor bestandscontrole en kan worden gebruikt om op de "
+"hoogte te worden gesteld als bestanden veranderen. U dient xinetd aan te "
+"zetten om deze dienst te gebruiken."
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
@@ -730,8 +729,8 @@ msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
 msgstr ""
-"ssh is een programma om in te loggen op een andere computer en daar"
-"opdrachten uit te voeren."
+"ssh is een programma om in te loggen op een andere computer en "
+"daaropdrachten uit te voeren."
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
@@ -765,11 +764,11 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
-"Een RFC 868 tijdserver. De TCP-versie van het protocol dat een "
-"plaats-onafhankelijke en voor machines leesbare datum en tijd aanbiedt. "
-"De machinetijd wordt naar de opvragende machine verstuurd in seconden "
-"sinds middernacht 1 januari 1900.U dient xinetd aan te zetten om deze "
-"dienst te gebruiken."
+"Een RFC 868 tijdserver. De TCP-versie van het protocol dat een plaats-"
+"onafhankelijke en voor machines leesbare datum en tijd aanbiedt. De "
+"machinetijd wordt naar de opvragende machine verstuurd in seconden sinds "
+"middernacht 1 januari 1900.U dient xinetd aan te zetten om deze dienst te "
+"gebruiken."
 
 #: service-list.pl.in:128
 msgid ""
@@ -778,11 +777,11 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
-"Een RFC 868 tijdserver. De UDP-versie van het protocol dat een "
-"plaats-onafhankelijke en voor machines leesbare datum en tijd aanbiedt. "
-"De machinetijd wordt naar de opvragende machine verstuurd in seconden "
-"sinds middernacht 1 januari 1900.U dient xinetd aan te zetten om deze "
-"dienst te gebruiken."
+"Een RFC 868 tijdserver. De UDP-versie van het protocol dat een plaats-"
+"onafhankelijke en voor machines leesbare datum en tijd aanbiedt. De "
+"machinetijd wordt naar de opvragende machine verstuurd in seconden sinds "
+"middernacht 1 januari 1900.U dient xinetd aan te zetten om deze dienst te "
+"gebruiken."
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
@@ -793,10 +792,7 @@ msgid ""
 "The  random  number  generator  gathers environmental noise from device "
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
-msgstr ""
-"De willekeurige getallen generator verzamelt omgevingsstoringen uit "
-"stuurprogramma's en andere bronnen in een entropieverzameling. "
-"Vanuit deze entropieverzameling worden willekeurige getallen gecreëerd."
+msgstr "De willekeurige getallen generator verzamelt omgevingsstoringen uit stuurprogramma's en andere bronnen in een entropieverzameling. Vanuit deze entropieverzameling worden willekeurige getallen gecreëerd."
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -816,8 +812,7 @@ msgstr "Web-gebaseerde verzameling van beheerprogramma's"
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
-msgstr "Name·Service·Switch-daemon voor het achterhalen van namen vanaf "
-"NT-servers"
+msgstr "Name·Service·Switch-daemon voor het achterhalen van namen vanaf NT-servers"
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
@@ -828,8 +823,8 @@ msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
-"Laat gebruikers Windows(tm)-toepassingen uitvoeren door er op te klikken "
-"(of door ./bestand.exe te typen)"
+"Laat gebruikers Windows(tm)-toepassingen uitvoeren door er op te klikken (of "
+"door ./bestand.exe te typen)"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
@@ -859,9 +854,9 @@ msgid ""
 "can be started, among other things."
 msgstr ""
 "xinetd is een krachtige vervanging voor inetd. xinetd heeft onder meer "
-"mechanismen voor toegangscontrole en uitgebreide log-mogelijkheden en"
-"kan diensten op tijd beschikbaar maken en het aantal diensten dat gestart "
-"mag worden beperken."
+"mechanismen voor toegangscontrole en uitgebreide log-mogelijkheden enkan "
+"diensten op tijd beschikbaar maken en het aantal diensten dat gestart mag "
+"worden beperken."
 
 #: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
@@ -892,8 +887,8 @@ msgid "Networkless runlevel"
 msgstr "Werkniveau zonder netwerk"
 
 #: users-conf.in:179
-msgid "Monitorize system logs"
-msgstr "Bewaakt systeem-logbestanden"
+msgid "Monitor system logs"
+msgstr "Bewaak systeem-logbestanden"
 
 #: users-conf.in:180
 msgid "Use audio devices"
@@ -908,7 +903,7 @@ msgid "Access to modem devices"
 msgstr "Toegang tot modemapparaten"
 
 #: users-conf.in:183
-msgid "Connect to internet through modem devices"
+msgid "Connect to Internet through modem devices"
 msgstr "Maak een verbinding met internet met modemapparaten"
 
 #: users-conf.in:184
@@ -938,4 +933,3 @@ msgstr "Standaard"
 #: users-conf.in:459
 msgid "Default profile"
 msgstr "Standaardprofiel"
-
