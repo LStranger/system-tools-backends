@@ -22,7 +22,7 @@
   <!-- Include the network-specific types. -->
   <include schemaLocation="networktypes.xsd"/>
 
-  <element type="internetsharingType" name="internetsharing">
+  <element type="internetsharingType" name="internetsharing"/>
 
   <complexType name="internetsharingType">
     <sequence>
