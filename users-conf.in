@@ -100,21 +100,21 @@ $group_last_modified = 0; # For /etc/group, since the epoch.
 @users_prop_array = (
   "key", 0,
   "login", 1,
-	"password", 2,
-	"uid", 3,
-	"gid", 4,
-	"comment", 5,
-	"home", 6,
-	"shell", 7,
-	"last_mod", 8, # Read shadow (5) for these.
-	"passwd_min_life", 9,
-	"passwd_max_life", 10,
-	"passwd_exp_warn", 11,
-	"passwd_exp_disable", 12,
-	"passwd_disable", 13,
-	"reserved", 14,
-	"is_shadow", 15,
-	"", "");
+  "password", 2,
+  "uid", 3,
+  "gid", 4,
+  "comment", 5,
+  "home", 6,
+  "shell", 7,
+  "last_mod", 8, # Read shadow (5) for these.
+  "passwd_min_life", 9,
+  "passwd_max_life", 10,
+  "passwd_exp_warn", 11,
+  "passwd_exp_disable", 12,
+  "passwd_disable", 13,
+  "reserved", 14,
+  "is_shadow", 15,
+  "", "");
 
 for ($i = 0; $users_prop_array[$i] ne ""; $i += 2)
 {
@@ -198,124 +198,127 @@ sub arr_cmp_recurse
 sub read_login_defs
 {
   local *FILE;
-	my @line;
+  my @line;
 	
   *FILE = be_open_read_from_names(@login_defs_names);
   if (not *FILE) { return; }  # We didn't find it.
-	
-	while (<FILE>)
-	{
-	  next if &be_ignore_line ($_);
-	  chomp;
-		@line = split (/[ \t]+/, $_);
-		$login_defs{$login_defs_prop_map{$line[0]}} = $line[1];
-	}
-	
-	close (FILE);
+
+  while (<FILE>)
+  {
+    next if &be_ignore_line ($_);
+    chomp;
+    $_ = &be_xml_plain_to_entities (\$_);
+    @line = split (/[ \t]+/, $_);
+    $login_defs{$login_defs_prop_map{$line[0]}} = $line[1];
+  }
+
+  close (FILE);
 }
 		
 sub read_passwd_shadow
 {
   local *FILE;
-	my (@line, $copy, %tmphash);
-	my $login_pos = $users_prop_map{"login"};
-	my $i = 0;
+  my (@line, $copy, %tmphash);
+  my $login_pos = $users_prop_map{"login"};
+  my $i = 0;
 
   # Find the passwd file.
 
   *FILE = be_open_read_from_names(@passwd_names);
   if (not *FILE) { return; }  # We didn't find it.
-	$passwd_last_modified = (stat (FILE))[9]; # get the mtime.
+    $passwd_last_modified = (stat (FILE))[9]; # get the mtime.
 
   # Parse the file.
-	
-	@users = ();
-	%users_hash = ();
+
+  @users = ();
+  %users_hash = ();
 
   while (<FILE>)
   {
-    chomp;      
+    chomp;
+    $_ = &be_xml_plain_to_entities (\$_);
     @line = split ':', $_, -1;
-		unshift @line, sprintf ("%06d", $i);
-		$copy = [@line];
-		$users_hash{sprintf ("%06d", $i)} = $copy;
-		$tmphash{$line[$login_pos]} = $copy;
+    unshift @line, sprintf ("%06d", $i);
+    $copy = [@line];
+    $users_hash{sprintf ("%06d", $i)} = $copy;
+    $tmphash{$line[$login_pos]} = $copy;
     push (@users, $copy);
-		$i ++;
+    $i ++;
   }
+
+  close (FILE);
 	
-	close (FILE);
-	
-	# Find the shadow file.
-	
-	*FILE = be_open_read_from_names(@shadow_names);
-	if (*FILE) {
-	  my ($login, $passwd);
-		my $passwd_pos = $users_prop_map{"password"};
-		
-	  while (<FILE>)
-	  {
-	    chomp;      
-	    @line = split ':', $_, -1;
-			push @line, 1;
-			$login = shift @line;
-			$passwd = shift @line;
-			push @{$tmphash{$login}}, @line;
-			@{$tmphash{$login}}[$passwd_pos] = $passwd;
-	  }
-		
-		close (FILE);
-	}	
+  # Find the shadow file.
+
+  *FILE = be_open_read_from_names(@shadow_names);
+  if (*FILE) {
+    my ($login, $passwd);
+    my $passwd_pos = $users_prop_map{"password"};
+
+    while (<FILE>)
+    {
+      chomp;
+      @line = split ':', $_, -1;
+      push @line, 1;
+      $login = shift @line;
+      $passwd = shift @line;
+      push @{$tmphash{$login}}, @line;
+      @{$tmphash{$login}}[$passwd_pos] = $passwd;
+    }
+
+    close (FILE);
+  }	
 }
 
 sub read_group
 {
   local *FILE;
-	my (@line, $copy, @a);
-	my $i = 0;
+  my (@line, $copy, @a);
+  my $i = 0;
 
   # Find the file.
 
   *FILE = be_open_read_from_names(@group_names);
   if (not *FILE) { return; }  # We didn't find it.
-	$gruop_last_modified = (stat (FILE))[9]; # get the mtime.
+  $gruop_last_modified = (stat (FILE))[9]; # get the mtime.
 
   # Parse the file.
 	
-	@groups = ();
-	%groups_hash = ();
+  @groups = ();
+  %groups_hash = ();
 
   while (<FILE>)
   {
-    chomp;      
+    chomp;
+    $_ = &be_xml_plain_to_entities (\$_);
     @line = split ':', $_, -1;
-		unshift @line, sprintf ("%06d", $i);
-		@a = split ',', pop @line;
-		push @line, [@a];
-		$copy = [@line];
-		$groups_hash{sprintf ("%06d", $i)} = $copy;
+    unshift @line, sprintf ("%06d", $i);
+    @a = split ',', pop @line;
+    push @line, [@a];
+    $copy = [@line];
+    $groups_hash{sprintf ("%06d", $i)} = $copy;
     push (@groups, $copy);
-		$i ++;
+    $i ++;
   }
-	
-	close (FILE);
+
+  close (FILE);
 }
 
 sub write_group_passwd
 {
   my ($i, $j, $k);
-	my (%users_all, %parse_users_hash, @parse_users, $parse_passwd_last_modified);
-	my (%groups_all, %parse_groups_hash, @parse_groups, $parse_group_last_modified);
-	
+  my (%users_all, %parse_users_hash, @parse_users, $parse_passwd_last_modified);
+  my (%groups_all, %parse_groups_hash, @parse_groups, $parse_group_last_modified);
+
   %parse_users_hash = %users_hash;
-	@parse_users = @users;
-	$parse_passwd_last_modified = $passwd_last_modified;
-	&read_passwd_shadow;
-	
+  @parse_users = @users;
+  $parse_passwd_last_modified = $passwd_last_modified;
+  &read_passwd_shadow;
+
   %parse_groups_hash = %groups_hash;
-	@parse_groups = @groups;
-	$parse_group_last_modified = $group_last_modified;
-	&read_group;
+  @parse_groups = @groups;
+  $parse_group_last_modified = $group_last_modified;
+  &read_group;
 	
 #	if ($passwd_last_modified > $parse_passwd_last_modified) 
 #	{
@@ -416,6 +419,7 @@ sub change_user
 	  "\' -l \'" . $$new_data[$users_prop_map{"login"}] .
 	  "\' \'" . $$old_data[$users_prop_map{"login"}] . "\'";
 	my_system ($command);
+	print "$command\n";
 }
 
 sub del_group
@@ -491,7 +495,7 @@ sub xml_parse
   $parse_tree = $tree = &be_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
-  # This is the top level - find and enter the "networking" tag.
+  # This is the top level - find and enter the "users" tag.
 
   while (@$tree)
   {
@@ -591,7 +595,7 @@ sub xml_parse_userdb
 sub xml_parse_user
 {
   my $tree = $_[0];
-	my @line = ();
+  my @line = ();
 	
   shift @$tree;  # Skip attributes.
 
@@ -599,7 +603,7 @@ sub xml_parse_user
 	{
 		if ($users_prop_map{$$tree[0]} ne undef)
 		{
-		  $line[$users_prop_map{$$tree[0]}] = $$tree[1][2];
+		  $line[$users_prop_map{$$tree[0]}] = &be_xml_entities_to_plain(\$$tree[1][2]);
 		}
 		else
 		{
@@ -609,9 +613,9 @@ sub xml_parse_user
 		shift @$tree;
 		shift @$tree;
 	}
-	
-	$users_hash{sprintf ("%06d", $line[0])} = [@line];
-	push (@users, [@line]);
+
+  $users_hash{sprintf ("%06d", $line[0])} = [@line];
+  push (@users, [@line]);
 }	
 	
 sub xml_parse_groupdb
@@ -716,7 +720,7 @@ sub xml_print
 	&be_xml_enter ();
 	foreach $i (@users)
 	{
-    &be_xml_vspace ();
+          &be_xml_vspace ();
 	  &be_xml_print ("<user>\n");
 		&be_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
@@ -777,7 +781,7 @@ sub get
   be_report_info(1, "Getting user database");
 
   &read_login_defs (); &be_print_progress ();
-	&read_group (); &be_print_progress ();
+  &read_group (); &be_print_progress ();
   &read_passwd_shadow (); &be_print_progress ();
 
   &be_end();
@@ -790,9 +794,9 @@ sub set
 
   if ($be_do_immediate)
   {
-		&write_group_passwd ();
+    &write_group_passwd ();
   }
-  
+
   &be_end();
 }
 

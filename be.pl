@@ -324,7 +324,7 @@ sub be_xml_scan
   }
 
 
-@be_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"' );
+@be_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\\\'', "&quot;", '"' );
 
 sub be_xml_entities_to_plain
   {
