@@ -26,32 +26,90 @@
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/report.pl";
 
+# FIXME: /var/cache/ximian-setup-tools/ needs to be configured by Automake,
+# just like ___scriptsdir___.
+
 
 # --- File operations --- #
 
 
-# xst_rotate_backups
-#
-# Given a name (full path) to a file, rotates its backups (up to 9), called
-# name.xstsave.[1-9]. 9 is the oldest backup (which will be rotated out), and
-# 1 is the most recent backup, which will be created on a call to this
-# function.
-
-sub xst_rotate_backups
+sub xst_create_path
 {
-  my ($name, $i);
+  my $path;
 
-  $name = @_[0];
+  $path = $_[0];
+  $path =~ tr/\///s;
 
-  for ($i = 8; $i; $i--)
+  my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
+    
+  for ($path = ""; @pelem; shift @pelem)
   {
-    if (stat ("$name.xstsave.$i"))
+    $path = "$path$pelem[0]";
+    mkdir($path, 0770);
+    $path = "$path/";
+  }
+}
+
+
+sub xst_create_path_for_file
+{
+  my $path;
+
+  $path = $_[0];
+  $path =~ tr/\///s;
+
+  my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
+    
+  for ($path = ""; @pelem; shift @pelem)
+  {
+    if ($pelem[1] ne "")
     {
-      xst_run ("cp $name.xstsave.$i $name.xstsave." . ($i+1));
+      $path = "$path$pelem[0]";
+      mkdir($path, 0770);
+      $path = "$path/";
     }
   }
+}
 
-  xst_run ("cp $name $name.xstsave.1");
+
+$xst_backup_was_made = 0;
+
+sub xst_backup_file
+{
+  my $backup_file = @_[0];
+  my $backup_tool_dir = "/var/cache/ximian-setup-tools/backup/$xst_name/";
+
+  # If this is the first backup created by this tool on this invocation,
+  # rotate the backup directories and create a new, empty one.
+
+  if (!$xst_backup_was_made)
+  {
+    my $i;
+
+    # FIXME: rm -Rf might not work on all systems.
+
+    &xst_run ("rm -Rf $backup_tool_dir/9");
+
+    for ($i = 8; $i; $i--)
+    {
+      if (stat ("$backup_tool_dir/$i"))
+      {
+        &xst_run ("mv $backup_tool_dir/$i $backup_tool_dir/" . ($i+1));
+      }
+    }
+    
+    &xst_create_path_for_file ("$backup_tool_dir/1/");
+    $xst_backup_was_made = 1;
+  }
+
+  # If the file hasn't already been backed up on this invocation, copy the
+  # file to the backup directory.
+
+  if (!stat ("$backup_tool_dir/1/$backup_file"))
+  {
+    &xst_create_path_for_file ("$backup_tool_dir/1/$backup_file");
+    &xst_run ("cp $backup_file $backup_tool_dir/1/$backup_file");
+  }
 }
 
 
@@ -120,17 +178,14 @@ sub xst_open_write_from_names
   }
     
   ($name = "$xst_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-  &xst_create_path ($name);
+  &xst_create_path_for_file ($name);
     
   # Make a backup if the file already exists - if the user specified a prefix,
   # it might not.
     
   if (stat ($name))
   {
-    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
-    # to specify a $name list somehow, in the future.
-
-    &xst_rotate_backups ($name);
+    &xst_backup_file ($name);
   }
 
   # Truncate and return filehandle.
@@ -149,19 +204,19 @@ sub xst_open_filter_write_from_names
 {
   local *INFILE;
   local *OUTFILE;
-  my ($name, $elem);
-    
+  my ($filename, $name, $elem);
+
   # Find out where it lives.
-    
+
   for $elem (@_) { if (stat ($elem) ne "") { $name = $elem; last; } }
-    
+
   if ($name eq "")
   {
     # If we couldn't locate the file, and have no prefix, give up.
-	
+
     # If we have a prefix, but couldn't locate the file relative to '/',
     # take the first name in the array and let that be created in $prefix.
-	
+
     if ($prefix eq "")
     {
       &xst_report_warning (98, "No file to patch: \[@_\]");
@@ -179,27 +234,29 @@ sub xst_open_filter_write_from_names
     (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
     &xst_report_info (98, "Found \[$name\]. Patching \[$fullname\]");
   }
-    
+
+  ($filename) = $name =~ /.*\/(.+)$/;
   ($name = "$xst_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-  &xst_create_path ($name);
+  &xst_create_path_for_file ($name);
 
   # Make a backup if the file already exists - if the user specified a prefix,
   # it might not.
-    
+
   if (stat ($name))
   {
-    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
-    # to specify a $name list somehow, in the future.
-	
-    &xst_rotate_backups ($name);
+    &xst_backup_file ($name);
   }
-    
-  # Return filehandles. Backup file is used as filter input. It might be
-  # invalid, in which case the caller should just write to OUTFILE without
-  # bothering with INFILE filtering.
-    
-  open (INFILE, "$name.xstsave.1");
-    
+
+  # Return filehandles. Make a copy to use as filter input. It might be
+  # invalid (no source file), in which case the caller should just write to
+  # OUTFILE without bothering with INFILE filtering.
+
+  &xst_create_path ("/var/cache/ximian-setup-tools/tmp");
+  unlink ("/var/cache/ximian-setup-tools/tmp/$xst_name-$filename");
+  &xst_run ("cp $name /var/cache/ximian-setup-tools/tmp/$xst_name-$filename");
+
+  open (INFILE, "/var/cache/ximian-setup-tools/tmp/$xst_name-$filename");
+
   if (!open (OUTFILE, ">$name"))
   {
     &xst_report_error (99, "Failed to write to \[$name\]");
@@ -208,6 +265,9 @@ sub xst_open_filter_write_from_names
     
   return (*INFILE, *OUTFILE);
 }
+
+
+# --- Buffer operations --- #
 
 
 # Open $file and put it into @buffer, for in-line editting.
@@ -287,25 +347,6 @@ sub xst_buffer_join_lines
       chop $$buffer[$i];
       $$buffer[$i] .= $$buffer[$i + 1];
       splice (@$buffer, $i + 1, 1);
-    }
-  }
-}
-
-
-sub xst_create_path
-{
-  my $path;
-  
-  $path = $_[0];
-  my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
-    
-  for ($path = ""; @pelem; shift @pelem)
-  {
-    if ($pelem[1] ne "")
-    {
-      $path = "$path$pelem[0]";
-      mkdir($path, 0770);
-      $path = "$path/";
     }
   }
 }

@@ -230,7 +230,7 @@ sub write_localtime
     &xst_report_info(1, "Writing timezone configuration to \"$fullname\"");
 
     ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
-    &xst_create_path($name);
+    &xst_create_path_for_file($name);
 
     # Make a backup if the file already exists - if the user specified a prefix,
     # it might not.

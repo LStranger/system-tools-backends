@@ -1,3 +1,15 @@
+2001-02-23  Hans Petter Jansson  <hpj@ximian.com>
+
+	* file.pl.in (xst_rotate_backups): Remove.
+	  (xst_backup_file): Implement.
+	  (xst_create_path): Implement.
+	  (xst_create_path_for_file): Implement from old xst_create_path.
+	  (xst_open_write_from_names): Use xst_backup_file.
+	  (xst_open_filter_write_from_names): Use xst_backup_file. Use new
+	  filter source (in private tmp directory).
+
+	* time-conf.in (write_localtime): Use xst_create_path_for_file.
+
 2001-02-23  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_conf_replace_image): We are #XstPartitionType aware.
