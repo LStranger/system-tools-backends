@@ -1,4 +1,4 @@
-SUBDIRS = files
+SUBDIRS = files po
 
 backends = \
 	dhcpd-conf \
@@ -27,7 +27,6 @@ perl_libs = \
 	filesys.pl   \
 	font.pl      \
 	general.pl   \
-	gettext.pl   \
 	ishare.pl    \
 	media.pl     \
 	network.pl   \
@@ -48,6 +47,9 @@ perl_libs = \
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh type1inst
 
 EXTRA_DIST = \
+	intltool-extract.in \
+	intltool-merge.in \
+	intltool-update.in \
 	system-tools-backends.pc \
 	guess_system.sh \
 	type1inst       \
@@ -55,9 +57,10 @@ EXTRA_DIST = \
 	AUTHORS \
 	NEWS
 
-CLEANFILES = $(backends) $(perl_libs)
-
+CLEANFILES = $(backends) $(perl_libs) \
+	intltool-extract.in \
+	intltool-merge.in \
+	intltool-update.in
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = system-tools-backends.pc
-

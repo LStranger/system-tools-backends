@@ -156,15 +156,15 @@ sub gst_service_get_verbose_runlevels
 
   %runlevels=
     (
-     "redhat-5.2" => {"0" => "Halting the system",
-                      "3" => "Text mode",
-                      "5" => "Graphical mode",
-                      "6" => "Rebooting the system"
+     "redhat-5.2" => {"0" => _("Halting the system"),
+                      "3" => _("Text mode"),
+                      "5" => _("Graphical mode"),
+                      "6" => _("Rebooting the system")
                      },
-     "debian-2.2" => {"0" => "Halting the system",
-                      "2" => "Graphical mode",
-                      "3" => "Text mode",
-                      "6" => "Rebooting the system"
+     "debian-2.2" => {"0" => _("Halting the system"),
+                      "2" => _("Graphical mode"),
+                      "3" => _("Text mode"),
+                      "6" => _("Rebooting the system")
                      }
     );
 

@@ -31,9 +31,10 @@ if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
 
 require "$SCRIPTSDIR/report.pl$DOTIN";
 require "$SCRIPTSDIR/platform.pl$DOTIN";
-require "$SCRIPTSDIR/gettext.pl$DOTIN";
 require "$SCRIPTSDIR/xml.pl$DOTIN";
 
+use Locale::gettext;
+use POSIX;
 
 # --- Operation modifying variables --- #
 
@@ -300,7 +301,12 @@ sub gst_init
   my ($name, $version, $description, $directives, @args) = @_;
   my (%tool, $arg);
 
-  # print a CR for syncronysm with the frontend
+  &setlocale (LC_MESSAGES, "");
+  &bindtextdomain ("@GETTEXT_PACKAGE@", "@localedir@");
+  &bind_textdomain_codeset ("@GETTEXT_PACKAGE@", "UTF-8");
+  &textdomain ("@GETTEXT_PACKAGE@");
+
+  # print a CR for synchronysm with the frontend
   print "\n";
 
   # Set the output autoflush.
@@ -316,7 +322,6 @@ sub gst_init
   $tool{"description"} = $description;
   $tool{"directives"} = $directives;
   
-  &textdomain ("gnome-system-tools");
   &gst_merge_std_directives (\%tool);
 
   # Parse arguments.
@@ -614,6 +619,12 @@ sub gst_run
   {
     &gst_directive_run ($tool, $line);
   }
+}
+
+# this is an alias for the gettext function
+sub _
+{
+  return gettext (shift);
 }
 
 1;

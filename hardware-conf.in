@@ -257,7 +257,7 @@ sub xml_parse_swapinfo
 
 sub xml_print
   {
-    print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+    print "<?xml version='1.0' encoding='UTF-8' standalone='yes'?>\n";
     print "<!DOCTYPE memory []>\n\n";
     print "<hardware>\n";
     &gst_xml_enter ();

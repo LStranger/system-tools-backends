@@ -72,7 +72,7 @@ $cmd_pack = &gst_file_locate_tool ("rpm");
 
 sub xml_print
 {
-  &gst_xml_print_line ("<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>");
+  &gst_xml_print_line ("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>");
   &gst_xml_print_line ("<!DOCTYPE packages []>\n");
   &gst_xml_print_line ("<packages>");
   &gst_xml_enter ();

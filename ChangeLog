@@ -1,3 +1,17 @@
+2003-12-16  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* added support for i18n in the backends
+	* gettext.pl.in: removed, hacky as hell
+	* Makefile.am, configure.in: added i18n rules
+	* general.pl.in: removed reference to gettext.pl.in, added i18n code
+	* hardware-conf.in, package-conf.in, xml.pl.in: made the XML to be
+	  UTF-8
+	* report.pl.in: removed reference to gettext.pl.in
+	* service.pl.in, service-list.pl.in: marked a bunch of strings as
+	  translatable
+	* po/POTFILES.in, POTFILES.skip: added
+	* fixes bug #108519
+
 2003-12-10  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* replace.pl.in: made it to delete in the files all known variables 

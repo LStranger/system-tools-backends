@@ -6,25 +6,35 @@ AC_INIT(system-tools-backends,0.30.0, http://bugzilla.gnome.org/enter_bug.cgi?pr
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
 dnl ==============================================================
-dnl Set SCRIPTS_DIR & FILES_DIR
+dnl Set SCRIPTS_DIR, FILES_DIR & LOCALE_DIR
 dnl ==============================================================
 if test "x${prefix}" = "xNONE"; then
   scriptsdir="${ac_default_prefix}/share/setup-tool-backends/scripts"
   filesdir="${ac_default_prefix}/share/setup-tool-backends/files"
+  localedir="${ac_default_prefix}/share/locale"
 else
   scriptsdir="${prefix}/share/setup-tool-backends/scripts"
   filesdir="${prefix}/share/setup-tool-backends/files"
+  localedir="${prefix}/share/locale"
 fi
-
-dnl ==============================================================
-dnl END: Set SCRIPTS_DIR & FILES_DIR
-dnl ==============================================================
 
 AC_SUBST(scriptsdir)
 AC_SUBST(filesdir)
+AC_SUBST(localedir)
+
+dnl ==============================================================
+dnl END: Set SCRIPTS_DIR, FILES_DIR & LOCALE_DIR
+dnl ==============================================================
+
+GETTEXT_PACKAGE=setup-tools-backends
+AC_SUBST(GETTEXT_PACKAGE)
+
+ALL_LINGUAS=""
+AM_GLIB_GNU_GETTEXT
 
 AC_OUTPUT([
 Makefile
+po/Makefile.in
 system-tools-backends.pc
 files/Makefile
 boot-conf
@@ -52,7 +62,6 @@ file.pl
 filesys.pl
 font.pl
 general.pl
-gettext.pl
 ishare.pl
 media.pl
 network.pl

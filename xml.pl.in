@@ -66,7 +66,7 @@ sub gst_xml_print_begin
 
   $name = $gst_name if !$name;
 
-  &gst_xml_print_string ("<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n");
+  &gst_xml_print_string ("<?xml version='1.0' encoding='UTF-8' standalone='yes'?>\n");
   &gst_xml_print_string ("<!DOCTYPE $name []>\n\n");
   &gst_xml_print_string ("<$name>\n");
 
