@@ -82,7 +82,7 @@ my $x_list_int = {
 
 my $x_serverlayout_screen = {
   'parse'     => \&x_parse_serverlayout_screen,
-  'xml_parse' => \&x_xml_parse_unique,
+  'xml_parse' => \&x_xml_parse_serverlayout_screen,
   'xml_print' => \&x_xml_print_serverlayout_screen,
   'update'    => \&x_update_serverlayout_screen,
   'delete'    => \&x_del_serverlayout_screen,
@@ -770,10 +770,17 @@ sub x_parse_serverlayout_screen
 
   # Format example: 'Screen  screen-num "screen-id" position-information'
 
+  my $screens = 0;
+  $screens = scalar (keys %{$config->{'Screen'}}) if exists $config->{'Screen'};
+
   # Screen number
   $token = &x_peek_token ($buf);
   goto ERROR unless defined ($token);
-  $hash->{'num'} = &x_get_token ($buf) if ($token =~ /^\d+$/);
+  if ($token =~ /^\d+$/) {
+    $hash->{'num'} = &x_get_token ($buf);
+  } else {
+    $hash->{'num'} = $screens;
+  }
 
   # Screen id
   $token = &x_peek_token ($buf);
@@ -826,8 +833,10 @@ sub x_parse_serverlayout_screen
     $hash->{'pos'} = $pos;
   }
 
-  # We currently care about id only.
-  $config->{$kw} = $hash->{'id'};
+  $config->{'Screen'}->{$hash->{'num'}} =
+  {
+    'Identifier' => $hash->{'id'}
+  };
   return;
 
  ERROR:
@@ -835,33 +844,72 @@ sub x_parse_serverlayout_screen
   &xst_debug_print_line ("x_parse_serverlayout_screen: error parsing $kw");
 }
 
+sub x_xml_parse_serverlayout_screen
+{
+  my $hash = shift;
+  my $kw = shift;
+  my $tag = shift;
+
+  $hash->{$kw} = {} unless exists $hash->{$kw};
+
+  my $number = &xst_xml_get_attribute ($tag, "number");
+  my $screen = { 'Identifier' => &xst_xml_get_attribute ($tag, "name") };
+  $hash->{$kw}->{$number} = $screen;
+}
+
 sub x_xml_print_serverlayout_screen
 {
   my ($key, $val) = @_;
 
-  &xst_xml_print_pcdata ($key, $val);
+  foreach my $screen (keys %$val) {
+    my $name = $val->{$screen}->{'Identifier'};
+    &xst_xml_print_line ("<$key number=\"$screen\" name=\"$name\"/>");
+  }
 }
 
 sub x_update_serverlayout_screen
 {
   my ($buf, $ptr, $old_val, $new_val) = @_;
 
-  my $screen_num = &x_update_get_token ($buf, $ptr);
+  # Just get enough tokens from con file.
+  # FIXME: Make it actually WORK.
 
-  if ($old_val ne $new_val) {
-    &x_update_unique_string ($buf, $ptr, $old_val, $new_val);
-  } else {
-    my $screen = &x_update_get_token ($buf, $ptr);
+  # Screen number
+  my $token = &x_update_get_token ($buf, $ptr);
+  unless ($token =~ /^\d+$/) {
+    &x_update_unget_token ($buf, $ptr);
   }
 
-  my $pos1 = &x_update_get_token ($buf, $ptr);
-  my $pos2 = &x_update_get_token ($buf, $ptr);
+  # Screen id
+  $token = &x_update_get_token ($buf, $ptr);
+
+  # Position
+  my @known_pos_xy = qw (Absolute Relative);
+  my @known_pos_id = qw (RightOf LeftOf Above Below);
+  my $tmp;
+
+  $token = &x_update_get_token ($buf, $ptr);
+  if ($tmp = &x_keyword_in_list ($token, @known_pos_xy)) {
+    $token = &x_update_get_token ($buf, $ptr);
+    $token = &x_update_get_token ($buf, $ptr);
+  }
+  elsif ($tmp = &x_keyword_in_list ($token, @known_pos_id)) {
+    $token = &x_update_get_token ($buf, $ptr);
+  }
+  elsif ($token =~ /^\d+$/) {
+    $token = &x_update_get_token ($buf, $ptr);
+  }
+  else {
+    $token = &x_update_unget_token ($buf, $ptr);
+  }
 }
 
 sub x_del_serverlayout_screen
 {
   my ($buf, $ptr, $kw, $old_val) = @_;
-  &x_update_token ($buf, $ptr, $kw);
+
+  #FIXME: Doesn't do anything.
+#  &x_update_token ($buf, $ptr, $kw);
 
   &x_update_serverlayout_screen ($buf, $ptr, $old_val);
 }
@@ -878,7 +926,6 @@ sub x_add_serverlayout_screen
   &x_update_add_token ($buf, $ptr, 0, 1);
   &x_update_add_token ($buf, $ptr, 0, 1);
 }
-
 
 # ModeLines.
 
@@ -1134,7 +1181,7 @@ sub x_get_token
 
     $line =~ s/^(\s+)//;
     push @$dest_buf, $1 if defined ($1);
-    my @list = &quotewords ('[ \t]+', 1, $line);    
+    my @list = &quotewords ('[ \t]+', 1, $line);
     $token = $list[0];
     chomp $token;
     my $pattern = $token;
@@ -1661,6 +1708,7 @@ sub x_get_active_screen
   if (exists ($config->{'ServerLayout'}) &&
       scalar @{$config->{'ServerLayout'}} > 0) {
     my $active_screen = $config->{'ServerLayout'}[0]{'Screen'};
+    $active_screen = $active_screen->{0}->{'Identifier'};
     foreach my $screen (@{$config->{'Screen'}}) {
       if ($screen->{'Identifier'} eq $active_screen) {
         return $screen;
@@ -1706,7 +1754,11 @@ sub x_check_get_serverlayout
   # Add 'Screen'
   my $ref = &x_get_active_screen ($config, $x_version);
   if ($ref) {
-    $hash->{'Screen'} = $ref->{'Identifier'};
+    $hash->{'Screen'} = { 0 =>
+                          {
+                            'Identifier' => $ref->{'Identifier'}
+                          }
+                        };
   }
 
   push @{$config->{$section}}, $hash;

@@ -35,6 +35,7 @@ require "$SCRIPTSDIR/util.pl$DOTIN";
 require "$SCRIPTSDIR/general.pl$DOTIN";
 require "$SCRIPTSDIR/debug.pl$DOTIN";
 
+use Text::ParseWords;
 
 # --- XML print formatting  --- #
 
@@ -153,7 +154,7 @@ sub xst_xml_format_pcdata # (name, pcdata)
 sub xst_xml_print_pcdata # (name, pcdata)
 {
   my ($name, $pcdata) = @_;
-  my $line = xst_xml_format_pcdata ($name, $pcdata);
+  my $line = &xst_xml_format_pcdata ($name, $pcdata);
 
   &xst_xml_print_line ($line) if $line;
 }
@@ -161,7 +162,7 @@ sub xst_xml_print_pcdata # (name, pcdata)
 sub xst_xml_format_state_tag
 {
   my ($name, $state) = @_;
-  my $boolean = xst_print_boolean_truefalse ($state);
+  my $boolean = &xst_print_boolean_truefalse ($state);
 
   return "<$name state='$boolean'/>";
 }
@@ -169,7 +170,7 @@ sub xst_xml_format_state_tag
 sub xst_xml_print_state_tag
 {
   my ($name, $state) = @_;
-  my $state_tag = xst_xml_format_state_tag ($name, $state);
+  my $state_tag = &xst_xml_format_state_tag ($name, $state);
 
   &xst_xml_print_line ($state_tag); 
 }
@@ -388,10 +389,25 @@ sub xst_xml_model_print
 
 sub xst_xml_scan_make_kid_array
 {
-  my %hash = {};
-  my @sublist;
+  my $line = shift;
+  my (%hash, @sublist, @attr, @list);
 
-  @attr = $_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z0-9_-]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z0-9_\.\\\/-]+)/g;
+  # Remove < and />
+  $line =~ s/^[ \t]*<//;
+  $line =~ s/[\/]?>[ \t]*$//;
+
+  my @list = &quotewords ('[ \t]+', 1, $line);
+  shift @list; # push tag name.
+
+  foreach (@list)
+  {
+    my @tmp = split '[ \t]*=[ \t]*';
+    if (scalar @tmp == 2 && $tmp[1] =~ s/\"//g)
+    {
+      push @attr, @tmp;
+    }
+  }
+
   %hash = @attr;
 
   push (@sublist, \%hash);
@@ -487,6 +503,7 @@ sub xst_xml_read_stdin
 }
 
 # (file, tool) If no file specified, reads stdin.
+# file could also contain xml document.
 # If tool is an xst_tool, stores the read buffer in
 # $$tool{"xml_doc"}.
 sub xst_xml_scan  
@@ -494,11 +511,15 @@ sub xst_xml_scan
   my ($file, $tool) = @_;
   my ($doc, @tree, @xst_xml_scan_list);
 
-  $file = $xst_input_file if $file eq undef;
+  $file = $xst_input_file unless $file;
 
-  if ($file)
+  if ($file && stat ($file))
   {
     $doc = &xst_xml_read_file ($file);
+  }
+  elsif ($file)
+  {
+    $doc = $file;
   }
   else
   {

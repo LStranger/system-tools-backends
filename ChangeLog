@@ -1,3 +1,20 @@
+2001-11-02  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_xml_parse_serverlayout_screen): Implement.
+	(x_xml_print_serverlayout_screen): Changed xml format to support multihead setups.
+	(x_parse_serverlayout_screen): There could me more than one active screen.
+
+2001-11-01  Tambet Ingo  <tambet@ximian.com>
+
+	* xml.pl.in (xst_xml_print_pcdata): Added missing '&' to functions.
+	(xst_xml_format_state_tag): Ditto.
+	(xst_xml_print_state_tag): ditto.
+
+2001-10-12  Tambet Ingo  <tambet@ximian.com>
+
+	* xml.pl.in (xst_xml_scan_make_kid_array): Rewrote to support xml attribute
+	values with spaces.
+
 2001-10-16  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* platform.pl.in (xst_platform_guess): Take the distro from the
