@@ -1,5 +1,11 @@
 2005-02-23  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* network-conf.in, network.pl.in: patch with lots of help and testing
+	from Michael Vogt <mvogt@acm.org> to fix PPP calling in the network
+	tool. this should fix #167342
+
+2005-02-23  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* process.pl.in: added for basic process management
 	* Makefile.am, configure.in: added process.pl
 

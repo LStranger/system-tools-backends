@@ -41,6 +41,7 @@ require "$SCRIPTSDIR/replace.pl$DOTIN";
 require "$SCRIPTSDIR/service.pl$DOTIN";
 require "$SCRIPTSDIR/util.pl$DOTIN";
 require "$SCRIPTSDIR/xml.pl$DOTIN";
+require "$SCRIPTSDIR/process.pl$DOTIN";
 
 
 # Shared XML printing function
@@ -196,10 +197,6 @@ sub gst_network_get_chat_file
   &gst_replace_chat ($tmp_file, "atd[tp][0-9wW]+", $dial);
   &gst_network_set_modem_volume ($tmp_file, $volume);
 
-  $arr = &gst_file_buffer_load ($tmp_file);
-  push @$arr, "ogin:--ogin: " . $$hash{"configuration"}{"login"} . "\n";
-  push @$arr, "ssword: " . $$hash{"configuration"}{"password"} . "\n";
-  &gst_file_buffer_save ($arr, $tmp_file);
 
   return $tmp_file;
 }
@@ -220,13 +217,11 @@ sub gst_network_enable_modem
   $command .= ($$config{"serial_hwctl"}) ? " crtscts" : " nocrtscts";
   $command .= ($$config{"set_default_gw"}) ? " defaultroute" : " nodefaultroute";
   $command .= " usepeerdns" if ($$config{"update_dns"});
-  $command .= " connect `$command_chat -f $chat_file`";
+  $command .= " user " . $$config{"login"};
+  $command .= " connect \'$command_chat -v -f $chat_file\'";
 
   $ret = &gst_file_run ($command);
   
-  # we don't want this file to have backup
-  unlink $chat_file;
-
   return $ret;
 }
 
@@ -253,20 +248,16 @@ sub gst_network_enable_isdn
   return &gst_file_run ($command);
 }
 
-sub drop_dhcp_connection ($dev)
+sub drop_dhcp_connection
 {
   my ($dev) = @_;
-  my ($pidfile, $buf, $pid);
+  &gst_process_kill_by_pidfile ("dhclient.$dev.pid");
+}
 
-  $pidfile = "/var/run/dhclient.$dev.pid";
-
-  if (&gst_file_exists ($pidfile))
-  {
-      $buf = &gst_file_buffer_load ($pidfile);
-      $pid = $$buf[0];
-
-      &gst_file_run ("kill -9 $pid");
-  }
+sub drop_pppd_connection
+{
+  my ($dev) = @_;
+  &gst_process_kill_by_pidfile ("$dev.pid");
 }
 
 sub gst_network_enable_iface_with_config
@@ -288,11 +279,18 @@ sub gst_network_enable_iface_with_config
   $ret = &gst_file_run ($command);
 
   &drop_dhcp_connection ($dev);
+  &drop_pppd_connection ($dev);
 
   if (exists ($$hash{"configuration"}))
   {
     if (exists ($$hash{"configuration"}{"phone_number"}))
     {
+      $login = $$hash{"configuration"}{"login"};
+      $pw = $$hash{"configuration"}{"password"};
+
+      &gst_network_set_pap_passwd ("/etc/ppp/pap-secrets", $login, $pw); 
+      &gst_network_set_pap_passwd ("/etc/ppp/chap-secrets", $login, $pw);
+
       if (&gst_network_check_pppd_plugin ("capiplugin"))
       {
         $ret = &gst_network_enable_isdn ($hash, $dev, $command_pppd);

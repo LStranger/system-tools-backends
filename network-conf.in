@@ -521,7 +521,12 @@ sub enable_iface
 
   # small hack for ensuring that the interface is really down
   # when messing ifup/ifdown/ifconfig calls
-  gst_file_run ("ifconfig $iface down") if ($enabled == 0);
+  if ($enabled == 0)
+  {
+    gst_file_run ("ifconfig $iface down");
+    &drop_dhcp_connection ($iface);
+    &drop_pppd_connection ($iface);
+  }
   
   # Don't forget to do gst_end when the reports are over!
   &gst_report_end ();
