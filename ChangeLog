@@ -1,3 +1,9 @@
+2001-11-27  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in (xml_parse_import): Make sure NFS imports are
+	soft mounted, so we don't risk hanging indefinitely. Fixes
+	Ximian bug 4599.
+
 2001-11-26  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* file.pl.in (xst_file_run_pipe): Use FILE_READ

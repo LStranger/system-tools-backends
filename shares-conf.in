@@ -258,6 +258,8 @@ sub xml_parse_import
   if ($type eq "nfs")
   {
     &xst_filesys_info_set_fs         ($info, "nfs");
+    &xst_filesys_info_set_option     ($info, "soft", "");
+    &xst_filesys_info_remove_option  ($info, "hard");
   }
   else
   {
