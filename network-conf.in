@@ -506,16 +506,16 @@ sub set
   &be_begin ();
   $hash = &xml_parse ();
 
-  &xst_network_conf_set ($hash);
-  &be_ensure_local_host_entry ($$hash{"hostname"});
+#  &xst_network_conf_set ($hash);
+#  &be_ensure_local_host_entry ($$hash{"hostname"});
 
   # network interface configuring
-  &set_interfaces (); &be_progress (90);
+ # &set_interfaces (); &be_progress (90);
 
-  if ($be_do_immediate)
-  {
-    &set_immediate;
-  }
+#  if ($be_do_immediate)
+#  {
+#    &set_immediate;
+#  }
 
   &be_end ();
 }
