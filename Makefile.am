@@ -3,7 +3,6 @@ disks-conf \
 memory-conf \
 nameresolution-conf \
 network-conf \
-new_network-conf \
 shares-conf \
 time-conf \
 users-conf
@@ -23,7 +22,6 @@ disks-conf.in \
 memory-conf.in \
 nameresolution-conf.in \
 network-conf.in \
-new_network-conf.in \
 shares-conf.in \
 time-conf.in \
 users-conf.in
