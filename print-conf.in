@@ -41,12 +41,14 @@
 # ifconfig: check current printers and activate/deactivate.
 
 
+BEGIN {
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/print.pl";
+}
 
 
 # --- Tool information --- #

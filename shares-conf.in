@@ -39,6 +39,7 @@
 # ifconfig: check current interfaces and activate/deactivate.
 
 
+BEGIN {
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
@@ -47,6 +48,8 @@ require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/filesys.pl";
 require "___scriptsdir___/network.pl";
 require "___scriptsdir___/share.pl";
+}
+
 
 # --- Tool information --- #
 
@@ -466,34 +469,41 @@ sub xml_print
 
   &xst_xml_print_begin ();
 
-  &xst_xml_container_enter ("imports");
-
-  foreach $i (@$import_table)
+  if (scalar @$import_table)
   {
-    my ($fs);
+    &xst_xml_container_enter ("imports");
 
-    $fs = &xst_filesys_info_get_fs ($i);
-
-    if    ($fs eq "nfs")   { &xml_print_import_nfs ($i); }
-    elsif ($fs eq "smbfs") { &xml_print_import_smb ($i); }
-    else                   { next; }
+    foreach $i (@$import_table)
+    {
+      my ($fs);
+      
+      $fs = &xst_filesys_info_get_fs ($i);
+      
+      if    ($fs eq "nfs")   { &xml_print_import_nfs ($i); }
+      elsif ($fs eq "smbfs") { &xml_print_import_smb ($i); }
+      else                   { next; }
+    }
+    
+    &xst_xml_container_leave ();
+    &xst_xml_print_vspace ();
   }
 
-  &xst_xml_container_leave ();
-  &xst_xml_print_vspace ();
-  &xst_xml_container_enter ("exports");
-
-  foreach $i (@$smb_export_table)
+  if (scalar @$smb_export_table || scalar @$nfs_export_table)
   {
-    &xml_print_export_smb ($i);
-  }
+    &xst_xml_container_enter ("exports");
+    
+    foreach $i (@$smb_export_table)
+    {
+      &xml_print_export_smb ($i);
+    }
 
-  foreach $i (@$nfs_export_table)
-  {
-    &xml_print_export_nfs ($i);
-  }
+    foreach $i (@$nfs_export_table)
+    {
+      &xml_print_export_nfs ($i);
+    }
 
-  &xst_xml_container_leave ();
+    &xst_xml_container_leave ();
+  }
 
   &xst_xml_print_end ();
 }
@@ -601,6 +611,14 @@ sub filter
   &xml_print ($config);
 }
 
+sub scan
+{
+  my %config;
+
+  $config{"imports"} = &xst_share_scan_network_imports ();
+  &xst_end ();
+  &xml_print (\%config);
+}
 
 # --- Main --- #
 
@@ -608,9 +626,10 @@ sub filter
 # Read general.pl.in:xst_run_directive to know about the format of this hash.
 
 $directives = {
-  "get"    => [ \&get,    [], "" ],
-  "set"    => [ \&set,    [], "" ],
-  "filter" => [ \&filter, [], "" ]
+  "get"    =>       [ \&get,    [], "" ],
+  "set"    =>       [ \&set,    [], "" ],
+  "filter" =>       [ \&filter, [], "" ],
+  "scan_network" => [ \&scan,   [], "Looks for smb or nfs shares in the network." ]
     };
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);

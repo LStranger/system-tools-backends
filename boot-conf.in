@@ -40,7 +40,7 @@
 #
 #
 
-
+BEGIN {
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
@@ -48,6 +48,7 @@ require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/boot.pl";
+}
 
 
 # --- Tool information --- #

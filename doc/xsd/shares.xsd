@@ -23,8 +23,8 @@
 
   <complexType name="sharesType">
     <sequence>
-      <element type="importsType" name="imports"/>
-      <element type="exportsType" name="exports"/>
+      <element type="importsType" name="imports" minOccurs="0"/>
+      <element type="exportsType" name="exports" minOccurs="0"/>
     </sequence>
   </complexType>
 
@@ -53,7 +53,14 @@
     </restriction>
   </complexType>
 
-  <complex
+  <complexType name="exportsType">
+    <sequence>
+      <element type="exportType" name="export" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+
+  <complexType name="exportType">
+  </complexType>
 
 </schema>
         

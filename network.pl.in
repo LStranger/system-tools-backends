@@ -24,6 +24,8 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+use Socket;
+
 
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/file.pl";
@@ -31,6 +33,110 @@ require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
 require "___scriptsdir___/service.pl";
 
+
+# like, &xst_network_lookup_address_block ("132.248.10.2") returns 'dns2.unam.mx'
+# but watch it: it will block until libc timeouts or a result is found. If
+# nothing found, returns the address.
+sub xst_network_lookup_address_block
+{
+  my ($addr) = @_;
+  my $name;
+
+  $name = (gethostbyaddr (pack ('C4', split ('\.', $addr)), AF_INET))[0];
+  return $addr if length ($name) == 0;
+  return $name;
+}
+
+sub xst_network_fork_address_lookup
+{
+  my ($addr) = @_;
+  my $pid;
+  local *PARENT_RDR;
+  local *CHILD_WTR;
+  
+  pipe (PARENT_RDR, CHILD_WTR);
+  
+  $pid = fork ();
+  if ($pid)
+  {
+    # Parent
+    close CHILD_WTR;
+    return {"pid" => $pid, "fd" => *PARENT_RDR, "fileno" => fileno (*PARENT_RDR)};
+  }
+  else
+  {
+    my $name;
+    close PARENT_RDR;
+    # Child
+    $name = &xst_network_lookup_address_block ($addr);
+    print CHILD_WTR "$name";
+    close CHILD_WTR;
+    exit (0);
+  }
+}
+
+# like, &xst_network_lookup_address (10, "132.248.10.2", "132.248.29.8") returns
+# 'dns2.unam.mx', 'sphinx.nuclecu.unam.mx' after 10 seconds, in the worst case.
+# If any of the given addresses is not resolved before timeout, the address will
+# be returned as its name. Timeout of 0 or undef blocks.
+# Timeout may be a decimal (0.5, half a second).
+sub xst_network_lookup_address
+{
+  my ($timeout, @addrs) = @_;
+  my ($addr, $name, @names, $proc, @procs);
+  my ($bits, $bitsleft, $bitsready, $timestamp, $timeleft);
+
+  # Fork a lookup for every address.
+  foreach $addr (@addrs)
+  {
+    $proc = &xst_network_fork_address_lookup ($addr);
+    $$proc{"addr"} = $addr;
+    push @procs, $proc;
+  }
+
+  # Populate a bitmap of the used file descriptors.
+  foreach $proc (@procs)
+  {
+    vec ($bits, $$proc{"fileno"}, 1) = 1;
+  }
+  
+  # Check with timeout which descriptors are ready with info.
+  $timeout = undef if $timeout == 0;
+  $timeleft = $timeout;
+  $bitsleft = $bits;
+  while (($timeout eq undef) || ($timeleft > 0))
+  {
+    $timestamp = time;
+    select ($bitsleft, undef, undef, $timeleft);
+    $timeleft -= time - $timestamp if $timeout ne undef;
+    
+    $bitsready |= $bitsleft;
+    $bitsleft = $bits & (~$bitsready);
+    last if $bitsready eq $bits;
+  }
+  $bits = $bitsready;
+
+  # For every process, if its descriptor bit is on, read info.
+  # Else, populate with the given address. Then kill child and wait for it to die.
+  foreach $proc (@procs)
+  {
+    if (ord ($bits) & 1 << $$proc{"fileno"})
+    {
+      sysread ($$proc{"fd"}, $name, 1024);
+      push @names, $name;
+    }
+    else
+    {
+      push @names, $$proc{"addr"};
+    }
+
+    close $$proc{"fd"};
+    kill 2, $$proc{"pid"};
+    waitpid ($$proc{"pid"}, undef);
+  }
+
+  return @names;
+}
 
 # This code is not under the portable table style because it is supposed to
 # depend on wvdial.

@@ -30,8 +30,11 @@
 # Running programs affected:
 #
 
+
+BEGIN {
 require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/x.pl";
+}
 
 
 # --- Tool information --- #

@@ -50,10 +50,10 @@
 #   hardware types easily.
 
 
-
+BEGIN {
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/xml.pl";
-
+}
 
 
 # --- Tool information --- #

@@ -1,3 +1,13 @@
+2001-07-04  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_lookup_address): Modified
+	function so it can resolve multiple addresses in
+	paralel.
+	(xst_network_fork_address_lookup): Abstracted this
+	process.
+	* *-conf.in: Put require instructions inside a BEGIN
+	block, which make it easier to start debugging the backends.
+
 2001-07-04  Hans Petter Jansson  <hpj@ximian.com>
 
 	* rhprinterdb2xstxml.pl: Added script to translate the RH printerdb to
@@ -16,6 +26,19 @@
 	(x_update_keyword): Quote new values if neccesary.
 	(x_update_keyword): Check that new values have at least
 	on space between.
+
+2001-07-03  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_lookup_address): A nice
+	address lookup routine, with timeout (using fork).
+	(xst_network_lookup_address_block): For those who have
+	a block fetish.
+
+2001-07-02  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* shares-conf.in (xml_print): imports and exports tags
+	only appear if there is info to display. This allows me
+	to reuse it for network scanning.
 
 2001-07-02  Tambet Ingo  <tambet@ximian.com>
 

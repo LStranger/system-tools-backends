@@ -1,3 +1,7 @@
+2001-07-02  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* shares.xsd: imports and exports tags are now optional.
+
 Wed Jun 27 11:16:51 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* xst.xsd: Common types go here.
