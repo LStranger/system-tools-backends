@@ -364,8 +364,7 @@ sub xst_boot_conf_edit_image
       {
         $found++;
         $value = $$image{$key};
-        $value = "\"$value\"" if ($value =~ /[ \t]/);
-        $value = "\"$value\"" if ($key =~ /append/); # Stupid hack to quote append= values.
+        $value = "\"$value\"" if ($value =~ /[ \t]/ && (! ($value =~ /^\".+\"$/)));
 
         $$line = $pre_space . $key . $1 . "=" . $2 . $value . $post_comment . "\n";
         $$line = "# " . $$line if $key eq "XstPartitionType";
@@ -388,7 +387,7 @@ sub xst_boot_conf_edit_image
   foreach $key (keys %$image)
   {
     $value = $$image{$key};
-    $value = "\"$value\"" if ($value =~ /[ \t]/);
+    $value = "\"$value\"" if ($value =~ /[ \t]/ && (! ($value =~ /^\".+\"$/)));
     
     $line = "";
     $line = "# " if $key eq "XstPartitionType";
@@ -425,7 +424,7 @@ sub xst_boot_conf_add_image
   foreach $key (keys %$image)
   {
     $value = $$image{$key};
-    $value = "\"$value\"" if ($value =~ /[ \t]/);
+    $value = "\"$value\"" if ($value =~ /[ \t]/ && (! ($value =~ /^\".+\"$/)));
 
     $line = "";
     $line = "# " if $key eq "XstPartitionType";

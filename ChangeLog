@@ -1,5 +1,10 @@
 Wed Jul 25 03:45:51 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* boot.pl.in (xst_boot_conf_edit_image): Removed append
+	key special case for quoting. Quote values only if they
+	contain spaces and are not already quoted.
+	(xst_boot_conf_add_image): same.
+
 	* replace.pl.in (xst_replace_from_table): If interpolation
 	failed, go to next feature. Failed interpolations return
 	arguments that make no sense.
