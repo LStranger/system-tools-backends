@@ -157,8 +157,8 @@ sub read_passwd
     chomp;      
     @line = split ':';
 		$users_hash{$line[0]} = $i;
-		$i ++;
     push (@users, [@line]);
+		$i ++;
   }
 	
 	close (FILE);
@@ -173,7 +173,7 @@ sub write_passwd
 
 sub xml_print
 {
-  my $key;
+  my ($key, $i);
 
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE users []>\n\n";
@@ -196,6 +196,27 @@ sub xml_print
   &be_xml_indent (); print "<!-- Now the users -->\n";
   &be_xml_vspace ();
 	
+	&be_xml_indent (); print "<userdb>\n";
+	&be_xml_enter ();
+	foreach $i (@users)
+	{
+    &be_xml_vspace ();
+	  &be_xml_indent (); print "<user>\n";
+		&be_xml_enter ();
+		&be_xml_indent (); print "<login>" . $i->[0] . "</login>\n";
+		&be_xml_indent (); print "<uid>" . $i->[2] . "</uid>\n";
+		&be_xml_indent (); print "<gid>" . $i->[3] . "</gid>\n";
+		&be_xml_indent (); print "<comment>" . $i->[4] . "</comment>\n";
+		&be_xml_indent (); print "<home>" . $i->[5] . "</home>\n";
+		&be_xml_indent (); print "<shell>" . $i->[6] . "</shell>\n";
+		&be_xml_leave ();
+		&be_xml_indent (); print "</user>\n";
+	}
+	&be_xml_leave ();
+  &be_xml_vspace ();
+  &be_xml_indent (); print "</userdb>\n";
+	
+  &be_xml_vspace ();
 	&be_xml_leave ();
   print "</users>\n";
 }
