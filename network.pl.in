@@ -31,6 +31,62 @@ require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
 
 
+# This code is not under the portable table style because it is supposed to
+# depend on wvdial.
+sub xst_network_dialing_get
+{
+  my %vars = (
+		    "Modem" => "device",
+		    "Baud" => "speed",
+		    "Init1" => "init1",
+		    "Init2" => "init2",
+		    "Phone" => "phone",
+		    "Username" => "login",
+		    "Password" => "passwd",
+		    "Dial Command" => "dialcmd",
+		    "SetVolume" => "setvol",
+		    "Stupid mode" => "stupid",
+		    "Inherits" => "inherits"
+		    );
+  my ($file) = @_;
+  my %ret, @sections;
+  my $i, $j, $name, $val;
+
+  &xst_run ("wvdialconf $file") if (!-e $file);
+  
+  @sections = &xst_parse_ini_sections ($file);
+  foreach $i (@sections)
+  {
+    my %hash;
+    
+    if ($i =~ /^Dialer (.*)$/)
+    {
+	 $name = $1;
+	 $hash{"type"} = "dialer";
+    }
+    elsif ($i =~ /^Modem(.*)$/)
+    {
+	 $name = $1;
+	 $hash{"type"} = "modem";
+    }
+    else
+    {
+	 $name = $i;
+	 $hash{"type"} = "unknown";
+    }
+
+    $ret{$name} = \%hash;
+
+    foreach $j (keys %vars)
+    {
+	 $val = &xst_parse_ini ($file, $i, $j);
+	 $hash{$j} = $val if ($val ne undef);
+    }
+  }
+
+  return \%ret;
+}
+
 sub xst_network_active_interfaces_get
 {
   local *IFCONFIG;
@@ -296,39 +352,40 @@ sub xst_network_get_parse_table
 	  );
 
   my %dist_tables =
-  (
-    "redhat-6.2" =>
-    {
-      fn =>
-      {
-        SYSCONFIG_NW => "/etc/sysconfig/network",
-        RESOLV_CONF  => "/etc/resolv.conf",
-        HOST_CONF    => "/etc/host.conf",
-        HOSTS        => "/etc/hosts",
-        SMB_CONF     => "/etc/smb.conf"
-      },
-      table =>
-      [
-        [ auto,          \&xst_parse_sh_bool,           SYSCONFIG_NW, NETWORKING ],
-        [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
-        [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
-        [ gateway,       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY],
-        [ gateway_dev,   \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
-        [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
-        [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-        [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-        [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-        [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-        [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
-        [ statichost,    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-        [ workgroup,     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
-        [ description,   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
-        [ winsserver,    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
-        [ interface,     \&xst_network_interfaces_get ]
-      ]
-    }
-  );
-
+	 (
+	  "redhat-6.2" =>
+	  {
+	    fn =>
+	    {
+		 SYSCONFIG_NW => "/etc/sysconfig/network",
+		 RESOLV_CONF  => "/etc/resolv.conf",
+		 HOST_CONF    => "/etc/host.conf",
+		 HOSTS        => "/etc/hosts",
+		 SMB_CONF     => "/etc/smb.conf",
+		 WVDIAL       => "/etc/wvdial.conf" },
+	    table =>
+		   [
+		    [ auto,          \&xst_parse_sh_bool,           SYSCONFIG_NW, NETWORKING ],
+		    [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
+		    [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
+		    [ gateway,       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY],
+		    [ gateway_dev,   \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
+		    [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
+		    [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
+		    [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
+		    [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
+		    [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
+		    [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
+		    [ statichost,    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+		    [ workgroup,     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+		    [ description,   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+		    [ winsserver,    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+		    [ dialing,       \&xst_network_dialing_get,     WVDIAL ],
+		    [ interface,     \&xst_network_interfaces_get ]
+		    ]
+			 }
+	  );
+  
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
@@ -465,7 +522,8 @@ sub xst_network_get_interface_replace_table
 	    {
         IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
         CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
-        IFACE => "#iface#"
+        IFACE => "#iface#",
+	   WVDIAL => "/etc/wvdial.conf"
       },
       table =>
       [

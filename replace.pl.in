@@ -288,33 +288,33 @@ sub xst_replace_ini
     
     if ($i ne "")
     {
-	 if ($i =~ /\[[ \t]*$section[ \t]*\]/i)
-	 {
-	   $i =~ s/(\[[ \t]*$section[ \t]*\][ \t]*)//i;
-	   $sec_save = $1;
-	   $found_flag = 1;
-	 }
+      if ($i =~ /\[$section\]/i)
+      {
+        $i =~ s/(\[$section\][ \t]*)//i;
+        $sec_save = $1;
+        $found_flag = 1;
+      }
 
-	 if ($found_flag)
-	 {
-	   if ($i =~ /\[[ \t]*[^ \t\]]+[ \t]*\]/)
-	   {
-		$i = "$var = $value\n$i";
-		$found_flag = 2;
-	   }
-
-	   if ($found_flag && $i =~ /^$var[ \t]*=/i)
-	   {
-		$i =~ s/^($var[ \t]*=[ \t]*).*/\1$value/i;
-		$found_flag = 2;
-	   }
-	 }
+      if ($found_flag)
+      {
+        if ($i =~ /\[[^\]]+\]/)
+        {
+          $i = "$var = $value\n$i";
+          $found_flag = 2;
+        }
+        
+        if ($found_flag && $i =~ /^$var[ \t]*=/i)
+        {
+          $i =~ s/^($var[ \t]*=[ \t]*).*/\1$value/i;
+          $found_flag = 2;
+        }
+      }
     }
-
+    
     if ($found_flag && $sec_save ne "")
     {
-	 $i = $sec_save . $i;
-	 $sec_save = "";
+      $i = $sec_save . $i;
+      $sec_save = "";
     }
     
     $i = $pre_space . $i . $post_comment . "\n";
@@ -326,7 +326,7 @@ sub xst_replace_ini
     push @$buff, "[$section]\n";
     push @$buff, "$var = $value\n";
   }
-
+  
   &xst_buffer_clean ($buff);
   return &xst_buffer_save ($buff, $file);
 }

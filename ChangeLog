@@ -17,6 +17,9 @@
 	* network.pl.in: almost finished, lots of bug fixes. added bootproto support.
 	* replace.pl.in: xst_replace_chat implemented.
 	* network.pl.in, replace.pl.in: fixed conflicts with new general function namings.
+	* network.pl.in: wvdialer parsing support. Minor indentation fix.
+	* parse.pl.in: fix to ini parser and new parser to get ini sections.
+	* replace.pl.in: similar fix to ini replacer, and minor indentation fix.
 	
 2001-02-08  Hans Petter Jansson  <hpj@ximian.com>
 

@@ -255,6 +255,24 @@ sub xst_parse_ini_line_read
   return $l;
 }
 
+sub xst_parse_ini_sections
+{
+  my ($file) = @_;
+  my @sections;
+
+  $fd = &xst_open_read_from_names ($file);
+  
+  while (($_ = &xst_parse_ini_line_read ($fd)) != -1)
+  {
+    next if (/^$/);
+    push @sections, $1 if (/\[([^\]]+)\]/i);
+  }
+
+  close $fd;
+
+  return @sections;
+}
+
 sub xst_parse_ini
 {
   my ($file, $section, $var) = @_;
@@ -267,9 +285,9 @@ sub xst_parse_ini
   while (($_ = &xst_parse_ini_line_read ($fd)) != -1)
   {
     next if (/^$/);
-    if (/\[[ \t]*$section[ \t]*\]/i)
+    if (/\[$section\]/i)
     {
-      s/\[[ \t]*$section[ \t]*\][ \t]*//i;
+      s/\[$section\][ \t]*//i;
       $found_section_flag = 1;
     }
 
@@ -285,4 +303,3 @@ sub xst_parse_ini
 
   return $res;
 }
-
