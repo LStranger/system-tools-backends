@@ -571,7 +571,7 @@ sub gst_network_linux_interfaces_get_info
   &gst_report_enter ();
   &gst_report ("network_iface_active_get");
 
-  $fd = &gst_file_run_pipe_read ("env LANG=C ifconfig -a");
+  $fd = &gst_file_run_pipe_read ("ifconfig -a");
   return {} if $fd eq undef;
   
   while (<$fd>)
@@ -620,7 +620,7 @@ sub gst_network_active_interfaces_get
   &gst_report_enter ();
   &gst_report ("network_iface_active_get");
 
-  $fd = &gst_file_run_pipe_read ("env LANG=C ifconfig");
+  $fd = &gst_file_run_pipe_read ("ifconfig");
   return undef if $fd eq undef;
   
   while (<$fd>)

@@ -1,3 +1,8 @@
+2004-08-20  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: removed those LANG=C when running ifconfig
+	this is set internally in the function
+
 2004-08-20  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Release 0.91.0
