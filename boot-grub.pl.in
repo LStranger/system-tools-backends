@@ -292,14 +292,29 @@ sub gst_boot_grub_linux2grub
     }
   }
   close $fd;
-  
+
   if ($res eq undef)
   {
+    # ok, the device doesn't exist in device.map, try to guess it
     &gst_report ("boot_grub_convert_failed", $dev);
-    return undef;
+
+    if ($drive =~ /(fd.|hd.)/)
+    {
+      $res = "hd0" if $drive eq "hda";
+      $res = "hd1" if $drive eq "hdb";
+      $res = "hd2" if $drive eq "hdc";
+      $res = "hd3" if $drive eq "hdd";
+      $res = $drive if $drive =~ /fd[0-9]/;
+    }
+    else
+    {
+      # no way, the entry will be broken
+      return undef;
+    }
   }
 
   $res .= ",$part" if $part ne undef;
+
   return $res;
 }
 
@@ -309,6 +324,22 @@ sub gst_boot_grub_grub2linux
   ($drive, $part, @add) = split (',', $grubdev);
   
   $dev = &gst_parse_split_first_str ($device_map, "\\($drive\\)", "[ \t]+");
+
+  if ($dev eq undef)
+  {
+    # ok, the device doesn't exist in devices.map, we'll have to guess it
+    if ($drive =~ /fd[0-9]/)
+    {
+      $dev = "/dev/" . $drive;
+    }
+    else
+    {
+      $dev = "/dev/hda" if $drive eq "hd0";
+      $dev = "/dev/hdb" if $drive eq "hd1";
+      $dev = "/dev/hdc" if $drive eq "hd2";
+      $dev = "/dev/hdd" if $drive eq "hd3";
+    }
+  }
 
   $dev .= $part + 1 if $part ne undef;
   return $dev;
