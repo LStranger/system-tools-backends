@@ -273,7 +273,7 @@ sub xst_boot_conf_replace_image
   my ($file, %image) = @_;
   my $buff, $i, $found;
   my $pre_space, $post_comment;
-  my @line, $key, $op;
+  my @line, $key, $op, $txt;
 
   $buff = &xst_buffer_load ($file);
   &xst_buffer_join_lines ($buff);
@@ -298,8 +298,13 @@ sub xst_boot_conf_replace_image
       $found++;
       foreach $key (keys %image)
       {
-        $i = "\t$key=$image{$key}\n" . $i if $image{$key};
-        $i = "\t$key\n" . $i unless $image{$key};
+        $txt = "$key\n" unless $image{$key};
+        $txt = "$key = $image{$key}\n" if $image{$key};
+        
+        if ($key eq "XstPartitionType") { $txt = "\t# " . $txt; }
+        else { $txt = "\t". $txt; }
+
+        $i = $txt . $i;
       }
     }
     
@@ -345,7 +350,21 @@ sub xst_boot_conf_replace_image
     }
   }
 
-  if (!$found) # We didn't find image, lets add it to the end of file.
+  if (keys %image && $found) #end of file reached, let's add pending tags.
+  {
+    foreach $key (keys %image)
+    {
+      $i = "$key\n" unless $image{$key};
+      $i = "$key = $image{$key}\n" if $image{$key};
+
+      if ($key eq "XstPartitionType") { $i = "\t# " . $i; }
+      else { $i = "\t". $i; }
+      
+      push @$buff, $i;
+    }
+  }
+
+  elsif (!$found) # We didn't find image, lets add it to the end of file.
   {
     push @$buff, "\n$name=$image{$name}\n";
     delete $image{$name};
