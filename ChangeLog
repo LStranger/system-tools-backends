@@ -1,5 +1,7 @@
 2001-09-19  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* Makefile.am (backends): Process runlevel-conf instead of sysv-conf.
+
 	* sysv-conf.in -> runlevel-conf.in: Hans Petter said he didn't
 	like the name, and I didn't like it either.
 

@@ -10,8 +10,8 @@ backends = \
 	network-conf         \
 	package-conf         \
 	print-conf           \
+	runlevel-conf        \
 	shares-conf          \
-	sysv-conf            \
 	time-conf            \
 	users-conf
 
