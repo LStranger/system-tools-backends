@@ -50,6 +50,7 @@ $PLATFORM_INFO = {
   "redhat-7.2"      => "Red Hat Linux 7.2 Enigma",
   "redhat-7.3"      => "Red Hat Linux 7.3 Valhalla",
   "redhat-8.0"      => "Red Hat Linux 8.0 Psyche",
+  "redhat-9"        => "Red Hat Linux 9.0 Shrike",
   "mandrake-7.1"    => "Linux Mandrake 7.1",
   "mandrake-7.2"    => "Linux Mandrake 7.2 Odyssey",
   "mandrake-8.0"    => "Linux Mandrake 8.0 Traktopel",

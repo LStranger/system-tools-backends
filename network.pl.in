@@ -69,7 +69,7 @@ sub gst_network_xml_parse_interface
   my (%hash, $dev, $elem);
 
   shift @$tree;
-  
+
   while ($elem = shift @$tree)
   {
     $hash{$elem} = &gst_xml_get_pcdata (shift @$tree);
@@ -158,7 +158,7 @@ sub gst_network_get_broadcast_ping_cmd
        "redhat-7.1"   => "redhat-6.2",
        "redhat-7.2"   => "redhat-6.2",
        "redhat-8.0"   => "redhat-6.2",
-       "redhat-9.0"   => "redhat-6.2",
+       "redhat-9"     => "redhat-6.2",
        "debian-2.2"   => "debian-2.2",
        "debian-woody" => "debian-2.2",
        "debian-sarge" => "debian-2.2",
@@ -1002,9 +1002,7 @@ sub gst_network_rh72_get_file
   my ($iface) = @_;
   my ($pre, $i, $dev);
 
-  $dev = $$iface{"name"};
-  $dev =~ s/[^\w]//g;
-  $dev = $$iface{"dev"} if $dev eq "";
+  $dev = $$iface{"dev"};  
   $pre = "$gst_prefix/etc/sysconfig/networking/devices/ifcfg-";
   
   return $dev if ! -e "$pre$dev";
@@ -1066,7 +1064,7 @@ sub gst_network_get_file
 	  "redhat-7.1"   => \&gst_network_rh62_get_file,
 	  "redhat-7.2"   => \&gst_network_rh72_get_file,
     "redhat-8.0"   => \&gst_network_rh72_get_file,
-    "redhat-9.0"   => \&gst_network_rh72_get_file,
+    "redhat-9"     => \&gst_network_rh72_get_file,
 	  "mandrake-7.2" => \&gst_network_rh62_get_file,
 		"mandrake-7.1" => \&gst_network_rh62_get_file,
     "debian-2.2"   => \&gst_network_deb22_get_file,
@@ -1496,7 +1494,7 @@ sub gst_network_interface_set
   {
     $ {$dist_attrib{"fn"}}{$i} = &gst_parse_expand ($fn{$i}, "iface", $dev);
   }
-  
+
   $res = &gst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
                                   $values_hash, $old_hash);
   
@@ -1527,6 +1525,7 @@ sub gst_network_interfaces_set
 
   # Delete all old interfaces that are not in the hash.
   $proc = $dist_attrib{"iface_delete"};
+
   foreach $i (keys %$old_hash)
   {
     &$proc ($$old_hash{$i}) if not exists $$values_hash{$i};
@@ -2120,7 +2119,7 @@ sub gst_network_ensure_loopback_interface
 	  "redhat-7.1"   => "lo",
 	  "redhat-7.2"   => "lo",
     "redhat-8.0"   => "lo",
-    "redhat-9.0"   => "lo",
+    "redhat-9"     => "",
 	  "mandrake-7.1" => "lo",
 	  "mandrake-7.2" => "lo",
 	  "debian-2.2"   => "lo",
@@ -2221,7 +2220,7 @@ sub gst_network_get_parse_table
 	  "redhat-7.1"   => "redhat-7.0",
 	  "redhat-7.2"   => "redhat-7.2",
     "redhat-8.0"   => "redhat-7.2",
-    "redhat-9.0"   => "redhat-7.2",
+    "redhat-9"     => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
@@ -2482,7 +2481,7 @@ sub gst_network_get_interface_parse_table
 	  "redhat-7.1"   => "redhat-6.2",
 	  "redhat-7.2"   => "redhat-7.2",
     "redhat-8.0"   => "redhat-7.2",
-    "redhat-9.0"   => "redhat-7.2",
+    "redhat-9"     => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
     "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
@@ -2802,7 +2801,7 @@ sub gst_network_get_replace_table
 	  "redhat-7.1"   => "redhat-7.0",
 	  "redhat-7.2"   => "redhat-7.2",
     "redhat-8.0"   => "redhat-7.2",
-    "redhat-9.0"   => "redhat-7.2",
+    "redhat-9"     => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
@@ -3056,7 +3055,7 @@ sub gst_network_get_interface_replace_table
 	  "redhat-7.1"   => "redhat-6.2",
 	  "redhat-7.2"   => "redhat-7.2",
     "redhat-8.0"   => "redhat-7.2",
-    "redhat-9.0"   => "redhat-7.2",
+    "redhat-9"     => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
     "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
@@ -3162,7 +3161,7 @@ sub gst_network_get_interface_replace_table
         [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
       ]
     },
-
+   
     "debian-2.2" =>
 	  {
       iface_set    => \&gst_network_rh62_interface_activate, # They use the same ifup/ifdown cmds.

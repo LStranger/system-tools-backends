@@ -1,3 +1,16 @@
+2003-06-25  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network-conf.in, network.pl.in, platform.pl.in, runlevel-conf.in,
+	service.pl.in, time-conf.in, users-conf.in: s/redhat\-9\.0/redhat\-9/,
+	because it's in this way in /etc/redhat-release, there won't appear
+	the distro selection window anymore in redhat9 :-P
+	* network.pl.in: (gst_network_ensure_loopback_interface): removed
+	loobpack in redhat9, it isn't really neccesary (I'm even thinking about
+	removing loopback support at all in GST) and broke the redhat network
+	tool. Fixes #114044
+	(gst_network_rh72_get_file): made it to create the interface filename
+	with the "dev" tag instead of the "name" tag (for RH >=7.2)
+
 2003-06-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network.pl.in: added the possibility of dialing to an external line
