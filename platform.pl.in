@@ -53,6 +53,7 @@ $PLATFORM_INFO = {
   "mandrake-7.1"    => "Linux Mandrake 7.1",
   "mandrake-7.2"    => "Linux Mandrake 7.2 Odyssey",
   "mandrake-8.0"    => "Linux Mandrake 8.0 Traktopel",
+  "mandrake-9.1"    => "Mandrake Linux 9.1 Dolphin",
   "suse-7.0"        => "SuSE Linux 7.0",
   "turbolinux-7.0"  => "Turbolinux 7.0",
   "slackware-8.0.0" => "Slackware 8.0.0",
@@ -69,8 +70,10 @@ sub check_lsb
   my ($ver, $dist);
   my %vermap =
       ("3.0" => "woody");
+  
   my %distmap =
-      ("Debian" => "debian");
+      ("Debian" => "debian"),
+      ("Mandrake" => "mandrake");
 
   # gst_prefix not required here: parse already does that for us.
   $dist = lc (&gst_parse_sh ("/etc/lsb-release", "DISTRIB_ID"));
@@ -150,14 +153,19 @@ sub check_suse
   return -1;
 }
 
-
 sub check_mandrake
 {
   open MANDRAKE, "$gst_prefix/etc/mandrake-release" or return -1;
   while (<MANDRAKE>)
   {
-    chomp;
-    if (/^Linux Mandrake release (\S+)/)
+    $ver = $_;
+    chomp ($ver);
+    if ($ver =~ /^Linux Mandrake release (\S+)/)
+    {
+      close MANDRAKE;
+      return "mandrake-$1";
+    }
+    elsif ($ver =~ /^Mandrake Linux release ([0-9\.]+)/)
     {
       close MANDRAKE;
       return "mandrake-$1";
@@ -166,7 +174,6 @@ sub check_mandrake
   close MANDRAKE;
   return -1;
 }
-
 
 sub check_turbolinux
 {

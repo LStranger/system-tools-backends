@@ -70,7 +70,7 @@ $name = "users";
 $version = "___version___";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0", "redhat-7.1",
               "redhat-7.2", "redhat-7.3", "redhat-8.0", "redhat-9.0",
-              "mandrake-7.1", "mandrake-7.2",
+              "mandrake-7.1", "mandrake-7.2", "mandrake-9.1",
               "debian-2.2", "debian-woody", "debian-sarge",
               "suse-7.0", "turbolinux-7.0",
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0",
@@ -228,6 +228,7 @@ my $logindefs_dist_map = {
   'redhat-9.0'      => $rh_logindefs_defaults,
   'mandrake-7.1'    => $rh_logindefs_defaults,
   'mandrake-7.2'    => $rh_logindefs_defaults,
+  'mandrake-9.1'    => $rh_logindefs_defaults,
   'pld-1.0'         => $rh_logindefs_defaults,
   'debian-2.2'      => $rh_logindefs_defaults,
   'debian-woody'    => $rh_logindefs_defaults,

@@ -1,3 +1,8 @@
+2003-05-30  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* platform.pl.in, runlevel-conf.in, service.pl.in, time-conf.in,
+	users-conf.in: added mandrake 9.1 support, patch by Frej Rasmussen
+
 2003-05-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* runlevel-conf.in, service.pl.in, users-conf.in, time-conf.in,
