@@ -854,4 +854,11 @@ sub gst_file_tool_installed
   return 1;
 }
 
+sub gst_file_copy
+{
+  my ($orig, $dest) = @_;
+
+  copy ("$gst_prefix/$orig", "$gst_prefix/$dest");
+}
+
 1;

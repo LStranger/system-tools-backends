@@ -786,7 +786,7 @@ sub conf_get_replace_table
           [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
           [ "local_time",   \&time_set_local_time ],
           [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-          [ "sync_active",  \&gst_service_gentoo_set_status, "ntpd", "%sync_active%" ],
+          [ "sync_active",  \&gst_service_gentoo_set_status, "ntpd", 1, "%sync_active%" ],
           ]
         },
        );

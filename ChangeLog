@@ -1,3 +1,12 @@
+2004-04-05  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* file.pl.in (gst_file_copy): added
+	* service.pl.in (gst_service_gentoo_get_service_status): added.
+	  (gst_service_gentoo_set_status): added a $force var for 
+	  forcing the starting or stopping of the service
+	* time-conf.in: updated gst_service_gentoo_set_status() use
+	* network.pl.in: added PPP support for gentoo
+
 2004-04-04  Christian Rose  <menthos@menthos.com>
 
 	* configure.in: Added "sv" to ALL_LINGUAS.

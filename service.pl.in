@@ -757,6 +757,19 @@ sub gst_service_bsd_get_services
 }
 
 # these functions get a list of the services that run on a gentoo init
+sub gst_service_gentoo_get_service_status
+{
+  my ($script, $runlevel) = @_;
+  my ($services) = &gst_service_gentoo_get_services_by_runlevel ($runlevel);
+
+  foreach $i (@$services)
+  {
+    return 1 if ($i eq $script);
+  }
+
+  return 0;
+}
+
 sub gst_service_gentoo_get_runlevels
 {
   my($raw_output) = gst_file_run_backtick("rc-status -l");
@@ -809,7 +822,7 @@ sub gst_service_gentoo_get_runlevels_by_service
   my(@runlevels,@services_in_runlevel,@contain_runlevels, $runlevel);
   my ($elem);
 
-  # let's do some catching to improve performance
+  # let's do some caching to improve performance
   if ($gentoo_services_hash eq undef)
   {
     @runlevels = &gst_service_gentoo_get_runlevels ();
@@ -1484,17 +1497,17 @@ sub gst_service_bsd_set_status
 
 sub gst_service_gentoo_set_status
 {
-  my ($script, $active) = @_;
+  my ($script, $force_now, $active) = @_;
   my (@arr);
 
   if ($active)
   {
     &gst_file_run ("rc-update add $script default");
-    &gst_file_run ("/etc/init.d/$script start");
+    &gst_file_run ("/etc/init.d/$script start") if ($force_now == 1);
   }
   else
   {
     &gst_file_run ("rc-update del $script default");
-    &gst_file_run ("/etc/init.d/$script stop");
+    &gst_file_run ("/etc/init.d/$script stop") if ($force_now == 1);
   }
 }

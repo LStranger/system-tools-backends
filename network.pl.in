@@ -672,7 +672,7 @@ sub gst_network_slackware91_ifaces_get_existing
 sub gst_network_gentoo_ifaces_get_existing
 {
   my $file = "/etc/conf.d/net";
-  my ($fd, $i, @ret);
+  my ($fd, $i, @ret, $ppp);
 
   $fd = &gst_file_open_read_from_names ($file);
   return @ret if !$fd;
@@ -683,6 +683,13 @@ sub gst_network_gentoo_ifaces_get_existing
     {
       push @ret, $1;
     }
+  }
+
+  #now the PPP ifaces
+  foreach $ppp (</etc/conf.d/net.*>)
+  {
+    $ppp =~ s#^/etc/conf.d/net\.##;
+    push @ret, $ppp if ($ppp =~ /^ppp[0-9]$/);
   }
 
   return @ret;
@@ -1061,6 +1068,19 @@ sub gst_network_get_modem_volume
 
   $volume =~ s/^[ml]//i;
   return $volume;
+}
+
+sub gst_network_set_modem_volume_string
+{
+  my ($file, $key, $volume) = @_;
+  my ($vol);
+
+  if    ($volume == 0) { $vol = "ATM0" }
+  elsif ($volume == 1) { $vol = "ATL1" }
+  elsif ($volume == 2) { $vol = "ATL2" }
+  else                 { $vol = "ATL3" }
+
+  return &gst_replace_sh ($file, $key, $vol);
 }
 
 sub gst_network_set_modem_volume
@@ -1693,12 +1713,25 @@ sub gst_network_slackware91_interface_delete
 sub gst_network_gentoo_interface_delete
 {
   my ($old_hash) = @_;
-  my ($netconf) = "$gst_prefix/etc/conf.d/net";
   my ($dev) = $$old_hash {"dev"};
   my ($gateway) = $$old_hash {"gateway"};
+  my ($initfile) = "$gst_prefix/etc/init.d/net.$dev";
+  my ($netconf);
 
-  &gst_replace_sh ($netconf, "gateway", "") if ($gateway ne undef);
-  &gst_replace_sh ($netconf, "iface_$dev", "");
+  # bring down the interface and remove from init
+  &gst_service_gentoo_set_status ($initfile, 1, 0);
+
+  if ($dev =~ /^ppp/)
+  {
+    $netconf = "/etc/conf.d/net.$dev";
+    gst_file_remove ($netconf);
+  }
+  else
+  {
+    $netconf = "/etc/conf.d/net";
+    &gst_replace_sh ($netconf, "gateway", "") if ($gateway ne undef);
+    &gst_replace_sh ($netconf, "iface_$dev", "");
+  }
 }
 
 sub gst_network_interface_changed
@@ -2197,6 +2230,8 @@ sub gst_network_gentoo_replace_bootproto
 {
   my ($file, $dev, $value) = @_;
 
+  return if ($dev =~ /^ppp/);
+
   return &gst_replace_split ($file, "iface_$dev", "[ \t]*=[ \t]*", "\"dhcp\"") if ($value ne "none");
 
   # replace with a fake IP address, I know it's a hack
@@ -2564,6 +2599,30 @@ sub gst_network_check_iface
   {
     &$func (@_);
   }
+}
+
+# creates files neccesary for gentoo ifaces
+sub gst_network_gentoo_create_files
+{
+  my ($dev) = @_;
+  my ($init) = "/etc/init.d/net.$dev";
+  my ($conf) = "/etc/conf.d/net.$dev";
+  my ($backup) = "/etc/conf.d/net.ppp0.gstbackup";
+
+  if ($dev =~ /ppp/)
+  {
+    &gst_file_copy ("/etc/init.d/net.ppp0", $init) if (!&gst_file_exists ($init));
+
+    # backup the ppp config file
+    &gst_file_copy ("/etc/conf.d/net.ppp0", $backup) if (!&gst_file_exists ($backup));
+    &gst_file_copy ($backup, $conf) if (!&gst_file_exists ($conf));
+  }
+  else
+  {
+    &gst_file_copy ("/etc/init.d/net.eth0", $init) if (!&gst_file_exists ($init));
+  }
+
+  chmod 0755, "$gst_prefix/$init";
 }
 
 # Set dist_map for your distro to "" if you don't want
@@ -2998,6 +3057,9 @@ sub gst_network_get_parse_table
        [ "smbdesc",       \&gst_network_rh_get_smb_desc,             SMB_CONF,     "global", "server string", "%hostname%" ],
        [ "winsserver",    \&gst_parse_ini,                           SMB_CONF,     "global", "wins server" ],
        [ "winsuse",       \&gst_parse_ini_bool,                      SMB_CONF,     "global", "wins support" ],
+       [ "smbuse",        \&gst_service_gentoo_get_status,           "samba" ],
+       [ "smbinstalled",  \&gst_service_installed,                   "samba" ],
+       [ "dialinstalled", \&gst_parse_trivial, 1 ],
        [ "gatewaydev",    \&gst_parse_sh_re,                         NET, gateway, "^(.*)\/" ],
        [ "gateway",       \&gst_parse_sh_re,                         NET, gateway, "^.*\/([0-9\.]*)\$" ],
        [ "interface",     \&gst_network_interfaces_get ],
@@ -3496,12 +3558,14 @@ sub gst_network_get_interface_parse_table
       fn =>
       {
         NET          => "/etc/conf.d/net",
-        INIT         => "/etc/init.d/net.#iface#",
+        PPPNET       => "/etc/conf.d/net.#iface#",
+        INIT         => "net.#iface#",
         IFACE        => "#iface#",
+        WIRELESS     => "/etc/pcmcia/wireless.opts",
       },
       table =>
       [
-       [ "auto",               \&gst_file_exists,                    INIT ],
+       [ "auto",               \&gst_service_gentoo_get_service_status, INIT, "default" ],
        [ "user",               \&gst_parse_trivial,                  0 ], # not supported.
        [ "dev",                \&gst_parse_trivial,                  IFACE ],
        [ "address",            \&gst_parse_sh_re,                    NET, "iface_%dev%", "^[ \t]*([0-9\.]+)" ],
@@ -3509,7 +3573,25 @@ sub gst_network_get_interface_parse_table
        [ "remote_address",     \&gst_parse_sh_re,                    NET, "iface_%dev%", "dest_address[ \t]+([0-9\.]*)" ],
        [ "gateway",            \&gst_parse_sh_re,                    NET, "gateway", "%dev%/([0-9\.\:]*)" ],
        [ "enabled",            \&gst_network_interface_active,       IFACE, \&gst_network_active_interfaces_get ],
-       [ "bootproto",          \&gst_network_gentoo_parse_bootproto, [ NET, IFACE ]]
+       [ "bootproto",          \&gst_network_gentoo_parse_bootproto, [ NET, IFACE ]],
+       [ "essid",              \&gst_parse_wireless_opts,            [ WIRELESS, IFACE], \&gst_network_get_wireless_ifaces, ESSID ],
+       # modem stuff
+       [ "update_dns",         \&gst_parse_sh_bool,                  PPPNET, PEERDNS ],
+       [ "mtu",                \&gst_parse_sh,                       PPPNET, MTU ],
+       [ "mru",                \&gst_parse_sh,                       PPPNET, MRU ],
+       [ "serial_port",        \&gst_parse_sh,                       PPPNET, MODEMPORT ],
+       [ "serial_speed",       \&gst_parse_sh,                       PPPNET, LINESPEED ],
+       [ "login",              \&gst_parse_sh,                       PPPNET, USERNAME ],
+       [ "password",           \&gst_parse_sh,                       PPPNET, PASSWORD ],
+       [ "ppp_options",        \&gst_parse_sh,                       PPPNET, PPPOPTIONS ],
+       [ "set_default_gw",     \&gst_parse_sh_bool,                  PPPNET, DEFROUTE ],
+       [ "debug",              \&gst_parse_sh_bool,                  PPPNET, DEBUG ],
+       [ "persist",            \&gst_parse_sh_bool,                  PPPNET, PERSIST ],
+       [ "serial_escapechars", \&gst_parse_sh_bool,                  PPPNET, ESCAPECHARS ],
+       [ "serial_hwctl",       \&gst_parse_sh_bool,                  PPPNET, HARDFLOWCTL ],
+       [ "external_line",      \&gst_parse_sh_re,                    PPPNET, NUMBER, "^([0-9]*)w" ],
+       [ "phone_number",       \&gst_parse_sh_re,                    PPPNET, NUMBER, "w?([0-9]*)\$" ],
+       [ "volume",             \&gst_parse_sh_re,                    PPPNET, INITSTRING, "^at.*[ml]([0-3])" ],
       ]
     }
 	  );
@@ -4304,17 +4386,39 @@ sub gst_network_get_interface_replace_table
      fn =>
      {
        NET          => "/etc/conf.d/net",
-       INIT         => "/etc/init.d/net.#iface#",
+       PPPNET       => "/etc/conf.d/net.#iface#",
+       INIT         => "net.#iface#",
        IFACE        => "#iface#",
+       WIRELESS     => "/etc/pcmcia/wireless.opts",
      },
      table =>
      [
-      [ "auto",               \&gst_file_exists,                      INIT ],
+      [ "dev",                \&gst_network_gentoo_create_files ],
+      [ "auto",               \&gst_service_gentoo_set_status,        INIT , 0 ],
       [ "bootproto",          \&gst_network_gentoo_replace_bootproto, [ NET, IFACE ]],
       [ "address",            \&gst_replace_sh_re,                    NET, "iface_%dev%", "^[ \t]*([0-9\.]+)" ],
       [ "netmask",            \&gst_replace_sh_re,                    NET, "iface_%dev%", "[ \t]+netmask[ \t]+[0-9\.]*", " netmask %netmask%"],
       [ "broadcast",          \&gst_replace_sh_re,                    NET, "iface_%dev%", "[ \t]+broadcast[ \t]+[0-9\.]*", " broadcast %broadcast%" ],
       [ "remote_address",     \&gst_replace_sh_re,                    NET, "iface_%dev%", "[ \t]+dest_address[ \t]+[0-9\.]*", " dest_address %remote_address%" ],
+      [ "essid",              \&gst_replace_wireless_opts,            [ WIRELESS, IFACE ], \&gst_network_get_wireless_ifaces, ESSID ],
+      # modem stuff
+      [ "dev",                \&gst_network_check_iface,              [ IFACE, "ppp", \&gst_replace_sh, PPPNET, PEER ]],
+      [ "update_dns",         \&gst_replace_sh_bool,                  PPPNET, PEERDNS ],
+      [ "mtu",                \&gst_replace_sh,                       PPPNET, MTU ],
+      [ "mru",                \&gst_replace_sh,                       PPPNET, MRU ],
+      [ "serial_port",        \&gst_replace_sh,                       PPPNET, MODEMPORT ],
+      [ "serial_speed",       \&gst_replace_sh,                       PPPNET, LINESPEED ],
+      [ "login",              \&gst_replace_sh,                       PPPNET, USERNAME ],
+      [ "password",           \&gst_replace_sh,                       PPPNET, PASSWORD ],
+      [ "ppp_options",        \&gst_replace_sh,                       PPPNET, PPPOPTIONS ],
+      [ "set_default_gw",     \&gst_replace_sh_bool,                  PPPNET, DEFROUTE ],
+      [ "debug",              \&gst_replace_sh_bool,                  PPPNET, DEBUG ],
+      [ "persist",            \&gst_replace_sh_bool,                  PPPNET, PERSIST ],
+      [ "serial_escapechars", \&gst_replace_sh_bool,                  PPPNET, ESCAPECHARS ],
+      [ "serial_hwctl",       \&gst_replace_sh_bool,                  PPPNET, HARDFLOWCTL ],
+      [ "phone_number",       \&gst_replace_sh,                       PPPNET, NUMBER ],
+      [ "external_line",      \&gst_replace_sh,                       PPPNET, NUMBER, "%external_line%W%phone_number%" ],
+      [ "volume",             \&gst_network_set_modem_volume_string,  PPPNET, INITSTRING ],
      ]
     }
   );
