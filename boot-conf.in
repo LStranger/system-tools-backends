@@ -125,7 +125,7 @@ sub xml_parse_boot
     elsif ($elem eq "pixmap")    { $$hash{"pixmap"}    = &xst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "pixmapsup") { $$hash{"pixmapsup"} = &xst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "entry")     { &xml_parse_entry (shift @$tree, \@entries); }
-    elsif ($elem eq "partition") { shift @$tree; } # Just skip it.
+    elsif ($elem eq "partitions") { shift @$tree; } # Just skip it.
     else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
@@ -158,8 +158,8 @@ sub xml_print
 
   &xst_xml_print_begin ();
 
-#  &xst_xml_print_hash_hash ($$h{"partition"}, "partition");
-#  &xst_xml_print_vspace ();
+  &xst_xml_print_hash ($$h{"partitions"}, "partitions");
+  &xst_xml_print_vspace ();
   &xst_xml_print_scalars ($h, @scalars);
   &xst_xml_print_structure ($$h{"entry"}, "entry");
 

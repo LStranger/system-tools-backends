@@ -226,14 +226,14 @@ sub xst_boot_conf_get
          },
          table =>
              [
-              [ "partition", \&xst_partition_scan_info ],
+              [ "partitions", \&xst_partition_scan_info ],
 #              [ "pixmapsup", \&xst_parse_trivial,             0 ],
               [ "timeout",   \&xst_boot_lilo_parse_global,    LILO_CONF, "delay" ],
               [ "prompt",    \&xst_boot_lilo_parse_global_kw, LILO_CONF, "prompt"  ],
               [ "default",   \&xst_boot_lilo_parse_global,    LILO_CONF, "default" ],
               [ "boot",      \&xst_boot_lilo_parse_global,    LILO_CONF, "boot"    ],
 #	      [ "root",      \&xst_boot_lilo_parse_global,    LILO_CONF, "root"    ],
-              [ "entry",     \&xst_boot_lilo_parse_entries,   LILO_CONF, "%partition%" ],
+              [ "entry",     \&xst_boot_lilo_parse_entries,   LILO_CONF, "%partitions%" ],
               ] 
        },
 
@@ -247,13 +247,13 @@ sub xst_boot_conf_get
          },
          table =>
              [
-              [ "partition", \&xst_partition_scan_info ],
+              [ "partitions", \&xst_partition_scan_info ],
 #              [ "pixmapsup", \&xst_parse_trivial,           1 ],
 #              [ "pixmap",    \&xst_boot_grub_parse_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
               [ "timeout",   \&xst_boot_grub_parse_timeout, GRUB_CONF ],
               [ "prompt",    \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
               [ "default",   \&xst_boot_grub_parse_default, GRUB_CONF ],
-              [ "entry",     \&xst_boot_entries_get,        "%partition%" ],
+              [ "entry",     \&xst_boot_entries_get,        "%partitions%" ],
               ] 
        }
   );

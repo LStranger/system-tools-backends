@@ -35,7 +35,8 @@ require "$SCRIPTSDIR/report.pl$DOTIN";
 sub xst_partition_scan_info
 {
   my ($fd, $line);
-  my (%table);
+  my (%hash);
+  my (@table);
   
   $fd = &xst_file_run_pipe ("sfdisk -d");
   if ($fd eq undef)
@@ -47,21 +48,28 @@ sub xst_partition_scan_info
   while ($line = <$fd>)
   {
     # Woohoo! sfdisk -d scanner in one line! Gotta love perl! OK, I'm a pig.
-    if ($line =~ /^\/dev\/([^ \t]+)[ \t]*: start=[ \t]*([0-9]+), size=[ \t]*([0-9]+), Id=[ \t]*([0-9a-fA-F][0-9a-fA-F]?)(, bootable)?/)
+    if ($line =~ /^(\/dev\/[^ \t]+)[ \t]*: start=[ \t]*([0-9]+), size=[ \t]*([0-9]+), Id=[ \t]*([0-9a-fA-F][0-9a-fA-F]?)(, bootable)?/)
     {
-      $bootable = ($5 eq undef)? 0: 1;
-      $table{$1} = {"dev"     => $1,
-                    "start"   => $2,
-                    "size"    => $3,
-                    "id"      => $4,
-                    "boot"    => $bootable,
-                    "typestr" => $XST_FILESYS_TYPES{$4}
+      # we don't need empty partitions, so we reject those with id = 0
+      if ($4 ne 0)
+      {
+        $bootable = ($5 eq undef)? 0: 1;
+
+        push @table, {"dev" => $1,
+#                     "start"   => $2,
+#                     "size"    => $3,
+#                     "id"      => $4,
+#                     "boot"    => $bootable,
+                      "type" => $XST_FILESYS_TYPES{$4}
                   };
+      }
     }
   }
   close $fd;
 
-  return \%table;
+  $hash{"partition"} = \@table;
+
+  return \%hash;
 }
 
 %XST_FILESYS_TYPES =
