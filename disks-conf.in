@@ -1502,16 +1502,10 @@ sub get_disk_info
    
    if ($present) {
       # We only want to know if the device is attached
-      &gst_xml_print_line ("<device>" . $device . "</device>\n");
-      &gst_xml_print_state_tag ("present", $is_present);
-
-      return;
+      return ($is_present);
    } else {
       if (!$is_present) {
-	 &gst_xml_print_line ("<device>" . $device . "</device>\n");
-	 &gst_xml_print_state_tag ("present", $is_present);
-
-	 return;
+	 return ($is_present);
       }
    }
    
@@ -1529,20 +1523,27 @@ sub get_disk_info
    
    &get_fdisk ($device);
    &read_fstab;
-
-   my $disk = $cf_disks[0];
-   &xml_print_common ($disk);
-   my $partitions = %$disk->{partitions};
-   &xml_print_partitions ($disk, $partitions);
+   
+   return ($is_present, $cf_disks[0]); 
 }
 
 sub disk_info
 {
    my ($tool, $device, $present) = @_;
 
+   my ($is_present, $disk) = &get_disk_info ($device, $present);
    &gst_report_end ();
    &gst_xml_print_begin ("disk_info");
-   &get_disk_info ($device, $present);
+   
+   &gst_xml_print_line ("<device>" . $device . "</device>\n");
+   &gst_xml_print_state_tag ("present", $is_present);
+   
+   if ($disk) {
+      &xml_print_common ($disk);
+      my $partitions = %$disk->{partitions};
+      &xml_print_partitions ($disk, $partitions);
+   }
+   
    &gst_xml_print_end ("disk_info");
 }
    
