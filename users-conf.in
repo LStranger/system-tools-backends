@@ -280,7 +280,7 @@ sub read_group
 
   *FILE = be_open_read_from_names(@group_names);
   if (not *FILE) { return; }  # We didn't find it.
-  $gruop_last_modified = (stat (FILE))[9]; # get the mtime.
+  $group_last_modified = (stat (FILE))[9]; # get the mtime.
 
   # Parse the file.
 	
