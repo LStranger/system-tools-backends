@@ -1,0 +1,85 @@
+#!/usr/bin/env perl 
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Gettext for Perl.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Kenneth Christiansen <kenneth@gnu.org>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+##
+# textdomain: Set textdomain for translations
+# Functions binds the gettext funtions to the textdomain
+# literally a textdomain.mo file, normally placed at 
+# /usr/share/locale/{LANG}/LC_MESSAGES/
+ 
+sub textdomain # (textdomain)
+{
+  my ($txtdmn) = @_;
+  $ENV{TEXTDOMAIN} = $txtdmn;
+}
+
+
+sub gettext # scalar (string)
+{
+  my ($str) = @_;
+
+  # the quotes are required for it to 
+  # work with escape sequenses
+  return `gettext "$str"`;
+}
+
+
+sub dgettext # scalar (string, textdomain)
+{
+  my ($str, $txtdmn) = @_;
+
+  # the quotes are required for it to 
+  # work with escape sequenses
+  return `TEXTDOMAIN=$txtdmn gettext "$str"`;
+}
+
+
+sub setlocale # (locale)
+{
+  my ($lcl) = @_;
+  $ENV{LANGUAGE} = $lcl;
+}
+
+
+sub getlocale # locale
+{
+  return $ENV{LANGUAGE};
+}
+
+
+sub _ # scalar (string)
+{
+  my ($str) = @_;
+  return gettext($str);
+}
+
+
+sub N_ # scalar (string)
+{
+  my ($str) = @_;
+  return $str;
+}
+
+
+1;

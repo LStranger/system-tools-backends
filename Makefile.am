@@ -8,6 +8,7 @@ users-conf \
 boot-conf
 
 perl_libs = \
+gettext.pl \
 parse.pl \
 replace.pl \
 file.pl \
@@ -24,6 +25,7 @@ debug.pl
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh
 
 EXTRA_DIST = \
+gettext.pl.in \
 parse.pl.in \
 replace.pl.in \
 file.pl.in \
