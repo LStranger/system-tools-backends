@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #-*-perl-*-
 
-# Common stuff for the ximian-&setup-tools backends.
+# Common stuff for the ximian-setup-tools backends.
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
@@ -30,15 +30,15 @@
 my $be_usage_generic =<<"end_of_usage_generic;";
        Major operations (specify one of these):
 
-       -g --&get      Prints the current configuration to standard output, as
+       -g --get      Prints the current configuration to standard output, as
                      a standalone XML document. The configuration is read from
                      the host\'s system config files.
 
-       -s --&set      Updates the current configuration from a standalone XML
+       -s --set      Updates the current configuration from a standalone XML
                      document read from standard input. The format is the same
-                     as for the document generated with --&get.
+                     as for the document generated with --get.
 
-       -f --&filter   Reads XML configuration from standard input, parses it,
+       -f --filter   Reads XML configuration from standard input, parses it,
                      and writes the configurator\'s impression of it back to
                      standard output. Good for debugging and parsing tests.
 
@@ -48,17 +48,17 @@ my $be_usage_generic =<<"end_of_usage_generic;";
 
        Modifiers (specify any combination of these):
 
-          --disable-immediate  With --&set, prevents the configurator from
+          --disable-immediate  With --set, prevents the configurator from
                      running any commands that make immediate changes to
                      the system configuration. Use with --prefix to make a
                      dry run that won\'t affect your configuration.
 
-                     With --&get, suppresses running of non-vital external
+                     With --get, suppresses running of non-vital external
                      programs that might take a long time to finish.
 
        -p --prefix <location>  Specifies a directory prefix where the
                      configuration is looked for or stored. When storing
-                     (with --&set), directories and files may be created.
+                     (with --set), directories and files may be created.
 
           --progress Prints machine-readable progress information to standard
                      output, before any XML, consisting of three-digit
@@ -80,7 +80,7 @@ sub be_print_usage
 {
   my $i;
 
-  print STDERR "Usage: $be_name-conf <--&get | --&set | --&filter | --help | --version>\n";
+  print STDERR "Usage: $be_name-conf <--get | --set | --filter | --help | --version>\n";
 
   for ($i = (length $be_name); $i > 0; $i--) { print STDERR " "; }
   print STDERR "             [--disable-immediate] [--prefix <location>]\n";
@@ -114,7 +114,7 @@ sub be_print_version
 
 # --- Operation modifying variables --- #
 
-# Variables are &set to their default value, which may be overridden by user. Note
+# Variables are set to their default value, which may be overridden by user. Note
 # that a $prefix of "" will cause the configurator to use '/' as the base path,
 # and disables creation of directories and writing of previously non-existent
 # files.
@@ -122,13 +122,13 @@ sub be_print_version
 
 $be_name = "";       # Short name of tool.
 $be_version = "";    # Version of tool - [major.minor.revision].
-$be_operation = "";  # Major operation user wants to perform - [&get | &set | &filter].
+$be_operation = "";  # Major operation user wants to perform - [get | set | filter].
 
 $be_prefix = "";
 $be_verbose = 0;
 $be_do_immediate = 1;
 
-# For debugging (perl -d) purposes. &set to "" for normal operation:
+# For debugging (perl -d) purposes. set to "" for normal operation:
 $be_input_file = "";
 
 
@@ -597,8 +597,8 @@ sub be_ip_calc_broadcast
 
 # &be_locate_tool
 #
-# Tries to locate a command-line utility from a &set of built-in paths
-# and a &set of user paths (found in the environment). The path (or a negative
+# Tries to locate a command-line utility from a set of built-in paths
+# and a set of user paths (found in the environment). The path (or a negative
 # entry) is cached in a hash, to avoid searching for it repeatedly.
 
 @be_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin",
@@ -792,9 +792,9 @@ sub be_open_filter_write_from_names
 	system("cp $name $name.confsave >/dev/null 2>/dev/null");
       }
     
-    # Return filehandles. Backup file is used as &filter input. It might be
+    # Return filehandles. Backup file is used as filter input. It might be
     # invalid, in which case the caller should just write to OUTFILE without
-    # bothering with INFILE &filtering.
+    # bothering with INFILE filtering.
     
     open(INFILE, "$name.confsave");
     
@@ -1002,7 +1002,7 @@ sub be_service_disable
   }
 
   # If no SYSV files found, take the brute approach. Currently this just
-  # leaves the daemon alone. FIXME: Find a reliable way to &get the PID and
+  # leaves the daemon alone. FIXME: Find a reliable way to get the PID and
   # kill it. Remember that "killall" is a bit _too_ radical on some systems.
 
   if ($name eq "")
@@ -2139,9 +2139,9 @@ sub be_init
 
   while (@args)
   {
-    if    ($args[0] eq "--&get"    || $args[0] eq "-g") { &be_set_operation("&get"); }
-    elsif ($args[0] eq "--&set"    || $args[0] eq "-s") { &be_set_operation("&set"); }
-    elsif ($args[0] eq "--&filter" || $args[0] eq "-f") { &be_set_operation("&filter"); }
+    if    ($args[0] eq "--get"    || $args[0] eq "-g") { &be_set_operation("get"); }
+    elsif ($args[0] eq "--set"    || $args[0] eq "-s") { &be_set_operation("set"); }
+    elsif ($args[0] eq "--filter" || $args[0] eq "-f") { &be_set_operation("filter"); }
     elsif ($args[0] eq "--help"   || $args[0] eq "-h") { &be_print_usage(); exit(0); }
     elsif ($args[0] eq "--version")                    { &be_print_version(); exit(0); }
     elsif ($args[0] eq "--prefix" || $args[0] eq "-p")
