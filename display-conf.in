@@ -42,7 +42,7 @@ require "___scriptsdir___/x.pl";
 
 $name = "display";
 $version = "___version___";
-@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 turbolinux-7.0 debian-woody);
+@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 turbolinux-7.0 debian-2.2 debian-woody);
 
 $description =<<"end_of_description;";
        Configures XFree86 verion 4.
@@ -57,6 +57,7 @@ $platmap =
   "redhat-7.1"     => XFree4,
   "turbolinux-7.0" => XFree4,
   "debian-woody"   => XFree4,
+  "debian-2.2"     => XFree3
 };
 
 $filemap = {

@@ -1,3 +1,11 @@
+2001-07-26  Hans Petter Jansson  <hpj@ximian.com>
+
+	* display-conf.in: Add debian-2.2 to supported platforms. Tested and
+	  working.
+
+	* print-conf.in: Remove debian-2.2 from supported platforms. This
+	  is officially not supported yet.
+
 2001-07-26  Tambet Ingo  <tambet@ximian.com>
 
 	* display-conf.in (test): Oops, forogt that.
