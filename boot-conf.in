@@ -176,7 +176,7 @@ sub xml_print_images
 
   foreach $entry (@$array)
   {
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
     &xst_xml_print_line ("<entry>\n");
     &xst_xml_enter ();
     
@@ -192,7 +192,7 @@ sub xml_print_images
     &xst_xml_print_line ("</entry>\n");
   }
   
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
 }
 
 
@@ -203,20 +203,20 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE boot []>\n\n";
   print "<boot>\n";
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   &xst_xml_enter ();
 
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   &xst_xml_print_line ("<!-- Configuration starts here -->\n");
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
 
   &xml_print_global_kws ($h);
   &xml_print_globals ($h);
   &xml_print_images ($h, 'images');
   
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   &xst_xml_print_line ("<!-- End of configuration -->\n");
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
 
   &xst_xml_leave ();
   &xst_xml_print_line ("</boot>\n");

@@ -32,8 +32,8 @@ require "___scriptsdir___/debug.pl";
 
 # &xst_xml_enter: Call after entering a block. Increases indent level.
 # &xst_xml_leave: Call before leaving a block. Decreases indent level.
-# &xst_xml_indent: Call before printing a line. Indents to current level. 
-# &xst_xml_vspace: Ensures there is a vertical space of one and only one line.
+# &xst_xml_print_indent: Call before printing a line. Indents to current level. 
+# &xst_xml_print_vspace: Ensures there is a vertical space of one and only one line.
 # &xst_xml_print: Indent, then print all arguments. Just for sugar.
 
 
@@ -53,7 +53,14 @@ sub xst_xml_leave
 }
 
 
-sub xst_xml_indent
+sub xst_xml_print_string
+{
+  print $_[0];
+  &xst_debug_print_string_to_file ("out.xml", @_[0]);
+}
+
+
+sub xst_xml_print_indent
 {
   my $i;
   my $indent_string;
@@ -64,7 +71,7 @@ sub xst_xml_indent
 }
 
 
-sub xst_xml_vspace
+sub xst_xml_print_vspace
 {
   if (not $xst_have_vspace)
   {
@@ -76,14 +83,14 @@ sub xst_xml_vspace
 
 sub xst_xml_print_line
 {
-  &xst_xml_indent;
-  print @_;
+  &xst_xml_print_indent ();
+  &xst_xml_print_string ($_[0]);
 }
 
 
 sub xst_xml_print_state
 {
-  &xst_xml_indent;
+  &xst_xml_print_indent;
   print "<" . @_[0] . " state='" . &xst_print_boolean_truefalse (@_[1]) . "'/>";
 }
 
@@ -112,7 +119,7 @@ sub xst_xml_print_arrays
   {
     if (exists $$h{$i})
     {
-      &xst_xml_vspace ();
+      &xst_xml_print_vspace ();
       foreach $j (@{$$h{$i}})
       {
         $val = &xst_xml_quote ($j);
@@ -129,7 +136,7 @@ sub xst_xml_print_hash
   my ($hash, $tag) = @_;
   my $j, $val;
   
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   &xst_xml_print_line ("<$tag>\n");
   &xst_xml_enter ();
   

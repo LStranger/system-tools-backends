@@ -184,16 +184,16 @@ sub xml_print
     print "<memory>\n";
     &xst_xml_enter ();
 
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
     &xst_xml_print_line ("<!-- Configuration starts here -->\n");
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
 
     foreach $entry (@cf_memory) {
       &xst_xml_print_line ("<memsize>$entry->{MemTotal}</memsize>\n");
       &xst_xml_print_line ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
     }
 
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
 
     foreach $entry (@cf_partition) {
       &xst_xml_print_line ("<partition>\n");
@@ -204,7 +204,7 @@ sub xml_print
       &xst_xml_print_line ("</partition>\n");
     }
 
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
 
     foreach $entry (@cf_swapinfo) {
       &xst_xml_print_line ("<swapdev>\n");
@@ -226,7 +226,7 @@ sub xml_print
     }
 
     &xst_xml_print_line ("<!-- End of configuration -->\n");
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
 
     &xst_xml_leave ();
     print "</memory>\n";

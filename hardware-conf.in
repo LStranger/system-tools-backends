@@ -254,9 +254,9 @@ sub xml_print
     print "<hardware>\n";
     &xst_xml_enter ();
 
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
     &xst_xml_print_line ("<!-- Configuration starts here -->\n");
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
 
     foreach $entry (@cf_hardware)
       {
@@ -311,11 +311,11 @@ sub xml_print
 	  }
 
 	&xst_xml_print_line ("</device>\n");
-	&xst_xml_vspace ();
+	&xst_xml_print_vspace ();
       }
 
     &xst_xml_print_line ("<!-- End of configuration -->\n");
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
 
     &xst_xml_leave ();
     print "</hardware>\n";

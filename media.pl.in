@@ -151,13 +151,13 @@ sub xst_media_xml_print
 {
   my @devices = @_;
 
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   &xst_xml_print_line ("<media>\n");
   &xst_xml_enter ();
 
   for $dev (@devices)
   {
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
     &xst_xml_print_line ("<device>\n");
     &xst_xml_enter ();
     &xst_xml_print_line ("<name>" . $dev->{"device"} . "</name>\n"); 
@@ -168,7 +168,7 @@ sub xst_media_xml_print
 
     if ($dev->{"media"} ne "disk")
     {
-      &xst_xml_vspace ();
+      &xst_xml_print_vspace ();
       if ($dev->{"point_listed"})
       {
         &xst_xml_print_line ("<point_listed>" . $dev->{"point_listed"} . "</point_listed>\n");
@@ -179,12 +179,12 @@ sub xst_media_xml_print
 
     &xst_xml_leave ();
     &xst_xml_print_line ("</device>\n");
-    &xst_xml_vspace ();
+    &xst_xml_print_vspace ();
   }
 
   &xst_xml_leave ();
   &xst_xml_print_line ("</media>\n");
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
 }
 
 

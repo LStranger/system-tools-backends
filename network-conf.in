@@ -212,7 +212,7 @@ sub xml_print_statichost
   my ($h) = $_[0];
   my $statichost, $i, $j, $val;
   
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   foreach $i (keys %{$$h{"statichost"}})
   {
     $statichost = $ {$$h{"statichost"}}{$i};
@@ -242,7 +242,7 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE network []>\n\n";
   print "<network>\n";
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   &xst_xml_enter ();
 
   # Hostname, domain, search domains, nameservers.
@@ -255,7 +255,7 @@ sub xml_print
   &xst_xml_print_hash_hash ($$h{"dialing"}, "dialing");
   
   &xst_xml_leave ();
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   &xst_xml_print_line ("</network>\n");
 }
 

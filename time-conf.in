@@ -168,12 +168,12 @@ sub xml_print
   print "<!DOCTYPE time []>\n\n";
   print "<time>\n";
   &xst_xml_enter ();
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
 
   &xst_xml_print_hash ($$h{"local_time"}, "local_time");
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   &xst_xml_print_line ("<sync active='" . &xst_print_boolean_yesno ($sync_active) . "'>\n");
   
   &xst_xml_enter ();
@@ -184,10 +184,10 @@ sub xml_print
   &xst_xml_leave ();
   
   &xst_xml_print_line ("</sync>\n");
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
 
   &xst_xml_print_scalars ($h, @scalar_keys);
-  &xst_xml_vspace ();
+  &xst_xml_print_vspace ();
   
   &xst_xml_leave ();
   &xst_xml_print_line ("</time>\n");

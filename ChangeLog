@@ -1,3 +1,17 @@
+2001-03-12  Hans Petter Jansson  <hpj@ximian.com>
+
+	* xml.pl.in (xst_xml_indent): -> xst_xml_print_indent.
+	  (xst_xml_vspace): -> xst_xml_print_vspace.
+	  (xst_xml_print_string): Implement.
+	  (xst_xml_print_line): Use xst_xml_print_string().
+
+	* boot-conf.in disks-conf.in hardware-conf.in
+	  media.pl.in memory-conf.in network-conf.in
+	  removable-media.pl.in time-conf.in users-conf.in:
+
+	  xst_xml_indent -> xst_xml_print_indent.
+	  xst_xml_vspace -> xst_xml_print_vspace.
+
 2001-03-08  Arturo Espinosa  <arturo@ximian.com>
 
 	* service.pl.in: New functions to handle SysV rc
