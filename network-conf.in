@@ -53,7 +53,7 @@ $description =<<"end_of_description;";
        Configures name resolution.
 end_of_description;
 
-$progress_max = 9;
+$progress_max = 10;
 
 
 # --- System config file locations --- #
@@ -94,6 +94,9 @@ $cf_winsserver = "";
 
 @cf_order = ();
 $cf_hostmatch = 0;  # 0 = all, 1 = first
+
+$cf_nw_interfaces = 0; # For interfaces and global networking params.
+$cf_nw_global = 0;     # These will hold refferences to hashes.
 
 
 # --- Configuration file manipulation --- #
@@ -831,6 +834,17 @@ sub write_smb_conf
   if (*INFILE) { close(INFILE); }
 }
 
+# Network Interfaces
+
+sub read_interfaces
+{
+  my $hash;
+
+  $hash = &be_network_get ();
+
+  $cf_nw_interfaces = $$hash{"interfaces"};
+  $cf_nw_global = $$hash{"global"};
+}
 
 # --- XML parsing ---
 
@@ -961,6 +975,7 @@ sub xml_print
   my $cfl_winsserver = be_xml_plain_to_entities(\$cf_winsserver);
   my $cfl_hostname_reverse = be_xml_plain_to_entities(\$cf_hostname_reverse);
   my $cfl_domain_reverse = be_xml_plain_to_entities(\$cf_domain_reverse);
+  my ($elem, $elem2);
 
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE network []>\n\n";
@@ -1026,6 +1041,23 @@ sub xml_print
     shift @iplist;
     shift @iplist;
     shift @iplist;
+  }
+
+  foreach $elem (keys (%{$cf_nw_interfaces}))
+  {
+    be_xml_vspace ();
+    be_xml_print ("<interface>\n");
+    be_xml_enter ();
+    be_xml_print ("<dev>$elem</dev>\n");
+    
+    my %interface = %{$ { $cf_nw_interfaces}{$elem}};
+    foreach $elem2 (keys (%interface))
+    {
+	 be_xml_print ("<$elem2>$interface{$elem2}<$elem2>\n");
+    }
+
+    be_xml_leave ();
+    be_xml_print ("</interface>\n");
   }
 
   be_xml_vspace ();
@@ -1107,6 +1139,7 @@ sub get_immediate
 
 sub get
 {
+  # nameresolution stuff
   read_host_conf (); be_print_progress ();
   read_hosts (); be_print_progress ();
   read_resolv_conf (); be_print_progress ();
@@ -1117,6 +1150,9 @@ sub get
   read_smb_conf (); be_print_progress ();
   get_immediate (); be_print_progress ();
 
+  # network interface stuff
+  read_interfaces (); be_print_progress ();
+  
   be_end();
   xml_print ();
 }

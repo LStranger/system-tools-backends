@@ -1486,18 +1486,18 @@ sub be_network_get_redhat
 {
   local *IFACE_DIR;
   my (%nw, %ifaces, $fh);
-
+  
   if (!(opendir IFACE_DIR, "/etc/sysconfig/network-scripts")) { return 0; }
-
+  
   $nw{"interfaces"} = \%ifaces;
-
+  
   foreach $i (readdir (IFACE_DIR))
   {
     next if not $i =~ /ifcfg-([a-z0-9]+)/;
-
+    
     $fh = be_open_read_from_names("/etc/sysconfig/network-scripts/$i");
     if (!$fh) { next; }
-
+    
     # Found an interface file, add another interface hash.
 
     my %iface_hash;
@@ -1511,39 +1511,44 @@ sub be_network_get_redhat
       @line = split(/[ \n\r\t\"\'=]+/, $_);
       if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-      if ($line[0] eq "IPADDR" && not be_ignore_line($line[1]))
+	 next if be_ignore_line ($line[1]);
+	 
+      if ($line[0] eq "IPADDR")
       {
         $$iface{"address"} = $line[1];
-	if (!exists($$iface{"method"})) { $$iface{"method"} = "static"; }
+	   if (!exists($$iface{"method"}))
+	   {
+		$$iface{"method"} = "static";
+	   }
       }
-      elsif ($line[0] eq "NETMASK" && not be_ignore_line($line[1]))
+      elsif ($line[0] eq "NETMASK")
       {
         $$iface{"netmask"} = $line[1];
       }
-      elsif ($line[0] eq "BOOTPROTO" && not be_ignore_line($line[1]))
+      elsif ($line[0] eq "BOOTPROTO")
       {
         if ($line[1] eq "bootp")   { $$iface{"method"} = "bootp"; }
         elsif ($line[1] eq "dhcp") { $$iface{"method"} = "dhcp"; }
       }
-      elsif ($line[0] eq "ONBOOT" && not be_ignore_line($line[1]))
+      elsif ($line[0] eq "ONBOOT")
       {
         if (be_read_boolean($line[1]))
-	{
-	  $$iface{"auto"} = 1;  # Set the auto flag.
-	}
+	   {
+		$$iface{"auto"} = 1;  # Set the auto flag.
+	   }
       }
     }
-
+    
     close ($fh);
   }
-
+  
   closedir (IFACE_DIR);
-
+  
   # Read options.
-
+  
   my (%g, $gateway_dev);
   $nw{"global"} = \%g;
-
+  
   $fh = be_open_read_from_names(@sysconfig_network_names);
   if (!$fh) { return \%nw; }  # We didn't find it.
 
