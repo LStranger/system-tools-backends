@@ -1,5 +1,9 @@
 2004-04-11  Carlos García Campos <elkalmail@yahoo.es>
 
+	* disks-conf.in: fixed minor bug in mount directive
+
+2004-04-11  Carlos García Campos <elkalmail@yahoo.es>
+
 	* disks-conf.in: added <mounted> and <point> tags for data and mixed
 	cdrom
 

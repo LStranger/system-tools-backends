@@ -1525,16 +1525,20 @@ sub mount_partition
 
    if ($mounted) {
       $error = `umount $device 2>&1`;
-      $mounted = 0;
    } else {
       if ($listed) {
 	 $error = `mount $device 2>&1`;
       } else {
 	 $error = `mount -t $typefs $device $point 2>&1`;
       }
-      $mounted = 1;
    }
 
+   if (`mount | grep $device`) {
+      $mounted = 1;
+   } else {
+      $mounted = 0;
+   }
+   
    if ($error ne "") { 
       &gst_xml_print_line ("<error>" . $error  . "</error>\n"); 
    }
@@ -1542,6 +1546,8 @@ sub mount_partition
    &gst_xml_print_line ("<partition>\n");
    &gst_xml_enter ();
 
+   &gst_xml_print_state_tag ("mounted", $mounted);
+   
    if ($mounted) {
       ($point, $typefs) = `mount | grep $device` =~ /^$device on (.*) type (.*) .*$/;
       #TODO  check block size 
