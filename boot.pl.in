@@ -33,17 +33,23 @@ require "___scriptsdir___/replace.pl";
 sub xst_boot_conf_set_images
 {
   my ($fn, $key, $images) = @_;
-  my $i;
+  my ($image_name, $image_val, $current);
+  my ($i, $a);
 
   foreach $i (keys (%$images))
   {
-    $line = $$images{$i};
-    $image_name = "image";
-    $image_val = $$line{'image'};
+    $current = $$images{$i};
 
-    foreach $a (keys (%$line))
+    $image_name = 'image' if $$current{'image'};
+    $image_name = 'other' if $$current{'other'};
+    next if $image_name eq "";
+
+    $image_val = $$current{$image_name};
+
+    foreach $a (keys (%$current))
     {
-	 &xst_boot_conf_replace_image ($fn, $image_name, $image_val, $a, $$line{$a}) if $a ne $image_name;
+      &xst_boot_conf_replace_image ($fn, $image_name, $image_val, $a,
+                                    $$current{$a}) if $a ne $image_name;
     }
   }
 
@@ -136,12 +142,12 @@ sub xst_boot_conf_set
 	    fn => {
 		 LILO_CONF => "/etc/lilo.conf"},
 	    table => [
-			    [ prompt,  \&xst_replace_keyword_set, LILO_CONF, prompt ],
-			    [ root,    \&xst_replace_sh, LILO_CONF, root ],
-			    [ delay,   \&xst_replace_keyword_set, LILO_CONF, delay ],
-			    [ timeout, \&xst_replace_sh, LILO_CONF, timeout ],
-			    [ default, \&xst_replace_sh, LILO_CONF, default ],
-			    [ image,   \&xst_boot_conf_set_images, LILO_CONF, image ],
+                [ prompt,  \&xst_replace_keyword, LILO_CONF, prompt ],
+                [ root,    \&xst_replace_sh, LILO_CONF, root ],
+                [ delay,   \&xst_replace_keyword, LILO_CONF, delay ],
+                [ timeout, \&xst_replace_sh, LILO_CONF, timeout ],
+                [ default, \&xst_replace_sh, LILO_CONF, default ],
+                [ image,   \&xst_boot_conf_set_images, LILO_CONF, image ],
 			    ] 
 				 }
 	  );
@@ -150,7 +156,8 @@ sub xst_boot_conf_set
   return undef if !$table;
 
   return &xst_replace_from_table ($ {$dist_tables{$table}}{"fn"},
-						  $ {$dist_tables{$table}}{"table"});
+						  $ {$dist_tables{$table}}{"table"}, $values_hash);
+
 }
 
 

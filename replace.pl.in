@@ -63,6 +63,7 @@ sub regexp_to_separator
 
   s/\[([^^])([^\]])[^\]]*\]/\1/g;
   s/\+//g;
+  s/\$//g;
   s/[^\*]\*//g;
 
   return $_;
@@ -185,6 +186,13 @@ sub xst_replace_sh_bool
   $value = ($value == 1)? "yes": "no";
   
   return &xst_replace_sh ($file, $key, $value);
+}
+
+sub xst_replace_keyword
+{
+  my ($file, $key) = @_;
+
+  return &xst_replace_split ($file, $key, "\$", "");
 }
 
 sub xst_replace_line_first
