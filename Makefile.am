@@ -9,7 +9,6 @@ users-conf \
 boot-conf
 
 perl_libs = \
-be.pl \
 parse.pl \
 replace.pl \
 file.pl \
@@ -20,7 +19,6 @@ xml.pl \
 service.pl \
 util.pl \
 network.pl \
-media.pl \
 boot.pl
 
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh
@@ -36,6 +34,7 @@ xml.pl.in \
 service.pl.in \
 util.pl.in \
 network.pl.in \
+boot.pl.in \
 disks-conf.in \
 memory-conf.in \
 nameresolution-conf.in \
@@ -43,7 +42,8 @@ network-conf.in \
 shares-conf.in \
 time-conf.in \
 users-conf.in \
-boot-conf.in
+boot-conf.in \
+guess_system.sh
 
 CLEANFILES = $(backends) $(perl_libs)
 
