@@ -1,0 +1,212 @@
+A DESCRIPTION OF THE REPORT/DIRECTIVE SYSTEM.
+Arturo Espinosa <arturo@ximian.com>
+
+
+- The report line format.
+
+
+We have our own format to report eventualities during the run of a backend
+directive. This format is line-oriented, with fields divided by '::'. This
+string can be used within a value by escaping it with '\::'. \ is escaped
+using '\\' (we haven't implemented escaping jet). Every line looks like
+this:
+
+minor_key::printf_format::arg1...::argN
+
+The advantage of this line-oriented format is that all the reports can be
+parsed individually as they appear, instead of having to wait for all of
+them to be printed, as it would be the case for a format based on XML. I
+don't think there will be any problem wrapping this with CORBA, although
+the round trip cost may be an issue.
+
+The printf_format field is translated at runtime in the backend using
+gettext. If there is a minor key, where is the major? Well, it is not
+printed a the moment, but the major will appear before the minor real soon
+now. An example of a current report line is:
+
+parse_sh::Getting shell option [%s] from [%s].::HELLO::/etc/file
+
+A report block is a set of report lines, which ends with the "end" report,
+which looks like this:
+
+end::End of work report.
+
+(or in Spanish, for example, end::Fin del reporte de progreso.).
+
+So, the minor_key is used for computer recognition, and the format can be
+used to optionally display stuff on the GUI. The current fontend code can
+hook any minor to a set of functions, which will be called every time such
+report appears. In the future, both the major, which will be transfered,
+and the minor will have to match, and there will be a default policy for
+every major. Majors can be "sys", "info", "error" and "warning".
+
+
+- How backends work on interactive mode
+
+
+When the backend is run on interactive mode, this is what happens:
+
+All printing (or dumping) is done on stdout, and all received information
+is read from stdin.
+
+At first, the backend initializes, and dumps a report block where it
+states all kind of stuff, like platform detection and support and other
+things. This may look like so, after some backup report lines:
+
+platform_success::Configuring for platform [%s].::mandrake-7.2
+end::End of work report.
+
+
+-- Directive line format
+
+
+The main loop has now started, where the backend waits for a directive to
+be received. A directive line has almost the same format as a report line,
+but it doesn't have a format field. An example directive is:
+
+enable_iface::eth0::1
+
+Once the directive is received, its related code is executed - for more
+info on this, check backend/general.pl.in:xst_directive_run. Then, a
+directive may choose to wait for XML to be sent from the frontend.
+Directives that configure the system ususally expect such XML, but not
+all: enable_iface is an example of a directive that doesn't require XML,
+because the directive arguments are expressive enough to provide the
+required information, without obfuscating the format.
+
+There are a couple of default directives that all backends have: 'end',
+which gracefully terminates the backend; 'interfaces', which dumps an XML
+of those interfaces supported by the backend; and 'platform_set', which
+forces the backend to read and configure the system as if it had a given
+platform (os/distro) installed.
+
+You can try running your own directives by running a backend with no
+arguments as root (for some backends it works fine without being root, if
+you don't trust), and providing the directives throgh the terminal.
+
+
+-- And so the directive starts running.
+
+
+As the directive code executes, it prints a report block with information
+on whatever is happenning there, and then it may finally print an XML
+document with information. Directives that retreive information (of
+"get" type) are the kind that print XML documents when finalizing.
+
+When an XML document is printed, either by the frontend (to be read by the
+backend), or by the backend, it is terminated with an end of request (eor)
+string, which tells the other side that the XML dumping has finished. The
+eor string looks like this:
+
+<!-- XST: end of request -->
+
+
+- An Example
+
+
+This is an example of a backend - frontend transaction. Strings starting
+with '> ' are those that the backend is printing to stdout, and those with 
+'< ' are those that the frontend is printing into the backend's
+stdin. Stuff between [] are comments on what's hapenning:
+
+[ The backend starts and turns some reports on initialization.]
+> begin::Start of work report.
+.
+.
+> platform_success::Configuring for platform [%s].::mandrake-7.2
+> end::End of work report.
+
+[ Here the backend waits for a direcive.]
+
+< get
+
+> begin::Start of work report.
+.
+> parse_split::Getting option [%s] from [%s].::DHCP.interface::/etc/conf.linuxconf
+[ and many others like this ]
+.
+> end::End of work report. 
+[ the 'end' report line has been given: this lets the frontend know that
+  the XML document will be dumped now. ]
+> <?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+> <!DOCTYPE internetsharing []>
+> 
+> <internetsharing>
+> 
+>   <!-- Configuration starts here -->
+> 
+>   <fwrules>
+>     <active>1</active>
+>     <configured>1</configured>
+>     <forwarding>1</forwarding>
+>     <masquerading>1</masquerading>
+>     <tools>1</tools>
+>   </fwrules>
+.
+.
+> </internetsharing>
+[ the XML ends here, so the end-of-request string is printed. ]
+> 
+> <!-- XST: end of request -->
+[ this finalizes the direcive run and makes the backend wait for the next
+  directive line. ]
+< dhcp_set_state::0
+[ this directive is an immediate action: no XML expected, so the reports
+  start hapenning right away. The frontend should not send any XML, or
+  the protocol would break. Maybe the backend should wait for an eor
+  string so it doesn't get confused by XML wrongly sent by the frontend.]
+> begin::Start of work report.
+.
+.
+> end::End of work report.
+> 
+> <!-- XST: end of request -->
+[ this directive didn't produce any XML because of its nature, so it sends
+  the eor string right away, and then the main loop waits again for a new
+  directive line.]
+< set
+[ OK, set requires XML. The backend waits for such input. ]
+< <?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
+< <!DOCTYPE internetsharing []>
+< 
+< <internetsharing>
+< 
+<   <!-- Configuration starts here -->
+< 
+<  <fwrules>
+<     <active>0</active>
+<     <configured>1</configured>
+<     <forwarding>1</forwarding>
+<     <masquerading>1</masquerading>
+<     <tools>1</tools>
+<     <overwrite>1</overwrite>
+<   </fwrules>
+.
+.
+< </internetsharing>
+<
+< <!-- XST: end of request -->
+[ OK, this is the end of the XML, and the backend stops reading stdin.
+  Now the backend starts configuring the machine according with this
+  information and report strings are stent through stdout to the
+  frontend.]
+> begin::Start of work report.
+.
+.
+.
+> end::End of work report.
+>
+> <!-- XST: end of request -->
+[ No XML going back to the frontend. In theory, there could be a
+  direcive that both expected an XML as input and sent some more XML
+  back, but we haven't had such a need. Backend waiting for a new
+  directive again. ]
+< end
+[ The end directive! The code for this directive makes the backend close
+  all files and finish gracefully. End of the life of the backend.]
+
+
+
+
+
+
