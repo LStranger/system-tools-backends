@@ -750,13 +750,13 @@ sub xst_parse_fstab  # filename
     my $hash = {};
 
     # <device> expands to "LABEL=<label>", "UUID=<uuid>" or "<device node>".
-    if    ($device =~ /^LABEL=(.*)/i) { $hash->{'label'}  = $1; }
-    elsif ($device =~ /^UUID=(.*)/i)  { $hash->{'uuid'}   = $1; }
-    else                              { $hash->{'device'} = $device; }
+    if    ($device =~ /^LABEL=(.*)/i) { $hash{'label'}  = $1; }
+    elsif ($device =~ /^UUID=(.*)/i)  { $hash{'uuid'}   = $1; }
+    else                              { $hash{'device'} = $device; }
 
     # <mount point> and <fs> are verbatim.
-    $hash->{'point'} = $point;
-    $hash->{'fs'}    = $fs;
+    $hash{'point'} = $point;
+    $hash{'fs'}    = $fs;
 
     # <options> expands to "<option>[,<option>[,...]]".
     my @optlist = split /[,]/, $options;
@@ -768,12 +768,12 @@ sub xst_parse_fstab  # filename
       my ($key, $value) = split /[=]/, $option;
       next if ($option eq "" || $option eq "defaults");
 
-      $opthash->{$key} = $value;
+      $opthash{$key} = $value;
     }
 
-    $hash->{'options'} = $opthash;
-    $hash->{'dump'}    = $dump;
-    $hash->{'fsck'}    = $fsck;
+    $hash{'options'} = $opthash;
+    $hash{'dump'}    = $dump;
+    $hash{'fsck'}    = $fsck;
 
     push @res, $hash;
   }
