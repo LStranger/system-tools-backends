@@ -1,3 +1,7 @@
+2001-02-06  Hans Petter Jansson  <hpj@ximian.com>
+
+	* Makefile.in: Added media.pl to the list of targets.
+
 2001-02-06  Arturo Espinosa  <arturo@ximian.com>
 
 	* replace.pl.in: xst_replace_join_hash, the last of the replacing

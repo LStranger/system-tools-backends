@@ -11,6 +11,7 @@ boot-conf
 perl_libs = \
 be.pl \
 network.pl \
+media.pl \
 parse.pl \
 replace.pl
 
