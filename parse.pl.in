@@ -1,0 +1,173 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+
+# Common stuff for the ximian-setup-tools backends.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#          Arturo Espinosa <arturo@ximian.com>
+#          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
+#          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+require "___scriptsdir___/be.pl";
+
+# Parse a $file, wich is assumed to have a column-based format, with $re matching field separators
+# and one record per line. Search for $key, and return either a scalar with the first ocurrence,
+# or an array with all the found ocurrences.
+sub xst_parse_split
+{
+  my ($file, $key, $re, $all) = @_;
+  my ($fd, @line, @res);
+
+  $fd = be_open_read_from_names ($file);
+  $all = 0 if !$fd;
+  
+  while (<$fd>)
+  {
+    chomp;
+    s/^[ \t]+//;
+    next if (/^\#/ || /^$/);
+    @line = split ($re);
+
+    if (shift (@line) eq $key)
+    {
+	 if ($all) {
+	   push @res, $line[1];
+	 }
+	 else
+	 {
+	   close $fd;
+	   return $line[0];
+	 }
+    }
+  }
+
+  close $fd;
+  return @res if ($all);
+  return undef;
+}
+
+# This gives meaning to the $all flag of xst_parse_split, and returns a reference to the array, which
+# is what we want. (ie search a.com b.com c.com)
+sub xst_parse_split_all
+{
+  my @a = &xst_parse_split (@_, 1);
+
+  return \@a;
+}
+
+# Same, but for $all = 0. (ie nameserver 10.0.0.1)
+sub xst_parse_split_first_str
+{
+  return &xst_parse_split (@_, 0);
+}
+
+# Interpret the result as a boolean. (ie multi on)
+sub xst_parse_split_first_bool
+{
+  my $ret;
+
+  $ret = &xst_parse_split_first_str (@_);
+
+  return undef if ($ret eq undef);
+  return (&be_read_boolean ($ret)? 1: 0);
+}
+
+# After getting the first field, split that with $sep matching separators. (ie order hosts,bind)
+sub xst_parse_split_first_array
+{
+  my $sep = pop (@_);
+  my @ret;
+  
+  @ret = split ($sep, &xst_parse_split (@_, 0));
+
+  return \@ret;
+}
+
+# For files which are a list of /bin/sh shell variable declarations. (ie GATEWAY=10.10.10.1)
+sub xst_parse_sh
+{
+  return &xst_parse_split_first_str (@_, "[ \t]*=[ \t]*");
+}
+
+# Same, but interpret the returing value as a bool. (ie NETWORKING=yes)
+sub xst_parse_sh_bool
+{
+  my $ret;
+
+  $ret = &xst_parse_sh (@_);
+
+  return undef if ($ret eq undef);
+  return (&be_read_boolean ($ret)? 1: 0);
+}
+
+# A file containing the desired value in its first line. (ie /etc/hostname)
+sub xst_parse_line_first
+{
+  my ($file) = @_;
+  my ($fd, @line, @res);
+
+  $fd = be_open_read_from_names ($file);
+  return undef if !$fd;
+
+  <$fd>;
+  chomp;
+  return $_;
+}
+
+# parse a chat file, searching for an entry that matches $re.
+# $re must have one paren operator (ie "^atd[^0-9]*([0-9, -]+)").
+sub xst_parse_chat
+{
+  my ($file, $re) = @_;
+  my $fd, $found;
+
+  $fd = &be_open_read_from_names ("$file");
+  if ($fd)
+  {
+    while (<$fd>)
+    {
+	 # We'll be emptying $_ as we "scan".
+	 chomp;
+	 while ($_ ne "")
+	 {
+	   # If it uses quotes. FIXME: Assuming they surround the whole string.
+	   if (/^\'/)
+	   {
+		s/\'([^\']*)\' ?//;
+		$found = $1;
+	   }
+	   else
+	   {
+		s/([^ \t]*) ?//;
+		$found = $1;
+	   }
+
+	   # If it looks like what we're looking for, return what matched the parens.
+	   if ($found =~ /$re/i)
+	   {
+		return $1;
+	   }
+	 }
+    }
+  }
+
+  # Oops: not found.
+  return undef;
+}
+

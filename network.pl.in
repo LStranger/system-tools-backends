@@ -1,0 +1,195 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+
+# Common stuff for the ximian-setup-tools backends.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#          Arturo Espinosa <arturo@ximian.com>
+#          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
+#          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+require "___scriptsdir___/be.pl";
+require "___scriptsdir___/parse.pl";
+
+sub xst_network_sysconfig_ifaces_get_existing
+{
+  local *IFACE_DIR;
+  my @ret, $i;
+  
+  if (opendir IFACE_DIR, "/etc/sysconfig/network-scripts")
+  {
+    foreach $i (readdir (IFACE_DIR))
+    {
+	 push @ret, $i if $i =~ /ifcfg-[a-z0-9]+/;
+    }
+
+    closedir (IFACE_DIR);
+  }
+
+  return @ret;
+}
+
+sub xst_map_dist
+{
+  my (%dist_cmp) = @_;
+  my ($sysstr);
+
+  $sysstr = "$be_dist,$be_dist_version,$be_system";
+  
+  foreach $key (keys %dist_cmp)
+  {
+    if ($sysstr =~ /$key/)
+    {
+	 return $dist_cmp{$key};
+    }
+  }
+
+  return undef;
+}
+
+sub xst_network_conf_actual_get
+{
+  my ($fn, $table) = @_;
+  my %hash;
+  my ($key, $proc, @param);
+
+  foreach $i (@$table)
+  {
+    $key = shift (@$i);
+    $proc = shift (@$i);
+    $$i[0] = $$fn{$$i[0]};
+
+    $hash{$key} = &$proc (@$i) if ($hash{$key} eq undef);
+  }
+
+  return \%hash;
+}
+
+sub xst_network_interfaces_get
+{
+  my %dist_attrib =
+	 (
+	  redhat62 => {
+	    ifaces_get => \&xst_network_sysconfig_ifaces_get,
+	    fn => {
+		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+	      CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" },
+	    table => [
+			    [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
+			    [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
+			    [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
+			    [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
+			    [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
+			    [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
+			    [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
+			    [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
+			    [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
+			    [ disconnect_timeout, \&xst_parse_sh,      IFCFG, DISCONNECTTIMEOUT ],
+			    [ retry_timeout,      \&xst_parse_sh,      IFCFG, RETRYTIMEOUT ],
+			    [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
+			    [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
+			    [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
+			    [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
+			    [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
+			    [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+			    [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
+			    [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
+			    [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
+			    [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+			    [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
+			    [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+			    [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+			    ]
+				 }
+	  );
+  my %dist_cmp = (
+			   "^redhat.*" => "redhat62"
+			   );
+  my ($dist, %hash, %fn, $value, $i, $j, @ifaces, $file);
+  
+  $dist = &xst_map_dist (%dist_cmp);
+  
+  %fn = %{$ {$dist_attrib{$dist}}{"fn"}};
+  @ifaces = &$ {$dist_attrib{$dist}}{"ifaces_get"} ();
+  foreach $i (@ifaces)
+  {
+    foreach $j (keys (%fn))
+    {
+	 $value = $fn{$i};
+	 $value =~ s/\#iface\#/$i/;
+	 $ {$ {$dist_attrib{$dist}}{"fn"}}{$j} = $value;
+    }
+    
+    $hash{$i} = &xst_network_conf_actual_get ($ {$dist_attrib{$dist}}{"fn"},
+									 $ {$dist_attrib{$dist}}{"table"});
+    
+    foreach $j (keys (%{$hash{$i}}))
+    {
+	 delete $$hash{$i}{$j} if $$hash{$i}{$j} eq undef;
+    }
+  }
+
+  return \%hash;
+}
+
+sub xst_network_conf_get
+{
+  my %dist_attrib =
+	 (
+	  redhat62 => {
+	    fn => {
+		 SYSCONFIG_NW => "/etc/sysconfig/network",
+		 RESOLV_CONF  => "/etc/resolv.conf",
+		 HOST_CONF    => "/etc/host.conf" },
+	    table => [
+			    [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
+			    [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
+			    [ gateway,       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY],
+			    [ gatewaydev,    \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
+			    [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
+			    [ dns_server,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]" ],
+			    [ searchdomains, \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]", "[ \t]" ],
+			    [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]" ],
+			    [ dns_order,     \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]", "," ],
+			    [ dns_multi,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]" ],
+			    ]
+				 }
+	  );
+  
+  # mapping from regular expression, which will be compared to the string
+  # "$be_dist,$be_dist_version,$be_system" to a string, which will be used as
+  # a the key of the dist_attrib field to use.
+  my %dist_cmp = (
+			   "^redhat.*" => "redhat62"
+			   );
+
+  my ($dist, $hash);
+
+  $dist = &xst_map_dist ();
+  return undef if ($dist eq undef);
+
+  $hash = &xst_network_conf_actual_get ($ {$dist_attrib{$dist}}{"fn"},
+								$ {$dist_attrib{$dist}}{"table"});
+  $$hash{"interfaces"} = &xst_network_interfaces_get ();
+  
+  return $hash;
+}
+
+
+
