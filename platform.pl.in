@@ -206,7 +206,7 @@ sub xst_platform_ensure_supported
 
   for $platform (@supported)
   {
-    &xst_report_info (97, "Supported: [$platform]");
+    &xst_report_info (96, "Supported: [$platform]");
   }
 
   &xst_report_fatal (98, "Your platform is not supported");

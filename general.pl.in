@@ -136,11 +136,11 @@ sub xst_begin
 
   if ($xst_dist)
   {
-    &xst_report_info (95, "Configuring for platform $xst_dist");
+    &xst_report_info (95, "Configuring for platform [$xst_dist]");
   }
   else
   {
-    &xst_report_fatal (95, "Unknown or unsupported platform");
+    &xst_report_fatal (99, "Unable to determine host platform");
     &xst_end ();
     exit (2);
   }
