@@ -1,5 +1,9 @@
 2001-05-17  Hans Petter Jansson  <hpj@ximian.com>
 
+	* disks-conf.in (get_fdisk): Omit entries for extended partitions.
+
+2001-05-17  Hans Petter Jansson  <hpj@ximian.com>
+
 	* gettext.pl.in (_): This manner of gettexting disabled due to speed
 	  considerations.
 
