@@ -34,8 +34,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-22 22:13+0200\n"
-"PO-Revision-Date: 2004-08-22 17:06+0200\n"
+"POT-Creation-Date: 2004-08-30 12:57+0200\n"
+"PO-Revision-Date: 2004-08-30 13:12+0200\n"
 "Last-Translator: Martin Willemoes Hansen <mwh@sysrq.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
 "MIME-Version: 1.0\n"
@@ -166,7 +166,7 @@ msgid ""
 msgstr ""
 "cpufreqd benyttes til at overvåge batteriets status og justere CPU'ens "
 "frekvens således, at der spares på batteriet samtidigt med at der er "
-"maksimal ydelse"
+"bedst mulig ydelse"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -182,9 +182,9 @@ msgid ""
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
 msgstr ""
-"cron er et standard UNIX program, der periodisk kører programmer "
-"specificeret af brugeren. vixie cron tilføjer en række egenskaber til den "
-"basale UNIX cron, både bedre sikkerhed og mere kraftfulde "
+"Serveren cron er et standard program til Unix, der periodisk kører programmer "
+"specificeret af brugeren. Vixie cron tilføjer en række egenskaber til den "
+"basale Unix cron, både bedre sikkerhed og mere kraftfulde "
 "konfigurationsalternativer."
 
 #: service-list.pl.in:50 service-list.pl.in:51
@@ -271,11 +271,11 @@ msgstr "Firstboot er et hjælper-program der køres første gang maskinen starte
 
 #: service-list.pl.in:63
 msgid "Text-to-speech system"
-msgstr "Tekst-til-tale-system"
+msgstr "Tekst til tale-system"
 
 #: service-list.pl.in:63
 msgid "Festival is a general purpose text-to-speech system"
-msgstr "Festival er et generelt tekst-til-tale-system"
+msgstr "Festival er et generelt tekst til tale-system"
 
 #: service-list.pl.in:64
 msgid "Mail Fetcher"
@@ -311,8 +311,8 @@ msgid ""
 "Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
 msgstr ""
-"GPM tilføjer understøttelse af mus i tekstbaserede Linux programmer fx "
-"Midnight Commander. Klip og indsæt operationerne samt pop op-menuer er også "
+"GPM tilføjer understøttelse af mus i tekstbaserede Linux programmer, fx "
+"Midnight Commander. Klip- og indsæt-operationerne samt pop op-menuer er også "
 "understøttet i konsollen."
 
 #: service-list.pl.in:68
@@ -325,7 +325,7 @@ msgid ""
 "Linux ATA/IDE device driver subsystem."
 msgstr ""
 "Giver en grænseflade til forskellige disk-ioctl'er der er understøttet af "
-"Linux standard-ATA/IDE-enhedsdrivprogram-subsystemet"
+"Linux standard-ATA/IDE-undersystemet"
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
@@ -338,7 +338,7 @@ msgid ""
 "An example is when a USB or Cardbus device has just been plugged in."
 msgstr ""
 "hotplug er et program der benyttes af kernen til at påminde programmer om "
-"betydningsfulde begivenheder (normalt maskinel-relateret).Fx når en USB- "
+"betydningsfulde begivenheder (normalt maskinel-relateret). Fx når en USB- "
 "eller Cardbus-enhed tilsluttes."
 
 #: service-list.pl.in:71
@@ -438,8 +438,8 @@ msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
-"lpd er en udskrivnings-server som er krævet for at lpr virker korrekt. "
-"Basalt set vælger lpd hvilken udskriver(e) der får hvilket uskriftsjob."
+"lpd er en printer-server som er krævet for at lpr virker korrekt. "
+"Basalt set vælger lpd hvilken printer der får hvilket udskriftsjob."
 
 #: service-list.pl.in:84
 msgid "Create devices"
@@ -450,7 +450,7 @@ msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
 msgstr ""
-"Skript der opretter enhederne i /dev, der bliver brugt til at være "
+"Skript der opretter enhederne i /dev som bliver brugt til at være "
 "grænseflade mellem drivprogrammerne og kernen"
 
 #: service-list.pl.in:85
@@ -541,7 +541,7 @@ msgstr "ntpd er en NTPv4-server."
 
 #: service-list.pl.in:96 service-list.pl.in:97
 msgid "Update the system time over the network"
-msgstr "Indstil systemklokken via netværket"
+msgstr "Indstil systemuret via netværket"
 
 #: service-list.pl.in:96 service-list.pl.in:97
 msgid ""
@@ -565,7 +565,7 @@ msgstr ""
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
-msgstr "HTTP-mellemlagerproxy"
+msgstr "HTTP-mellemlagerserver"
 
 #: service-list.pl.in:100
 msgid "PCMCIA Services"
@@ -659,7 +659,7 @@ msgstr "Hurtigere og mere fleksibel erstatning for rcp"
 
 #: service-list.pl.in:113
 msgid "A Windows SMB/CIFS fileserver for UNIX"
-msgstr "En Windows SMB/CIFS-filserver for UNIX"
+msgstr "En Windows SMB/CIFS-filserver for Unix"
 
 #: service-list.pl.in:113
 msgid ""
@@ -667,7 +667,7 @@ msgid ""
 "Server Message Block protocol for UNIX systems."
 msgstr ""
 "Samba er en samling af programmer der implementerer "
-"serverbeskedblokprotokollen (SMB) for UNIX-systemer."
+"serverbeskedblokprotokollen (SMB) for Unix-systemer."
 
 #: service-list.pl.in:114
 msgid ""
@@ -871,30 +871,30 @@ msgstr ""
 "tilgængelige baseret på tid og kan begrænse antallet af servere der kan "
 "startes."
 
-#: service.pl.in:223 service.pl.in:228
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "Slukker systemet"
 
-#: service.pl.in:224 service.pl.in:230
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "Teksttilstand"
 
-#: service.pl.in:225 service.pl.in:229 service.pl.in:238
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "Grafisk tilstand"
 
-#: service.pl.in:226 service.pl.in:231
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "Genstarter systemet"
 
-#: service.pl.in:233
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "Starter alle for systemet nødvendige tjenester"
 
-#: service.pl.in:234
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "Standardkørselsniveau"
 
-#: service.pl.in:235
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Kørselsniveau uden netværk"
