@@ -39,9 +39,8 @@
 # passwd: assigning or changing passwords. (Un)locking users.
 # chfn: modifying finger information - Name, Office, Office phone, Home phone.
 
-
+use MD5;
 require "___scriptsdir___/be.pl";
-
 
 
 # --- Usage text --- #
@@ -100,6 +99,8 @@ $version = "0.1.0";
 
 $progress_max = 3;
 
+$DEBUG = 3; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
+
 
 # --- System config file locations --- #
 
@@ -107,8 +108,19 @@ $progress_max = 3;
 # They are tried in array order. First found = used.
 
 @passwd_names = ( "/etc/passwd" );
+@shadow_names = ( "/etc/shadow" );
 @group_names = ( "/etc/group" );
 @login_defs_names = ( "/etc/login.defs" );
+
+# Where are the tools?
+
+$cmd_usermod  = be_locate_tool ("usermod");
+$cmd_userdel  = be_locate_tool ("userdel");
+$cmd_useradd  = be_locate_tool ("useradd");	
+$cmd_groupdel = be_locate_tool ("groupdel");
+$cmd_groupadd = be_locate_tool ("groupadd");
+$cmd_groupmod = be_locate_tool ("groupmod");
+$cmd_gpasswd  = be_locate_tool ("gpasswd");	
 
 
 # --- Internal configuration variables --- #
@@ -138,6 +150,14 @@ $group_last_modified = 0; # For /etc/group, since the epoch.
 	"comment", 5,
 	"home", 6,
 	"shell", 7,
+	"last_mod", 8, # Read shadow (5) for these.
+	"passwd_min_life", 9,
+	"passwd_max_life", 10,
+	"passwd_exp_warn", 11,
+	"passwd_exp_disable", 12,
+	"passwd_disable", 13,
+	"reserved", 14,
+	"is_shadow", 15,
 	"", "");
 
 for ($i = 0; $users_prop_array[$i] ne ""; $i += 2)
@@ -187,6 +207,12 @@ for ($i = 0; $login_defs_prop_array[$i] ne ""; $i += 2)
 
 # --- Utility stuff --- #
 
+sub my_system
+{
+  print "$_[0]\n" if ($DEBUG & 2);
+  system ($_[0]) if ($DEBUG & 1);
+}
+
 sub max
 {
   return $_[0] > $_[1]? $_[0]: $_[1];
@@ -232,13 +258,14 @@ sub read_login_defs
 	close (FILE);
 }
 		
-sub read_passwd
+sub read_passwd_shadow
 {
   local *FILE;
-	my (@line, $copy);
+	my (@line, $copy, %tmphash);
+	my $login_pos = $users_prop_map{"login"};
 	my $i = 0;
 
-  # Find the file.
+  # Find the passwd file.
 
   *FILE = be_open_read_from_names(@passwd_names);
   if (not *FILE) { return; }  # We didn't find it.
@@ -256,11 +283,33 @@ sub read_passwd
 		unshift @line, sprintf ("%06d", $i);
 		$copy = [@line];
 		$users_hash{sprintf ("%06d", $i)} = $copy;
+		$tmphash{$line[$login_pos]} = $copy;
     push (@users, $copy);
 		$i ++;
   }
 	
 	close (FILE);
+	
+	# Find the shadow file.
+	
+	*FILE = be_open_read_from_names(@shadow_names);
+	if (*FILE) {
+	  my ($login, $passwd);
+		my $passwd_pos = $users_prop_map{"password"};
+		
+	  while (<FILE>)
+	  {
+	    chomp;      
+	    @line = split ':', $_, -1;
+			push @line, 1;
+			$login = shift @line;
+			$passwd = shift @line;
+			push @{$tmphash{$login}}, @line;
+			@{$tmphash{$login}}[$passwd_pos] = $passwd;
+	  }
+		
+		close (FILE);
+	}	
 }
 
 sub read_group
@@ -305,7 +354,7 @@ sub write_group_passwd
   %parse_users_hash = %users_hash;
 	@parse_users = @users;
 	$parse_passwd_last_modified = $passwd_last_modified;
-	&read_passwd;
+	&read_passwd_shadow;
 	
   %parse_groups_hash = %groups_hash;
 	@parse_groups = @groups;
@@ -378,136 +427,69 @@ sub write_group_passwd
 sub del_user
 {
 	my $data = $_[0];
-	my $userdel;
 	
-	$userdel = be_locate_tool ("userdel");
-	if ($userdel eq "")
-	{
-		print STDERR "Couldn't find userdel program. User @$data[1] not removed.\n";
-		return;
-	}	
-	
-	$command = "$userdel -r \"" . @$data[$users_prop_map{"login"}] . "\"";
-		
-	print "del user @$data[1]: $command\n";
-	1;
+	$command = "$cmd_userdel -r \'" . @$data[$users_prop_map{"login"}] . "\'";
+	my_system ($command);
 }
 
 sub add_user
 {
 	my $data = $_[0];
-	my $useradd;
 	
-	$useradd = be_locate_tool ("useradd");
-	if ($useradd eq "")
-	{
-		print STDERR "Couldn't find useradd program. User @$data[1] not added.\n";
-		return;
-	}	
-	
-	$command = "$useradd -c \"" . @$data[$users_prop_map{"comment"}] . 
-	  "\" -d \"" . @$data[$users_prop_map{"home"}] .
-	  "\" -g \"" . @$data[$users_prop_map{"gid"}] .
-	  "\" -p \"" . @$data[$users_prop_map{"password"}] .
-	  "\" -s \"" . @$data[$users_prop_map{"shell"}] .
-	  "\" -u \"" . @$data[$users_prop_map{"uid"}] .
-	  "\" \"" . @$data[$users_prop_map{"login"}] . "\"";
-		
-	print "add user @$data[1]: $command\n";
-	1;
+	$command = "$cmd_useradd -c \'" . @$data[$users_prop_map{"comment"}] . 
+	  "\' -d \'" . @$data[$users_prop_map{"home"}] .
+	  "\' -g \'" . @$data[$users_prop_map{"gid"}] .
+	  "\' -p \'" . @$data[$users_prop_map{"password"}] .
+	  "\' -s \'" . @$data[$users_prop_map{"shell"}] .
+	  "\' -u \'" . @$data[$users_prop_map{"uid"}] .
+	  "\' \'" . @$data[$users_prop_map{"login"}] . "\'";
+	my_system ($command);
 }
 
 sub change_user
 {
 	my $old_data = $_[0];
 	my $new_data = $_[1];
-	my $usermod;
 	
-	$usermod = be_locate_tool ("usermod");
-	if ($usermod eq "")
-	{
-		print STDERR "Couldn't find usermod program. User @$data[1] not changed.\n";
-		return;
-	}	
-	
-	$command = "$usermod -c \"" . @$new_data[$users_prop_map{"comment"}] . 
-	  "\" -d \"" . @$new_data[$users_prop_map{"home"}] .
-	  "\" -g \"" . @$new_data[$users_prop_map{"gid"}] .
-	  "\" -p \"" . @$new_data[$users_prop_map{"password"}] .
-	  "\" -s \"" . @$new_data[$users_prop_map{"shell"}] .
-	  "\" -u \"" . @$new_data[$users_prop_map{"uid"}] .
-	  "\" -l \"" . @$new_data[$users_prop_map{"login"}] .
-	  "\" \"" . @$old_data[$users_prop_map{"login"}] . "\"";
-		
-	print "change user @$old_data[1]: $command\n";
-	1;
+	$command = "$cmd_usermod -c \'" . @$new_data[$users_prop_map{"comment"}] . 
+	  "\' -d \'" . @$new_data[$users_prop_map{"home"}] .
+	  "\' -g \'" . @$new_data[$users_prop_map{"gid"}] .
+	  "\' -s \'" . @$new_data[$users_prop_map{"shell"}] .
+	  "\' -p \'" . @$new_data[$users_prop_map{"password"}] .
+	  "\' -u \'" . @$new_data[$users_prop_map{"uid"}] .
+	  "\' -l \'" . @$new_data[$users_prop_map{"login"}] .
+	  "\' \'" . @$old_data[$users_prop_map{"login"}] . "\'";
+	my_system ($command);
 }
 
 sub del_group
 {
 	my $data = $_[0];
-	my $groupdel;
-	
-	$groupdel = be_locate_tool ("groupdel");
-	if ($groupdel eq "")
-	{
-		print STDERR "Couldn't find groupdel program. Group @$data[1] not removed.\n";
-		return;
-	}	
-	
-	$command = "$groupdel \"" . @$data[$groups_prop_map{"name"}] . "\"";
-		
-	print "del group @$data[1]: $command\n";
-	
-	1;
+
+	$command = "$cmd_groupdel \'" . @$data[$groups_prop_map{"name"}] . "\'";
+	my_system ($command);
 }
 
 sub add_group
 {
 	my $data = $_[0];
-	my $groupadd;
-	
-	$groupadd = be_locate_tool ("groupadd");
-	if ($groupadd eq "")
-	{
-		print STDERR "Couldn't find groupadd program. Group @$data[1] not added.\n";
-		return;
-	}	
 	
 	# We'll have to check this -f flag.
-	$command = "$groupadd -f -g \"" . @$data[$groups_prop_map{"gid"}] .
-	  "\" " . @$data[$groups_prop_map{"name"}];
-		
-	print "add group @$data[1]: $command\n";
-	1;
+	$command = "$cmd_groupadd -f -g \'" . @$data[$groups_prop_map{"gid"}] .
+	  "\' " . @$data[$groups_prop_map{"name"}];
+	my_system ($command);
 }
 
 sub change_group
 {
 	my $old_data = $_[0];
 	my $new_data = $_[1];
-	my ($groupmod, $gpasswd);
 	my ($n, $o, $i, $j, $r, @tmp); # for iterations
 
-	$groupmod = be_locate_tool ("groupmod");
-	if ($groupmod eq "")
-	{
-		print STDERR "Couldn't find groupmod program. Group @$old_data[1] not changed.\n";
-		return;
-	}	
-	
-	$gpasswd = be_locate_tool ("gpasswd");
-	if ($gpasswd eq "")
-	{
-		print STDERR "Couldn't find gpasswd program. Group @$old_data[1] members not changed.\n";
-		return;
-	}	
-	
-	$command = "$groupmod -g \"" . @$new_data[$groups_prop_map{"gid"}] .
-	  "\" -n \"" . @$new_data[$groups_prop_map{"name"}] . "\"" 
-		. " \"" . @$old_data[$groups_prop_map{"name"}] . "\"";
-		
-	print "change group @$old_data[1]: $command\n";
+	$command = "$cmd_groupmod -g \'" . @$new_data[$groups_prop_map{"gid"}] .
+	  "\' -n \'" . @$new_data[$groups_prop_map{"name"}] . "\'" 
+		. " \'" . @$old_data[$groups_prop_map{"name"}] . "\'";
+	my_system ($command);
 	
 	# Let's see if the users that compose the group have changed.
 	if (&arr_cmp_recurse (@$new_data[$groups_prop_map{"users"}],
@@ -519,22 +501,22 @@ sub change_group
 		for ($i = 0, $j = 0; $i <= &max ($#$n, $#$o); ) {
 		  $r = @$n[$i] cmp @$o[$j]; 
 		  if ($r < 0) { # add this user to the group.
-			  $command = "$gpasswd -a \"" . @$n[$i] . "\" \"" . 
-				  @$new_data[$groups_prop_map{"name"}] . "\"";
+			  $command = "$cmd_gpasswd -a \'" . @$n[$i] . "\' \'" . 
+				  @$new_data[$groups_prop_map{"name"}] . "\'";
 				$i ++;
-				print "add group member: $command\n";
+				
+				my_system ($command);
 			} elsif ($r > 0) { # delete the user from the group.
-			  $command = "$gpasswd -d \"" . @$o[$j] . "\" \"" . 
-				  @$new_data[$groups_prop_map{"name"}] . "\"";
+			  $command = "$cmd_gpasswd -d \'" . @$o[$j] . "\' \'" . 
+				  @$new_data[$groups_prop_map{"name"}] . "\'";
 				$j ++;
-				print "delete group member: $command\n";
-			} else {
+				
+				my_system ($command);
+			} else { # The information is the same. Go to next tuple.
 			  $i ++; $j ++;
 			}	
 		}	
 	}	
-		
-	1;
 }
 
 # --- XML parsing --- #
@@ -839,7 +821,7 @@ sub get
 
   &read_login_defs (); &be_print_progress ();
 	&read_group (); &be_print_progress ();
-  &read_passwd (); &be_print_progress ();
+  &read_passwd_shadow (); &be_print_progress ();
 
   if ($be_verbose) { print STDERR "Printing XML.\n"; }
   if ($be_progress) { print "\n"; }

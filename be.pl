@@ -301,7 +301,12 @@ sub be_locate_tool
   {
     if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
   }
-  
+
+  if (! $found && $be_verbose) {
+	  print STDERR "Couldn't find $_[0] program in path %s:%s", 
+		  join (",", @be_builtin_paths), join (",", @user_paths);
+	}
+	
   return($found);
 }
 
