@@ -1974,7 +1974,16 @@ EOF
 fi
 
 
-
+echo "x${scriptsdir}"
+echo "xNONE"
+if test "x${scriptsdir}" = "xNONE"; then
+  echo Is empty
+else
+  echo has content ${scriptsdir}
+  echo ${scriptsdir} -
+fi
+   
+echo ${prefix}
 if test "x${prefix}" = "xNONE"; then
   cat >> confdefs.h <<EOF
 #define SCRIPTS_DIR "${ac_default_prefix}/${DATADIRNAME}/${PACKAGE}/scripts"
