@@ -353,7 +353,7 @@ BEGIN {
 sub x_version
 {
   unless ($x_version) {
-    my $command = &xst_file_locate_tool ("X");
+    my $command = &xst_file_locate_tool ("/usr/X11R6/bin/XFree86");
 #   my $command = &xst_file_locate_tool ("/usr/X11R6/bin/XF86_SVGA");
 
     my ($number, $driver) = (0, "");
@@ -1972,7 +1972,7 @@ sub x_probe_scan
   my $cfg_file = shift;
   my $depth = shift;
 
-  my $command = &xst_file_locate_tool ("XFree");
+  my $command = &xst_file_locate_tool ("/usr/X11R6/bin/XFree86");
   return unless $command;
 
   open (FD, "$command :9 -xf86config $cfg_file -probeonly -depth $depth -screen XstTestScreen 2>&1 |");
@@ -2129,7 +2129,7 @@ sub x_probe
 
   my $cfg_file = &x_probe_save ($orig_file, $config);
   my $list = &x_probe_run ($cfg_file, $modes);
-  unlink ($cfg_file);
+  #  unlink ($cfg_file);
 
   if ($list) {
     &x_probe_store ($config, $list);

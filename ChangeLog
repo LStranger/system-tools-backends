@@ -1,5 +1,7 @@
 2001-10-02  Tambet Ingo  <tambet@ximian.com>
 
+	* x.pl.in: Use full paths to XFree86, don't try to depend on links.
+
 	* users-conf.in: Rewrote profiles and login.defs stuff.
 	Removed/exchanged all old cruft so now it seems more like
 	other 'up-to-date' backends.
