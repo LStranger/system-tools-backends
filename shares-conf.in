@@ -6,6 +6,9 @@
 # Version 0.1.0 - copyright (C) 2000 Helix Code, Inc.
 #
 # Authors: Hans Petter Jansson <hpj@helixcode.com>
+#          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
+#          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
+#
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -31,6 +34,8 @@
 #
 # /etc/sysconfig/network
 # /etc/sysconfig/network-scripts/ifcfg-*
+# /etc/network/interfaces
+# /etc/network/options
 # /etc/rc.config
 # /etc/fstab
 # /etc/smb.conf
@@ -116,11 +121,13 @@ $progress_max = 8;
 # Right now there's only one entry per array, as I couldn't find any
 # typical deviations.
 
-@sysconfig_network_names = ( "/etc/sysconfig/network" );
-@rc_config_names =         ( "/etc/rc.config" );
-@fstab_names =             ( "/etc/fstab" );
-@exports_names =           ( "/etc/exports" );
-@smb_conf_names =          ( "/etc/smb.conf", "/etc/samba/smb.conf" );
+@sysconfig_network_names =  ( "/etc/sysconfig/network" );
+@network_interfaces_names = ( "/etc/network/interfaces" );
+@network_options_names =    ( "/etc/network/options" );
+@rc_config_names =          ( "/etc/rc.config" );
+@fstab_names =              ( "/etc/fstab" );
+@exports_names =            ( "/etc/exports" );
+@smb_conf_names =           ( "/etc/smb.conf", "/etc/samba/smb.conf" );
 
 
 # --- Internal configuration variables --- #
@@ -138,8 +145,229 @@ $cf_netmask = "";
 $cf_hostip = "";
 
 
+# is_in_list
+#
+# Given:
+#   * A scalar value.
+#   * An array.
+# this function will return 1 if the scalar value is in the array, 0 otherwise.
+
+sub is_in_list
+{
+  my $value = shift(@_);
+
+  foreach my $item (@_)
+  {
+    if ( $value eq $item ) { return 1; }
+  }
+
+  return 0;
+}
+
 # --- Configuration file manipulation --- #
 
+# Debian 2.[2|3]+ style /etc/network/interfaces
+#
+# <filtered lines>
+# iface <interface> inet <static|dhcp|bootp|ppp>
+#     address <ip>
+#     netmask <ip mask>
+#     gateway <gateway ip>
+#     broadcast <broadcast ip>
+#     network <network ip>
+#     noauto (this is only used to not enable the interface on boot)
+#     up <command to run when the interface is brought up>
+#     down <command to run when the interface is brought down>
+# <filtered lines>
+# (more interfaces may follow)
+#
+# A "#" character at the very beginning of a line causes that line to be
+# treated as a comment.
+# A "\" character at the very end of a line causes that line to continue onto
+# the next line.
+#
+# read_network_interfaces_into_hash will read the contents of
+# /etc/network/interfaces into a hash table of references to hash tables.  For
+# example:
+#
+# %ifaces = ("eth0" => {"method" => "dhcp"},
+#            "eth1" => {"method" => "static",
+#                       "address" => "192.168.0.42",
+#                       "netmask" => "255.255.255.0"});
+#
+# The resulting hash table, %ifaces, is returned.
+#
+# NOTE: For more information on the format of /etc/network/interfaces, read
+# the "interfaces" man page (section 5).  Also be sure to look at the example
+# file in /usr/share/doc/netbase/examples/interfaces.  Both of these are
+# included as part of the "netbase" package in Debian 2.[2|3].
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent:
+
+sub read_network_interfaces_into_hash
+{
+  local *FILE;
+  my (%ifaces, $current_name, $current_iface);
+
+  *FILE = be_open_read_from_names(@network_interfaces_names);
+  if (not *FILE) { return; }
+
+  # Build a list of all interfaces
+  while (<FILE>)
+  {
+    # Split the current line into a list of tokens.
+    @line = split(/[ \n\r\t]+/, $_);
+
+    # Remove leading whitespace.
+    if ($line[0] eq "") { shift(@line); }
+
+    # Check to see if this line continues onto other lines.  If so, append
+    # them
+    while ($line[$#line] eq "\\")
+    {
+      # Remove the \ character.
+      pop @line;
+
+      # Read in the next line and split it into a list of tokens.
+      @nextline = split(/[ \n\r\t]+/, <FILE>);
+
+      # Remove any leading whitepage.
+      if ($nextline[0] eq "") { shift(@nextline); }
+
+      # Append @nextline to the end of @line
+      push @line, @nextline;
+    }
+
+    # Make sure this line isn't a comment.
+    if (be_is_line_comment_start($line[0])) { next; }
+
+    # Check if the line specifies a new interface.
+    if ($line[0] eq "iface" && not be_is_line_comment_start($line[1]))
+    {
+      # Make sure the device was detected via ifconfig (see "get_immediate").
+      # NOTE: This will weed out any loopback or dummy interfaces.
+      if (not is_in_list($line[1], @cf_interface_list))
+      {
+        be_report_warning(3, "$line[1] isn't an available, configured interface");
+        next;
+      }
+
+      # Make sure the interface is set up for IPv4/internet networking
+      if ($line[2] ne "inet") { next; }
+
+      # Also make sure there is a set configuration method.
+      if ($line[3] eq "" || be_is_line_comment_start($line[3]))
+      {
+        be_report_warning(4, "Interface $line[1] has no configuration method");
+        next;
+      }
+
+      # Create a new hash table for this interface.
+      my %iface_hash = ();
+
+      # Set this interface to be the 'current' one.
+      $current_name = $line[1];
+      $current_iface = $ifaces{$current_name} = \%iface_hash;
+
+      # Set the interface's method
+      $$current_iface{"method"} = $line[3];
+    }
+    else  # Add an attribute to an already set interface.
+    {
+      # Make sure an interface has been set.
+      if (not $current_iface) { next; }
+
+      # Make sure the attribute has been properly set
+      if (not $line[1]) { next; }
+
+      # Set the attribute
+      $$current_iface{$line[0]} = join(' ', $line[1..$#line]);
+    }
+  }
+
+  # All done.  Clean up before returning.
+  close($FILE);
+
+  return %ifaces;
+}
+
+
+# Debian 2.[2|3]+ style /etc/network/interfaces
+#
+# (See 'read_network_interfaces_into_hash()' for information on
+# /etc/network/interfaces as well as the structure of %ifaces.
+#
+# Takes network interface information and places them into the correct
+# variables.
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent:
+
+sub read_network_interfaces
+{
+  my (%ifaces, $current_name, $current_iface);
+  my $chosen_name;
+
+  %ifaces = read_network_interfaces_into_hash();
+
+  # Now, a "primary" interface will be selected.  The selection order is as
+  # follows:
+  #
+  # * If only one interface exists, use that one.
+  # * If an interface has a preset gateway, use that one.
+  # * The first interface with a dynamic configuration "method" (such as "dhcp",
+  #   "bootp", "ppp", etc.) will be selected.
+  # * If all else fails, pick the first interface.
+
+  # See if only one interface exists.
+  if ( scalar(keys(%ifaces)) == 1 )
+  {
+    $chosen_name = (keys(%ifaces))[0];
+
+    be_report_info(9, "Only one interface, $chosen_name, exists. It is being " .
+                      "selected as the primary interface");
+  }
+
+  # For that matter, do any interfaces exist at all.
+  elsif ( scalar(keys(%ifaces)) == 0 )
+  {
+    be_report_warning(5, "No network interfaces found");
+    return;
+  }
+
+  else
+  {
+    # Look for an interface with a preset gateway.
+    $chosen_name = get_key_for_subkeys(\%ifaces, ["gateway"]);
+
+    # If need be, look for an interface with a dynamic configuration "method".
+    if ( $chosen_name eq "" )
+    {
+      $chosen_name = get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
+    }
+
+    # If an interface hasn't been chosen, then just pick the first available one.
+    if ( $chosen_name eq "" )
+    {
+      $chosen_name = (keys(%ifaces))[0];
+    }
+  }
+
+  # Now that a "primary" interface has been chosen, set the proper global
+  # variables.
+  %current_iface = %{$ifaces{$chosen_name}};
+
+  $cf_interface = $chosen_name;
+  $cf_hostip = $current_iface{"address"};
+  $cf_netmask = $current_iface{"netmask"};
+  $cf_gateway = $current_iface{"gateway"};
+  $cf_method = $current_iface{"method"};
+  if ( exists $current_iface{"noauto"} ) { $cf_onboot = 0; }
+  else { $cf_onboot = 1; }
+}
 
 # Red Hat style /etc/sysconfig/network-scripts/ifcfg-*
 #
@@ -1639,6 +1867,7 @@ sub get
 
   get_interfaces; be_print_progress ();          # Needed for primary interface detection.
   read_rc_config;                          # Ditto.
+  read_network_interfaces                  # Ditto
   read_sysconfig_network;                  # Ditto.
   read_primary_interface;                  # IP subnet information.
   read_smb_conf; be_print_progress ();           # SMB workgroup.
@@ -1665,10 +1894,22 @@ sub set_immediate
   $umount_tool = be_locate_tool("umount");
 
   # Update exports.
-
-  if (-f "/etc/rc.d/init.d/smb")
+  
+  if (-f "/etc/rc.d/init.d/smb" )
   {
     if (system "/etc/rc.d/init.d/smb restart >/dev/null 2>/dev/null")
+    {
+      be_report_error(2, "SMB restart failed");
+    }
+    else
+    {
+      be_report_info(11, "SMB restarted with new configuration");
+    }
+  }
+  # location of the samba init-script in debian 
+  elsif (-f "/etc/init.d/samba" )
+  {
+    if (system "/etc/init.d/samba restart >/dev/null 2>/dev/null")
     {
       be_report_error(2, "SMB restart failed");
     }
