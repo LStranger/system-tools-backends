@@ -28,6 +28,17 @@ require "___scriptsdir___/xml.pl";
 
 # --- Utilities --- #
 
+# Merge items in hash B missing in A into A.
+sub merge_hashes
+{
+  my ($ha, $hb) = @_;
+  my $key;
+
+  foreach $key (keys %$hb)
+  {
+    $$ha{$key} = $$hb{$key} if !exists $$ha{$key};
+  }
+}
 
 sub xst_filesys_translate_ext2_device_to_label  # device
 {
@@ -41,10 +52,9 @@ sub xst_filesys_translate_ext2_device_to_label  # device
 
   open (E2LABEL_FD, "/bin/sh -c \"$e2label_tool $device\" 2>/dev/null |");
   $label = <E2LABEL_FD>;
-  $label =~ tr/\n\r//d;
+  chomp $label;
   close (E2LABEL_FD);
 
-  if ($label eq "") { return undef; }
   return $label;
 }
 
@@ -68,21 +78,34 @@ sub xst_filesys_info_new
 sub xst_filesys_info_dup           # filesys_info
 {
   my $orig = $_[0];
-  my $dup = { };
+  my $dup;
 
-  foreach (keys %$orig)
-  {
-    $$dup{$_} = $$orig{$_};
-  }
-
-  $$dup{'options'} = { };
-  my $hash = $$orig{'options'};
-  foreach (keys %$hash)
-  {
-    $dup->{'options'}{$_} = $orig->{'options'}{$_};
-  }
+  $dup = { %$orig };
+  $$dup{'options'} = { $$orig{'options'} };
 
   return $dup;
+}
+
+# Merge options in B missing in A inot A.
+sub xst_filesys_info_merge_options
+{
+  my ($info_a, $info_b) = @_;
+  my ($opt_a, $opt_b, $key);
+
+  $opt_a = $$info_a{'options'};
+  $opt_b = $$info_b{'options'};
+
+  &merge_hashes ($opt_a, $opt_b);
+}
+
+# Merge stuff in B missing in A into A.
+sub xst_filesys_info_merge
+{
+  my ($info_a, $info_b) = @_;
+  my $key;
+
+  &merge_hashes ($info_a, $info_b);
+  &xst_filesys_info_merge_options ($info_a, $info_b);
 }
 
 # Generic set function for filesys_info properties. We need this to
@@ -91,8 +114,16 @@ sub xst_filesys_info_dup           # filesys_info
 
 sub xst_filesys_info_set           # filesys_info, key, value
 {
-  if ($_[2] eq "") { delete $_[0]->{$_[1]}; }
-  else             { $_[0]->{$_[1]} = $_[2]; }
+  my ($filesys_info, $key, $value) = @_;
+  
+  if ($value eq "")
+  {
+    delete $filesys_info->{$key};
+  }
+  else
+  {
+    $filesys_info->{$key} = $value;
+  }
 }
 
 sub xst_filesys_info_get_device    # filesys_info
@@ -196,10 +227,11 @@ sub xst_filesys_table_dup          # filesys_table
 {
   my $orig = $_[0];
   my $dup = &xst_filesys_table_new ();
+  my $i;
 
-  foreach (@$orig)
+  foreach $i (@$orig)
   {
-    &xst_filesys_table_add ($dup, &xst_filesys_info_dup ($_));
+    &xst_filesys_table_add ($dup, &xst_filesys_info_dup ($i));
   }
 
   return $dup;
@@ -222,16 +254,14 @@ sub xst_filesys_table_add          # filesys_table, filesys_info
 sub xst_filesys_table_ensure       # filesys_table, filesys_info
 {
   my ($table, $info) = @_;
+  my $i;
 
-  foreach (@$table)
+  foreach $i (@$table)
   {
-    if ($_ eq $info)
-    {
-      return;
-    }
+    return if ($i eq $info);
   }
 
-  xst_filesys_table_add ($table, $info);
+  &xst_filesys_table_add ($table, $info);
 }
 
 # Remove a filesys_info reference from a filesys_table.
@@ -263,17 +293,47 @@ sub xst_filesys_table_remove       # filesys_table, filesys_info
 sub xst_filesys_table_find         # filesys_table, keytype, key
 {
   my ($table, $keytype, $key) = @_;
-
-  foreach (@$table)
+  my $i;
+  
+  foreach $i (@$table)
   {
-    if ($_->{$keytype} eq $key)
-    {
-      return $_;
-    }
+    return $i if ($i->{$keytype} eq $key);
   }
 
   &xst_debug_print_line ("Entry [" . $keytype . " -> " . $key . "] not found in filesys_table.");
   return undef;
+}
+
+# The key_generator is a ref to a func that takes a filesys_info and returns
+# a unique key for it. This allows some abstraction over merging.
+
+sub xst_filesys_table_to_hash
+{
+  my ($table, $key_generator) = @_;
+  my %hash, $i;
+
+  foreach $i (@$table)
+  {
+    $hash{&$key_generator ($i)} = $i;
+  }
+
+  return \%hash;
+}
+
+# The converse. No ref to function here, thankfuly.
+
+sub xst_filesys_hash_to_table
+{
+  my ($hash) = @_;
+  my ($outtab, $key);
+  
+  $outtab = &xst_filesys_table_new ();
+  foreach $key (keys %$hash)
+  {
+    &xst_filesys_table_add ($outtab, $$hash{$key});
+  }
+
+  return $outtab;
 }
 
 # Merges filesys tables A and B, resolving conflicts by giving priority to A.
@@ -282,21 +342,29 @@ sub xst_filesys_table_find         # filesys_table, keytype, key
 #
 # Returns a newly allocated table C, which is a superset of A and B.
 
-# UNFINISHED
-
-sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B
+sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B, key_generator
 {
-  my ($intab_a, $intab_b) = @_;
+  my ($intab_a, $intab_b, $key_generator) = @_;
+  my ($hash_c, $hash_b, $key);
   my $outtab;
 
-  $outtab = &xst_filesys_table_dup ($intab_b);
+  $outtab = &xst_filesys_table_dup ($intab_a);
+  $hash_c = &xst_filesys_table_to_hash ($outtab, $key_generator);
+  $hash_b = &xst_filesys_table_to_hash ($intab_b, $key_generator);
 
-  foreach (@$intab_a)
+  foreach $key (keys %$hash_b)
   {
-    if ($_ eq "options") { next; }
-
-
+    if (exists $$hash_c{$key})
+    {
+      &xst_filesys_info_merge ($$hash_c{$key}, $$hash_b{$key});
+    }
+    else
+    {
+      $$hash_c{$key} = &xst_filesys_info_dup ($$hash_b{$key});
+    }
   }
+
+  return &xst_filesys_hash_to_table ($hash_c);
 }
 
 # Merges filesys tables A and B, resolving conflicts by giving priority to A.
@@ -304,10 +372,29 @@ sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B
 #
 # Returns a newly allocated table C, which is a subset of A and B.
 
-# UNFINISHED
-
 sub xst_filesys_table_merge_subset    # filesys_table A, filesys_table B
 {
+  my ($intab_a, $intab_b, $key_generator) = @_;
+  my ($hash_c, $hash_b, $key);
+  my $outtab;
+
+  $outtab = &xst_filesys_table_dup ($intab_a);
+  $hash_c = &xst_filesys_table_to_hash ($outtab, $key_generator);
+  $hash_b = &xst_filesys_table_to_hash ($intab_b, $key_generator);
+
+  foreach $key (keys %$hash_b)
+  {
+    if (exists $$hash_c{$key})
+    {
+      &xst_filesys_info_merge ($$hash_c{$key}, $$hash_b{$key});
+    }
+    else
+    {
+      delete $$hash_c{$key};
+    }
+  }
+
+  return &xst_filesys_hash_to_table ($hash_c);
 }
 
 

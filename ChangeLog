@@ -1,3 +1,19 @@
+2001-04-25  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* filesys.pl.in (xst_filesys_translate_ext2_device_to_label):
+	chomp is the same in this case, and a common idiom. Also,
+	always return $label, as "" eq undef.
+	Some other style changes.
+	(xst_filesys_table_merge_superset): merge stuff missing in
+	first table from second one.
+	(xst_filesys_table_merge_subset): delete stuff in first table
+	missing	in second.
+	(xst_filesys_table_to_hash): This made these two possible.
+	(xst_filesys_hash_to_table): Don't you love Perl?
+	(xst_filesys_info_merge): Merge stuff inside infos.
+	(xst_filesys_info_merge_options): And options.
+	(merge_hashes): Small utility that makes life more bearable.
+
 2001-04-23  Arturo Espinosa  <arturo@ximian.com>
 
 	* debug.pl.in: minor cosmetic change to path.
