@@ -1269,7 +1269,7 @@ sub gst_parse_interfaces_option_tuple
     {
       while (($tuple = &gst_parse_interfaces_get_next_option ($fd)) != -1)
       {
-        if ($$tuple[0] eq $key)
+        if ($$tuple[0] =~ /$key/)
         {
           return $tuple if !$all;
           push @res, $tuple;

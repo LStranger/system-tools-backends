@@ -1,3 +1,9 @@
+2004-11-16  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in, parse.pl.in: look for wireless-essid, wireless-key,
+	wireless-key1 and that kind of variations in debian when parsing
+	/etc/network/interfaces
+
 2004-11-14  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* Makefile.am: moved the intltool-* files to DISTCLEANFILES.
