@@ -147,18 +147,26 @@ sub update_partition
           {
             if ($options =~ /noauto/)
             {
-              if (`df | grep \"$device \"` eq "") {
+              if (`mount | grep \"$device \"` eq "") {
+		  # TODO: get used swap with the free command
                   $cf_disks[$i]->{partitions}[$j]->{mounted} = 0;
-              }
+	      }
             }
             else
             {
-              $cf_disks[$i]->{partitions}[$j]->{mounted} = 1;
-              # If the partition is mounted we can show free space
-              $block_size = $cf_disks[$i]->{block_size};
-              $free_space=0;
-              $free_space = `df --block-size=$block_size $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
-              $cf_disks[$i]->{partitions}[$j]->{free} = $free_space if $free_space;
+              if (`mount | grep \"$device \"` eq "") {
+		 $cf_disks[$i]->{partitions}[$j]->{mounted} = 0;
+	      } else {
+		 $cf_disks[$i]->{partitions}[$j]->{mounted} = 1;
+		 # If the partition is mounted we can show free space
+		 $block_size = $cf_disks[$i]->{block_size};
+		 $free_space=0;
+		 $free_space = `df --block-size=$block_size $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
+		 $cf_disks[$i]->{partitions}[$j]->{free} = $free_space if $free_space;
+	      }
+	      if ($cf_disks[$i]->{partitions}[$j]->{type} eq "swap") {
+		 $cf_disks[$i]->{partitions}[$j]->{mounted} = 1;
+	      }
             }
           }
 
@@ -1479,6 +1487,54 @@ sub dev_speed
    &gst_xml_print_end ("dev_speed");
 }
 
+sub mount_partition
+{
+   my ($device, $typefs, $point, $mounted, $listed) = @_;
+
+   if ($mounted) {
+      $error = `umount $device 2>&1`;
+      $mounted = 0;
+   } else {
+      if ($listed) {
+	 $error = `mount $device 2>&1`;
+      } else {
+	 $error = `mount -t $typefs $device $point 2>&1`;
+      }
+      $mounted = 1;
+   }
+
+   if ($error ne "") { 
+      &gst_xml_print_line ("<error>" . $error  . "</error>\n"); 
+   } else {
+      &gst_xml_print_line ("<partition>\n");
+      &gst_xml_enter ();
+
+      if ($mounted) {
+	 ($point, $typefs) = `mount | grep $device` =~ /^$device on (.*) type (.*) .*$/;
+	 #TODO: check block size 
+	 #$free = `df --block-size=$block_size $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
+	 $free = `df $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
+	 
+      }
+      
+      if ($typefs) { &gst_xml_print_line ("<typefs>" . $typefs . "</typefs>\n"); }
+      if ($point ) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+      if ($free) { &gst_xml_print_line ("<free>" . $free . "</free>\n"); }
+
+      &gst_xml_leave ();
+      &gst_xml_print_line ("</partition>\n");
+   }
+}
+
+sub mount_fs
+{
+   my ($tool, $device, $typefs, $point, $mounted, $listed) = @_;
+   &gst_report_end ();
+   &gst_xml_print_begin ("mount");
+   &mount_partition ($device, $typefs, $point, $mounted, $listed);
+   &gst_xml_print_end ("mount");
+}
+
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
@@ -1494,6 +1550,8 @@ $directives = {
                   "Return the speed of a device in kb/s" ],
   "removable_info" => [ \&removable_info, ["device"],
                        "Return info about the removable storages"],
+  "mount"     => [ \&mount_fs, ["device", "typefs", "point", "mounted", "listed"], 
+                   "Immediatly mount or umount a given partition"],
 };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);
