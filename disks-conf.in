@@ -979,6 +979,7 @@ sub get_fdisk
 	  &update_disk_data ($dev, "media", "disk");
        }
     } elsif ($media_type eq "usb-storage") {
+       # TODO
     }
     &gst_file_close ($fd);
 
@@ -1142,6 +1143,20 @@ sub xml_parse_state
 
 # --- XML printing --- #
 
+sub sort_by_media
+{
+   my %medias = ("disk" => 1, "cdrom" => 2, "floppy" => 3);
+
+   $ia = $a->{media};
+   $ia =~ s/^\s*//;
+   $ia =~ s/\s*$//;
+
+   $ib = $b->{media};
+   $ib =~ s/^\s*//;
+   $ib =~ s/\s*$//;
+   
+   return (($medias{$ia}) <=> ($medias{$ib}));
+}
 
 sub xml_print
 {
@@ -1152,7 +1167,8 @@ sub xml_print
   &gst_xml_print_line ("<!-- Local fixed media and partitions -->\n");
   &gst_xml_print_vspace ();
 
-  my @disks = @cf_disks;
+  #my @disks = @cf_disks;
+  my @disks = sort sort_by_media (@cf_disks);
 
   while (@disks)
   {
@@ -1505,25 +1521,25 @@ sub mount_partition
 
    if ($error ne "") { 
       &gst_xml_print_line ("<error>" . $error  . "</error>\n"); 
-   } else {
-      &gst_xml_print_line ("<partition>\n");
-      &gst_xml_enter ();
-
-      if ($mounted) {
-	 ($point, $typefs) = `mount | grep $device` =~ /^$device on (.*) type (.*) .*$/;
-	 #TODO: check block size 
-	 #$free = `df --block-size=$block_size $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
-	 $free = `df $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
-	 
-      }
-      
-      if ($typefs) { &gst_xml_print_line ("<typefs>" . $typefs . "</typefs>\n"); }
-      if ($point ) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
-      if ($free) { &gst_xml_print_line ("<free>" . $free . "</free>\n"); }
-
-      &gst_xml_leave ();
-      &gst_xml_print_line ("</partition>\n");
    }
+
+   &gst_xml_print_line ("<partition>\n");
+   &gst_xml_enter ();
+
+   if ($mounted) {
+      ($point, $typefs) = `mount | grep $device` =~ /^$device on (.*) type (.*) .*$/;
+      #TODO  check block size 
+      #$free = `df --block-size=$block_size $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
+      $free = `df $device | grep $device | awk  '/\\/dev/ {print \$4}'`;
+	 
+   }
+      
+   if ($typefs) { &gst_xml_print_line ("<typefs>" . $typefs . "</typefs>\n"); }
+   if ($point ) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+   if ($free) { &gst_xml_print_line ("<free>" . $free . "</free>\n"); }
+
+   &gst_xml_leave ();
+   &gst_xml_print_line ("</partition>\n");
 }
 
 sub mount_fs
