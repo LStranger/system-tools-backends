@@ -741,7 +741,9 @@ sub xml_print
 	&be_xml_enter ();
 	foreach $key (keys %login_defs)
 	{
-	  &be_xml_print ("<$key>" . $login_defs{$key} . "</$key>\n");
+	  if ($key ne "") {
+	    &be_xml_print ("<$key>" . $login_defs{$key} . "</$key>\n");
+	  }
 	}
 	&be_xml_leave ();
 	&be_xml_print ("</logindefs>\n");
