@@ -1,24 +1,22 @@
 # Indonesian translation of setup-tools-backend.
-# Copyright (C) 2004 THE setup-tools-backend'S COPYRIGHT HOLDER
+# Copyright (C) 2004 THE setup-tools-backend's COPYRIGHT HOLDER
 # This file is distributed under the same license as the setup-tools-backend package.
 # Mohammad DAMT <mdamt@bisnisweb.com>, 2004.
-# , fuzzy
+# 
 # 
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backend HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-10-25 08:48+0700\n"
-"PO-Revision-Date: 2004-10-23 22:37+0700\n"
+"POT-Creation-Date: 2005-03-08 20:46+0700\n"
+"PO-Revision-Date: 2005-03-08 20:36+0700\n"
 "Last-Translator: Mohammad DAMT <mdamt@bisnisweb.com>\n"
-"Language-Team: Indonesian <l10n@gnome.linux.or.id>\n"
+"Language-Team: Indonesian <sukarelawan@gnome.linux.or.id>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
-#. please, keep this list sorted
-#. service => [long_name, description]
 #: service-list.pl.in:36
 msgid "ACPI event handler"
 msgstr "Pengatur kejadian ACPI"
@@ -861,30 +859,79 @@ msgstr ""
 "untuk mengatur layanan berdasarkan waktu dan dapat membatasi jumlah server "
 "yang dapat dijalankan, dan sebagainya."
 
-#: service.pl.in:226 service.pl.in:231
+#: service.pl.in:229 service.pl.in:234
 msgid "Halting the system"
 msgstr "Matikan sistem"
 
-#: service.pl.in:227 service.pl.in:233
+#: service.pl.in:230 service.pl.in:236
 msgid "Text mode"
 msgstr "Moda teks"
 
-#: service.pl.in:228 service.pl.in:232 service.pl.in:241
+#: service.pl.in:231 service.pl.in:235 service.pl.in:244
 msgid "Graphical mode"
 msgstr "Moda grafis"
 
-#: service.pl.in:229 service.pl.in:234
+#: service.pl.in:232 service.pl.in:237
 msgid "Rebooting the system"
 msgstr "Reboot system"
 
-#: service.pl.in:236
+#: service.pl.in:239
 msgid "Starts all system neccesary services"
 msgstr "Jalankan semua layanan sistem yang dibutuhkan"
 
-#: service.pl.in:237
+#: service.pl.in:240
 msgid "Default runlevel"
 msgstr "Level jalan default"
 
-#: service.pl.in:238
+#: service.pl.in:241
 msgid "Networkless runlevel"
 msgstr "Level jalan tanpa jaringan"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "Amati logs sistem"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "Gunakan perangkat audio"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "Akses ke drive CD-ROM"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "Akses ke perangkat modem"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "Sambung ke internet melalui perangkat modem"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "Kirim dan terima faks"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "Akses ke drive floppy"
+
+#: users-conf.in:186
+msgid "Enable access to external storage devices automatically"
+msgstr "Bolehkan akse ke perangkat penyimpanan luar secara automatis"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "Akses ke drive tape"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "Bisa mendapatkan hak adminstrator"
+
+#: users-conf.in:492
+msgid "Default"
+msgstr "Default"
+
+#: users-conf.in:493
+msgid "Default profile"
+msgstr "Profile default"
+
