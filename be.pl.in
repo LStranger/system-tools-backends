@@ -1482,6 +1482,49 @@ sub be_network_get_debian
 
 # be_network_get_redhat
 
+sub be_ppp_get_phone_redhat
+{
+  my ($iface, $iface_name) = ($_[0], $_[1]);
+  my $fd, $is_sendstr, $str, $found, $ret;
+
+  $fd = &be_open_read_from_names ("/etc/sysconfig/network-scripts/chat-$iface_name");
+  if ($fd)
+  {
+    # This var tells if the string is in the second part of chat's send/receive pair.
+    $is_sendstr = 0;
+    while (<$fd>)
+    {
+	 chomp;
+	 while ($_ ne "")
+	 {
+	   if (/^\'/)
+	   {
+		s/\'([^\']*)\' ?//;
+		$found = $1;
+	   }
+	   else
+	   {
+		s/([^ \t]*) ?//;
+		$found = $1;
+	   }
+
+	   if ($is_sendstr)
+	   {
+		if ($found =~ /^atd/i)
+		{
+		  $found =~ /^atd[^0-9]*([0-9, -]+)/i;
+		  $ret = $1;
+		  $$iface{"phone_number"} = $ret;
+		  return;
+		}
+	   }
+	   
+	   $is_sendstr ^= 1;
+	 }
+    }
+  }
+}
+
 sub be_network_get_redhat
 {
   local *IFACE_DIR;
@@ -1535,7 +1578,7 @@ sub be_network_get_redhat
   {
     next if not $i =~ /ifcfg-([a-z0-9]+)/;
     
-    $fh = be_open_read_from_names("/etc/sysconfig/network-scripts/$i");
+    $fh = &be_open_read_from_names("/etc/sysconfig/network-scripts/$i");
     if (!$fh) { next; }
     
     # Found an interface file, add another interface hash.
@@ -1578,6 +1621,11 @@ sub be_network_get_redhat
     $iface_name = $$iface{"dev"};
     $ifaces{$iface_name} = $iface;
     delete $$iface{"dev"};
+
+    # FIXME: this may be Linux-only.
+    if ($iface_name =~ /ppp.*/) {
+	 &be_ppp_get_phone_redhat ($iface, $iface_name);
+    }
     
     close ($fh);
   }
