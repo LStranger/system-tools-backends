@@ -1,3 +1,9 @@
+2003-05-24  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network-conf.in: I am really dumb... I still don't know how, but 
+	somehow I deleted the $profile_file declaration line, leaving the
+	profiles administration completely useless :-(((
+
 2003-05-20  Carlos Garnacho Parro  <garnacho@tuxerver.net>
  
         * Release 0.26.0

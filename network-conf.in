@@ -82,6 +82,8 @@ end_of_description;
 
 $progress_max = 10;
 
+$profile_file = "profiles.xml";
+
 
 # --- XML parsing ---
 
