@@ -685,6 +685,13 @@ sub xst_xml_unquote
     $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i + 1]/g;
   }
 
+  while ($ret =~ /&#([0-9]+);/)
+  {
+    $num = $1;
+    $c = chr ($num);
+    $ret =~ s/&#$num;/$c/g;
+  }
+
   #print STDERR "END U: $ret\n";
   
   return $ret;
