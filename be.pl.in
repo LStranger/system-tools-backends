@@ -732,12 +732,20 @@ sub be_open_write_from_names
       }
     
     # Truncate and return filehandle.
+
+    print STDERR $name . "\n";
+    print STDERR $name . "\n";
+    print STDERR $name . "\n";
+    print STDERR $name . "\n";
+    print STDERR $name . "\n";
     
     if (!open(FILE, ">$name"))
       {
 	&be_report_error(99, "Failed to write to \[$name\]");
 	return;
       }
+
+    
     
     return *FILE;
   }
