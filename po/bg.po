@@ -3,19 +3,20 @@
 # This file is distributed under the same license as the STB package.
 # Stoycho Stanchev <sstanchev@i-space.org>, 2004;
 # Vladimir "Kaladan" Petkov <vpetkov@i-space.org>, 2004.
-# 
-# 
+# Iassen Pramatarov <turin@fsa-bg.org>, 2005.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: setup tools backends gnome 2.8 branch\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-09-07 04:20+0200\n"
-"PO-Revision-Date: 2004-09-28 22:07+0300\n"
+"POT-Creation-Date: 2005-01-24 15:11+0200\n"
+"PO-Revision-Date: 2005-01-24 15:11+0200\n"
 "Last-Translator: Stoycho Stanchev <sstanchev@i-space.org>\n"
 "Language-Team: Bulgarian <dict@linux.zonebg.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -28,28 +29,32 @@ msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
+"Съобщава на потребителски програви за ACPI събития; изпълнява команди в "
+"отговор на ACPI събития, като например задействане на бутони на захранването."
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
-msgstr "Развита звукова архитектура за Linux"
+msgstr "Модерна архитектура за звук в Линукс (ALSA)"
 
 #: service-list.pl.in:38 service-list.pl.in:70
 msgid "web server"
-msgstr "web сървър"
+msgstr "уеб сървър"
 
 #: service-list.pl.in:38 service-list.pl.in:70
 msgid ""
 "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr ""
-"Apache е World Wide Web сървър.  Използва се за обслужване на HTML файлове и CGI."
+"Apache е сървър за WWW.  Използва се за доставка на HTML файлове и CGI "
+"програми."
 
 #: service-list.pl.in:39
 msgid "Run missed scheduled jobs at startup"
-msgstr "Ипълннение на пропуснатите процеси при стартиране"
+msgstr "Пускане на пропуснатите задачи при стартиране"
 
 #: service-list.pl.in:39
 msgid "Run cron jobs that were left out due to downtime"
-msgstr "Стартира cron задачи които"
+msgstr ""
+"Стартира cron задачи, които са били пропуснати поради изключване на машината"
 
 #: service-list.pl.in:40
 msgid "Automatic power management daemon"
@@ -60,25 +65,29 @@ msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
 msgstr ""
-"apmd се използва за наглеждане състоянието на батерията и нейното регистриране чрез syslog(8). Той също може да се използва за изключване на компютъра, когато зарядът на батерията намалее."
+"apmd се използва за наглеждане състоянието на батерията и нейното "
+"регистриране чрез syslog(8). Той също може да се използва за изключване на "
+"компютъра, когато зарядът на батерията намалее."
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
-msgstr "Изпълнение на команда по зададено време"
+msgstr "Пуска команда на определено време"
 
 #: service-list.pl.in:41
 msgid ""
 "Runs commands scheduled by the at command at the time specified when at was "
 "run, and runs batch commands when the load average is low enough."
 msgstr ""
+"Изпълнява команди, зададени с командата at в определеното от нея време и "
+"изпълнява набор от команди, когато натоварването е достатъчно ниско."
 
 #: service-list.pl.in:42
 msgid "Audio mixer"
-msgstr "Аудио миксер"
+msgstr "Звуков смесител"
 
 #: service-list.pl.in:42
 msgid "This program adjusts the settings of an audio mixing device"
-msgstr "Тази програма променя настройките на устройството аудио миксер"
+msgstr "Тази програма променя настройките на звуковия смесител"
 
 #: service-list.pl.in:43
 msgid "BinFormat Support"
@@ -86,18 +95,19 @@ msgstr "Поддръжка на Binformat"
 
 #: service-list.pl.in:43
 msgid "Support for running non ELF binaries on Linux"
-msgstr "Поддръжка за работещи не ELF binaries в Linux"
+msgstr "Поддръжка за изпълнение на двоични файлове в не-ELF формат под Linux"
 
 #: service-list.pl.in:44
 msgid "Boot messages recorder"
-msgstr "Регистратор на съобщенията при начално зареждане"
+msgstr "Регистратор на съобщенията при стартиране"
 
 #: service-list.pl.in:44
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
 msgstr ""
-"Стартиране с нисък приоритет и копиране на всички низове изпратени до устройството /dev/console, като файл-дневник"
+"Стартиране с нисък приоритет и копиране на всички низове изпратени до "
+"устройството /dev/console, като файл-дневник"
 
 #: service-list.pl.in:45
 msgid ""
@@ -106,7 +116,9 @@ msgid ""
 "dropped.  This is the tcp version. You must enable xinetd to use this "
 "service."
 msgstr ""
-"xinetd - вътрешена услуга, която генерира знаци. Вътрешната услуга xinetd продължително генерира знаци докато връзката не прекъсне.  Това е tcp версия. Вие трябва да разрешите xinetd за да използвате тази услуга."
+"xinetd - вътрешена услуга, която генерира знаци. Вътрешната услуга xinetd "
+"продължително генерира знаци докато връзката не прекъсне.  Това е tcp "
+"версия. Вие трябва да разрешите xinetd за да използвате тази услуга."
 
 #: service-list.pl.in:46
 msgid ""
@@ -115,7 +127,9 @@ msgid ""
 "dropped.  This is the udp version. You must enable xinetd to use this "
 "service."
 msgstr ""
-"xinetd вътрешена услуга, която генерира знаци. Вътрешната услуга xinetd продължително генерира знаци, докато връзката не прекъсне.  Това е udp версия. Вие трябва да разрешите xinetd за да използвате тази услуга."
+"xinetd вътрешена услуга, която генерира знаци. Вътрешната услуга xinetd "
+"продължително генерира знаци, докато връзката не прекъсне.  Това е udp "
+"версия. Вие трябва да разрешите xinetd за да използвате тази услуга."
 
 #: service-list.pl.in:47
 msgid "CPU frequency monitor"
@@ -127,7 +141,9 @@ msgid ""
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
 msgstr ""
-"cpufreqd се използва за наглеждане състоянието на батерията и нагласява честотата на процесора така, че осигурява оптималната му работа и намалява консумацията на електроенергия"
+"cpufreqd се използва за наглеждане състоянието на батерията и нагласява "
+"честотата на процесора така, че осигурява оптималната му работа и намалява "
+"консумацията на електроенергия"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -143,21 +159,28 @@ msgid ""
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
 msgstr ""
+"cron е стандартна UNIX програма, която изпълнява зададени програми през "
+"зададени интервали. vixie-cron добавя нови функции към стандартния UNIX "
+"cron, включително подобрена сигурност и по-големи възможности за настройка."
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
-msgstr "Обикновенна Unix система за отпечатване (CUPS)"
+msgstr "Обща Unix система за отпечатване (CUPS)"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr "Система за отпечатване базирана на Internet Printing Protocol, версия  1.1"
+msgstr ""
+"Система за отпечатване базирана на Internet Printing Protocol, версия  1.1"
 
 #: service-list.pl.in:52
 msgid ""
 "An internal xinetd service which gets the current system time then prints it "
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
-msgstr "Вътрешна xinetd услуга, която получава информация за текущото системно време и го отпечатва във вид като този: \"Пон Яну 13 22:30:26 EST 2002\".  Това е tcp версия. Вие трябва да разрешите xinetd за да използвате тази услуга."
+msgstr ""
+"Вътрешна xinetd услуга, която получава информация за текущото системно време "
+"и го отпечатва във вид като този: \"Пон Яну 13 22:30:26 EST 2002\".  Това е "
+"tcp версия. Вие трябва да разрешите xinetd за да използвате тази услуга."
 
 #: service-list.pl.in:53
 msgid ""
@@ -165,6 +188,9 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"Вътрешна xinetd услуга, която взема текущото системно време и го връща във "
+"формат от вида: \"Wed·Nov 13 22:30:27 EST 2002\".  Това е udp версията. За "
+"да използвате тази услуга, трябва да разрешите xinetd."
 
 #: service-list.pl.in:54 service-list.pl.in:55
 msgid "Dynamic DNS Client"
@@ -180,31 +206,35 @@ msgstr "Динамична DNS услуга от www.dhis.org"
 
 #: service-list.pl.in:56
 msgid "Dict Dictionary Server"
-msgstr "Речников сървър Dict"
+msgstr "Сървър за речници"
 
 #: service-list.pl.in:57
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"Вътрешна услуга на xinetd, която връща ехо обратно към клиентите.  Това е "
+"tcp версията. За да използвате услугата, трябва да разрешите xinetd."
 
 #: service-list.pl.in:58
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"Вътрешна услуга на xinetd, която връща ехо обратно към клиентите.  Това е "
+"udp версията. За да използвате услугата, трябва да разрешите xinetd."
 
 #: service-list.pl.in:59
 msgid "Sound mixing server"
-msgstr "Сървър на аудио миксера"
+msgstr "Сървър на звуковия смесител"
 
 #: service-list.pl.in:59
 msgid "The Enlightened Sound Daemon"
-msgstr "The Enlightened Sound Daemon"
+msgstr "Звуков сървър ESD"
 
 #: service-list.pl.in:60
 msgid "Exim SMTP Server"
-msgstr "Exim SMTP сървър"
+msgstr "SMTP сървър Exim"
 
 #: service-list.pl.in:61
 msgid "file alteration monitor"
@@ -213,6 +243,7 @@ msgstr "монитор на променените файлове"
 #: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
 msgstr ""
+"Firstboot е програма тип \"помощник\", която се изпълнява при първото влизане"
 
 #: service-list.pl.in:63
 msgid "Text-to-speech system"
@@ -220,15 +251,16 @@ msgstr "Система за преобразуване на текст в гов
 
 #: service-list.pl.in:63
 msgid "Festival is a general purpose text-to-speech system"
-msgstr "Festival e основна цел за преобразуване на текст в говор"
+msgstr ""
+"Festival e система за преобразуване на текста в говор с общо предназначение"
 
 #: service-list.pl.in:64
 msgid "Mail Fetcher"
-msgstr ""
+msgstr "Изтегляне на поща"
 
 #: service-list.pl.in:64
 msgid "A Mail Fetcher from external Servers"
-msgstr ""
+msgstr "Програма за изтегляне на поща от отдалечени сървъри"
 
 #: service-list.pl.in:65
 msgid "IPv6 Tunnel Broker"
@@ -248,57 +280,69 @@ msgstr "gdm осигурява влизане \"login:\" в работната �
 
 #: service-list.pl.in:67
 msgid "console mouse support"
-msgstr "поддръжка на мишка в режим конзола"
+msgstr "поддръжка на мишка в текстов режим"
 
 #: service-list.pl.in:67
 msgid ""
 "GPM adds mouse support to text-based Linux applications such the Midnight "
 "Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
-msgstr "GPM инсталира мишка за текст базирани Linux програми като Midnight Commander. Също така можете да избирате, копирате и вмъквате текст, да отваряте падащи менюта в режим \"console\"."
+msgstr ""
+"GPM инсталира мишка за текст базирани Linux програми като Midnight "
+"Commander. Също така можете да избирате, копирате и вмъквате текст, да "
+"отваряте падащи менюта в режим \"console\"."
 
 #: service-list.pl.in:68
 msgid "Set hard disk parameters"
-msgstr "Поставяне на параметри на хард диска"
+msgstr "Задаване параметри на твърдия диск"
 
 #: service-list.pl.in:68
 msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
 msgstr ""
-"Осигурява интерфейс до различни входно-изходни операции с хард диска, поддържани от Linux ATA/IDE device driver subsystem."
+"Осигурява интерфейс до различни входно-изходни операции с хард диска, "
+"поддържани от Linux ATA/IDE device driver subsystem."
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
-msgstr "Linux hotplugging поддръжка"
+msgstr "Поддръжка на hotplug в Linux"
 
 #: service-list.pl.in:69
 msgid ""
 "hotplug is a program which is used by the kernel to notify user mode "
 "software when some significant (usually hardware-related) events take place. "
 "An example is when a USB or Cardbus device has just been plugged in."
-msgstr "hotplug е програма, която е използвана от ядрото за да съобщи на софтуера използван от потребителя за някое (обикновенно свързано с хардуера) събитие. Например: Влючили сте USB кабела на цифровия фотоапарат."
+msgstr ""
+"hotplug е програма, която е използвана от ядрото за да съобщи на софтуера "
+"използван от потребителя за някое (обикновенно свързано с хардуера) събитие. "
+"Например: Влючили сте USB кабела на цифровия фотоапарат."
 
 #: service-list.pl.in:71
 msgid "internet superserver"
-msgstr "интернет суперсървър"
+msgstr "сървър inetd"
 
 #: service-list.pl.in:71
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
 msgstr ""
-"inetd разрешава стартирането на един демон за да призове няколко други, намалявайки натоварването на системата."
+"inetd разрешава стартирането на един демон за извикване на няколко други, "
+"намалявайки по този начин натоварването на системата."
 
 #: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
-msgstr "Инструмент за администриране на IPv4 packet filtering и NAT"
+msgstr ""
+"административен инструмент за филтриране на пакети IPv4 и преобразуване на "
+"адреси (NAT)"
 
 #: service-list.pl.in:72
 msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
-msgstr "Iptables се използва за настройване, поддържане и инспекция на таблиците от IP packet филтъра управлявани от ядрото на Linux."
+msgstr ""
+"Iptables се използва за настройване, поддържане и преглед на таблиците на IP "
+"пакетния филтър в ядрото на Linux."
 
 #: service-list.pl.in:73
 msgid "IrDA stack for Linux"
@@ -306,7 +350,7 @@ msgstr "IrDA стек за Linux"
 
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol"
-msgstr "Протокол за обмяна на интернет ключове"
+msgstr "Протокол за обмяна на интернет ключове (IKE)"
 
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol openbsd implementation"
@@ -325,14 +369,19 @@ msgid ""
 "Runs joystick-device-check.  joystick-device-check is a program which "
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
-msgstr "Изпълнява joystick-device-check.  joystick-device-check е програма, която проверява дали /dev/js* device nodes са съвместими с използваната версия на ядрото."
+msgstr ""
+"проверява дали /dev/js* device nodes са съвместими с използваната версия на "
+"ядрото."
 
 #: service-list.pl.in:77
 msgid ""
 "This package loads the selected keyboard map as set in /etc/sysconfig/"
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
 "leave this enabled for most machines."
-msgstr "Този пакет зарежда избраната клавиатурна подредба, която се поставя в /etc/sysconfig/keyboard.  Това може да се направи и с kbdconfig utility.  Би трябвало да оставите това \"разрешено\" за повечето видове машини."
+msgstr ""
+"Този пакет зарежда избраната клавиатурна подредба, която се поставя в /etc/"
+"sysconfig/keyboard.  Това може да се направи и с kbdconfig utility.  Би "
+"трябвало да оставите това \"разрешено\" за повечето видове машини."
 
 #: service-list.pl.in:78
 msgid "Kernel Log Daemon"
@@ -342,7 +391,8 @@ msgstr "Демон за системния журнал на ядрото"
 msgid ""
 "klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr ""
-"klogd е системен демон, проследяващ и журнализиращ съобщенията на Linux ядрото."
+"klogd е системен демон, проследяващ и журнализиращ съобщенията на Linux "
+"ядрото."
 
 #: service-list.pl.in:79
 msgid ""
@@ -355,18 +405,21 @@ msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
 msgstr ""
-"LIRC е пакет, позволяващ Ви да декодирате и изпращате infra-red сигнали до най-често използваните дистанциони управления"
+"LIRC е пакет, позволяващ Ви да декодирате и изпращате infra-red сигнали до "
+"най-често използваните дистанциони управления"
 
 #: service-list.pl.in:82
 msgid "Starts misc programs that should be started"
-msgstr "Стартиране на всички останали програми, които би трябвало да са стартирани"
+msgstr ""
+"Стартиране на всички останали програми, които би трябвало да са стартирани"
 
 #: service-list.pl.in:83
 msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
-"lpd е демонът за разпечатка необходим за правилната работа на lpr. Това е основно сървър, предаващ задачи до принтера(ите)."
+"lpd е демонът за разпечатка необходим за правилната работа на lpr. Това е "
+"основно сървър, предаващ задачи до принтера(ите)."
 
 #: service-list.pl.in:84
 msgid "Create devices"
@@ -377,7 +430,8 @@ msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
 msgstr ""
-"Скрипт, създаващ устройствата в /dev , използван за комуникация с драйверите в ядрото"
+"Скрипт, създаващ устройствата в /dev , използван за комуникация с драйверите "
+"в ядрото"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -393,15 +447,15 @@ msgstr "Зареждане на модулите на ядрото"
 
 #: service-list.pl.in:87
 msgid "tools for managing Linux kernel modules"
-msgstr "Инструменти за поддръжка на модулите на ядрото"
+msgstr "инструменти за управление на модулите на ядрото Линукс"
 
 #: service-list.pl.in:88 service-list.pl.in:105
 msgid "database server"
-msgstr "Сървър за бази данни"
+msgstr "сървър за бази данни"
 
 #: service-list.pl.in:88
 msgid "MySQL, a SQL-based relational database daemon"
-msgstr "MySQL е SQL-базиран демон за база данни"
+msgstr "MySQL е SQL-сървър за управление на база данни"
 
 #: service-list.pl.in:89
 msgid "dns server"
@@ -412,21 +466,24 @@ msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
-"BIND е Domain Name Server (DNS), който се използва за превръщане на имена в IP адреси"
+"BIND е сървър за имена (DNS), който се използва за превръщане на имена в IP "
+"адреси"
 
 #: service-list.pl.in:90
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
-"Монтиране и демонтиране на всички мрежови файлови системи (NFS), SMB (Lan Manager/Windows), и NCP (NetWare) точки на монтирани."
+"Монтиране и демонтиране на всички точки на монтиране на мрежови файлови "
+"системи (NFS), SMB (Lan Manager/Windows), и NCP (NetWare)."
 
 #: service-list.pl.in:91
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
 msgstr ""
-"Активиране/деактивитране на всички мрежови интерфейси, настроени за стартиране при първоначално зареждане на системата."
+"Активиране/деактивитране на всички мрежови интерфейси, настроени за "
+"стартиране при първоначално зареждане на системата."
 
 #: service-list.pl.in:92
 msgid ""
@@ -434,18 +491,21 @@ msgid ""
 "service provides NFS server functionality, which is configured via the /etc/"
 "exports file."
 msgstr ""
-"NFS е популярен протокол за споделяне на файлове чрез TCP/IP мрежи. Тази услуга се грижи за функционалността на NFS сървъра, който е конфигуриран чрез /etc/exports файл."
+"NFS е популярен протокол за споделяне на файлове чрез TCP/IP мрежи. Тази "
+"услуга се грижи за функционалността на NFS сървъра, който е конфигуриран "
+"чрез /etc/exports файл."
 
 #: service-list.pl.in:93
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS file locking functionality."
 msgstr ""
-"NFS е популярен протокол за споделяне на файлове чрез TCP/IP мрежи. Тази услуга се осигурява заключването на NFS файла."
+"NFS е популярен протокол за споделяне на файлове чрез TCP/IP мрежи. Тази "
+"услуга се осигурява заключването на NFS файла."
 
 #: service-list.pl.in:94
 msgid "Name service cache daemon"
-msgstr "Name service cache демон"
+msgstr "Сървър за кеширане на DNS имена"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
@@ -453,7 +513,7 @@ msgstr "Демон, осигуряващ кеширането на повече�
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
-msgstr "Network Time Protocol демон"
+msgstr "Сървър за точно време (NTP)"
 
 #: service-list.pl.in:95
 msgid "ntpd is the NTPv4 daemon."
@@ -467,7 +527,9 @@ msgstr "Актуализиране на часа/датата през инте�
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
-msgstr "Проверява времето от Network Time Protocol (ntp) сървъра и така настройва системното време."
+msgstr ""
+"Проверява времето от Network Time Protocol (ntp) сървъра и така настройва "
+"системното време."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -478,11 +540,12 @@ msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
 msgstr ""
-"Демон, който настройва и поддържа системното време като го синхронизира със стандартните Internet time сървъри"
+"Демон, който настройва и поддържа системното време като го синхронизира със "
+"стандартните Internet time сървъри"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
-msgstr "HTTP caching сървър посредник"
+msgstr "Кеширащ HTTP сървър посредник"
 
 #: service-list.pl.in:100
 msgid "PCMCIA Services"
@@ -498,18 +561,21 @@ msgstr "IPsec tunnel implementation"
 
 #: service-list.pl.in:103
 msgid "DARPA port to RPC program number mapper"
-msgstr ""
+msgstr "Порт според DARPA за преобразуването на номерата на програмите за RPC"
 
 #: service-list.pl.in:103
 msgid ""
 "The portmapper manages RPC connections, which are used by protocols such as "
 "NFS and NIS. The portmap server must be running on machines which act as "
 "servers for protocols which make use of the RPC mechanism."
-msgstr "portmapper управлява RPC връзките, които са използвани от протоколи като NFS и NIS. portmap сървъра трябва да работи на машини, които са сървъри за протоколи и използват RPC механизма."
+msgstr ""
+"portmapper управлява RPC връзките, които са използвани от протоколи като NFS "
+"и NIS. portmap сървъра трябва да работи на машини, които са сървъри за "
+"протоколи и използват RPC механизма."
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
-msgstr "Mail транспорт агент"
+msgstr "Пощенски сървър"
 
 #: service-list.pl.in:106
 msgid "Point to Point Protocol daemon"
@@ -519,7 +585,9 @@ msgstr "Point to Point Protocol демон"
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
-msgstr "Point-to-Point Protocol (PPP) осогурява пренасянето на данни по серийни point-to-point връзки."
+msgstr ""
+"Point-to-Point Protocol (PPP) осогурява пренасянето на данни по серийни "
+"point-to-point връзки."
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
@@ -530,6 +598,8 @@ msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
 msgstr ""
+"Запазва и възстановява системното ниво на ентропия за по-добро генериране на "
+"случайни числа."
 
 #: service-list.pl.in:109
 msgid ""
@@ -538,6 +608,10 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
+"Този скрипт задава неформатирани утсройства като блокови устройства (като "
+"например дялове на твърд диск). Това се използва за приложения като Oracle. "
+"Можете да зададете неформатирано устройство като блоково, като редактирате "
+"файла /etc/sysconfig/rawdevices."
 
 #: service-list.pl.in:110
 msgid ""
@@ -545,13 +619,19 @@ msgid ""
 "Red Hat Network servers to check for updates, notifications and perform "
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
-msgstr "Това е демон който манипулира процеси чрез периодична връзка с Red Hat мрежови сървъри и проверява за актуализации, съобщения и следи системните процеси в зависимост със service·level за, който е абониран сървъра."
+msgstr ""
+"Това е демон който манипулира процеси чрез периодична връзка с Red Hat "
+"мрежови сървъри и проверява за актуализации, съобщения и следи системните "
+"процеси в зависимост със service·level за, който е абониран сървъра."
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
-msgstr "Сървърът rsync е добра добавка към ftp сървър, като осигурява проверка за грешки (crc checksumming). За да използвате тази услуга трябва да разрешите xinetd."
+msgstr ""
+"Сървърът rsync е добра добавка към ftp сървър, като осигурява проверка за "
+"грешки (crc checksumming). За да използвате тази услуга трябва да разрешите "
+"xinetd."
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
@@ -565,59 +645,77 @@ msgstr "Windows SMB/CIFS файлов сървър за UNIX"
 msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
-msgstr "Софтуерният пакет Samba е колекция от програми включващи Server Message Block протокол за UNIX системи."
+msgstr ""
+"Софтуерният пакет Samba е колекция от програми включващи Server Message "
+"Block протокол за UNIX системи."
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
-msgstr "saslauthd е сървърен процес, който задържа текстови заявки за опознаване от името на библиотеката cyrus-sasl."
+msgstr ""
+"saslauthd е сървърен процес, който задържа текстови заявки за опознаване от "
+"името на библиотеката cyrus-sasl."
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
-msgstr "Sendmail е агент за пренос на поща, който прехвърля пощата от една машина на друга."
+msgstr ""
+"Sendmail е сървър за пренос на поща, който прехвърля пощата от една машина "
+"на друга."
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
-msgstr "Вътрешната xinetd услуга, показва активните сървъри. Трябва да сте разрешили xinetd за да използвате тази услуга."
+msgstr ""
+"Вътрешната xinetd услуга, показва активните сървъри. Трябва да сте разрешили "
+"xinetd за да използвате тази услуга."
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
-msgstr "Вътрешната xinetd услуга, показва активните услуги. Трябва да сте разрешили xinetd за да използвате тази услуга."
+msgstr ""
+"Вътрешната xinetd услуга, показва активните услуги. Трябва да сте разрешили "
+"xinetd за да използвате тази услуга."
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
-msgstr "вземане/поставяне на информация за серийния порт"
+msgstr "вземане/задаване на информация за серийния порт"
 
 #: service-list.pl.in:118
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
-msgstr "setserial е програма разработена за настройка и/или описание на информацията за конфигурацията на серийния порт."
+msgstr ""
+"setserial е програма разработена за настройка и/или описание на информацията "
+"за конфигурацията на серийния порт."
 
 #: service-list.pl.in:119
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
-msgstr "FAM е файл мониторинг демон. Той може да бъде използван за получаване на рапорти, когато има промяна по файловете. Трябва да сте разрешили xinetd за да използвате тази услуга."
+msgstr ""
+"FAM е файл мониторинг демон. Той може да бъде използван за получаване на "
+"рапорти, когато има промяна по файловете. Трябва да сте разрешили xinetd за "
+"да използвате тази услуга."
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
-msgstr "контролиране и наглеждане на системите за съхранение на информация използвайки S.M.A.R.T."
+msgstr ""
+"контролиране и наглеждане на системите за съхранение на информация "
+"използвайки S.M.A.R.T."
 
 #: service-list.pl.in:121
 msgid "Perl-based spam filter using text analysis"
-msgstr "Perl базиран филтър срещу нежелана електонна поща използвайки текстов анализ"
+msgstr ""
+"Perl базиран филтър срещу нежелана електонна поща използвайки текстов анализ"
 
 #: service-list.pl.in:122
 msgid "Simple Network Management Protocol (SNMP) Daemon"
-msgstr "Обикновен протокол за поддръжка на мрежа (SNMP) демон"
+msgstr "Сървър за мрежово управление (SNMP)"
 
 #: service-list.pl.in:123 service-list.pl.in:124
 msgid "OpenSSH SSH server"
@@ -636,19 +734,23 @@ msgstr "OpenSSH сървър демон"
 
 #: service-list.pl.in:125
 msgid "Linux system logging utilities"
-msgstr "Инструменти за журнализиране в Linux"
+msgstr "Инструменти за системни журнали в Линукс"
 
 #: service-list.pl.in:125
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
-msgstr "Sysklogd осигурява два системни инструмента, които позволяват поддръжка  и  прихващане  на  съобшения  от  ядрото."
+msgstr ""
+"Sysklogd осигурява два системни инструмента, които позволяват поддръжка и "
+"прихващане на съобшения от ядрото."
 
 #: service-list.pl.in:126
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
-msgstr "Syslog е улеснение чрез което много демони записват съобщения в различни log файлове."
+msgstr ""
+"Syslog е улеснение чрез което много демони записват съобщения в различни log "
+"файлове."
 
 #: service-list.pl.in:127
 msgid ""
@@ -657,6 +759,10 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"Сървър за време, съвместим с RFC 868. Този протокол осигурява независимо от "
+"местоположението достъпно за системата време и час. Услугата Time връща "
+"времето в секунди след полунощ на 01.01.1900г.  Това е tcp версията. За да "
+"използвате тази услуга, трябва да разрешите xinetd."
 
 #: service-list.pl.in:128
 msgid ""
@@ -665,10 +771,14 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"Сървър за време, съвместим с RFC 868. Този протокол осигурява независимо от "
+"местоположението достъпно за системата време и час. Услугата Time връща "
+"времето в секунди след полунощ на 01.01.1900г.  Това е udp версията. За да "
+"използвате тази услуга, трябва да разрешите xinetd."
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
-msgstr ""
+msgstr "устройства-източници за случайни числа към ядрото"
 
 #: service-list.pl.in:129
 msgid ""
@@ -676,6 +786,9 @@ msgid ""
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
+"Генераторът на случайни числа събира шум на обкръженеито от драйвери на "
+"устройства и други подобни източници в басейн на ентропия. От него генерира "
+"\"случайни\" числа."
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -685,7 +798,9 @@ msgstr "Intel(TM) x86(TM) виртуална машина"
 msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
-msgstr "vmware командата стартира Intel X86 виртуална машина. Този скрипт управлява услугите необходими за изпълнение на VMware софтуера."
+msgstr ""
+"vmware командата стартира Intel X86 виртуална машина. Този скрипт управлява "
+"услугите необходими за изпълнение на VMware софтуера."
 
 #: service-list.pl.in:132
 msgid "Web-based administration toolkit"
@@ -693,7 +808,7 @@ msgstr "Web-базиран пакет с инструменти за админ�
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
-msgstr ""
+msgstr "Сървър Name·Service·Switch за откриване на имена от NT сървъри"
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
@@ -704,7 +819,8 @@ msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
-"Позволява на потребителите да изпълняват Windows(tm) програми чрез натискане с мишката (или с команда ./file.exe)"
+"Позволява на потребителите да изпълняват Windows(tm) програми чрез натискане "
+"с мишката (или с команда ./file.exe)"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
@@ -712,7 +828,7 @@ msgstr "X Display мениджър"
 
 #: service-list.pl.in:135
 msgid "Provides the X equivalent of a \"login:\" prompt."
-msgstr ""
+msgstr "Осигурява графичен интерфейс за влизане в системата."
 
 #: service-list.pl.in:136
 msgid "X font server"
@@ -722,7 +838,9 @@ msgstr "Сървър на шрифтовете в X"
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
-msgstr "Xfs е сървърът за шрифтове на системата X Window. Той предоставя шрифтовете на сървърите за визуализация в системата X Window."
+msgstr ""
+"Xfs е сървърът за шрифтове на системата X Window. Той предоставя шрифтовете "
+"на сървърите за визуализация в системата X Window."
 
 #: service-list.pl.in:137
 msgid ""
@@ -731,6 +849,10 @@ msgid ""
 "available based on time, and can place limits on the number of servers that "
 "can be started, among other things."
 msgstr ""
+"xinetd е мощна алтернатива на inetd. xinetd има механизми за управление на "
+"достъпа, разширени възможности за запис в журнали, възможнотс да включва и "
+"изключва услугите в определено време, да ограничава броя на едновременните "
+"услуги и много други."
 
 #: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
@@ -754,9 +876,56 @@ msgstr "Стартиране на всички необходими систем
 
 #: service.pl.in:237
 msgid "Default runlevel"
-msgstr "Стандартен runlevel"
+msgstr "Подразбиращо се ниво на зареждане"
 
 #: service.pl.in:238
 msgid "Networkless runlevel"
-msgstr "Runlevel без мрежа"
+msgstr "Ниво на зареждане без мрежа"
 
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "Наблюдаване на листемните журнали"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "Използване на звукови устройства"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "Достъп до компактдискови устройтва"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "Достъп до модеми"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "Свързване към Интернет през модем"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "Изпращане и получаване на факсове"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "Достъп до флопидискови устройства"
+
+#: users-conf.in:186
+msgid "Mount removable devices automatically"
+msgstr "Автоматично свързване на преносимите устройства"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "Достъп до лентови устройства"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "Може да получава администраторски права"
+
+#: users-conf.in:459
+msgid "Default"
+msgstr "По подразбиране"
+
+#: users-conf.in:460
+msgid "Default profile"
+msgstr "Профил по подразбиране"
