@@ -1,5 +1,7 @@
 2001-09-24  Tambet Ingo  <tambet@ximian.com>
 
+	* users-conf.in: Typos happen.
+
 	* x.pl.in (x_parse_serverlayout_screen): Rewrote.
 	Fixes bug #10790.
 

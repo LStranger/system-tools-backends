@@ -170,7 +170,7 @@ for ($i = 0; $login_defs_prop_array[$i] ne ""; $i += 2)
 
 &xst_report_table ({
   'users_getting_db'         => ['info',  _('Getting user database.')],
-  'Users_read_skel_success'  => ['info',  _('Successfully read skeleton dir [%s]')],
+  'users_read_skel_success'  => ['info',  _('Successfully read skeleton dir [%s]')],
   'users_read_skel_fail'     => ['warn',  _("Couldn\'t read skeleton dir [%s]")],
 });
 
