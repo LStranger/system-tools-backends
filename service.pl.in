@@ -75,6 +75,8 @@ sub gst_service_sysv_get_paths
        "turbolinux-7.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
        "pld-1.0"      => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "pld-1.1"      => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "pld-1.99"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
        "fedora-1"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"]
        );
@@ -118,6 +120,8 @@ sub gst_service_sysv_get_runlevels
        "turbolinux-7.0" => [3, 5],
 
        "pld-1.0"        => [3, 5],
+       "pld-1.1"        => [3, 5],
+       "pld-1.99"       => [3, 5],
 
        "fedora-1"       => [3, 5]
        );
@@ -159,6 +163,8 @@ sub gst_service_get_verbose_runlevels
      
      "turbolinux-7.0" => "redhat-5.2",
      "pld-1.0"        => "redhat-5.2",
+     "pld-1.1"        => "redhat-5.2",
+     "pld-1.99"       => "redhat-5.2",
      "fedora-1"       => "redhat-5.2",
 
      "slackware-9.1.0" => "slackware-9.1.0"

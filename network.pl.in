@@ -9,7 +9,7 @@
 #          Arturo Espinosa <arturo@ximian.com>
 #          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
 #          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
-#          Grzegorz Golawski <grzegol@pld.org.pl> - PLD support
+#          Grzegorz Golawski <grzegol@pld-linux.org> - PLD support
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -193,6 +193,8 @@ sub gst_network_get_broadcast_ping_cmd
        "mandrake-9.2" => "debian-2.2",
        "suse-7.0"     => "debian-2.2", # FIXME: assumed that only redhat distros use -b.
        "pld-1.0"      => "redhat-6.2",
+       "pld-1.1"      => "redhat-6.2",
+       "pld-1.99"     => "redhat-6.2",
        "fedora-1"     => "redhat-6.2",
        "slackware-9.1.0" => "redhat-6.2"
        );
@@ -1139,6 +1141,8 @@ sub gst_network_get_file
     "suse-7.0"     => \&gst_network_suse70_get_file,
 	  "turbolinux-7.0"   => \&gst_network_rh62_get_file,
     "pld-1.0"      => \&gst_network_pld10_get_file,
+    "pld-1.1"      => \&gst_network_pld10_get_file,
+    "pld-1.99"     => \&gst_network_pld10_get_file,
     "fedora-1"     => \&gst_network_rh72_get_file,
     "slackware-9.1.0" => \&gst_network_slackware91_get_file,
 	  );
@@ -2275,6 +2279,8 @@ sub gst_network_ensure_loopback_interface
     "suse-7.0"     => "",
 	  "turbolinux-7.0"   => "lo",
     "pld-1.0"      => "lo",
+    "pld-1.1"      => "lo",
+    "pld-1.99"     => "lo",
     "fedora-1"     => "",
     "slackware-9.1.0" => ""
 	  );
@@ -2382,6 +2388,8 @@ sub gst_network_get_parse_table
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
     "pld-1.0"      =>  "pld-1.0",
+    "pld-1.1"      =>  "pld-1.0",
+    "pld-1.99"     =>  "pld-1.0",
     "fedora-1"     =>  "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0"
 	  );
@@ -2683,6 +2691,8 @@ sub gst_network_get_interface_parse_table
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
     "pld-1.0"      => "pld-1.0",
+    "pld-1.1"      => "pld-1.0",
+    "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0"
 	  );
@@ -3139,6 +3149,8 @@ sub gst_network_get_replace_table
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
     "pld-1.0"      => "pld-1.0",
+    "pld-1.1"      => "pld-1.0",
+    "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0"
 	  );
@@ -3429,6 +3441,8 @@ sub gst_network_get_interface_replace_table
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
     "pld-1.0"      => "pld-1.0",
+    "pld-1.1"      => "pld-1.0",
+    "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0"
 	  );
