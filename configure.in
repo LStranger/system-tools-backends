@@ -2,7 +2,7 @@ AC_PREREQ(2.52)
 dnl ==============================================================
 dnl Process this file with autoconf to produce a configure script.
 dnl ==============================================================
-AC_INIT(setup-tools-backends, 0.22.0, http://bugzilla.gnome.org/enter_bug.cgi?product=GNOME%20Sistem%20Tools)
+AC_INIT(setup-tools-backends, 0.23.0, http://bugzilla.gnome.org/enter_bug.cgi?product=GNOME%20Sistem%20Tools)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
 AC_ISC_POSIX
