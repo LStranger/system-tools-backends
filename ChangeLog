@@ -1,3 +1,11 @@
+2004-07-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network.pl.in: made it to really restart all changed interfaces when
+	  applying data, not only the currently active ones. other silly stetic
+	  code improvements
+	* replace.in: Fixed an anyonning that corrupted smb.conf when the 
+	  winsserver tag was empty and didn't exist in the file
+
 2004-07-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* platform.pl.in (gst_platform_get_system): added, this functionality

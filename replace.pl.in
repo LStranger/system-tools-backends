@@ -588,7 +588,7 @@ sub gst_replace_ini
       {
         if ($i =~ /\[[^\]]+\]/)
         {
-          $i = "$var = $value\n$i";
+          $i = "$var = $value\n$i" if ($value ne "");
           $found_flag = 2;
         }
         
@@ -619,7 +619,7 @@ sub gst_replace_ini
 
   push @$buff, "\n[$section]\n" if (!$found_flag);
   push @$buff, "$var = $value\n" if ($found_flag < 2 && $value ne "");
-  
+
   &gst_file_buffer_clean ($buff);
   $ret = &gst_file_buffer_save ($buff, $file);
   &gst_report_leave ();

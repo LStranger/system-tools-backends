@@ -1611,7 +1611,7 @@ sub gst_network_rh62_interface_activate_by_dev
   my ($dev, $enabled) = @_;
 
   &gst_report_enter ();
-  
+
   if ($enabled)
   {
     &gst_report ("network_iface_activate", $dev);
@@ -2056,8 +2056,7 @@ sub gst_network_interfaces_down_and_up_changed
 {
   my ($proc_iface_set, $old_hash, $values_hash) = @_;
 
-  @ifaces = &gst_network_active_interfaces_get ();
-  foreach $i (@ifaces)
+  foreach $i (keys %$values_hash)
   {
     if (&gst_network_interface_changed ($$values_hash{$i}, $$old_hash{$i}))
     {
@@ -3639,8 +3638,8 @@ sub gst_network_get_parse_table
            [ "order",         \&gst_parse_split_first_array, HOST_CONF,    "order", "[ \t]+", ",[ \t]*" ],
            [ "hostmatch",     \&gst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
            [ "statichost",    \&gst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-           [ "workgroup",     \&gst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
-           [ "smbdesc",       \&gst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+           [ "workgroup",     \&gst_parse_ini,               SMB_CONF,     "global", "workgroup" ],
+           [ "smbdesc",       \&gst_parse_ini,               SMB_CONF,     "global", "server string" ],
            [ "winsserver",    \&gst_parse_ini,               SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&gst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&gst_service_sysv_get_status_any, "smbd", "nmbd" ],
@@ -4226,7 +4225,6 @@ sub gst_network_get_interface_parse_table
              },
 
     # Basicly the same as debian-2.2, but the "auto" option changes.
-    # Other stuff may be later found to be different.
 	  "debian-3.0" =>
 	  {
 	    ifaces_get => \&gst_network_debian_ifaces_get_existing,
@@ -4719,7 +4717,7 @@ sub gst_network_get_replace_table
            [ "order",         \&gst_replace_join_first_array, HOST_CONF,   "order", "[ \t]+", ",[ \t]*" ],
            [ "hostmatch",     \&gst_replace_join_first_bool,  HOST_CONF,   "multi", "[ \t]+", "on", "off" ],
            [ "statichost",    \&gst_replace_join_hash,        HOSTS,       "[ \t]+", "[ \t]+" ],
-           [ "workgroup",     \&gst_replace_ini,              SMB_CONF,    "global", "workgroup" ],     
+           [ "workgroup",     \&gst_replace_ini,              SMB_CONF,    "global", "workgroup" ],
            [ "smbdesc",       \&gst_replace_ini,              SMB_CONF,    "global", "server string" ],
            [ "winsserver",    \&gst_replace_ini,              SMB_CONF,    "global", "wins server" ],
            [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
@@ -5282,7 +5280,6 @@ sub gst_network_get_interface_replace_table
       },
 	    table =>
           [
-# not sup  [ "user",               \&gst_parse_sh_bool, IFCFG, USERCTL ],
            [ "bootproto",          \&gst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
            [ "auto",               \&gst_network_debian_woody_set_auto,    [INTERFACES, IFACE]],
            [ "name",               \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
@@ -5295,8 +5292,6 @@ sub gst_network_get_interface_replace_table
            [ "essid",              \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "wireless_essid" ],
            [ "update_dns",         \&gst_network_pump_set_nodns,           PUMP, "%dev%", "%bootproto%" ],
            [ "update_dns",         \&gst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
-# not sup  [ "dns1",               \&gst_replace_sh,                       IFCFG,       DNS1 ],
-# not sup  [ "dns2",               \&gst_replace_sh,                       IFCFG, DNS2 ],
            [ "noauth",             \&gst_replace_kw,                       PPP_OPTIONS, "noauth" ],
            [ "mtu",                \&gst_replace_join_first_str,           PPP_OPTIONS, "mtu", "[ \t]+" ],
            [ "mru",                \&gst_replace_join_first_str,           PPP_OPTIONS, "mru", "[ \t]+" ],
