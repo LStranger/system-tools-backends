@@ -1,3 +1,16 @@
+2001-07-20  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* platform.pl.in (xst_platform_ensure_supported): Don't
+	exit after listing the platforms.
+
+	* general.pl.in (xst_merge_std_directives): Added standard
+	"platform_set" directive.
+
+	* platform.pl.in (xst_platform_ensure_supported): Send
+	end of report before returning.
+	(xst_platform_set): A directive handler that sets the
+	currently selected platform.
+
 2001-07-20  Hans Petter Jansson  <hpj@ximian.com>
 
 	* replace.pl.in (xst_replace_alchemist_ensure_list_types): Implement.
@@ -62,7 +75,7 @@
 	  xst_parse_xml_child_names ().
 	  (xst_print_get_printer_parse_table): Begin rh71 table, not complete yet.
 	  (xst_print_get_printer_replace_table): Begin rh71 table, not complete yet.
-
+	
 2001-07-18  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* file.pl.in (xst_file_run): Accept a flag arg $background

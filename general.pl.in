@@ -103,7 +103,7 @@ end_of_usage_generic;
        Modifiers (specify any combination of these):
 
           --platform  <name-ver>  Overrides the detection of your platform\'s
-                      name and version, e.g. debian-2.3. Use with care. See the
+                      name and version, e.g. redhat-6.2. Use with care. See the
                       documentation for a full list of supported platforms.
 
           --disable-immediate  With --set, prevents the configurator from
@@ -271,8 +271,16 @@ sub xst_merge_std_directives
   my ($directives, $i);
   my %std_directives =
       (
-       "interface" => [ \&xst_print_interface, [], "Print XML showing backend capabilities." ],
-       "end"       => [ \&xst_end_directive,   [], "Finish gracefuly and exit with success." ]
+# platforms directive to do later.       
+#       "platforms"    => [ \&xst_print_platforms, [],
+#                           "Print XML showing platforms supported by backend." ],
+       "platform_set" => [ \&xst_platform_set,    ["platform"],
+                           "Force the selected platform. platform arg must be one of the listed in the" .
+                           "reports." ],
+       "interface"    => [ \&xst_print_interface, [],
+                           "Print XML showing backend capabilities." ],
+       "end"          => [ \&xst_end_directive,   [],
+                           "Finish gracefuly and exit with success." ]
        );
 
   $directives = $$tool{"directives"};

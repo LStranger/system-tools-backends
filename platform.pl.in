@@ -260,16 +260,19 @@ sub xst_platform_ensure_supported
 {
   my ($tool, @supported) = @_;
 
+  $$tool{"platforms"} = [ @supported ];
+
   foreach $platform (@supported)
   {
     if ($platform eq $$tool{"platform"})
     {
       &xst_report ("platform_success", $platform);
+      &xst_end ();
       return;
     }
   }
 
-  # Not supported. Now list the ones we do support, and die.
+  # Not supported. Now list the ones we do support.
 
   foreach $platform (@supported)
   {
@@ -286,7 +289,28 @@ sub xst_platform_ensure_supported
   }
 
   &xst_end ();
-  exit (2);
+}
+
+
+# A directive handler that sets the currently selected platform.
+sub xst_platform_set
+{
+  my ($tool, $platform) = @_;
+  my ($p);
+
+  foreach $p (@{ $$tool{"platforms"}})
+  {
+    if ($p eq $platform)
+    {
+      $$tool{"platform"} = $xst_dist = $platform;
+      &xst_report ("platform_success", $platform);
+      &xst_end ();
+      return;
+    }
+  }
+
+  &xst_report ("platform_unsup", $platform);
+  &xst_end ();
 }
 
 1;
