@@ -352,6 +352,12 @@ sub time_set_rh62_zone
   return -1;
 }
 
+sub time_sync_hw_from_sys
+{
+  &xst_file_run ("hwclock --systohc");
+  return 0;
+}
+
 sub conf_set
 {
   my $values_hash = $_[0];
@@ -361,6 +367,8 @@ sub conf_set
 
   $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
                                   $values_hash);
+
+  &time_sync_hw_from_sys ();
 
   return $res;
 }
