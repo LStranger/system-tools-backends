@@ -27,6 +27,7 @@
 
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
+require "___scriptsdir___/parse.pl";
 
 
 # General rules: all replacing is in-line. Respect unsupported values, and even comments.
@@ -191,8 +192,7 @@ sub xst_replace_sh
   my ($file, $key, $value) = @_;
   my $ret;
 
-  $value =~ s/([\"\'\`\&\$\|\*\?\[\]\{\}\(\)<>\\])/\\$1/g;
-  $value = "\"$value\"" if ($value =~ /[ \t]/);
+  $value = &xst_parse_shell_escape ($value);
 
   &xst_report_enter ();
   &xst_report ("replace_sh", $key, $file);
@@ -734,4 +734,134 @@ sub xst_replace_interfaces_option_kw_not
 
   return &xst_replace_interfaces_option_kw ($file, $iface, $key, !$value);
 }
+
+# Implementing pump(8) pump.conf file format replacer.
+# May be useful for dhcpd too.
+sub xst_replace_pump_get_next_option
+{
+  my ($buff, $line_no) = @_;
+
+  while ($$line_no <= $#$buff)
+  {
+    $_ = $$buff[$$line_no];
+    $_ = &xst_parse_interfaces_line_clean ($_);
+    if ($_ ne "")
+    {
+      return [ split ("[ \t]+", $_, 2) ];
+    }
+    
+    $$line_no ++;
+  }
+
+  return -1;
+}
+
+sub xst_replace_pump_option_locate
+{
+  my ($buff, $line_no, $key) = @_;
+  my ($opt);
+  
+  while (($opt = &xst_replace_pump_get_next_option ($buff, $line_no)) != -1)
+  {
+    return 1 if $$opt[0] eq $key;
+    return 0 if $$opt[0] eq "}";
+
+    $$line_no ++;
+  }
+  
+  return 0;
+}
+
+sub xst_replace_pump_get_device
+{
+  my ($buff, $line_no, $iface) = @_;
+  my ($opt);
+
+  while (($opt = &xst_replace_pump_get_next_option ($buff, $line_no)) != -1)
+  {
+    if ($$opt[0] eq "device")
+    {
+      $$opt[1] =~ s/[ \t]*\{//;
+      return 1 if $$opt[1] eq $iface;
+    }
+
+    $$line_no ++;
+  }
+
+  return 0;
+}
+
+sub xst_replace_pump_add_device
+{
+  my ($buff, $iface) = @_;
+
+  push @$buff, "\n";
+  push @$buff, "device $iface {\n";
+  push @$buff, "\t\n";
+  push @$buff, "}\n";
+}
+
+sub xst_replace_pump_iface_option_str
+{
+  my ($file, $iface, $key, $value) = @_;
+  my ($line_no, $ret);
+
+  $buff = &xst_file_buffer_load ($file);
+  $line_no = 0;
+
+  if (!&xst_replace_pump_get_device ($buff, \$line_no, $iface))
+  {
+    $line_no = 0;
+    &xst_replace_pump_add_device ($buff, $iface);
+    &xst_replace_pump_get_device ($buff, \$line_no, $iface);
+  }
+
+  $line_no ++;
+
+  if (&xst_replace_pump_option_locate ($buff, \$line_no, $key))
+  {
+    if ($value eq "")
+    {
+      $$buff[$line_no] = "";
+    }
+    else
+    {
+      chomp $$buff[$line_no];
+      $$buff[$line_no] =~ s/^([ \t]*$key[ \t]).*/$1/;
+    }
+  }
+  elsif ($value ne "")
+  {
+    $line_no --;
+    chomp $$buff[$line_no];
+    $$buff[$line_no] =~ s/^([ \t]*)(.*)/$1$2\n$1$key /;
+  }
+
+  if ($value ne "")
+  {
+    $value =~ s/^[ \t]+//;
+    $value =~ s/[ \t]+$//;
+    $$buff[$line_no] .= &xst_parse_shell_escape ($value) . "\n";
+  }
+
+  &xst_file_buffer_clean ($buff);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  &xst_report_leave ();
+  return $ret;
+}
+
+sub xst_replace_pump_iface_kw
+{
+  my ($file, $iface, $key, $value) = @_;
+
+  return &xst_replace_pump_iface_option_str ($file, $iface, $key, $value? " ": "");
+}
+
+sub xst_replace_pump_iface_kw_not
+{
+  my ($file, $iface, $key, $value) = @_;
+
+  return &xst_replace_pump_iface_kw ($file, $iface, $key, !$value);
+}
+
 

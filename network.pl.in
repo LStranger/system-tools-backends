@@ -1024,6 +1024,40 @@ sub xst_network_suse70_replace_bootproto
   return &xst_network_suse70_replace_iface_sh ($file, $iface, "IFCONFIG", $val);
 }
 
+sub xst_network_pump_iface_supported
+{
+  my ($iface) = @_;
+  my ($dev);
+  my @devs = qw(eth wvlan plip irlan);
+
+  foreach $dev (@devs)
+  {
+    return 1 if $iface =~ /^$dev/;
+  }
+
+  return 0;
+}
+
+sub xst_network_pump_get_nodns
+{
+  my ($file, $iface, $bootproto) = @_;
+  
+  return undef if $bootproto ne "dhcp";
+  return undef if (!&xst_network_pump_iface_supported ($iface));
+
+  return &xst_parse_pump_get_iface_kw_not ($file, $iface, "nodns");
+}
+
+sub xst_network_pump_set_nodns
+{
+  my ($file, $iface, $bootproto, $value) = @_;
+
+  return 0 if $bootproto ne "dhcp";
+  return 0 if (!&xst_network_pump_iface_supported ($iface));
+
+  return &xst_replace_pump_iface_kw_not ($file, $iface, "nodns", $value);
+}
+
 sub xst_network_debian_parse_remote_address
 {
   my ($file, $iface) = @_;
@@ -1246,12 +1280,13 @@ sub xst_network_get_parse_table
 	  {
 	    fn =>
 	    {
-		 SYSCONFIG_NW => "/etc/sysconfig/network",
-		 RESOLV_CONF  => "/etc/resolv.conf",
-		 HOST_CONF    => "/etc/host.conf",
-		 HOSTS        => "/etc/hosts",
-		 SMB_CONF     => "/etc/smb.conf",
-		 WVDIAL       => "/etc/wvdial.conf" },
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf"
+      },
 	    table =>
 		   [
 		    [ "hostname",      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
@@ -1269,6 +1304,7 @@ sub xst_network_get_parse_table
 		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
         [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
         [ "smbinstalled",  \&xst_service_sysv_installed,  "smb" ],
+        [ "smartdhcpcd",   \&xst_file_tool_installed,     "pump" ],
         [ "dialinstalled", \&xst_file_tool_installed,     "wvdial" ],
 		    [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&xst_network_interfaces_get ]
@@ -1279,12 +1315,13 @@ sub xst_network_get_parse_table
 	  {
 	    fn =>
 	    {
-		 SYSCONFIG_NW => "/etc/sysconfig/network",
-		 RESOLV_CONF  => "/etc/resolv.conf",
-		 HOST_CONF    => "/etc/host.conf",
-		 HOSTS        => "/etc/hosts",
-		 SMB_CONF     => "/etc/samba/smb.conf",
-		 WVDIAL       => "/etc/wvdial.conf" },
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/samba/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf"
+      },
 	    table =>
 		   [
 		    [ "hostname",      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
@@ -1302,8 +1339,9 @@ sub xst_network_get_parse_table
 		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
         [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
         [ "smbinstalled",  \&xst_service_sysv_installed,  "smb" ],
+        [ "smartdhcpcd",   \&xst_file_tool_installed,     "pump" ],
         [ "dialinstalled", \&xst_file_tool_installed,     "wvdial" ],
-		    [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
+ 		    [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
 		    [ "interface",     \&xst_network_interfaces_get ]
 		    ]
 			 },
@@ -1318,7 +1356,8 @@ sub xst_network_get_parse_table
         HOSTS       => "/etc/hosts",
         HOSTNAME    => "/etc/hostname",
         SMB_CONF    => "/etc/samba/smb.conf",
-        WVDIAL      => "/etc/wvdial.conf" },
+        WVDIAL      => "/etc/wvdial.conf"
+      },
 	    table =>
           [
            [ "hostname",      \&xst_parse_line_first,        HOSTNAME ],
@@ -1335,6 +1374,7 @@ sub xst_network_get_parse_table
            [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
            [ "smbinstalled",  \&xst_service_sysv_installed,  "samba" ],
+           [ "smartdhcpcd",   \&xst_file_tool_installed,     "pump" ],
            [ "dialinstalled", \&xst_file_tool_installed,     "wvdial" ],
            [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
            [ "interface",     \&xst_network_interfaces_get ]
@@ -1351,7 +1391,8 @@ sub xst_network_get_parse_table
         HOST_CONF    => "/etc/host.conf",
         HOSTS        => "/etc/hosts",
         SMB_CONF     => "/etc/smb.conf",
-        WVDIAL       => "/etc/wvdial.conf" },
+        WVDIAL       => "/etc/wvdial.conf"
+      },
 	    table =>
 		   [
         [ "hostname",      \&xst_parse_sh_get_hostname,          RC_CONFIG, FQHOSTNAME ],
@@ -1417,7 +1458,9 @@ sub xst_network_get_interfaces_parse_table
         CHAT  => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE => "#iface#",
         PAP   => "/etc/ppp/pap-secrets",
-        CHAP  => "/etc/ppp/chap-secrets" },
+        CHAP  => "/etc/ppp/chap-secrets",
+        PUMP  => "/etc/pump.conf"
+      },
 	    table =>
           [
            [ "bootproto",          \&xst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
@@ -1430,7 +1473,8 @@ sub xst_network_get_interfaces_parse_table
            [ "broadcast",          \&xst_parse_sh,      IFCFG, BROADCAST ],
            [ "network",            \&xst_parse_sh,      IFCFG, NETWORK ],
            [ "gateway",            \&xst_parse_sh,      IFCFG, GATEWAY ],
-           [ "peerdns",            \&xst_parse_sh_bool, IFCFG, PEERDNS ],
+           [ "update_dns",         \&xst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&xst_parse_sh_bool, IFCFG, PEERDNS ],
            [ "dns1",               \&xst_parse_sh,      IFCFG, DNS1 ],
            [ "dns2",               \&xst_parse_sh,      IFCFG, DNS2 ],
            [ "mtu",                \&xst_parse_sh,      IFCFG, MTU ],
@@ -1464,7 +1508,9 @@ sub xst_network_get_interfaces_parse_table
         CHAT        => "/etc/chatscripts/%wvsection%",
         PPP_OPTIONS => "/etc/ppp/peers/%wvsection%",
         PAP         => "/etc/ppp/pap-secrets",
-        CHAP        => "/etc/ppp/chap-secrets" },
+        CHAP        => "/etc/ppp/chap-secrets",
+        PUMP        => "/etc/pump.conf"
+      },
 	    table =>
           [
            [ "user",               \&xst_parse_trivial,                  0 ], # not supported.
@@ -1478,7 +1524,8 @@ sub xst_network_get_interfaces_parse_table
            [ "network",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
            [ "gateway",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
            [ "wvsection",          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
-           [ "peerdns",            \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
+           [ "update_dns",         \&xst_network_pump_get_nodns,         PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
            [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
            [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
            [ "mtu",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mtu", "[ \t]+" ],
@@ -1513,7 +1560,9 @@ sub xst_network_get_interfaces_parse_table
         CHAT        => "/etc/chatscripts/%wvsection%",
         PPP_OPTIONS => "/etc/ppp/peers/%wvsection%",
         PAP         => "/etc/ppp/pap-secrets",
-        CHAP        => "/etc/ppp/chap-secrets" },
+        CHAP        => "/etc/ppp/chap-secrets",
+        PUMP        => "/etc/pump.conf"
+      },
 	    table =>
           [
            [ "user",               \&xst_parse_trivial,                  0 ], # not supported.
@@ -1527,7 +1576,8 @@ sub xst_network_get_interfaces_parse_table
            [ "network",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
            [ "gateway",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
            [ "wvsection",          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
-           [ "peerdns",            \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
+           [ "update_dns",         \&xst_network_pump_get_nodns,         PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
            [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
            [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
            [ "mtu",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mtu", "[ \t]+" ],
@@ -1556,7 +1606,8 @@ sub xst_network_get_interfaces_parse_table
 	    fn =>
 	    {
         IFCFG => "/etc/rc.config",
-        IFACE => "#iface#" },
+        IFACE => "#iface#"
+      },
 	    table =>
           [
            [ "bootproto",          \&xst_network_suse70_parse_bootproto,  [IFCFG, IFACE] ],
@@ -1613,7 +1664,8 @@ sub xst_network_get_replace_table
         HOST_CONF    => "/etc/host.conf",
         HOSTS        => "/etc/hosts",
         SMB_CONF     => "/etc/smb.conf",
-        WVDIAL       => "/etc/wvdial.conf" },
+        WVDIAL       => "/etc/wvdial.conf"
+      },
 	    table =>
           [
            [ "auto",          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
@@ -1646,7 +1698,8 @@ sub xst_network_get_replace_table
         HOST_CONF    => "/etc/host.conf",
         HOSTS        => "/etc/hosts",
         SMB_CONF     => "/etc/samba/smb.conf",
-        WVDIAL       => "/etc/wvdial.conf" },
+        WVDIAL       => "/etc/wvdial.conf"
+      },
 	    table =>
           [
            [ "auto",          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
@@ -1680,7 +1733,8 @@ sub xst_network_get_replace_table
         HOSTS       => "/etc/hosts",
         HOSTNAME    => "/etc/hostname",
         SMB_CONF    => "/etc/samba/smb.conf",
-        WVDIAL      => "/etc/wvdial.conf" },
+        WVDIAL      => "/etc/wvdial.conf"
+      },
 	    table =>
           [
            [ "hostname",      \&xst_replace_line_first,       HOSTNAME ],
@@ -1713,7 +1767,8 @@ sub xst_network_get_replace_table
         HOSTS        => "/etc/hosts",
         SMB_CONF     => "/etc/smb.conf",
         WVDIAL       => "/etc/wvdial.conf",
-        SUSECONFIG   => "SuSEconfig" },
+        SUSECONFIG   => "SuSEconfig"
+      },
 	    table =>
 		   [
         [ "hostname",      \&xst_replace_sh_set_hostname,  RC_CONFIG, FQHOSTNAME ],
@@ -1775,7 +1830,8 @@ sub xst_network_get_interface_replace_table
         IFCFG  => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
         CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE  => "#iface#",
-        WVDIAL => "/etc/wvdial.conf"
+        WVDIAL => "/etc/wvdial.conf",
+        PUMP   => "/etc/pump.conf"
       },
       table =>
        [
@@ -1789,7 +1845,8 @@ sub xst_network_get_interface_replace_table
         [ "broadcast",          \&xst_replace_sh,      IFCFG, BROADCAST ],
         [ "network",            \&xst_replace_sh,      IFCFG, NETWORK ],
         [ "gateway",            \&xst_replace_sh,      IFCFG, GATEWAY ],
-        [ "peerdns",            \&xst_replace_sh_bool, IFCFG, PEERDNS ],
+        [ "update_dns",         \&xst_network_pump_set_nodns, PUMP, "%dev%", "%bootproto%" ],
+        [ "update_dns",         \&xst_replace_sh_bool, IFCFG, PEERDNS ],
         [ "dns1",               \&xst_replace_sh,      IFCFG, DNS1 ],
         [ "dns2",               \&xst_replace_sh,      IFCFG, DNS2 ],
         [ "mtu",                \&xst_replace_sh,      IFCFG, MTU ],
@@ -1821,7 +1878,9 @@ sub xst_network_get_interface_replace_table
         CHAT        => "/etc/chatscripts/%wvsection%",
         PPP_OPTIONS => "/etc/ppp/peers/%wvsection%",
         PAP         => "/etc/ppp/pap-secrets",
-        CHAP        => "/etc/ppp/chap-secrets" },
+        CHAP        => "/etc/ppp/chap-secrets",
+        PUMP        => "/etc/pump.conf"
+      },
 	    table =>
           [
 # not sup  [ "user",               \&xst_parse_sh_bool, IFCFG, USERCTL ],
@@ -1834,7 +1893,8 @@ sub xst_network_get_interface_replace_table
            [ "network",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
            [ "gateway",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
            [ "wvsection",          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
-           [ "peerdns",            \&xst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
+           [ "update_dns",         \&xst_network_pump_set_nodns,           PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&xst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
 # not sup  [ "dns1",               \&xst_replace_sh,                       IFCFG,       DNS1 ],
 # not sup  [ "dns2",               \&xst_replace_sh,                       IFCFG, DNS2 ],
            [ "mtu",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mtu", "[ \t]+" ],
@@ -1868,7 +1928,9 @@ sub xst_network_get_interface_replace_table
         CHAT        => "/etc/chatscripts/%wvsection%",
         PPP_OPTIONS => "/etc/ppp/peers/%wvsection%",
         PAP         => "/etc/ppp/pap-secrets",
-        CHAP        => "/etc/ppp/chap-secrets" },
+        CHAP        => "/etc/ppp/chap-secrets",
+        PUMP        => "/etc/pump.conf"
+      },
 	    table =>
           [
 # not sup  [ "user",               \&xst_parse_sh_bool, IFCFG, USERCTL ],
@@ -1881,7 +1943,8 @@ sub xst_network_get_interface_replace_table
            [ "network",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
            [ "gateway",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
            [ "wvsection",          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
-           [ "peerdns",            \&xst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
+           [ "update_dns",         \&xst_network_pump_set_nodns,           PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&xst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
 # not sup  [ "dns1",               \&xst_replace_sh,                       IFCFG,       DNS1 ],
 # not sup  [ "dns2",               \&xst_replace_sh,                       IFCFG, DNS2 ],
            [ "mtu",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mtu", "[ \t]+" ],

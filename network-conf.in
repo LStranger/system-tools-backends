@@ -251,7 +251,8 @@ sub xml_print
   my $h = $_[0];
   my @scalar_keys =
       qw(auto hostname gateway domain domainname hostmatch workgroup
-         description winsserver winsuse smbuse smbinstalled dialinstalled);
+         description winsserver winsuse smbuse
+         smartdhcpcd smbinstalled dialinstalled);
   my @array_keys =
       qw(nameserver searchdomain order);
 

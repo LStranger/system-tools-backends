@@ -97,7 +97,7 @@ sub xst_parse_from_table
 
   foreach $i (keys (%hash))
   {
-    delete $hash{$i} if (($hash{$i} eq undef) || ($hash{$i} eq ""));
+    delete $hash{$i} if ($hash{$i} eq undef);
   }
   
   return \%hash;
@@ -379,7 +379,7 @@ sub xst_parse_split_hash_with_continuation
   return \%res;
 }
 
-sub xst_shell_escape
+sub xst_parse_shell_unescape
 {
   my $ret = $_[0];
 
@@ -395,6 +395,17 @@ sub xst_shell_escape
   return $ret;
 }
 
+# unescape (escape (x)) == x
+sub xst_parse_shell_escape
+{
+  my ($value) = @_;
+  
+  $value =~ s/([\"\'\`\&\$\|\*\?\[\]\{\}\(\)<>\\])/\\$1/g;
+  $value = "\"$value\"" if ($value =~ /[ \t]/);
+
+  return $value;
+}
+
 # For files which are a list of /bin/sh shell variable declarations. (ie GATEWAY=10.10.10.1)
 sub xst_parse_sh
 {
@@ -407,7 +418,7 @@ sub xst_parse_sh
                                      \&xst_parse_chomp_line_hash_comment);
   &xst_report_leave ();
 
-  return &xst_shell_escape ($ret);
+  return &xst_parse_shell_unescape ($ret);
 }
 
 # Same, but interpret the returing value as a bool. (ie NETWORKING=yes)
@@ -470,7 +481,7 @@ sub xst_parse_sh_export
                                      \&xst_parse_chomp_line_sh_export);
   &xst_report_leave ();
 
-  return &xst_shell_escape ($ret);
+  return &xst_parse_shell_unescape ($ret);
 }
 
 # Search for $keyword in $file, delimited by $re (default " ") or EOL.
@@ -692,7 +703,7 @@ sub xst_parse_interfaces_line_read
   return \$l;
 }
 
-# Read lines until a stanza, a line starting with iface is found.
+# Read lines until a stanza, a line starting with $stanza_type is found.
 # Return ref to an array with the stanza params split.
 sub xst_parse_interfaces_get_next_stanza
 {
@@ -828,4 +839,81 @@ sub xst_parse_interfaces_option_str
   }
 
   return undef;
+}
+
+# Implementing pump(8) pump.conf file format parser.
+# May be useful for dhcpd too.
+sub xst_parse_pump_get_next_option
+{
+  my ($fd) = @_;
+  my $line;
+
+  while (($line = &xst_parse_interfaces_line_read ($fd)) != -1)
+  {
+    $line = $$line;
+    if ($line ne "")
+    {
+      return [ split ("[ \t]+", $line, 2) ];
+    }
+  }
+
+  return -1;
+}
+
+sub xst_parse_pump_get_device
+{
+  my ($fd, $iface) = @_;
+  my ($opt);
+  
+  while (($opt = &xst_parse_pump_get_next_option ($fd)) != -1)
+  {
+    if ($$opt[0] eq "device")
+    {
+      $$opt[1] =~ s/[ \t]*\{//;
+      return 1 if $$opt[1] eq $iface;
+    }
+  }
+
+  return 0;
+}
+
+sub xst_parse_pump_get_iface_option_ref
+{
+  my ($file, $iface, $key) = @_;
+  my ($fd, $opt, $ret);
+
+  $fd = &xst_file_open_read_from_names ($file);
+
+  if (&xst_parse_pump_get_device ($fd, $iface))
+  {
+    while (($opt = &xst_parse_pump_get_next_option ($fd)) != -1)
+    {
+      if ($$opt[0] eq $key)
+      {
+        $ret = &xst_parse_shell_unescape ($$opt[1]);
+        return \$ret;
+      }
+      
+      return -1 if ($$opt[0] eq "}");
+    }
+  }
+
+  return -1;
+}
+
+sub xst_parse_pump_get_iface_kw
+{
+  my ($file, $iface, $key) = @_;
+  my ($ret);
+
+  return 1 if &xst_parse_pump_get_iface_option_ref ($file, $iface, $key) != -1;
+  return 0;
+}
+
+sub xst_parse_pump_get_iface_kw_not
+{
+  my ($file, $iface, $key) = @_;
+
+  return 0 if &xst_parse_pump_get_iface_option_ref ($file, $iface, $key) != -1;
+  return 1;
 }
