@@ -1,3 +1,8 @@
+2003-12-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* service.pl.in, services-conf.in: added the "get_status" directive
+	  for knowing if a service is running or stopped
+
 2003-12-16  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* added support for i18n in the backends

@@ -360,6 +360,21 @@ sub throw_service
   &gst_xml_print_end ("throw_service");
 }
 
+# --- get_status: gets the status of a service --- #
+sub get_status
+{
+  my ($tool, $service) = @_;
+  my ($active);
+
+  $active = &gst_service_get_status ($service);
+
+  &gst_report_end ();
+
+  &gst_xml_print_begin ("get_status");
+  &gst_xml_print_state_tag ("active", $active) if ($active ne undef);
+  &gst_xml_print_end ("get_status");
+}
+
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
@@ -370,7 +385,8 @@ $directives = {
   "set"                => [ \&set,    [], "" ],
   "filter"             => [ \&filter, [], "" ],
   "service_parameters" => [ \&service_parameters, ["service"], "Gets the valid parameters for a service" ],
-  "throw_service"      => [ \&throw_service, ["service", "parameter"], "Throws a service with a parameter (start, stop...)" ]
+  "throw_service"      => [ \&throw_service, ["service", "parameter"], "Throws a service with a parameter (start, stop...)" ],
+  "get_status"         => [ \&get_status, ["service"], "Gets the status of a service"]
   };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);

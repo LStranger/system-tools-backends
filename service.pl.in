@@ -47,7 +47,7 @@ sub gst_service_sysv_get_paths
 {
   my %dist_map =
       (
-       # gst_dist => [rc.X dirs location, init.d scripts location]
+       # gst_dist => [rc.X dirs location, init.d scripts location, relative path location]
        "redhat-5.2"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        "redhat-6.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        "redhat-6.1"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
@@ -1007,4 +1007,53 @@ sub gst_service_get_service_parameters
 	@actions = split /\|/, $arr[size-1];
 
   return \@actions;	
+}
+
+sub gst_service_debian_get_status
+{
+  my ($service) = @_;
+  my ($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
+  my ($output, $pidfile);
+
+  $output = `grep "\/var\/run\/.*\.pid" $initd_path\/$service`;
+
+  if ($output =~ /.*(\/var\/run\/.*\.pid).*/ )
+  {
+    $pidfile = $1;
+    $pidval = `cat $pidfile`;
+
+    return 0 if $pidval eq "";
+
+    $pid = `ps h $pidval`;
+
+    if ($pid eq "")
+    {
+      return 0;
+    }
+    else
+    {
+      return 1;
+    }
+  }
+
+  return undef;
+}
+
+# returns true if the service is already running
+sub gst_service_get_status
+{
+  my ($service) = @_;
+  my %dist_map =
+      (
+       "debian-2.2" => \&gst_service_debian_get_status,
+       "debian-3.0" => \&gst_service_debian_get_status,
+       "debian-sarge" => \&gst_service_debian_get_status
+      );
+  my $proc;
+
+  $proc = $dist_map {$gst_dist};
+
+  return 0 if ($proc eq undef);
+
+  return &$proc ($service);
 }
