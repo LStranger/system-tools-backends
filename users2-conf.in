@@ -1,0 +1,373 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+
+# Users account mannager. Designed to be architecture and distribution independent.
+#
+# Copyright (C) 2000 Helix Code, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@helixcode.com> and Arturo Espinosa <arturo@helixcode.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/passwd
+# /etc/group
+# /etc/shadow
+
+# NIS support will come later.
+
+# Running programs affected/used:
+#
+# adduser: creating users.
+# usermod: modifying user data.
+# passwd: assigning or changing passwords. (Un)locking users.
+# chfn: modifying finger information - Name, Office, Office phone, Home phone.
+
+
+require "___scriptsdir___/be.pl";
+
+
+
+# --- Usage text --- #
+
+my $Usage =<<"End_of_Usage;";
+Usage: users2-conf <--get | --set | --filter | --help>
+                 [--prefix <location>] [--disable-immediate]
+                 [--verbose] [--progress]
+
+       Major operations (specify one of these):
+
+       -g --get      Prints the current users configuration to standard
+                     output, as as standalone XML document. The parameters
+                     are read from the host\'s low-level configuration.
+
+       -s --set      Updates the user configuration from a standalone
+                     XML document read from standard input. The format is
+                     the same as for the document generated with --get.
+
+       -f --filter   Reads XML configuration from standard input, parses it,
+                     and writes the configurator\'s impression of it back to
+                     standard output. Good for debugging and parsing tests.
+
+       -h --help     Prints this page to standard output. That\'s all.
+
+          --version  Prints version information to standard output.
+
+       Modifiers (specify any combination of these):
+
+       -p --prefix <location>  Specifies a directory prefix where the
+                     configuration is looked for or stored. When storing
+                     (with --set), directories and files may be created.
+
+          --disable-immediate  With --set, prevents the configurator from
+                     running any commands that make immediate changes to
+                     the system configuration. Use with --prefix to make a
+                     dry run that won\'t affect your configuration.
+
+                     With --get, suppresses running of non-vital external
+                     programs that might take a long time to finish.
+
+       -v --verbose  Turns on diagnostic messages to standard error.
+
+          --progress Prints progress information suitable for interactive
+                     frontends to standard output. The progress information
+                     is printed before any XML, and consists of a decimal
+                     number saying how many dots to expect, followed by a
+                     newline, and a running line of dots as the operation
+                     progresses, followed by a newline after the last dot.
+                     The dots generated can be more or less than the
+                     number indicated on the first line.
+
+End_of_Usage;
+
+$version = "0.1.0";
+
+$progress_max = 3;
+
+
+# --- System config file locations --- #
+
+# We list each config file type with as many alternate locations as possible.
+# They are tried in array order. First found = used.
+
+@passwd_names = ( "/etc/passwd" );
+
+
+# --- Internal configuration variables --- #
+
+# Configuration is parsed/read to, and printed/written from, these temporary variables.
+
+%users_hash = ();
+@users = ();
+
+# --- Confignuration manipulation --- #
+
+sub read_passwd
+{
+  my *FILE;
+  my @line;
+	my $i = 0;
+
+  # Find the file.
+
+  *FILE = open_read_from_names(@passwd_names);
+  if (not FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    chomp;      
+    @line = split ':';
+		$users_hash{$line[0]} = $i;
+		$i ++;
+    push (@users, @line);
+  }
+}
+
+# --- XML printing --- #
+
+
+sub xml_print
+{
+  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+  print "<!DOCTYPE time []>\n\n";
+  print "<time>\n";
+  be_xml_enter ();
+
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- Configuration starts here -->\n";
+  be_xml_vspace ();
+
+  be_xml_indent (); print "<year>$cf_year</year>\n";
+  be_xml_indent (); print "<month>$cf_month</month>\n";
+  be_xml_indent (); print "<monthday>$cf_mday</monthday>\n";
+  
+  be_xml_vspace ();
+  
+  be_xml_indent (); print "<hour>$cf_hour</hour>\n";
+  be_xml_indent (); print "<minute>$cf_minute</minute>\n";
+  be_xml_indent (); print "<second>$cf_second</second>\n";
+
+  be_xml_vspace ();
+  be_xml_indent (); print "<timezone>$cf_timezone</timezone>\n";
+  be_xml_vspace ();
+  
+  be_xml_vspace ();
+  be_xml_indent (); print "<synchronization active='", be_print_boolean_yesno($cf_sync_active), "'>\n";
+  
+  be_xml_enter ();
+  
+  for $server (@cf_servers)
+  {
+    be_xml_indent (); print "<server>$server</server>\n";
+  }
+  
+  be_xml_leave ();
+  
+  be_xml_indent (); print "</synchronization>\n";
+  be_xml_vspace ();
+  
+  be_xml_indent (); print "<!-- End of configuration -->\n";
+  be_xml_vspace ();
+
+  be_xml_leave ();
+  print "</time>\n";
+}
+
+
+# --- Get (read) config --- #
+
+
+sub get_time
+{
+  my $datetext;
+  
+  $datetext = `date +%Y.%m.%d.%H:%M.%S.%z`;
+  
+  ($cf_year, $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_second, $cf_timezone) =
+    ($datetext =~ /^([0-9]+).([0-9]+).([0-9]+).([0-9]+):([0-9]+).([0-9]+).([-+0-9]+)/);
+
+  if ($cf_timezone =~ /\+.*/) { $cf_timezone =~ tr/+/-/; }
+  else { $cf_timezone =~ tr/-/+/; }
+
+  if ($cf_timezone =~ /^(\+|-)0+$/) { $cf_timezone = "0000"; }  # GMT, eh?
+
+  # TODO: We should fall back to internal Perl functions here.
+}
+
+
+sub check_servers
+{
+  if (-f "/etc/rc.d/init.d/xntpd")
+  {
+    if (!system "/etc/rc.d/init.d/xntpd status >/dev/null 2>/dev/null")
+    {
+      $cf_sync_active = 1;
+      if ($be_verbose) { print STDERR "Found XNTPD enabled.\n"; }
+    }
+    elsif ($be_verbose)
+    {
+      $cf_sync_active = 0;
+      print STDERR "Found XNTPD disabled.\n";
+    }
+  }
+  elsif ($be_verbose)
+  {
+    print STDERR "Warning: Could not find a way to check XNTPD status.\n";
+  }
+}
+
+
+sub get
+{
+  if ($be_progress) { $| = 1; print $progress_max . "\n"; }
+
+  if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
+  if ($be_verbose) { print STDERR "Getting time, date and timezone.\n"; }
+
+  read_ntp_conf (); be_print_progress ();
+  get_time (); be_print_progress ();
+  check_servers (); be_print_progress ();
+
+  if ($be_verbose) { print STDERR "Printing XML.\n"; }
+  if ($be_progress) { print "\n"; }
+  xml_print ();
+}
+
+
+# --- Set (write) config --- #
+
+
+sub set_time
+{
+  system sprintf("date %02d%02d%02d%02d%04d.%02d >/dev/null 2>/dev/null",
+                 $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_year, $cf_second);
+}
+
+
+sub restart_servers
+{
+  if (-f "/etc/rc.d/init.d/xntpd")
+  {
+    if ($cf_sync_active)
+    {
+      if (system "/etc/rc.d/init.d/xntpd restart >/dev/null 2>/dev/null")
+      {
+        if ($be_verbose) { print STDERR "Warning: XNTPD restart failed.\n"; }
+      }
+      elsif ($be_verbose)
+      {
+        print STDERR "XNTPD restarted with new configuration.\n";
+      }
+    }
+    else
+    {
+      system "/etc/rc.d/init.d/xntpd stop >/dev/null 2>/dev/null";
+      if ($be_verbose) { print STDERR "XNTPD stopped.\n"; }
+    }
+  }
+  elsif ($be_verbose)
+  {
+    print STDERR "Warning: Could not find a way to restart XNTPD service.\n";
+  }
+}
+
+
+sub set
+{
+  if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
+
+  if ($be_verbose) { print STDERR "Parsing XML.\n"; }
+  be_xml_parse ();
+
+  write_ntp_conf ();
+  write_ntp_step_tickers ();
+  write_localtime ();
+
+  if ($be_do_immediate)
+  {
+    if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
+    set_time;
+    restart_servers;
+  }
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+{
+  be_xml_parse ();
+  xml_print ();
+}
+
+
+# --- Main --- #
+
+# Process options.
+
+while (@ARGV)
+{
+  if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
+  elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
+  elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+  elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif ($ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+  elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
+  {
+    if ($be_prefix ne "")
+    {
+      print STDERR "Error: You may specify --prefix only once.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    $be_prefix = $ARGV[1];
+
+    if ($be_prefix eq "")
+    {
+      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    shift @ARGV;  # For the argument.
+  }
+  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
+  elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
+  elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
+  else
+  {
+    print STDERR "Error: Unrecognized option '$ARGV[0]'.\n\n";
+    print STDERR $Usage; exit(1);
+  }
+
+  shift @ARGV;
+}
+
+
+# Do our thing.
+
+if    ($be_operation eq "get")    { get; }
+elsif ($be_operation eq "set")    { set; }
+elsif ($be_operation eq "filter") { filter; }
+else
+{
+  print STDERR "Error: No operation specified.\n\n";
+  print STDERR $Usage; exit(1);
+}
