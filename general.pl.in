@@ -549,22 +549,21 @@ sub xst_directive_run
   }
 
   $reqargs = $ {$$directives{$key}}[1];
-  if ($$reqargs[$#$reqargs] =~ /\*$/)
+  if (scalar @args < scalar @$reqargs)
   {
-    if ($#args < ($#$reqargs - 1))
-    {
-      &xst_directive_fail ("directive_lowargs", $key, $#$reqargs, join (',', $key, @args));
-      return;
-    }
+    &xst_directive_fail ("directive_lowargs", $key, $#$reqargs, join (',', $key, @args));
+    return;
   }
-  if ($#args != $#$reqargs)
+
+  if ((scalar @args != scalar @$reqargs) &&
+      !($$reqargs[$#$reqargs] =~ /\*$/))
   {
     &xst_directive_fail ("directive_badargs", $key, $#$reqargs + 1, join (',', $key, @args));
     return;
   }
-      
+
   &xst_report ("directive_run", $key, join (',', @args));
-  
+
   $proc = $ {$$directives{$key}}[0];
   &$proc ($tool, @args);
 

@@ -98,8 +98,8 @@ sub filter
 
 sub test
 {
-  my ($tool, $dir) = @_;
-  my $font_list = &font_test ($dir);
+  my ($tool, @dir) = @_;
+  my $font_list = &font_test (\@dir);
 
   &xst_report_end ();
   &xml_print ($font_list);
@@ -115,7 +115,7 @@ $directives = {
   "get"    => [ \&get,    [], "" ],
   "set"    => [ \&set,    [], "" ],
   "filter" => [ \&filter, [], "" ],
-  "test"   => [ \&test,   [ "dir" ], "Get font information on specified file or directory." ],
+  "test"   => [ \&test,   [ "dir*" ], "Get font information on specified file or directory." ],
 };
 
 
