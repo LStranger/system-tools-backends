@@ -5,9 +5,10 @@ require "network.pl";
 require "parse.pl";
 require "debug.pl";
 require "filesys.pl";
+require "share.pl";
 
 
-@platforms = ( "redhat-6.2", "redhat-7.0" );
+@platforms = ( "redhat-6.2", "redhat-7.0", "debian-2.2" );
 
 
 &xst_init ("test", "0.0.0", "Test script.", @ARGV);
@@ -94,13 +95,16 @@ sub test_interfaces
 # ---
 
 #$arr = &xst_filesys_parse_fstab ("/etc/fstab");
-$arr = &xst_filesys_parse_mtab ("/etc/mtab");
+#$arr = &xst_filesys_parse_mtab ("/etc/mtab");
 
 # print @arr[0] . "\n";
 
 # &xst_filesys_table_remove ($arr, &xst_filesys_table_find ($arr, "point", "/"));
 # &xst_filesys_table_remove ($arr, &xst_filesys_table_find ($arr, "point", "/mnt/floppy"));
-&xst_debug_print_struct ($arr);
+#&xst_debug_print_struct ($arr);
+
+$table = &xst_share_parse_smb_conf ("/etc/samba/smb.conf");
+&xst_share_replace_smb_conf ("/etc/samba/smb.conf.test", $table);
 
 # &test_interfaces();
 # &test_media();

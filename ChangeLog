@@ -1,3 +1,19 @@
+2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
+
+	* share.pl.in (xst_share_smb_info_get_name): Implement.
+	  (xst_share_smb_info_set_name): Implement.
+	  (xst_share_smb_table_find): Implement.
+	  (xst_share_parse_smb_conf): Set share name as well.
+	  (xst_share_replace_smb_conf): Implement.
+	  (xst_share_replace_nfs_exports): Cosmetic fix.
+
+	* replace.pl.in (xst_replace_ini): Change so that blank values will
+	  remove the variable altogether.
+	  (xst_replace_remove_ini_section): Implement.
+	  (xst_replace_remove_ini_var): Implement.
+
+	* test.pl: Test cases for my personal enjoyment tomorrow.
+
 2001-05-15  Hans Petter Jansson  <hpj@ximian.com>
 
 	* share.pl.in (xst_share_replace_nfs_exports): Implement.

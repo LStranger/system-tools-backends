@@ -49,6 +49,16 @@ sub xst_share_smb_info_set
   }
 }
 
+sub xst_share_smb_info_get_name
+{
+  return $_[0]->{'name'};
+}
+
+sub xst_share_smb_info_set_name
+{
+  &xst_share_smb_info_set ($_[0], 'name', $_[1]);
+}
+
 sub xst_share_smb_info_get_point
 {
   return $_[0]->{'point'};
@@ -121,6 +131,21 @@ sub xst_share_smb_table_add
 {
   my ($table, $info) = @_;
   push @$table, $info;
+}
+
+sub xst_share_smb_table_find
+{
+  my ($table, $name) = @_;
+
+  for $i (@$table)
+  {
+    if (&xst_share_smb_info_get_name ($i) eq $name)
+    {
+      return $i;
+    }
+  }
+
+  return undef;
 }
 
 # --- share_export_nfs_info; information on a particular NFS export --- #
@@ -266,6 +291,7 @@ sub xst_share_parse_smb_conf
     $writable   = &xst_parse_ini_bool ($smb_conf_name, $section, "writable")    ||
                   &xst_parse_ini_bool ($smb_conf_name, $section, "writeable");
 
+    &xst_share_smb_info_set_name    ($sesi, $section);
     &xst_share_smb_info_set_point   ($sesi, $point);
     &xst_share_smb_info_set_comment ($sesi, $comment);
     &xst_share_smb_info_set_enabled ($sesi, $enabled);
@@ -328,6 +354,44 @@ sub xst_share_parse_nfs_exports
 
 # --- Replacing --- #
 
+sub xst_share_replace_smb_conf
+{
+  my ($file, $table) = @_;
+  my (@sections);
+
+  # Get the sections.
+
+  @sections = &xst_parse_ini_sections ($file);
+
+  for $section (@sections)
+  {
+    next if ($section =~ /^(global)|(homes)|(printers)$/);
+    next if (&xst_parse_ini_bool ($file, $section, "printable"));
+
+    if (!&xst_share_smb_table_find ($table, $section))
+    {
+      &xst_replace_remove_ini_section ($file, $section);
+    }
+  }
+
+  for $export (@$table)
+  {
+    my $point, $comment, $enabled, $browseable, $public, $writable, $printable;
+    my $name = &xst_share_smb_info_get_name ($export);
+
+    &xst_replace_ini      ($file, $name, "path",       &xst_share_smb_info_get_point      ($export));
+    &xst_replace_ini      ($file, $name, "comment",    &xst_share_smb_info_get_comment    ($export));
+    &xst_replace_ini_bool ($file, $name, "available",  &xst_share_smb_info_get_enabled    ($export));
+    &xst_replace_ini_bool ($file, $name, "browseable", &xst_share_smb_info_get_browse     ($export));
+    &xst_replace_ini_bool ($file, $name, "public",     &xst_share_smb_info_get_public     ($export));
+    &xst_replace_ini_bool ($file, $name, "writable",   &xst_share_smb_info_get_write      ($export));
+
+    &xst_replace_remove_ini_var ($file, $name, "browsable");
+    &xst_replace_remove_ini_var ($file, $name, "guest");
+    &xst_replace_remove_ini_var ($file, $name, "writeable");
+  }
+}
+
 sub xst_share_replace_nfs_exports
 {
   my ($file, $table) = @_;
@@ -335,7 +399,7 @@ sub xst_share_replace_nfs_exports
 
   # Find the file.
 
-  $outfd = &xst_file_open_write_from_names($file);
+  $outfd = &xst_file_open_write_from_names ($file);
   if (not $outfd) { return; }
 
   # We rewrite everything, as we have complete command of the things to go

@@ -358,7 +358,14 @@ sub xst_replace_ini
         
         if ($found_flag && $i =~ /^$var[ \t]*=/i)
         {
-          $i =~ s/^($var[ \t]*=[ \t]*).*/$1$value/i;
+          if ($value ne "")
+          {
+            $i =~ s/^($var[ \t]*=[ \t]*).*/$1$value/i;
+          }
+          else
+          {
+            $i = "";
+          }
           $found_flag = 2;
         }
       }
@@ -375,8 +382,7 @@ sub xst_replace_ini
   }
 
   push @$buff, "\n[$section]\n" if (!$found_flag);
-  push @$buff, "$var = $value\n" if ($found_flag < 2);
-
+  push @$buff, "$var = $value\n" if ($found_flag < 2 && $value ne "");
   
   &xst_file_buffer_clean ($buff);
   $ret = &xst_file_buffer_save ($buff, $file);
@@ -384,6 +390,63 @@ sub xst_replace_ini
   return $ret;
 }
 
+sub xst_replace_remove_ini_section
+{
+  my ($file, $section) = @_;
+  my ($buff, $i, $found_flag, $ret);
+  my ($pre_space, $post_comment, $sec_save);
+
+  &xst_report_enter ();
+#  &xst_report ("replace_ini", $var, $section, $file);
+
+  $buff = &xst_file_buffer_load ($file);
+
+  &xst_file_buffer_join_lines ($buff);
+  $found_flag = 0;
+
+  foreach $i (@$buff)
+  {
+    $pre_space = $post_comment = "";
+
+    chomp $i;
+    $pre_space = $1 if $i =~ s/^([ \t]+)//;
+    $post_comment = $1 if $i =~ s/([ \t]*[\#;].*)//;
+    
+    if ($i ne "")
+    {
+      if ($i =~ /\[$section\]/i)
+      {
+        $i =~ s/(\[$section\][ \t]*)//i;
+        $found_flag = 1;
+      }
+      elsif ($found_flag && $i =~ /\[.+\]/i)
+      {
+        $i = $pre_space . $i . $post_comment . "\n";
+        last;
+      }
+    }
+
+    if ($found_flag)
+    {
+      $i = $post_comment . "\n";
+    }
+    else
+    {
+      $i = $pre_space . $i . $post_comment . "\n";
+    }
+  }
+
+  &xst_file_buffer_clean ($buff);
+  $ret = &xst_file_buffer_save ($buff, $file);
+#  &xst_report_leave ();
+  return $ret;
+}
+
+sub xst_replace_remove_ini_var
+{
+  my ($file, $section, $var) = @_;
+  &xst_replace_ini ($file, $section, $var, "");
+}
 
 # Replace using boolean $value with a yes/no representation,
 # ini style.
