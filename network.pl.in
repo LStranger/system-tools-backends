@@ -231,6 +231,8 @@ sub xst_network_dialing_set
     delete $hash{"type"};
     delete $hash{"name"};
 
+    
+
     foreach $j (keys %hash)
     {
       $ret = -1 if &xst_replace_ini ($file, $section, $vars{$j}, $hash{$j});
@@ -243,7 +245,7 @@ sub xst_network_dialing_set
 sub xst_network_rh62_interface_set
 {
   my ($dev, $enabled) = @_;
-  my @ifaces, $i, $dev;
+  my @ifaces, $i;
 
   return -1 if &xst_run ("ifdown $dev");
   
@@ -253,6 +255,36 @@ sub xst_network_rh62_interface_set
   }
 
   return 0;
+}
+
+sub xst_network_remove_pap_entry
+{
+  my ($file, $login) = @_;
+  my $i, $buff;
+
+  $buff = &xst_buffer_load ($file);
+
+  foreach $i (@$buff)
+  {
+    $i = "" if ($i =~ /^[ \t]*$login[ \t]/);
+  }
+
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+
+sub xst_network_rh62_interface_delete
+{
+  my $dev = $_[0];
+  my $file = "/etc/sysconfig/network-scripts/ifcfg-$dev";
+  my $login;
+
+  &xst_network_rh62_interface_set ($dev, 0);
+
+  $login = xst_parse_sh ($file, "PAPNAME");
+  &xst_network_remove_pap_entry ("/etc/ppp/pap-secrets", $login) if $login ne "";
+
+  unlink ($file);
 }
 
 sub xst_network_interfaces_set
@@ -272,6 +304,15 @@ sub xst_network_interfaces_set
   foreach $i (@ifaces)
   {
     return -1 if &$proc ($i, 0);
+  }
+
+  # Delete all existing interfaces that are not in the hash.
+  $proc = $dist_attrib{"ifaces_get"};
+  @ifaces = &$proc ();
+  $proc = $dist_attrib{"iface_delete"};
+  foreach $i (@ifaces)
+  {
+    &$proc ($i) if !exists ($$values_hash{$i});
   }
 
   %fn = %{$dist_attrib{"fn"}};
@@ -433,44 +474,46 @@ sub xst_network_get_interfaces_parse_table
 	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
 	    fn =>
 	    {
-		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-		 CHAT => "/etc/sysconfig/network-scripts/chat-#iface#",
-		 IFACE => "#iface#" },
+        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE => "#iface#" },
 	    table =>
-		   [
-        [ name,               \&xst_parse_sh,      IFCFG, NAME ],
-		    [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
-		    [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
-		    [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
-		    [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
-		    [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
-		    [ gateway,            \&xst_parse_sh,      IFCFG, GATEWAY ],
-		    [ bootproto,          \&xst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
-		    [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
-		    [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
-		    [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
-		    [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
-		    [ disconnect_timeout, \&xst_parse_sh,      IFCFG, DISCONNECTTIMEOUT ],
-		    [ retry_timeout,      \&xst_parse_sh,      IFCFG, RETRYTIMEOUT ],
-		    [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
-		    [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
-		    [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
-		    [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
-		    [ wvsection,          \&xst_parse_sh,      IFCFG, WVDIALSECT ],
-		    [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
-		    [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
-		    [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
-		    [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
-		    [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
-		    [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
-		    [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
-		    [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
-		    [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
-		    [ enabled,            \&xst_network_interface_active, IFACE ]
-		    ]
-			 }
+          [
+           [ name,               \&xst_parse_sh,      IFCFG, NAME ],
+           [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
+           [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
+           [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
+           [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
+           [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
+           [ gateway,            \&xst_parse_sh,      IFCFG, GATEWAY ],
+           [ dns1,               \&xst_parse_sh,      IFCFG, DNS1 ],
+           [ dns2,               \&xst_parse_sh,      IFCFG, DNS2 ],
+           [ bootproto,          \&xst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
+           [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
+           [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
+           [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
+           [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
+           [ disconnect_timeout, \&xst_parse_sh,      IFCFG, DISCONNECTTIMEOUT ],
+           [ retry_timeout,      \&xst_parse_sh,      IFCFG, RETRYTIMEOUT ],
+           [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
+           [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
+           [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
+           [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
+           [ wvsection,          \&xst_parse_sh,      IFCFG, WVDIALSECT ],
+           [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
+           [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+           [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
+           [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
+           [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
+           [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+           [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
+           [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+           [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
+           [ enabled,            \&xst_network_interface_active, IFACE ]
+           ]
+             }
 	  );
-
+  
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
@@ -546,12 +589,14 @@ sub xst_network_get_interface_replace_table
     "redhat-6.2" =>
 	  {
       iface_set => \&xst_network_rh62_interface_set,
+      iface_delete => \&xst_network_rh62_interface_delete,
+      ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
       fn =>
 	    {
         IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
+        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE => "#iface#",
-	   WVDIAL => "/etc/wvdial.conf"
+        WVDIAL => "/etc/wvdial.conf"
       },
       table =>
        [
@@ -562,6 +607,8 @@ sub xst_network_get_interface_replace_table
         [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
         [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
         [ gateway,            \&xst_replace_sh,      IFCFG, GATEWAY ],
+        [ dns1,               \&xst_replace_sh,      IFCFG, DNS1 ],
+        [ dns2,               \&xst_replace_sh,      IFCFG, DNS2 ],
         [ bootproto,          \&xst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
         [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
         [ mru,                \&xst_replace_sh,      IFCFG, MRU ],

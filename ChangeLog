@@ -1,3 +1,13 @@
+2001-02-21  Arturo Espinosa  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_interfaces_set, xst_network_rh62_interface_delete,
+	  xst_network_remove_pap_entry): remove interfaces that are not present, and remove
+	  pap entry if the interface used one, for security.
+	* network.pl.in (xst_network_remove_pap_entry): used when a ppp interface is removed,
+	  for security.
+	  (xst_network_rh62_interface_delete): entry removal in rh62ish machines.
+	  DNS1 and DNS2 support in tables.
+	
 2001-02-21  Chema Celorio  <chema@celorio.com>
 
 	* users-conf.in (xml_print): quote the group too.
