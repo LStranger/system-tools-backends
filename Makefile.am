@@ -22,6 +22,7 @@ shares-conf.in \
 time-conf.in
 ##users-conf
 
+CLEANFILES = $(backends)
 
 $(backends): %-conf: %-conf.in
 	sed s#___scriptsdir___#$(scriptsdir)# < $< > $@
