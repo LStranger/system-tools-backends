@@ -693,7 +693,7 @@ sub xml_parse_group
 		}
 		else
 		{
-		  be_report_warning("Unexpected tag " . $$tree[0] . " while parsing group");
+		  be_report_warning(9, "Unexpected tag " . $$tree[0] . " while parsing group");
 		}
 		
 		shift @$tree;

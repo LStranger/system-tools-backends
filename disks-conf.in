@@ -800,13 +800,13 @@ sub set_immediate
       {
         if ($cf_disks[$i]->{partitions}[$j]->{mounted})
         {
-          be_report_info(04, "Mounting " . $cf_disks[$i]->{partitions}[$j]->{device});
+          be_report_info(4, "Mounting " . $cf_disks[$i]->{partitions}[$j]->{device});
           system "$mount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " " .
                  $cf_disks[$i]->{partitions}[$j]->{point} . " >/dev/null 2>/dev/null";
         }
         else
         {
-          be_report_info("Unmounting " . $cf_disks[$i]->{partitions}[$j]->{device});
+          be_report_info(5, "Unmounting " . $cf_disks[$i]->{partitions}[$j]->{device});
           system "$umount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " >/dev/null 2>/dev/null";
         }
       }

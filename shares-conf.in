@@ -1406,7 +1406,8 @@ sub get_interfaces
 
 sub get_host_mounts
 {
-  my ($ping_tool, $showmount_tool, $nmblookup_tool, $smbclient_tool);
+  my ($ping_tool, $showmount_tool, $nmblookup_tool, $smbclient_tool,
+      $broadcast_ip, $network_ip);
   my @hosts;
   my ($i, $j);
 
@@ -1416,6 +1417,9 @@ sub get_host_mounts
   $smbclient_tool = be_locate_tool("smbclient");
 
   $broadcast_ip = ip_calc_broadcast($cf_hostip, $cf_netmask);
+  $network_ip = ip_calc_network($cf_hostip, $cf_netmask);
+
+  be_report_info(15, "Mapping IP subnet " . $network_ip);
 
   # Map subnet.
 
@@ -1458,10 +1462,13 @@ sub get_host_mounts
   }
   else
   {
+    be_report_info(16, "Doing NFS detection on broadcast " . $broadcast_ip);
+  
     $i = 0; $j = 0;
     for $host (@hosts)
     {
       if ($host eq $cf_hostip) { next; }
+      be_report_info(17, "Querying NFS service on " . $host);
       open(MOUNTS_HD, "$showmount_tool --directories --no-headers $host 2>/dev/null |");
       while (<MOUNTS_HD>)
       {
@@ -1622,7 +1629,7 @@ sub get_host_mounts
     be_report_info(10, "Found $j SMB exports on $i hosts");
     be_print_progress ();
   }
-  else { be_report_warning("No workgroup configured - SMB scan skipped"); }
+  else { be_report_warning(10, "No workgroup configured - SMB scan skipped"); }
 }
 
 

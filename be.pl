@@ -93,7 +93,7 @@ sub be_report_begin
 sub be_report_end
 {
   be_report(1, 01, "End of work report");
-  print "\n";
+  if ($be_reporting) { print "\n"; }
 }
 
 sub be_report_info

@@ -384,8 +384,8 @@ sub read_network_interfaces
   {
     $chosen_name = (keys(%ifaces))[0];
 
-    be_report_info(03, "Only one interface, $chosen_name, exists.  It is being " .
-                       "selected as the primary interface");
+    be_report_info(2, "Only one interface, $chosen_name, exists.  It is being " .
+                      "selected as the primary interface");
   }
 
   # For that matter, do any interfaces exist at all?
@@ -1401,21 +1401,21 @@ sub set_immediate
       if (!(system "$ifdown_cmd $cf_interface >/dev/null 2>/dev/null" &&
             system "$ifup_cmd $cf_interface >/dev/null 2>/dev/null"))
       {
-        be_report_warning(05, "Could not configure network interface");
+        be_report_warning(6, "Could not configure network interface");
       }
       else
       {
-        be_report_info(03, "Primary interface configured");
+        be_report_info(3, "Primary interface configured");
       }
     }
     else
     {
-      be_report_warning(06, "No primary interface given");
+      be_report_warning(7, "No primary interface given");
     }
   }
   else
   {
-    be_report_warning(07, "No interface control utilities found");
+    be_report_warning(8, "No interface control utilities found");
   }
 }
 

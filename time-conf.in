@@ -147,6 +147,8 @@ sub read_ntp_conf
   
   # Parse the file.
   
+  be_report_info(13, "Reading time server list");
+  
   while (<FILE>)
   {
     @line = split(/[ \n\r\t]+/, $_);
@@ -169,6 +171,8 @@ sub write_ntp_conf
   if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
+
+  be_report_info(11, "Saving time server list");
 
   while (<INFILE>)
   {
@@ -223,6 +227,8 @@ sub write_ntp_step_tickers
 
   # Write the file.
 
+  be_report_info(12, "Saving time server preload list");
+
   for $elem (@cf_servers) { print FILE "$elem\n"; }
 
   close(FILE);
@@ -242,6 +248,8 @@ sub write_localtime
 {
   my ($tz, $name);
   my $zonebase = "/usr/share/zoneinfo/";
+
+  be_report_info(10, "Setting timezone");
 
   $tz = "$zonebase$cf_timezone";
 
@@ -409,6 +417,8 @@ sub get_zone
 
   $diff_tool = be_locate_tool("diff");
 
+  be_report_info(8, "Scanning timezones");
+
   while (<TZLIST>)
   {
     if (/#/) { next; }                     # Skip comments.
@@ -416,7 +426,9 @@ sub get_zone
     chomp $zone;                           # Remove linefeeds.
     
     # See if this zone file matches the installed one.
-    
+
+    be_report_info(9, "Scanning timezones: $zone");
+
     if (!system "$diff_tool /usr/share/zoneinfo/$zone /etc/localtime >/dev/null 2>/dev/null")
     {
       # Found a match.
@@ -436,6 +448,8 @@ sub get_zone
 sub get_time
 {
   my $datetext;
+  
+  be_report_info(7, "Querying system clock");
   
   $datetext = `date +%Y.%m.%d.%H:%M.%S.%z`;
   
@@ -485,6 +499,8 @@ sub get
 
 sub set_time
 {
+  be_report_info(6, "Setting system clock");
+
   system sprintf("date %02d%02d%02d%02d%04d.%02d >/dev/null 2>/dev/null",
                  $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_year, $cf_second);
 }
@@ -496,19 +512,16 @@ sub restart_servers
   {
     if ($cf_sync_active)
     {
+      be_report_info(4, "Restarting XNTPD with new configuration");
       if (system "/etc/rc.d/init.d/xntpd restart >/dev/null 2>/dev/null")
       {
         be_report_warning(2, "XNTPD restart failed");
       }
-      else
-      {
-        be_report_info(4, "XNTPD restarted with new configuration");
-      }
     }
     else
     {
+      be_report_info(5, "Stopping XNTPD");
       system "/etc/rc.d/init.d/xntpd stop >/dev/null 2>/dev/null";
-      be_report_info(5, "XNTPD stopped");
     }
   }
   else

@@ -1085,9 +1085,12 @@ sub get_immediate
 
   # Succeeds only if we get an FQDN. This is probably the right thing to do.
 
-  $cf_hostname_reverse = `nslookup -timeout=1 -retry=2 $ip 2>/dev/null`;
-  $cf_hostname_reverse =~ /^Name:[ \t]+([a-zA-Z0-9]+)\.([a-zA-Z0-9.]+)$/mg;
-  $cf_hostname_reverse = $1;
+  be_report_info(3, "Looking up reverse names");
+
+  $temp = `nslookup -timeout=1 -retry=2 $ip 2>/dev/null`;
+  $temp =~ /^Name:[ \t]+([a-zA-Z0-9]+)\.([a-zA-Z0-9.]+)/mg;
+
+  if ($1 ne $ip) { $cf_hostname_reverse = $1; }  # Appalling.
   $cf_domain_reverse = $2;
 
   if (($cf_domain_reverse eq "" || $cf_hostname_reverse eq ""))
@@ -1129,21 +1132,21 @@ sub set_immediate
     {
       if (system "hostname $cf_hostname >/dev/null 2>/dev/null")
       {
-	be_report_warning(03, "Failed to set runtime hostname");
+	be_report_warning(3, "Failed to set runtime hostname");
       }
       else
       {
-        be_report_info(01, "Runtime hostname set");
+        be_report_info(1, "Runtime hostname set");
       }
     }
     else
     {
-      be_report_warning("No hostname specified; runtime hostname not set");
+      be_report_warning(4, "No hostname specified; runtime hostname not set");
     }
   }
   else
   {
-    be_report_warning("No hostname command found; runtime hostname not set");
+    be_report_warning(5, "No hostname command found; runtime hostname not set");
   }
 
   # Reload SMB configuration.
@@ -1152,20 +1155,20 @@ sub set_immediate
   {
     if (system "/etc/rc.d/init.d/smb reload >/dev/null 2>/dev/null")
     {
-      if ($be_verbose) { print STDERR "Warning: SMB configuration reload failed.\n"; }
+      be_report_warning(6, "SMB configuration reload failed");
       if (system "/etc/rc.d/init.d/smb restart >/dev/null 2>/dev/null")
       {
-        if ($be_verbose) { print STDERR "Warning: SMB restart failed.\n"; }
+        be_report_warning(7, "SMB restart failed");
       }
     }
-    elsif ($be_verbose)
+    else
     {
-      print STDERR "SMB told to reload its configuration.\n";
+      be_report_info(2, "SMB told to reload its configuration");
     }
   }
-  elsif ($be_verbose)
+  else
   {
-    print STDERR "Warning: Could not find a way to restart SMB services.\n";
+    be_report_warning(8, "Could not find a way to restart SMB services");
   }
 }
 
