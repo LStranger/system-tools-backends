@@ -39,7 +39,7 @@ $xst_version = "";    # Version of tool - [major.minor.revision].
 $xst_operation = "";  # Major operation user wants to perform - [get | set | filter].
 
 $xst_prefix = "";
-$xst_verbose = 0;
+$xst_do_verbose = 0;
 $xst_do_report = 0;
 $xst_debug = 0;
 $xst_do_immediate = 1;
