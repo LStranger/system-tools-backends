@@ -1,3 +1,8 @@
+2003-06-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* backends/boot-grub.pl.in, boot.pl.in: made grub path-aware when 
+	/boot is a partition. fixes #113687 and #106997
+
 2003-05-31  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* time-conf.in: added a comma, now the time tool backend works again

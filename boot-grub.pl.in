@@ -54,6 +54,42 @@ sub gst_boot_grub_get_config_file
   return undef;
 }
 
+# find out which is the partition where the image is stored in, just to
+# put /image instead of /boot/image (we assume that if an image isn't it /, then it's in
+# the /boot partition)
+sub gst_boot_grub_set_image_path
+{
+  my ($image, $root) = @_;
+  my ($line);
+
+  $line = `cat $gst_prefix/etc/fstab | grep "$root"`;
+
+  # if the root partition of the entry isn't /, then we remove any path from $image
+  if ($line !~ /$root[\t ]+\/[\t ]+.+/)
+  {
+    $image =~ s/.*\//\//;
+  }
+
+  return $image;
+}
+
+# Tries to get the path in which the image is stored from the root partition of the entry
+# (we assume that if an image isn't in /, then it's in the boot partition)
+sub gst_boot_grub_get_image_path
+{
+  my ($image, $root) = @_;
+  my ($line, $path);
+
+  $line = `cat $gst_prefix/etc/fstab | grep "$root"`;
+
+  if ($line !~ /$root[\t ]+\/[\t ]+.+/)
+  {
+    $image = "/boot" . $image;
+  }
+
+  return $image;
+}
+
 sub gst_boot_grub_known_var
 {
   my $key = shift;
@@ -114,7 +150,7 @@ sub gst_boot_grub_delete_entry
 sub gst_boot_grub_edit_entry
 {
   my ($entry, $buff, $lineno, $device_map) = @_;
-  my ($end, $val, $value);
+  my ($end, $val, $value, $image);
 	
   $end = &gst_boot_grub_find_entry ($buff, $lineno + 1);
   $end = scalar @$buff if ($end < 0);
@@ -124,10 +160,12 @@ sub gst_boot_grub_edit_entry
     # It's a linux image
     $value = $entry->{"root"};
     $value = &gst_boot_grub_linux2grub ($device_map, $value);
-		
+
+    $image = &gst_boot_grub_set_image_path ($entry->{"image"}, $entry->{"root"});
+    
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\troot (". $value. ")\n";
-    $val .= "\tkernel " . $entry->{"image"} . " " . $entry->{"append"} . "\n";
+    $val .= "\tkernel " . $image . " " . $entry->{"append"} . "\n";
     if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
       $val .= "\tinitrd ". $entry->{"initrd"} . "\n";
     }
@@ -159,17 +197,19 @@ sub gst_boot_grub_edit_entry
 sub gst_boot_grub_add_entry
 {
   my ($entry, $buff, $device_map) = @_;
-  my ($end, $val, $value);
+  my ($end, $val, $value, $image);
 	
   if (exists ($entry->{"image"}))
   {
     # It's a linux image
     $value = $entry->{"root"};
     $value = &gst_boot_grub_linux2grub ($device_map, $value);
-		
+
+    $image = &gst_boot_grub_set_image_path ($entry->{"image"}, $entry->{"root"});
+
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\troot (". $value. ")\n";
-    $val .= "\tkernel " . $entry->{"image"} . " " . $entry->{"append"} . "\n";
+    $val .= "\tkernel " . $image . " " . $entry->{"append"} . "\n";
     if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
       $val .= "\tinitrd ". $entry->{"initrd"} . "\n";
     }
@@ -553,9 +593,13 @@ sub gst_boot_grub_parse_pixmap
 
 sub gst_boot_grub_parse_image
 {
-  my ($grub_conf, $device_map, $mtab, $entry) = @_;
+  my ($grub_conf, $device_map, $mtab, $entry, $root) = @_;
+  my ($image);
 
-  return &gst_boot_grub_parse_file_cmd ($grub_conf, "kernel", $device_map, $mtab, $entry);
+  $image = &gst_boot_grub_parse_file_cmd ($grub_conf, "kernel", $device_map, $mtab, $entry);
+  $image = gst_boot_grub_get_image_path ($image, $root);
+
+  return $image;
 }
 
 sub gst_boot_grub_parse_other
