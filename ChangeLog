@@ -1,3 +1,7 @@
+2001-07-11  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_replace_table): Typos.
+
 2001-07-11  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_version): Beginnings of X version detection.
