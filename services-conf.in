@@ -317,12 +317,13 @@ sub set
   my %hash;
 	
   $hash = &xml_parse ();
-  &gst_report_end ();
 
   if ($hash)
   {
     &gst_service_set_conf ($hash);
   }
+
+  &gst_report_end ();
 }
 
 # --- Filter config: XML in, XML out --- #

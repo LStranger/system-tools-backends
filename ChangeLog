@@ -1,3 +1,8 @@
+2004-04-22  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* services-conf.in: made it to end the report correctly when writing 
+	  config
+
 2004-04-22  Artur Flinta  <aflinta@cvs.gnome.org>
 
 	* configure.in: Added pl to ALL_LINGUAS.
