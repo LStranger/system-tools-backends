@@ -1,3 +1,7 @@
+2001-09-11  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in: 1000 little fixed bugs.
+
 2001-09-10  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* file.pl.in (xst_file_rmtree): replicated File::Path::rmtree,

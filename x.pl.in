@@ -131,6 +131,7 @@ my $x4_sections = {
       HorizSync   => $x_range_hz,
       VertRefresh => $x_range_hz,
       ModeLine    => $x_modeline,
+      Gamma       => $x_list_int,
     },
     options => {},
   },
@@ -603,8 +604,12 @@ sub x_xml_parse_list
 {
   my $hash = shift;
   my $kw = shift;
-
-  push @{$hash->{$kw}}, &xst_xml_get_text (shift @_);
+  my $values = shift;
+  my $i = 1;
+  while (defined (my $tmp = xst_xml_get_attribute ($values, 'arg' . $i))) {
+    push @{$hash->{$kw}}, $tmp;
+    $i++;
+  }
 }
 
 sub x_xml_print_list
@@ -612,9 +617,13 @@ sub x_xml_print_list
   my $key = shift;
   my $array = shift;
 
+  my $str = $key;
+  my $i = 1;
   foreach (@$array) {
-    &xst_xml_print_pcdata ($key, $_);
+    $str .= ' arg' . $i . "=\"$_\"";
+    $i++;
   }
+  &xst_xml_print_line ("<$str/>");
 }
 
 sub x_update_list_string
@@ -628,7 +637,7 @@ sub x_update_list_string
   }
 
   while (@$new_val) {    
-    $$new_val[0] = "\"" . $$new_val[0] . "\"";
+    $$new_val[0] = "\"" . $$new_val[0] . "\"" if length ($$new_val[0]) > 1;
     &x_update_add_token ($buf, $ptr, $$new_val[0], 1);
     shift @$new_val;
   }
@@ -639,9 +648,11 @@ sub x_del_list_string
   my ($buf, $ptr, $kw, $old_val) = @_;
   &x_update_token ($buf, $ptr, $kw);
 
-  while (@$old_val) {
-    &x_update_unique_string ($buf, $ptr, $old_val);
-    shift @$old_val;
+  if ($old_val) {
+    while (@$old_val) {
+      &x_update_unique_string ($buf, $ptr, $old_val);
+      shift @$old_val;
+    }
   }
 }
 
@@ -664,7 +675,7 @@ sub x_parse_list_int
 
   my @list;
   while (my $token = &x_peek_token ($buf)) {
-    if ($token =~ /^[0-9]+$/) {
+    if ($token =~ /^[0-9\.]+$/) {
       $token = &x_get_token ($buf);
       goto ERROR unless defined ($token);
       push @list, $token;
@@ -690,10 +701,12 @@ sub x_update_list_int
 {
   my ($buf, $ptr, $old_val, $new_val) = @_;
 
-  while (@$old_val) {
-    &x_update_unique_int ($buf, $ptr, $$old_val[0], $$new_val[0]);
-    shift @$old_val;
-    shift @$new_val;
+  if ($old_val) {
+    while (@$old_val) {
+      &x_update_unique_int ($buf, $ptr, $$old_val[0], $$new_val[0]);
+      shift @$old_val;
+      shift @$new_val;
+    }
   }
 
   while (@$new_val) {
@@ -707,9 +720,10 @@ sub x_del_list_int
   my ($buf, $ptr, $kw, $old_val) = @_;
   &x_update_token ($buf, $ptr, $kw);
 
-  while (@$old_val) {
-    &x_update_unique_int ($buf, $ptr, $old_val);
-    shift @$old_val;
+  if ($old_val) {
+    while (@$old_val) {
+      &x_update_unique_int ($buf, $ptr, shift @$old_val);
+    }
   }
 }
 
@@ -718,6 +732,7 @@ sub x_add_list_int
   my ($buf, $ptr, $kw, $new_val) = @_;
 
   &x_update_add_token ($buf, $ptr, $kw);
+#  push @$new_val, "\n";
   &x_update_list_int ($buf, $ptr, undef, $new_val);
 }
 
@@ -1124,8 +1139,8 @@ sub x_parse
           $section_ptr = $section_ptr->{$tmp};
           unshift @section_stack, $section_ptr;
 
-          unshift @{$config_ptr->{$tmp}}, {};
-          $config_ptr = $config_ptr->{$tmp}[0];
+          push @{$config_ptr->{$tmp}}, {};
+          $config_ptr = $config_ptr->{$tmp}[$#{$config_ptr->{$tmp}}];
           unshift @config_stack, $config_ptr;
         }
         last;
@@ -1247,7 +1262,7 @@ sub x_xml_parse_section
     shift @$tree;
   }
 
-  push @{$config->{$section_name}}, $hash;
+  unshift @{$config->{$section_name}}, $hash;
 }
 
 sub x_xml_parse
@@ -1315,7 +1330,13 @@ sub x_update_unget_token
   my @list = &quotewords ('[ \t]+', 1, $line);
   my $token = $list[$#list];
 
-  $ptr->{'col'} -= length ($token);
+  if (scalar @list == 2 && length ($list[0]) == 0 ||
+      scalar @list <= 1) {
+    --$ptr->{'line'};
+    $ptr->{'col'} = length $$buf[$ptr->{'line'}];
+  } else {
+    $ptr->{'col'} -= length ($token);
+  }
 }
 
 sub x_update_token
@@ -1328,9 +1349,14 @@ sub x_update_token
   my $pattern = $old_val;
   $pattern =~ s/(\W)/\\$1/g;
   substr ($$buf[$ptr->{'line'}], 0, $ptr->{'col'}) =~ s/$pattern$/$new_val/;
-  
-  my $diff =  length ($old_val) - length ($new_val);
-  $ptr->{'col'} -= $diff;
+
+  if ($$buf[$ptr->{'line'}] =~ /^\s*$/) {
+    $$buf[$ptr->{'line'}] = '';
+    $ptr->{'col'} = 0;
+  } else {
+    my $diff = length ($old_val) - length ($new_val);
+    $ptr->{'col'} -= $diff;
+  }
 }
 
 sub x_update_add_token
@@ -1339,7 +1365,8 @@ sub x_update_add_token
   my $ptr = shift;
   my $val = shift;
   my $same_line = shift;
-  my $new_val = $same_line ? " " : "\n";
+#  my $new_val = $same_line ? " " : "\n";
+  my $new_val = $same_line ? ' ' : '';
   $new_val .= $val;
 
   my $head = substr ($$buf[$ptr->{'line'}], 0, $ptr->{'col'});
@@ -1380,12 +1407,15 @@ sub x_update_add_section
   my ($buf, $ptr, $section, $section_name, $section_list, $sub_section) = @_;
   my $section_str = $sub_section ? "Subsection" : "Section";
 
-  &x_update_add_token ($buf, $ptr, "$section_str \"$section_name\"");
+  &x_update_add_token ($buf, $ptr, "\n$section_str \"$section_name\"\n");
 
   foreach my $key (keys %$section) {
     if (exists ($section_list->{$section_name}{'keywords'}{$key})) {
       my $func = $section_list->{$section_name}{'keywords'}{$key}{'add'};
-      &$func ($buf, $ptr, $key, $section->{$key}) if $func;
+      if ($func) {
+        &$func ($buf, $ptr, $key, $section->{$key});
+        &x_update_add_token ($buf, $ptr, "\n");
+      }
     }
 
     elsif (exists ($section_list->{$section_name}{$key})) {
@@ -1465,29 +1495,31 @@ sub x_update_section
     }
   }
 
-  if (scalar keys %$new_section > 0) {
-    &x_update_unget_token ($buf, $ptr);
+  # Add new values
+  
+  my $first_time = 1;
+  foreach my $kw (keys %$new_section) {
+    &x_update_unget_token ($buf, $ptr) if $first_time;
 
-    # Add new values
+    if (exists $section_list->{'keywords'}{$kw}) {      
+      my $func = $section_list->{'keywords'}{$kw}{'add'};
+      &$func ($buf, $ptr, $kw, $new_section->{$kw});
+      &x_update_add_token ($buf, $ptr, "\n");
+    }
 
-    foreach my $kw (keys %$new_section) {    
-      if (exists $section_list->{'keywords'}{$kw}) {
-        my $func = $section_list->{'keywords'}{$kw}{'add'};
-        &$func ($buf, $ptr, $kw, $new_section->{$kw});
-      }
-
-      elsif (exists $section_list->{$kw}) {
-        foreach my $tmp (@{$new_section->{$kw}}) {
-          &x_update_add_section ($buf, $ptr, $tmp, $kw, $section_list, 1) if $tmp;
-        }
-      }
-
-      else {
-        my $msg = "unknown keyword $kw in section $section_name";
-        &xst_report ('x_general_warn', $msg);
-        &xst_debug_print_line ("x_update_section: $msg");
+    elsif (exists $section_list->{$kw}) {
+      foreach my $tmp (@{$new_section->{$kw}}) {
+        &x_update_add_section ($buf, $ptr, $tmp, $kw, $section_list, 1) if $tmp;
       }
     }
+
+    else {
+      my $msg = "unknown keyword $kw in section $section_name";
+      &xst_report ('x_general_warn', $msg);
+      &xst_debug_print_line ("x_update_section: $msg");
+    }
+
+    undef $first_time if $first_time;
   }
 
   # Remove empty old data structs
@@ -1638,6 +1670,105 @@ sub x3_fix_screen
   }
 }
 
+# Internal.
+sub x_get_active_serverlayout
+{
+  my $config = shift;
+  return unless $config;
+
+  unless (exists ($config->{'ServerLayout'}) ||
+          scalar @{$config->{'Servelayout'}} < 1) {
+    &xst_debug_print_line ("x_get_active_serverlayout: No 'ServerLayout''s found.");
+    return;
+  }
+
+  # Active == first
+  my $active = $config->{'ServerLayout'}[0];
+  unless ($active->{'Identifier'} || $active->{'Screen'}) {
+    &xst_debug_print_line ("x_get_active_serverlayout: Incomplete active layout.");
+    return;
+  }
+
+  return $active;
+}
+
+# Internal.
+sub x_get_active_screen
+{
+  my $config = shift;  
+  return unless $config;
+
+  unless (exists ($config->{'Screen'}) ||
+          scalar @{$config->{'Screen'}} < 1) {
+    &xst_debug_print_line ("x_get_active_screen: No screens found.");
+    return;
+  }
+
+  my $serverlayout = &x_get_active_serverlayout ($config);
+  return unless $serverlayout;
+
+  my $screen_name = $serverlayout->{'Screen'};
+  foreach my $screen (@{$config->{'Screen'}}) {
+    return $screen if $screen_name eq $screen->{'Identifier'};
+  }
+
+  &xst_debug_print_line ("x_get_active_screen: Can't find screen '$screen_name'.");
+  return;
+}
+
+# Internal
+sub x_get_active_display
+{
+  my $config = shift;
+  return unless $config;
+
+  my $screen = &x_get_active_screen ($config);
+  return unless $screen;
+
+  if (scalar @{$screen->{'Display'}} < 1) {
+    &xst_debug_print_line ("x_get_active_display: No 'Display' subsections found.");
+    return;
+  }
+
+  foreach my $disp (@{$screen->{'Display'}}) {
+    return $disp if $screen->{'DefaultDepth'} == $disp->{'Depth'};
+  }
+
+  &xst_debug_print_line ("x_get_active_display: No 'Display' subsection found.");
+  return;
+}
+
+# Internal
+sub x_check_display
+{
+  my $config = shift;
+  return unless $config;
+
+  my $display = &x_get_active_display ($config);
+  return unless $display;
+
+  my $modes = $display->{'Modes'};
+  if (scalar @$modes < 1) {
+    &xst_debug_print_line ("x_check_display: No 'Modes' found.");
+    return;
+  }
+
+  my ($maxx, $maxy) = (0, 0);
+  foreach my $mode (@$modes) {
+    my ($x, $y) = ($1, $2) if $mode =~ /^(\d+)x(\d+)$/i;
+    $maxx = $x if $x > $maxx;
+    $maxy = $y if $y > $maxy;
+  }
+
+  my $active_mode = $$modes[0];
+  my ($x, $y) = ($1, $2) if $active_mode =~ /^(\d+)x(\d+)$/i;
+  if ($x < $maxx || $y < $maxy) {
+    $display->{'Virtual'} = [ $x, $y ];
+  } else {
+    delete $display->{'Virtual'};
+  }
+}
+
 sub x_config_fix
 {
   my $config = shift;
@@ -1645,11 +1776,13 @@ sub x_config_fix
 
   return unless $config;
 
-  if ($x_version->{'number'} <= 400) {
+  if ($x_version->{'number'} < 400) {
     # Order of calling these functions is IMPORTANT. Some sections depend on others...
     &x3_fix_screen ($config, $get);
     &x3_fix_serverlayout ($config, $get);
   }
+
+  &x_check_display ($config);
 }
 
 
