@@ -1,3 +1,8 @@
+2001-06-21  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (xst_xfree4_conf_get): Added support for "SubSection"s,
+	improved readability A LOT, alomst a rewrite.
+
 2001-06-20  Bradford Hovinen  <hovinen@ximian.com>
 
 	* general.pl.in (xst_set_location): remove xst_archive_data

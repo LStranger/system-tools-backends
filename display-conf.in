@@ -64,6 +64,30 @@ sub distro_file
 # --- XML parsing ---
 # Scan XML from standard input to an internal tree.
 
+sub xml_print ($)
+{
+  my $config = shift;
+  my ($section, $hash);
+
+  if (ref ($config) ne "XstXConfig") {
+    # TODO: give error
+    return;
+  }
+  
+  &xst_xml_print_begin ();
+  &xst_xml_print_vspace ();
+
+  foreach $section (keys %$config) {
+    my ($arrayref) = $$config{$section};
+
+    foreach $hash (@$arrayref) {      
+      &x_xml_print_section ($hash, $section);
+      &xst_xml_print_vspace ();
+    }
+  }
+  
+  &xst_xml_print_end ();
+}
 
 # Configuration handling.
 
@@ -119,15 +143,20 @@ my %sections = (
                     ( Device,       \&general_parse_kw ),
                     ( Monitor,      \&general_parse_kw ),
                     ( DefaultDepth, \&general_parse_kw ),
-                    ( DefaultFbBpp, \&general_parse_kw ),                    
+                    ( DefaultFbBpp, \&general_parse_kw ),
                   },
                   options => [()],
+                  Display => {
+                    keywords => {
+                      ( Depth, \&general_parse_kw ),
+                      ( Modes, \&parse_kw_list ),
+                    }
+                  }
                 },
-                Files => {
+                ServerLayout => {
                   keywords => {
-                    ( FontPath,   \&parse_kw_list    ),
-                    ( RGBPath,    \&general_parse_kw ),
-                    ( ModulePath, \&general_parse_kw ),
+                    ( Identifier, \&general_parse_kw ),
+                    ( Screen,     \&general_parse_kw ),
                   },
                   options => [()],
                 }
@@ -146,7 +175,7 @@ sub get
   my $config = &get_config ();
       
   &xst_end();
-  &xst_x_xml_print ($config);
+  &xml_print ($config);
 }
 
 sub set
@@ -160,7 +189,7 @@ sub filter
 
   $config = &xml_parse ();
   &xst_end ();
-  &xst_x_xml_print ($config);
+  &xml_print ($config);
 }
 
 
