@@ -1,5 +1,10 @@
 2003-09-15  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* users-conf.in: added $gentoo_logindefs_defaults, whose default main
+	  group is "users". Fixes bug #122163
+
+2003-09-15  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* users-conf.in: added Mandrake 9.X support for the users tool
 	* time-conf.in: added Mandrake 9.X support for the time tool
 	* service.pl.in, services-conf.in: added Mandrake 9.X support for the

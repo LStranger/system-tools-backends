@@ -215,6 +215,12 @@ my $rh_logindefs_defaults = {
   'skel_dir'    => '/etc/skel/',
 };
 
+my $gentoo_logindefs_defaults = {
+  'shell'       => '/bin/bash',
+  'group'       => 'users',
+  'skel_dir'    => '/etc/skel/',
+};
+
 my $logindefs_dist_map = {
   'redhat-5.2'      => $rh_logindefs_defaults,
   'redhat-6.0'      => $rh_logindefs_defaults,
@@ -243,7 +249,7 @@ my $logindefs_dist_map = {
   'slackware-9.0.0' => $rh_logindefs_defaults,
   'freebsd-4'       => $rh_logindefs_defaults,
   'freebsd-5'       => $rh_logindefs_defaults,
-  'gentoo'	        => $rh_logindefs_defaults,
+  'gentoo'	        => $gentoo_logindefs_defaults,
 };
 
 
