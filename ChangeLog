@@ -1,3 +1,13 @@
+2003-12-22  Alvaro del Castillo San Félix <acs@barrapunto.com>
+
+	* disks-conf.in: several modifications to add support for the new
+	  tool to manage disks in GNOME System Tools.
+	  - Informartion about CD/DVD properties
+	  - Information about disks models
+	  - Test of disks speed
+	  - Free space
+	  - Initial support for USB devices
+
 2003-12-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* service.pl.in, services-conf.in: added the "get_status" directive
