@@ -298,7 +298,7 @@ sub xst_buffer_load
   my $fd;
 
   $fd = &xst_open_read_from_names ($file);
-  return undef if !$fd;
+  return [] if !$fd;
 
   @buffer = (<$fd>);
 

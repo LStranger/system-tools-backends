@@ -50,6 +50,7 @@ sub xst_replace_from_table
       unshift @cp, &xst_parse_replace_files (shift (@cp), $fn);
       push (@cp, $$values_hash{$key});
 	 
+      &xst_parse_replace_hash_values (\@cp, $values_hash);
       $res = -1 if &$proc (@cp);
     }
   }
@@ -192,7 +193,7 @@ sub xst_replace_sh_bool
   return &xst_replace_sh ($file, $key, $value);
 }
 
-sub xst_replace_keyword
+sub xst_replace_kw
 {
   my ($file, $key) = @_;
 
@@ -281,10 +282,8 @@ sub xst_replace_chat
 sub xst_replace_ini
 {
   my ($file, $section, $var, $value) = @_;
-  my ($fd, @line, @res);
   my $buff, $i, $found_flag;
   my $pre_space, $post_comment, $sec_save;
-  my $line_key, $val;
 
   &xst_debug_print_string ("\nreplace_ini: " . join (',', @_) . "\n");
 
@@ -352,5 +351,182 @@ sub xst_replace_ini_bool
   return &xst_replace_ini ($file, $section, $var, $value);
 }
 
+sub xst_replace_interfaces_get_next_stanza
+{
+  my ($buff, $line_no) = @_;
+  my $i, $line;
 
+  while ($$line_no <= $#$buff)
+  {
+    $_ = $$buff[$$line_no];
+    $$line_no ++;
+    $_ = &xst_parse_interfaces_line_clean ($_);
+    if (/^iface[ \t]/)
+    {
+      s/^iface[ \t]+//;
+      return [ split ("[ \t]+", $_) ];
+    }
+  }
+
+  return -1;
+}
+
+sub xst_replace_interfaces_get_next_option
+{
+  my ($buff, $line_no) = @_;
+  my $i, $line;
+
+  while ($$line_no <= $#$buff)
+  {
+    $_ = $$buff[$$line_no];
+    $_ = &xst_parse_interfaces_line_clean ($_);
+    
+    if (!/^$/)
+    {
+      return [ split ("[ \t]+", $_, 2) ] if (!/^iface[ \t]/);
+      return -1;
+    }
+    
+    $$line_no ++;
+  }
+
+  return -1;
+}
+
+sub xst_replace_interfaces_option_locate
+{
+  my ($buff, $line_no, $key) = @_;
+  my $option;
+
+  while (($option = &xst_replace_interfaces_get_next_option ($buff, $line_no)) != -1)
+  {
+    return 1 if ($$option[0] eq $key);
+    $$line_no ++;
+  }
   
+  return 0;
+}
+
+sub xst_replace_interfaces_stanza_locate
+{
+  my ($buff, $line_no, $iface) = @_;
+  my $stanza;
+
+  while (($stanza = &xst_replace_interfaces_get_next_stanza ($buff, $line_no)) != -1)
+  {
+    return 1 if ($$stanza[0] eq $iface);
+    $$line_no ++;
+  }
+  
+  return 0;
+}
+
+sub xst_replace_interfaces_stanza_create
+{
+  my ($buff, $iface) = @_;
+
+  push @$buff, "\n";
+  push @$buff, "iface $iface inet static\n";
+}
+
+sub xst_replace_interfaces_stanza_delete
+{
+  my ($file, $iface) = @_;
+  my $buff, $line_no, $stanza;
+
+  $buff = &xst_buffer_load ($file);
+  &xst_buffer_join_lines ($buff);
+  $line_no = 0;
+
+  return -1 if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface));
+  
+  $$buff[$line_no] = "";
+  $line_no ++;
+  while (&xst_replace_interfaces_get_next_option ($buff, \$line_no) != -1)
+  {
+    $$buff[$line_no] = "";
+    $line_no ++;
+  }
+  
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+      
+sub xst_replace_interface_stanza_value
+{
+  my ($file, $iface, $pos, $value) = @_;
+  my $buff, $line_no, $stanza;
+  my $pre_space, $line, $line_arr;
+
+  $buff = &xst_buffer_load ($file);
+  &xst_buffer_join_lines ($buff);
+  $line_no = 0;
+
+  return -1 if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface));
+
+  $line = $$buff[$line_no];
+  $pre_space = $1 if $line =~ s/^([ \t]+)//;
+  $line =~ s/^iface[ \t]+//;
+  @line_arr = split ("[ \t]+", $line);
+  $line_arr[$pos] = $value;
+  $$buff[$line_no] = $pre_space . "iface " . join (' ', @line_arr) . "\n";
+
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+
+sub xst_replace_interfaces_option_str
+{
+  my ($file, $iface, $key, $value) = @_;
+  my $buff, $line_no, $stanza;
+  my $pre_space, $line, $line_arr;
+
+  $buff = &xst_buffer_load ($file);
+  &xst_buffer_join_lines ($buff);
+  $line_no = 0;
+
+  if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface))
+  {
+    $line_no = 0;
+    &xst_replace_interfaces_stanza_create ($buff, $iface);
+    &xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface);
+  }
+
+  if (&xst_replace_interfaces_option_locate ($buff, \$line_no, $key))
+  {
+    if ($value eq "") # Delete option if value is empty.
+    {
+      $$buff[$line_no] = "";
+    }
+    else
+    {
+      $$buff[$line_no] =~ s/^([ \t]*$key[ \t]).*/\1/;
+    }
+  }
+  elsif ($value ne "")
+  {
+    $line_no --;
+    chomp $$buff[$line_no];
+    $$buff[$line_no] =~ s/^([ \t]*)(.*)/\1\2\n\1$key /;
+  }
+
+  $$buff[$line_no] .= $value . "\n" if $value ne "";
+  
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+
+sub xst_replace_interfaces_option_kw
+{
+  my ($file, $iface, $key, $value) = @_;
+
+  return &xst_replace_interfaces_option_str ($file, $iface, $key, $value? " ": "");
+}
+
+sub xst_replace_interfaces_option_kw_not
+{
+  my ($file, $iface, $key, $value) = @_;
+
+  return &xst_replace_interfaces_option_kw ($file, $iface, $key, !$value);
+}
+

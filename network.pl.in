@@ -111,7 +111,7 @@ sub xst_network_active_interfaces_get
   return @ret;
 }
   
-sub xst_network_interface_active
+sub xst_network_interface_activate
 {
   my ($search_iface, $proc) = @_;
   my @ifaces = &$proc ();
@@ -147,7 +147,7 @@ sub xst_network_sysconfig_ifaces_get_existing
   return @ret;
 }
 
-sub xst_network_interfaces_get_existing
+sub xst_network_debian_ifaces_get_existing
 {
   my @ret, @stanzas, $stanza;
   
@@ -206,7 +206,7 @@ sub xst_network_conf_get
   return $hash;
 }
 
-sub xst_network_debian_get_file
+sub xst_network_deb22_get_file
 {
   return "$xst_prefix/etc/network/interfaces";
 }
@@ -240,7 +240,7 @@ sub xst_network_get_file
 	  "redhat-6.1" => \&xst_network_rh62_get_file,
 	  "redhat-6.2" => \&xst_network_rh62_get_file,
 	  "redhat-7.0" => \&xst_network_rh62_get_file,
-    "debian-2.2" => \&xst_network_debian_get_file
+    "debian-2.2" => \&xst_network_deb22_get_file
 	  );
 
   $proc = $dist_map{$xst_dist};
@@ -303,7 +303,7 @@ sub xst_network_dialing_set
   return $ret;
 }
 
-sub xst_network_rh62_interface_set_by_dev
+sub xst_network_rh62_interface_activate_by_dev
 {
   my ($dev, $enabled) = @_;
 
@@ -321,12 +321,13 @@ sub xst_network_rh62_interface_set_by_dev
   return 0;
 }
 
-sub xst_network_rh62_interface_set
+sub xst_network_rh62_interface_activate
 {
   my ($hash, $old_hash, $enabled) = @_;
   my $dev;
 
-  if ($enabled) {
+  if ($enabled)
+  {
     if (!exists $$hash{"file"})
     {
       $dev = $$hash{"dev"};
@@ -341,7 +342,7 @@ sub xst_network_rh62_interface_set
     $dev = $$hash{"file"} if ($old_hash && $$old_hash{"enabled"});
   }
 
-  &xst_network_rh62_interface_set_by_dev ($dev, $enabled) if $dev;
+  &xst_network_rh62_interface_activate_by_dev ($dev, $enabled) if $dev;
 }
 
 sub xst_network_remove_pap_entry
@@ -364,10 +365,10 @@ sub xst_network_rh62_interface_delete
 {
   my $old_hash = $_[0];
   my $dev = $$old_hash{"file"};
-  my $file = "/etc/sysconfig/network-scripts/ifcfg-$dev";
+  my $file = "$xst_prefix/etc/sysconfig/network-scripts/ifcfg-$dev";
   my $login;
 
-  &xst_network_rh62_interface_set_by_dev ($dev, 0);
+  &xst_network_rh62_interface_activate_by_dev ($dev, 0);
 
   $login = $old_hash{"login"};
   if ($login ne "")
@@ -377,6 +378,21 @@ sub xst_network_rh62_interface_delete
   }
 
   unlink ($file);
+}
+
+sub xst_network_deb22_interface_delete
+{
+  my $old_hash = $_[0];
+  my $dev = $$old_hash{"dev"};
+
+  &xst_replace_interfaces_stanza_delete ("$xst_prefix/etc/network/interfaces", $dev);
+  
+  $login = $old_hash{"login"};
+  if ($login ne "")
+  {
+    &xst_network_remove_pap_entry ("/etc/ppp/pap-secrets", $login);
+    &xst_network_remove_pap_entry ("/etc/ppp/chap-secrets", $login);
+  }
 }
 
 sub xst_network_interfaces_down_changed
@@ -493,6 +509,35 @@ sub xst_network_get_ppp_options_re
   return undef;
 }
 
+sub xst_network_set_ppp_options_re
+{
+  my ($file, $re, $value) = @_;
+  my $buff, $line, $replaced;
+
+  $buff = &xst_buffer_load ($file);
+
+  foreach $line (@$buff)
+  {
+    if ($line =~ /$re/)
+    {
+      $line = "$value\n";
+      $replaced = 1;
+    }
+  }
+
+  push @$buff, "$value\n" if !$replaced;
+  
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+
+sub xst_network_set_ppp_options_connect
+{
+  my ($file, $value) = @_;
+
+  return &xst_network_set_ppp_options_re ($file, "^connect", "connect \"/usr/bin/wvdial --chat $value\"");
+}
+
 sub xst_network_get_ppp_options_unsup
 {
   my ($file) = @_;
@@ -523,6 +568,33 @@ sub xst_network_get_ppp_options_unsup
   return $res;
 }
 
+sub xst_network_set_ppp_options_unsup
+{
+  my ($file, $value) = @_;
+  my $buff, $line, $re;
+  my @known_options = ("usepeerdns", "mtu", "mru", "user", "/dev/[^ \t]+", "[0-9]+",
+                       "defaultroute", "debug", "persist", "escape", "crtscts", "connect",
+                       "remotename", "hide-password", "noauth", "noipdefault", "ipparam");
+  # The options in the last row are those that are on by default in pppd and we don't handle,
+  # so we ignore them, as they are set implicitly if not specified.
+
+  $buff = &xst_buffer_load ($file);
+
+  GET_LINE: foreach $line (@$buff)
+  {
+    foreach $re (@known_options)
+    {
+      next GET_LINE if $line =~ /^$re/;
+    }
+    $line = "";
+  }
+  
+  push @$buff, $value . "\n";
+  
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+
 sub xst_network_rh62_parse_bootproto
 {
   my $ret;
@@ -543,15 +615,15 @@ sub xst_network_rh62_replace_bootproto
   my ($file, $key, $value) = @_;
   my %proto_name_to_rh62 =
 	 (
-	  "bootp" => "bootp",
-	  "dhcp"  => "dhcp",
-	  "none"  => "none"
+	  "bootp"    => "bootp",
+	  "dhcp"     => "dhcp",
+	  "none"     => "none"
 	  );
 
   return &xst_replace_sh ($file, $key, $proto_name_to_rh62{$value});
 }
 
-sub xst_network_debian_parse_bootproto
+sub xst_network_deb22_parse_bootproto
 {
   my ($file, $iface) = @_;
   my @stanzas, $stanza, $method, $bootproto;
@@ -588,6 +660,33 @@ sub xst_network_debian_parse_bootproto
   return $bootproto;
 }
 
+sub xst_network_deb22_replace_bootproto
+{
+  my ($file, $iface, $value) = @_;
+  my @stanzas, $stanza, $method, $bootproto;
+  my %proto_name_to_debian =
+      (
+       "bootp"    => "bootp",
+       "dhcp"     => "dhcp",
+       "loopback" => "loopback",
+       "ppp"      => "ppp",
+       "static"   => "none"
+       );
+
+  my %dev_to_method = 
+      (
+       "lo" => "loopback",
+       "ppp" => "ppp"
+       );
+
+  foreach $i (keys %dev_to_method)
+  {
+    $value = $dev_to_method{$i} if $iface =~ /^$i/;
+  }
+
+  return &xst_replace_interface_stanza_value ($file, $iface, 3, $proto_name_to_debian{$value});
+}
+
 sub xst_network_debian_parse_remote_address
 {
   my ($file, $iface) = @_;
@@ -602,6 +701,16 @@ sub xst_network_debian_parse_remote_address
   }
 
   return undef;
+}
+
+sub xst_network_debian_replace_remote_address
+{
+  my ($file, $iface, $value) = @_;
+  my $ifconfig;
+  
+  $ifconfig = &xst_locate_tool ("ifconfig");
+
+  return &xst_replace_interfaces_option_str ($file, $iface, "on", "$ifconfig $iface pointopoint $value");
 }
 
 sub xst_network_ensure_loopback_interface
@@ -824,14 +933,14 @@ sub xst_network_get_interfaces_parse_table
            [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
            [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
            [ phone_number,       \&xst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
-           [ enabled,            \&xst_network_interface_active, IFACE, \&xst_network_active_interfaces_get ]
+           [ enabled,            \&xst_network_interface_activate, IFACE, \&xst_network_active_interfaces_get ]
            ]
              },
 
     
 	  "debian-2.2" =>
 	  {
-	    ifaces_get => \&xst_network_interfaces_get_existing,
+	    ifaces_get => \&xst_network_debian_ifaces_get_existing,
 	    fn =>
 	    {
         INTERFACES  => "/etc/network/interfaces",
@@ -844,7 +953,7 @@ sub xst_network_get_interfaces_parse_table
           [
 # not sup  [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
            [ dev,                \&xst_parse_trivial,                  IFACE ],
-           [ bootproto,          \&xst_network_debian_parse_bootproto, [INTERFACES, IFACE]],
+           [ bootproto,          \&xst_network_deb22_parse_bootproto,  [INTERFACES, IFACE]],
            [ auto,               \&xst_parse_interfaces_option_kw_not, [INTERFACES, IFACE], noauto ],
            [ name,               \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], name ],
            [ address,            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], address ],
@@ -871,7 +980,7 @@ sub xst_network_get_interfaces_parse_table
            [ serial_escapechars, \&xst_parse_split_first_str,          PPP_OPTIONS, escape, "[ \t]+" ],
            [ serial_hwctl,       \&xst_parse_kw,                       PPP_OPTIONS, crtscts ],
            [ phone_number,       \&xst_parse_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
-           [ enabled,            \&xst_network_interface_active,       IFACE,
+           [ enabled,            \&xst_network_interface_activate,       IFACE,
                                                                        \&xst_network_active_interfaces_get ]
            ]
              }
@@ -987,7 +1096,7 @@ sub xst_network_get_interface_replace_table
 	(
     "redhat-6.2" =>
 	  {
-      iface_set    => \&xst_network_rh62_interface_set,
+      iface_set    => \&xst_network_rh62_interface_activate,
       iface_delete => \&xst_network_rh62_interface_delete,
       ifaces_get   => \&xst_network_sysconfig_ifaces_get_existing,
       fn =>
@@ -1027,7 +1136,53 @@ sub xst_network_get_interface_replace_table
         [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
         [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
       ]
-    }
+    },
+    "debian-2.2" =>
+	  {
+      iface_set    => \&xst_network_rh62_interface_activate, # They use the same ifup/ifdown cmds.
+      iface_delete => \&xst_network_deb22_interface_delete,
+      ifaces_get   => \&xst_network_debian_ifaces_get_existing,
+	    fn =>
+	    {
+        INTERFACES  => "/etc/network/interfaces",
+        IFACE       => "#iface#",
+        CHAT        => "/etc/chatscripts/%wvsection%",
+        PPP_OPTIONS => "/etc/ppp/peers/%wvsection%",
+        PAP         => "/etc/ppp/pap-secrets",
+        CHAP        => "/etc/ppp/chap-secrets" },
+	    table =>
+          [
+# not sup  [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+           [ bootproto,          \&xst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
+           [ auto,               \&xst_replace_interfaces_option_kw_not, [INTERFACES, IFACE], noauto ],
+           [ name,               \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], name ],
+           [ address,            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], address ],
+           [ netmask,            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], netmask ],
+           [ broadcast,          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], broadcast ],
+           [ network,            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], network ],
+           [ gateway,            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], gateway ],
+           [ wvsection,          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], provider ],
+           [ peerdns,            \&xst_replace_kw,                       PPP_OPTIONS, usepeerdns ],
+# not sup  [ dns1,               \&xst_replace_sh,                       IFCFG,       DNS1 ],
+# not sup  [ dns2,               \&xst_replace_sh,                       IFCFG, DNS2 ],
+           [ mtu,                \&xst_replace_join_first_str,           PPP_OPTIONS, mtu, "[ \t]+" ],
+           [ mru,                \&xst_replace_join_first_str,           PPP_OPTIONS, mru, "[ \t]+" ],
+           [ remote_address,     \&xst_network_debian_replace_remote_address, [INTERFACES, IFACE]],
+           [ login,              \&xst_replace_join_first_str,           PPP_OPTIONS, user, "[ \t]+" ],
+           [ serial_port,        \&xst_network_set_ppp_options_re,       PPP_OPTIONS, "^(/dev/[^ \t]+)" ],
+           [ serial_speed,       \&xst_network_set_ppp_options_re,       PPP_OPTIONS, "^([0-9]+)" ],
+           [ wvsection,          \&xst_network_set_ppp_options_connect,  PPP_OPTIONS ],
+           [ ppp_options,        \&xst_network_set_ppp_options_unsup,    PPP_OPTIONS ],
+           [ set_default_gw,     \&xst_replace_kw,                       PPP_OPTIONS, defaultroute ],
+           [ debug,              \&xst_replace_kw,                       PPP_OPTIONS, debug ],
+           [ persist,            \&xst_replace_kw,                       PPP_OPTIONS, persist ],
+           [ serial_escapechars, \&xst_replace_join_first_str,           PPP_OPTIONS, escape, "[ \t]+" ],
+           [ serial_hwctl,       \&xst_replace_kw,                       PPP_OPTIONS, crtscts ],
+           [ phone_number,       \&xst_replace_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           [ enabled,            \&xst_network_interface_activate,       IFACE,
+                                                                        \&xst_network_active_interfaces_get ]
+           ]
+             }
   );
   
   my $dist = $dist_map{$xst_dist};

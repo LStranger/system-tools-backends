@@ -481,8 +481,8 @@ sub xst_parse_interfaces_line_clean
   $_ = $_[0];
   
   chomp;
-  s/^\#.*//;
   s/^[ \t]+//;
+  s/^\#.*//;
   s/[ \t]+$//;
 
   return $_;
@@ -539,14 +539,8 @@ sub xst_parse_interfaces_get_next_option
     $_ = $$line;
     next if /^$/;
     
-    if (!/^iface[ \t]/)
-    {
-      return [ split ("[ \t]+", $_, 2) ];
-    }
-    else
-    {
-      return -1;
-    }
+    return [ split ("[ \t]+", $_, 2) ] if (!/^iface[ \t]/);
+    return -1;
   }
 
   return -1;

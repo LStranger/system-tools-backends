@@ -1,3 +1,15 @@
+2001-03-19  Arturo Espinosa  <arturo@ximian.com>
+
+	* file.pl.in (xst_buffer_load): return a ref to an empty
+	  array if file not found. This lets the buffer be
+	  filled with stuff as soon as the function returns.
+	* network.pl.in: some function renaming, a minor
+	  prefix usage bug and the interface configuration editting
+	  functions and table for Debian 2.2. semi-tested.
+	* parse.pl.in: minor code simplification.
+	* replace.pl.in: all the debian interfaces file replacers.
+
+	
 2001-03-17  Hans Petter Jansson  <hpj@ximian.com>
 
 	* Added gettext.pl.in by Kenneth Christiansen.
