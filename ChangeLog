@@ -1,3 +1,8 @@
+2003-06-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* boot-grub.pl.in, boot.pl.in: fix path problems when the kernel
+	image is in a mount point different to /
+
 2003-06-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* backends/boot-grub.pl.in, boot.pl.in: made grub path-aware when 
