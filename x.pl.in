@@ -280,12 +280,19 @@ sub parse_range_hz
 {
   my ($line) = shift;
   my (@array) = ();
-  my ($val);
 
   push @array, shift @$line;
 
-  foreach $val (@$line) {
+  while (@$line) {
+    my $val = shift @$line;
     last if $val =~ /^\#/; # Start of comment
+
+    # We have a range here, concatenate
+    if ($line->[0] eq "-") {
+      $val .= shift (@$line); # '-'
+      $val .= shift (@$line); # max value
+    }
+
     $val =~ s/,//; # We don't need commas
     push @array, $val;
   }

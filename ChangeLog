@@ -1,5 +1,7 @@
 2001-07-24  Tambet Ingo  <tambet@ximian.com>
 
+	* x.pl.in (parse_range_hz): Seems like spaces are allowed everywhere.
+
 	* boot-conf.in (set): Removed some old cruft.
 
 	* x.pl.in: we use strict from now on. Only for this file.
