@@ -74,7 +74,7 @@ $version = "@VERSION@";
               "blackpanther-4.0",
               "debian-2.2", "debian-3.0", "debian-sarge",
               "suse-7.0", "suse-9.0",
-              "turbolinux-7.0", "fedora-1", "fedora-2",
+              "turbolinux-7.0", "fedora-1", "fedora-2", "specifix",
               "pld-1.0", "pld-1.1", "pld-1.99",
               "conectiva-9", "conectiva-10",
               "vine-3.0", "vine-3.1",

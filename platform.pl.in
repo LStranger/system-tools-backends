@@ -79,7 +79,8 @@ $PLATFORM_INFO = {
   "vine-3.0"        => "Vine Linux 3.0",
   "vine-3.1"        => "Vine Linux 3.1",
   "fedora-1"        => "Fedora Core 1 (Yarrow)",
-  "fedora-2"        => "Fedora Core 2 (Tettnang)"
+  "fedora-2"        => "Fedora Core 2 (Tettnang)",
+  "specifix"        => "Specifix Linux",
 };
   
 sub check_lsb
@@ -252,6 +253,26 @@ sub check_fedora
     return -1;
 }
 
+sub check_specifix
+{
+  open SPECIFIX, "$gst_prefix/etc/distro-release" or return -1;
+
+  while (<SPECIFIX>)
+  {
+    $ver = $_;
+    chomp ($ver);
+
+    if ($ver =~ /^Specifix Linux release (\S+)/)
+    {
+      close SPECIFIX;
+      return "specifix";
+    }
+  }
+
+  close SPECIFIX;
+  return -1;
+}
+
 sub check_conectiva
 {
   open RELEASE, "$gst_prefix/etc/conectiva-release" or return -1;
@@ -416,7 +437,7 @@ sub gst_platform_guess
     # Red Hat check must run after Vine, Mandrake and Fedora, and Mandrake after BlackPanther
     "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, \&check_blackpanther, \&check_vine,
                  \&check_fedora, \&check_mandrake, \&check_conectiva, \&check_linuxppc, \&check_redhat,  \&check_openna,
-                 \&check_turbolinux, \&check_slackware, \&check_gentoo,  \&check_pld ],
+                 \&check_turbolinux, \&check_slackware, \&check_gentoo,  \&check_pld, \&check_specifix ],
     "FreeBSD" => [ \&check_freebsd ],
     "SunOS"    => [ \&check_solaris ]
                );
