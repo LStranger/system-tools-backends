@@ -6,7 +6,7 @@
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
-# Authors: Bradford Hovinen <hovinen@ximian.com>, Tambet Ingo <tambeti@ut.ee>
+# Authors: Bradford Hovinen <hovinen@ximian.com>, Tambet Ingo <tambet@ximian.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -26,11 +26,11 @@
 
 # Configuration files affected:
 #
-# /etc/fstab
+# /etc/fstab /proc/meminfo
 
 # Running programs affected/used:
 #
-# /sbin/swapon /sbin/swapoff /sbin/mkswap /sbin/fdisk
+# swapon swapoff mkswap fdisk dd
 
 # --- Common stuff --- #
 
@@ -38,7 +38,7 @@
 
 require "___scriptsdir___/be.pl";
 
-
+$DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
 
 # --- Tool information --- #
 
@@ -58,6 +58,16 @@ $progress_max = 3;
 # They are tried in array order. First found = used.
 
 @fstab_names =       ( "/etc/fstab" );
+@meminfo_names = ( "/proc/meminfo" );
+
+# Where are the tools?
+
+$cmd_swapon = be_locate_tool ("swapon");
+$cmd_swapoff = be_locate_tool ("swapoff");
+$cmd_mkswap = be_locate_tool ("mkswap");
+$cmd_fdisk = be_locate_tool ("fdisk");
+$cmd_dd = be_locate_tool ("dd");
+
 
 # --- Internal configuration variables --- #
 
@@ -225,20 +235,25 @@ sub get_memory
   my (@meminfo);
   my ($totmem);
   my ($totswap);
+  my $ifh;
+  local *FILE;
 
-  open (FD, "/proc/meminfo");		# Not portable at all, works on Linuces.
-  @meminfo = <FD>;
-  close FD;
+  $ifh = be_open_read_from_names(@meminfo_names);
+  if (not $ifh) { return; } # We didn't find it.
+  *FILE = $ifh;
+
+  @meminfo = <FILE>;
+  close FILE;
 
   foreach $entry (@meminfo)
     {
       if ($entry =~ /^MemTotal:(\s+)(\w+)/)
 	{
-	  $totmem = sprintf ("%dMB", $2 / 1024);	# In Mb, integer
+	  $totmem = sprintf ("%.1fMB", $2 / 1024);	# In Mb, integer
 	}
       elsif ($entry =~ /^SwapTotal:(\s+)(\w+)/)
 	{
-	  $totswap = sprintf ("%dMB", $2 / 1024);
+	  $totswap = sprintf ("%.1fMB", $2 / 1024);
 	}
     }
 
@@ -251,8 +266,6 @@ sub get_memory
 
 sub get_fdisk
 {
-  my $fdisk_tool;
-
   # Okay, so this is strictly not portable either. Patches welcome.
 
   my @check_devs = ( "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/hdd",
@@ -264,15 +277,13 @@ sub get_fdisk
                      
                      "/dev/xda", "/dev/xdb" );
 
-  $fdisk_tool = "/sbin/fdisk";
-
   for $dev (@check_devs)
   {
     my $disk, $device, $point, $fs, $options, $check, $size, $bootable;
     
     be_report_info(01, "Looking for partitions on $dev");
 
-    open(FDISK_HD, "$fdisk_tool -l $dev 2>/dev/null |");
+    open(FDISK_HD, "$cmd_fdisk -l $dev 2>/dev/null |");
     while (<FDISK_HD>)
     {
       if (/^\/dev/)
@@ -285,7 +296,7 @@ sub get_fdisk
         shift @line; shift @line;  # Start and end clusters.
 
         ($size) = (@line[0] =~ /([0-9]+)/);
-	$size = sprintf ("%dMB", $size / 1024);
+	$size = sprintf ("%.1fMB", $size / 1024);
         shift @line;
 
         if (@line[0] ne "82") { next; }  # Not Swap
@@ -331,12 +342,12 @@ sub get_swap_size
     elsif ($is_file == 0)
       {
         # Is partition, get size.
-        open(FD, "/sbin/fdisk -s $device 2>/dev/null |");
+        open(FD, "$cmd_fdisk -s $device 2>/dev/null |");
         while (<FD>)
           {
             if (/^\w+/)
               {
-                 $size = sprintf("%dMB", $_ / 1024);		#size from Kb to Mb
+                 $size = sprintf("%.1fMB", $_ / 1024);		#size from Kb to Mb
               }
           }
       }
@@ -420,56 +431,67 @@ sub get
 # --- Set (write) config --- #
 
 sub setup_swap_files
+{
+  my $command;
+
+  $command = "$cmd_swapoff -a";  # To make sure removed swap spaces get removed
+  be_run ($command);
+    
+  my $num_done = 0;
+
+  foreach $entry (@cf_swapinfo)
   {
-    be_run ("swapoff -a");  # To make sure removed swap spaces get removed
-    
-    my $num_done = 0;
-    
-    foreach $entry (@cf_swapinfo)
+    if ($entry->{is_new})
+    {
+      if ($entry->{is_file})
       {
-	if ($entry->{is_new})
-	  {
-	    if ($entry->{is_file})
-	      {
-	        my ($size) = $entry->{size};
-		$size =~ tr/MB$//d;	# Remove Mb from the end
-		$size *= 1024;		# Make it to Kb
-		be_run ("dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
-	      }
+         my ($size) = $entry->{size};
+         $size =~ tr/MB$//d;	# Remove Mb from the end
+         $size *= 1024;		# Make it to Kb
 
-	    be_run ("mkswap $entry->{device}");
-	  }
+         $command = "$cmd_dd if=/dev/null of=$entry->{device} bs=1024 count=$size";
+         be_run ($command);
+       }
 
-	elsif ($entry->{is_file})
-	  {
-	    my ($size) = $entry->{size};
-	    $size =~ tr/MB$//d;	# Remove Mb from the end
-	    $size *= 1024;		# Make it to Kb
-	    if ($size != $entry->{size})
-	      {
-		be_run ("dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
-		be_run ("mkswap $entry->{device}");
-	      }
-	  }
+       $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
+       be_run ($command);
+    }
 
-	if ($entry->{priority} == -1)
-	  {
-	    $priority = "";
-	  }
-	else 
-	  {
-	    $priority = "-p $entry->{priority}";
-	  }
+    elsif ($entry->{is_file})
+    {
+      my ($size) = $entry->{size};
+      $size =~ tr/MB$//d;	# Remove Mb from the end
+      $size *= 1024;		# Make it to Kb
 
-	if ($entry->{enabled}) 
-	  {
-	    be_run ("swapon $entry->{device} $priority");
-	  }
-	
-	$num_done++;
-	be_progress(90 / ($#cf_swapinfo - $num_done + 2));
+      if ($size != $entry->{size})
+      {
+        $command = "$cmd_dd if=/dev/zero of=$entry->{device} bs=1024 count=$size";
+        be_run ($command);
+
+        $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
+        be_run ($command);
       }
+    }
+
+    if ($entry->{priority} == -1)
+    {
+      $priority = "";
+    }
+    else
+    {
+      $priority = "-p $entry->{priority}";
+    }
+
+    if ($entry->{enabled})
+    {
+      $command = "$cmd_swapon $entry->{device} $priority >/dev/null 2>/dev/null";
+      be_run ($command);
+    }
+	
+    $num_done++;
+    be_progress(90 / ($#cf_swapinfo - $num_done + 2));
   }
+}
 
 sub set_swap_entries
   {
