@@ -336,9 +336,7 @@ sub xst_report
      "time_timezone_scan"       => ["info",  _("Scanning timezones.")],
      "time_timezone_cmp"        => ["info",  _("Scanning timezones: [%s].")],
      "time_timezone_set"        => ["info",  _("Setting timezone as [%s].")],
-     "time_localtime_set"       => ["info",  _("Setting local time as [%s].")],
-
-     "users_getting_db"         => ["info",  _("Getting user database.")]
-     );
+     "time_localtime_set"       => ["info",  _("Setting local time as [%s].")]
+    );
 
 1;

@@ -166,6 +166,14 @@ for ($i = 0; $login_defs_prop_array[$i] ne ""; $i += 2)
   $login_defs_prop_map {$login_defs_prop_array[$i + 1]} = $login_defs_prop_array[$i];
 }
 
+# Add reporting table.
+
+&xst_report_table ({
+  'users_getting_db'         => ['info',  _('Getting user database.')],
+  'Users_read_skel_success'  => ['info',  _('Successfully read skeleton dir [%s]')],
+  'users_read_skel_fail'     => ['warn',  _("Couldn\'t read skeleton dir [%s]")],
+});
+
 
 # --- Utility stuff --- #
 
@@ -237,7 +245,7 @@ sub read_skel_dir
 
   if ($fname eq "")
   {
-    &xst_report ("read_skel_dir_failed", "@skel_dir");
+    &xst_report ("users_read_skel_fail", @skel_dir);
     return undef;
   }
   
@@ -248,7 +256,7 @@ sub read_skel_dir
   }
   closedir DIR;
 
-  &xst_report ("read_skel_dir_success", $fname);
+  &xst_report ("users_read_skel_success", $fname);
   &xst_report_leave ();
   
   $$hash{"files"} = \@files;
