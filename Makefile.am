@@ -38,6 +38,7 @@ PERLBODY = \
 	replace.pl.in   \
 	report.pl.in    \
 	service.pl.in   \
+	service-list.pl.in	\
 	share.pl.in     \
 	tokenizer.pl.in \
 	util.pl.in      \
