@@ -1835,7 +1835,8 @@ sub x_probe
 
   my $cfg_file = &x_probe_save ($orig_file, $config);
   my $list = &x_probe_run ($cfg_file, $modes);
-  unlink ($cfg_file);
+#  unlink ($cfg_file);
+  print STDERR $cfg_file;
   
   &x_probe_print_xml ($list);
   &x_probe_store ($config, $list);

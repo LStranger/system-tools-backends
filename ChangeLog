@@ -3,6 +3,7 @@
 	* x.pl.in (x_probe_load): use xst_file_* instead of open.
 	(x_probe_store): ditto.
 	Disable modelines for now. Misc updates.
+	(x_probe_run): Removed some debugging messages.
 
 2001-08-21  Arturo Espinosa Aldama  <arturo@ximian.com>
 
