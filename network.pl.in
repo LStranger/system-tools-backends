@@ -890,7 +890,7 @@ sub xst_network_get_parse_table
 	  "redhat-6.0"   => "redhat-6.2",
 	  "redhat-6.1"   => "redhat-6.2",
 	  "redhat-6.2"   => "redhat-6.2",
-	  "redhat-7.0"   => "redhat-6.2",
+	  "redhat-7.0"   => "redhat-7.0",
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2"
 	  );
@@ -929,8 +929,40 @@ sub xst_network_get_parse_table
 		    [ "interface",     \&xst_network_interfaces_get ]
 		    ]
 			 },
-
     
+	  "redhat-7.0" =>
+	  {
+	    fn =>
+	    {
+		 SYSCONFIG_NW => "/etc/sysconfig/network",
+		 RESOLV_CONF  => "/etc/resolv.conf",
+		 HOST_CONF    => "/etc/host.conf",
+		 HOSTS        => "/etc/hosts",
+		 SMB_CONF     => "/etc/samba/smb.conf",
+		 WVDIAL       => "/etc/wvdial.conf" },
+	    table =>
+		   [
+		    [ "forward",       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
+		    [ "hostname",      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
+		    [ "domain",        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN ],
+		    [ "nameserver",    \&xst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
+		    [ "searchdomain",  \&xst_parse_split_first_array_unique, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+		    [ "domainname",    \&xst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+		    [ "order",         \&xst_parse_split_first_array, HOST_CONF,    "order", "[ \t]+", "," ],
+		    [ "hostmatch",     \&xst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
+		    [ "statichost",    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+		    [ "workgroup",     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+		    [ "description",   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+		    [ "winsserver",    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+        [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
+        [ "smbinstalled",  \&xst_service_sysv_installed,  "smb" ],
+        [ "dialinstalled", \&xst_file_tool_installed,     "wvdial" ],
+		    [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
+		    [ "interface",     \&xst_network_interfaces_get ]
+		    ]
+			 },
+
 	  "debian-2.2" =>
 	  {
 	    fn =>
@@ -1032,7 +1064,6 @@ sub xst_network_get_interfaces_parse_table
            ]
              },
 
-    
 	  "debian-2.2" =>
 	  {
 	    ifaces_get => \&xst_network_debian_ifaces_get_existing,
@@ -1095,7 +1126,7 @@ sub xst_network_get_replace_table
 	  "redhat-6.0"   => "redhat-6.2",
 	  "redhat-6.1"   => "redhat-6.2",
 	  "redhat-6.2"   => "redhat-6.2",
-	  "redhat-7.0"   => "redhat-6.2",
+	  "redhat-7.0"   => "redhat-7.0",
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2"
 	  );
@@ -1136,8 +1167,42 @@ sub xst_network_get_replace_table
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
              },
-
     
+	  "redhat-7.0" =>
+	  {
+	    fn =>
+	    {
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/samba/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf" },
+	    table =>
+          [
+           [ "auto",          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+           [ "forward",       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
+           [ "hostname",      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+           [ "hostname",      \&xst_network_run_hostname ],
+           [ "gateway",       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+           [ "gateway_dev",   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+           [ "domain",        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+           [ "nameserver",    \&xst_replace_join_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
+           [ "searchdomain",  \&xst_replace_join_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+           [ "domainname",    \&xst_replace_join_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+           [ "order",         \&xst_replace_join_first_array, HOST_CONF,    "order", "[ \t]+", "," ],
+           [ "hostmatch",     \&xst_replace_join_first_bool,  HOST_CONF,    "multi", "[ \t]+", "on", "off" ],
+           [ "statichost",    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+           [ "workgroup",     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
+           [ "description",   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
+           [ "winsserver",    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+           [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
+           [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
+           [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
+           [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
+           ]
+             },
+
 	  "debian-2.2" =>
 	  {
 	    fn =>
