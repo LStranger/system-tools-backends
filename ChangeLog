@@ -1,5 +1,13 @@
 2004-05-28  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* boot-grub.pl.in (gst_boot_grub_get_config_file): placed menu.lst
+	  in the first position, searching for grub.conf first was giving
+	  problems in SuSE (it exists too, but has no relevant info), I guess
+	  it's a FIXME, I'm not sure if grub.conf is nowadays used in any
+	  distro
+
+2004-05-28  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* service.pl.in, services-conf.in: Added support for SuSE 9.0
 	* service-list.pl.in: added some forbidden services for SuSE 9.0
 
