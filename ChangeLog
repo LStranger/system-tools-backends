@@ -1,3 +1,28 @@
+2001-03-20  Arturo Espinosa  <arturo@ximian.com>
+
+	Bug fixes for Debian port to work well.
+	
+	* network.pl.in (xst_network_interface_activate):
+	  renamed to xst_network_interface_active.
+	  (xst_network_deb22_get_file): found what this
+	  function does. It should trivialy return $dev.
+	  (xst_network_deb22_replace_bootproto): "none"
+	  is mapped to "static", not the other way. Also,
+	  the stanza value to replace is the 2nd, not 3rd.
+	  (xst_network_debian_replace_remote_address): the
+	  option name is "up", not "on".
+	  (xst_network_get_interfaces_parse_table): features
+	  not supported by distro are trivialy set to some
+	  default value.
+	* replace.pl.in (xst_replace_interfaces_get_next_option):
+	  backtrack if last lines found were empty lines, so
+	  added options get before those, instead of after. Just
+	  for beauty.
+	  (xst_replace_interface_stanza_value): create stanza
+	  if not found. Added missing chomp.
+	  (xst_replace_interfaces_option_str): Another missing
+	  chomp.
+	
 2001-03-20  Kenneth Christiansen  <kenneth@gnu.org>
 
 	reviewed by: Hans Petter Jansson  <hpj@ximian.com>

@@ -359,13 +359,13 @@ sub xst_replace_interfaces_get_next_stanza
   while ($$line_no <= $#$buff)
   {
     $_ = $$buff[$$line_no];
-    $$line_no ++;
     $_ = &xst_parse_interfaces_line_clean ($_);
     if (/^iface[ \t]/)
     {
       s/^iface[ \t]+//;
       return [ split ("[ \t]+", $_) ];
     }
+    $$line_no ++;
   }
 
   return -1;
@@ -374,8 +374,10 @@ sub xst_replace_interfaces_get_next_stanza
 sub xst_replace_interfaces_get_next_option
 {
   my ($buff, $line_no) = @_;
-  my $i, $line;
+  my $i, $line, $empty_lines;
 
+  $empty_lines = 0;
+  
   while ($$line_no <= $#$buff)
   {
     $_ = $$buff[$$line_no];
@@ -384,11 +386,18 @@ sub xst_replace_interfaces_get_next_option
     if (!/^$/)
     {
       return [ split ("[ \t]+", $_, 2) ] if (!/^iface[ \t]/);
+      $$line_no -= $empty_lines;
       return -1;
+    }
+    else
+    {
+      $empty_lines ++;
     }
     
     $$line_no ++;
   }
+
+  $$line_no -= $empty_lines;
 
   return -1;
 }
@@ -462,9 +471,15 @@ sub xst_replace_interface_stanza_value
   &xst_buffer_join_lines ($buff);
   $line_no = 0;
 
-  return -1 if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface));
+  if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface))
+  {
+    $line_no = 0;
+    &xst_replace_interfaces_stanza_create ($buff, $iface);
+    &xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface);
+  }
 
   $line = $$buff[$line_no];
+  chomp $line;
   $pre_space = $1 if $line =~ s/^([ \t]+)//;
   $line =~ s/^iface[ \t]+//;
   @line_arr = split ("[ \t]+", $line);
@@ -492,6 +507,8 @@ sub xst_replace_interfaces_option_str
     &xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface);
   }
 
+  $line_no++;
+
   if (&xst_replace_interfaces_option_locate ($buff, \$line_no, $key))
   {
     if ($value eq "") # Delete option if value is empty.
@@ -500,6 +517,7 @@ sub xst_replace_interfaces_option_str
     }
     else
     {
+      chomp $$buff[$line_no];
       $$buff[$line_no] =~ s/^([ \t]*$key[ \t]).*/\1/;
     }
   }

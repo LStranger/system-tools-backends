@@ -111,7 +111,7 @@ sub xst_network_active_interfaces_get
   return @ret;
 }
   
-sub xst_network_interface_activate
+sub xst_network_interface_active
 {
   my ($search_iface, $proc) = @_;
   my @ifaces = &$proc ();
@@ -208,7 +208,9 @@ sub xst_network_conf_get
 
 sub xst_network_deb22_get_file
 {
-  return "$xst_prefix/etc/network/interfaces";
+  my $dev = $_[0];
+  
+  return $dev;
 }
 
 sub xst_network_rh62_get_file
@@ -670,7 +672,7 @@ sub xst_network_deb22_replace_bootproto
        "dhcp"     => "dhcp",
        "loopback" => "loopback",
        "ppp"      => "ppp",
-       "static"   => "none"
+       "none"     => "static"
        );
 
   my %dev_to_method = 
@@ -684,7 +686,7 @@ sub xst_network_deb22_replace_bootproto
     $value = $dev_to_method{$i} if $iface =~ /^$i/;
   }
 
-  return &xst_replace_interface_stanza_value ($file, $iface, 3, $proto_name_to_debian{$value});
+  return &xst_replace_interface_stanza_value ($file, $iface, 2, $proto_name_to_debian{$value});
 }
 
 sub xst_network_debian_parse_remote_address
@@ -710,7 +712,7 @@ sub xst_network_debian_replace_remote_address
   
   $ifconfig = &xst_locate_tool ("ifconfig");
 
-  return &xst_replace_interfaces_option_str ($file, $iface, "on", "$ifconfig $iface pointopoint $value");
+  return &xst_replace_interfaces_option_str ($file, $iface, "up", "$ifconfig $iface pointopoint $value");
 }
 
 sub xst_network_ensure_loopback_interface
@@ -933,7 +935,7 @@ sub xst_network_get_interfaces_parse_table
            [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
            [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
            [ phone_number,       \&xst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
-           [ enabled,            \&xst_network_interface_activate, IFACE, \&xst_network_active_interfaces_get ]
+           [ enabled,            \&xst_network_interface_active, IFACE, \&xst_network_active_interfaces_get ]
            ]
              },
 
@@ -951,7 +953,7 @@ sub xst_network_get_interfaces_parse_table
         CHAP        => "/etc/ppp/chap-secrets" },
 	    table =>
           [
-# not sup  [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+           [ user,               \&xst_parse_trivial,                  0 ], # not supported.
            [ dev,                \&xst_parse_trivial,                  IFACE ],
            [ bootproto,          \&xst_network_deb22_parse_bootproto,  [INTERFACES, IFACE]],
            [ auto,               \&xst_parse_interfaces_option_kw_not, [INTERFACES, IFACE], noauto ],
@@ -963,8 +965,8 @@ sub xst_network_get_interfaces_parse_table
            [ gateway,            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], gateway ],
            [ wvsection,          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], provider ],
            [ peerdns,            \&xst_parse_kw,                       PPP_OPTIONS, usepeerdns ],
-# not sup  [ dns1,               \&xst_parse_sh,                       IFCFG,       DNS1 ],
-# not sup  [ dns2,               \&xst_parse_sh,      IFCFG, DNS2 ],
+           [ dns1,               \&xst_parse_trivial,                  "" ], # not supported.
+           [ dns2,               \&xst_parse_trivial,                  "" ], # not supported.
            [ mtu,                \&xst_parse_split_first_str,          PPP_OPTIONS, mtu, "[ \t]+" ],
            [ mru,                \&xst_parse_split_first_str,          PPP_OPTIONS, mru, "[ \t]+" ],
            [ remote_address,     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
@@ -980,7 +982,7 @@ sub xst_network_get_interfaces_parse_table
            [ serial_escapechars, \&xst_parse_split_first_str,          PPP_OPTIONS, escape, "[ \t]+" ],
            [ serial_hwctl,       \&xst_parse_kw,                       PPP_OPTIONS, crtscts ],
            [ phone_number,       \&xst_parse_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
-           [ enabled,            \&xst_network_interface_activate,       IFACE,
+           [ enabled,            \&xst_network_interface_active,       IFACE,
                                                                        \&xst_network_active_interfaces_get ]
            ]
              }
@@ -1179,8 +1181,6 @@ sub xst_network_get_interface_replace_table
            [ serial_escapechars, \&xst_replace_join_first_str,           PPP_OPTIONS, escape, "[ \t]+" ],
            [ serial_hwctl,       \&xst_replace_kw,                       PPP_OPTIONS, crtscts ],
            [ phone_number,       \&xst_replace_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
-           [ enabled,            \&xst_network_interface_activate,       IFACE,
-                                                                        \&xst_network_active_interfaces_get ]
            ]
              }
   );
