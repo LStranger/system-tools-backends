@@ -33,10 +33,10 @@ require "___scriptsdir___/parse.pl";
 
 sub xst_media_get_ide_device_from_proc
 {
-  my ($path) = "/proc/ide/@_[0]/@_[1]";
+  my ($path) = "/proc/ide/$_[0]/$_[1]";
   my (%device);
 
-  %device->{"device"}   = @_[1];
+  %device->{"device"}   = $_[1];
   %device->{"type"}     = "ide";
   %device->{"media"}    = &xst_parse_line_first ("$path/media");
   %device->{"model"}    = &xst_parse_line_first ("$path/model");
@@ -62,10 +62,10 @@ sub xst_media_get_ide_device_from_proc
   {
     %device->{"is_removable"} = 1;
 
-    %device->{"point_listed"} = &xst_parse_split_first_str ("/etc/fstab", "/dev/@_[1]", "[ \t]+");
-    %device->{"point_actual"} = &xst_parse_split_first_str ("/etc/mtab", "/dev/@_[1]", "[ \t]+");
-    %device->{"fs_listed"}    = (&xst_parse_split_all ("/etc/fstab", "/dev/@_[1]", "[ \t]+")) -> [1];
-    %device->{"fs_actual"}    = (&xst_parse_split_all ("/etc/mtab", "/dev/@_[1]", "[ \t]+")) -> [1];
+    %device->{"point_listed"} = &xst_parse_split_first_str ("/etc/fstab", "/dev/$_[1]", "[ \t]+");
+    %device->{"point_actual"} = &xst_parse_split_first_str ("/etc/mtab", "/dev/$_[1]", "[ \t]+");
+    %device->{"fs_listed"}    = (&xst_parse_split_all ("/etc/fstab", "/dev/$_[1]", "[ \t]+")) -> [1];
+    %device->{"fs_actual"}    = (&xst_parse_split_all ("/etc/mtab", "/dev/$_[1]", "[ \t]+")) -> [1];
 
     if (%device->{"point_actual"})
     {

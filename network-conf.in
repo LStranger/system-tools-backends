@@ -73,7 +73,7 @@ $progress_max = 10;
 
 sub xml_parse
 {
-  my $tree, %hash;
+  my ($tree, %hash);
   # Scan XML to tree.
 
   $tree = &xst_xml_scan;
@@ -209,7 +209,7 @@ sub xml_parse_dialing
 sub xml_print_statichost
 {
   my ($h) = $_[0];
-  my $statichost, $i, $j, $val;
+  my ($statichost, $i, $j, $val);
   
   &xst_xml_print_vspace ();
   foreach $i (keys %{$$h{"statichost"}})
@@ -233,10 +233,10 @@ sub xml_print
 {
   my $h = $_[0];
   my @scalar_keys =
-	 (auto, forward, hostname, domain, domainname,
-	  hostmatch, workgroup, description, winsserver, winsuse);
+	 qw(auto forward hostname domain domainname
+	  hostmatch workgroup description winsserver winsuse);
   my @array_keys =
-	 (nameserver, searchdomain, order);
+	 qw(nameserver searchdomain order);
 
   &xst_xml_print_begin ();
 

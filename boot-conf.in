@@ -64,7 +64,7 @@ $tool_lilo = &xst_locate_tool ("lilo");
 
 sub xml_parse
 {
-  my $tree, %hash;
+  my ($tree, %hash);
   # Scan XML to tree.
 
   $tree = &xst_xml_scan;
@@ -156,7 +156,7 @@ sub xml_print_globals
   my @tags = ('boot', 'default', 'delay', 'install', 'map', 'message', 'timeout', 'verbose',
               'append', 'root');
   
-  my $i, $val;
+  my ($i, $val);
 
   while ($i = shift @tags)
   {
@@ -170,7 +170,7 @@ sub xml_print_globals
 sub xml_print_images
 {
   my ($h, $image) = @_;
-  my $i, $val, $array;
+  my ($i, $val, $array);
 
   $array = $$h{$image};
 

@@ -1,3 +1,16 @@
+2001-03-21  Ryan Boren <rboren@fuzzybelly.org>
+
+	* backends/*: my $var -> my ($var) everywhere
+
+	* backends/*: @_[n] -> $_[n] everywhere
+
+	* backends/network-conf.in: Use qw in places.
+
+	* backends/*: forward -> "forward" etc.
+
+	* backends/parse.pl.in, backeds/replace.pl.in: replace
+	\n in regexps with $n.
+	
 2001-03-21  Michael Meeks  <michael@ximian.com>
 
 	* Makefile.am: add print bits.

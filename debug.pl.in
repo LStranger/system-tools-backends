@@ -29,7 +29,7 @@ require "___scriptsdir___/file.pl";
 sub xst_debug_open_output_file
 {
   local *FILE;
-  my $debug_path = &xst_file_get_debug_path () . "/$xst_name/1/@_[0]";
+  my $debug_path = &xst_file_get_debug_path () . "/$xst_name/1/$_[0]";
 
   &xst_debug_rotate_try ();
   open (FILE, ">>$debug_path");
@@ -41,8 +41,8 @@ sub xst_debug_print_string_to_file
 {
   my $debug_file;
 
-  $debug_file = &xst_debug_open_output_file (@_[0]);
-  print $debug_file @_[1];
+  $debug_file = &xst_debug_open_output_file ($_[0]);
+  print $debug_file $_[1];
 
   close $debug_file;
 }
@@ -63,7 +63,7 @@ sub xst_debug_print_line
 
 sub xst_debug_print_indent
 {
-  my $indent = @_[0];
+  my $indent = $_[0];
   my $indent_string = "";
   my $i;
 
@@ -104,9 +104,9 @@ sub xst_debug_print_struct
 
 sub xst_debug_print_struct_r
 {
-  my ($indent) = @_[0];
-  my $is_hash_value = @_[1];
-  my $a = @_[2];
+  my ($indent) = $_[0];
+  my $is_hash_value = $_[1];
+  my $a = $_[2];
   my $type;
   my @keys;
   my $elem;
@@ -152,7 +152,8 @@ $xst_debug_was_made = 0;
 
 sub xst_debug_rotate_try
 {
-  my $debug_file = @_[0];
+
+  my $debug_file = $_[0];
   my $debug_tool_dir = &xst_file_get_debug_path () . "/$xst_name/";
 
   # If this is the first debug created by this tool on this invocation,

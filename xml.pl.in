@@ -84,7 +84,7 @@ sub xst_xml_leave
 sub xst_xml_print_string
 {
   print $_[0];
-  &xst_debug_print_string_to_file ("out.xml", @_[0]);
+  &xst_debug_print_string_to_file ("out.xml", $_[0]);
 }
 
 sub xst_xml_format_indent
@@ -162,7 +162,7 @@ sub xst_xml_print_state_tag
 sub xst_xml_print_scalars
 {
   my ($h, @scalar_keys) = @_;
-  my $i, $val;
+  my ($i, $val);
 
   while ($i = shift @scalar_keys)
   {
@@ -176,7 +176,7 @@ sub xst_xml_print_scalars
 sub xst_xml_print_arrays
 {
   my ($h, @array_keys) = @_;
-  my $i, $j, $val;
+  my ($i, $j, $val);
   
   foreach $i (@array_keys)
   {
@@ -197,7 +197,7 @@ sub xst_xml_print_arrays
 sub xst_xml_print_hash
 {
   my ($hash, $tag) = @_;
-  my $j, $val;
+  my ($j, $val);
   
   &xst_xml_print_vspace ();
   &xst_xml_print_line ("<$tag>\n");
@@ -382,7 +382,7 @@ sub xst_xml_unquote
 
   #print STDERR "INI U: $ret\n";
   
-  for ($i = 0; @xst_xml_entities[$i] ne undef; $i += 2)
+  for ($i = 0; $xst_xml_entities[$i] ne undef; $i += 2)
   {
     $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i + 1]/g;
   }

@@ -65,7 +65,7 @@ sub regexp_to_separator
 {
   $_ = $_[0];
 
-  s/\[([^^])([^\]])[^\]]*\]/\1/g;
+  s/\[([^^])([^\]])[^\]]*\]/$1/g;
   s/\+//g;
   s/\$//g;
   s/[^\*]\*//g;
@@ -99,9 +99,9 @@ sub xst_replace_split
 {
   my ($file, $key, $re, @value) = @_;
   my ($fd, @line, @res);
-  my $buff, $i;
-  my $pre_space, $post_comment;
-  my $line_key, $val;
+  my ($buff, $i);
+  my ($pre_space, $post_comment);
+  my ($line_key, $val);
 
   $buff = &xst_buffer_load ($file);
   
@@ -179,7 +179,7 @@ sub xst_replace_sh
 {
   my ($file, $key, $value) = @_;
 
-  $value =~ s/([\"\'\`\&\$\|\*\?\[\]\{\}\(\)<>\\])/\\\1/g;
+  $value =~ s/([\"\'\`\&\$\|\*\?\[\]\{\}\(\)<>\\])/\\$1/g;
   $value = "\"$value\"" if ($value =~ /[ \t]/);
 
   return &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);
@@ -218,7 +218,7 @@ sub xst_replace_line_first
 sub xst_replace_join_hash
 {
   my ($file, $re1, $re2, $value) = @_;
-  my $i, $res, $tmp, $val;
+  my ($i, $res, $tmp, $val);
 
   $res = 0;
   
@@ -235,7 +235,7 @@ sub xst_replace_join_hash
 sub xst_replace_chat
 {
   my ($file, $re, $value) = @_;
-  my $buff, $i, $bak, $found, $substr;
+  my ($buff, $i, $bak, $found, $substr);
 
   $buff = &xst_buffer_load ($file);
 
@@ -283,8 +283,8 @@ sub xst_replace_chat
 sub xst_replace_ini
 {
   my ($file, $section, $var, $value) = @_;
-  my $buff, $i, $found_flag;
-  my $pre_space, $post_comment, $sec_save;
+  my ($buff, $i, $found_flag);
+  my ($pre_space, $post_comment, $sec_save);
 
   &xst_debug_print_string ("\nreplace_ini: " . join (',', @_) . "\n");
 
@@ -320,7 +320,7 @@ sub xst_replace_ini
         
         if ($found_flag && $i =~ /^$var[ \t]*=/i)
         {
-          $i =~ s/^($var[ \t]*=[ \t]*).*/\1$value/i;
+          $i =~ s/^($var[ \t]*=[ \t]*).*/$1$value/i;
           $found_flag = 2;
         }
       }
@@ -355,7 +355,7 @@ sub xst_replace_ini_bool
 sub xst_replace_interfaces_get_next_stanza
 {
   my ($buff, $line_no) = @_;
-  my $i, $line;
+  my ($i, $line);
 
   while ($$line_no <= $#$buff)
   {
@@ -375,7 +375,7 @@ sub xst_replace_interfaces_get_next_stanza
 sub xst_replace_interfaces_get_next_option
 {
   my ($buff, $line_no) = @_;
-  my $i, $line, $empty_lines;
+  my ($i, $line, $empty_lines);
 
   $empty_lines = 0;
   
@@ -442,7 +442,7 @@ sub xst_replace_interfaces_stanza_create
 sub xst_replace_interfaces_stanza_delete
 {
   my ($file, $iface) = @_;
-  my $buff, $line_no, $stanza;
+  my ($buff, $line_no, $stanza);
 
   $buff = &xst_buffer_load ($file);
   &xst_buffer_join_lines ($buff);
@@ -465,8 +465,8 @@ sub xst_replace_interfaces_stanza_delete
 sub xst_replace_interface_stanza_value
 {
   my ($file, $iface, $pos, $value) = @_;
-  my $buff, $line_no, $stanza;
-  my $pre_space, $line, $line_arr;
+  my ($buff, $line_no, $stanza);
+  my ($pre_space, $line, $line_arr);
 
   $buff = &xst_buffer_load ($file);
   &xst_buffer_join_lines ($buff);
@@ -494,8 +494,8 @@ sub xst_replace_interface_stanza_value
 sub xst_replace_interfaces_option_str
 {
   my ($file, $iface, $key, $value) = @_;
-  my $buff, $line_no, $stanza;
-  my $pre_space, $line, $line_arr;
+  my ($buff, $line_no, $stanza);
+  my ($pre_space, $line, $line_arr);
 
   $buff = &xst_buffer_load ($file);
   &xst_buffer_join_lines ($buff);
@@ -519,14 +519,14 @@ sub xst_replace_interfaces_option_str
     else
     {
       chomp $$buff[$line_no];
-      $$buff[$line_no] =~ s/^([ \t]*$key[ \t]).*/\1/;
+      $$buff[$line_no] =~ s/^([ \t]*$key[ \t]).*/$1/;
     }
   }
   elsif ($value ne "")
   {
     $line_no --;
     chomp $$buff[$line_no];
-    $$buff[$line_no] =~ s/^([ \t]*)(.*)/\1\2\n\1$key /;
+    $$buff[$line_no] =~ s/^([ \t]*)(.*)/$1$2\n$1$key /;
   }
 
   $$buff[$line_no] .= $value . "\n" if $value ne "";

@@ -67,7 +67,7 @@ $progress_max = 365;
 
 sub xml_parse
 {
-  my $tree, %hash;
+  my ($tree, %hash);
   
   # Scan XML to tree.
 
@@ -161,7 +161,8 @@ sub xml_print
   my $h = $_[0];
   my @sync;
 
-  @scalar_keys = (timezone);
+  @scalar_keys = ("timezone");
+
   $sync = $$h{"sync"};
 
   &xst_xml_print_begin ();
@@ -246,7 +247,7 @@ elsif ($xst_operation eq "filter") { &filter; }
 
 sub time_get_local_time
 {
-  my %h, $trash;
+  my (%h, $trash);
 
   ($h{"second"}, $h{"minute"}, $h{"hour"}, $h{"monthday"}, $h{"month"}, $h{"year"},
    $trash, $trash, $trash) = localtime (time);
@@ -383,10 +384,10 @@ sub conf_get_parse_table
          },
          table =>
              [
-              [local_time,  \&time_get_local_time],
-              [timezone,    \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              [sync,        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
-              [sync_active, \&xst_service_sysv_get_status, "xntpd"],
+              ["local_time",  \&time_get_local_time],
+              ["timezone",    \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO]],
+              ["sync",        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
+              ["sync_active", \&xst_service_sysv_get_status, "xntpd"],
               ]
                 }
        );
@@ -421,10 +422,10 @@ sub conf_get_replace_table
          },
          table =>
              [
-              [local_time,  \&time_set_local_time],
-              [timezone,    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              [sync,        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
-              [sync_active, \&xst_service_sysv_set_status, 90, "xntpd"],
+              ["local_time",  \&time_set_local_time],
+              ["timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
+              ["sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
+              ["sync_active", \&xst_service_sysv_set_status, 90, "xntpd"],
               ]
                 }
        );

@@ -138,7 +138,7 @@ sub xst_parse_chomp_line_hash_comment
   $line = $$line;
 
   # This will put escaped hashes out of danger.
-  $line =~ s/([\"\'][^\#]*)\#([^\"\']*[\"\'])/\1__hash__\2/g;
+  $line =~ s/([\"\'][^\#]*)\#([^\"\']*[\"\'])/$1__hash__$2/g;
   $line =~ s/\\\#/__hash__/g;
 
   # Nuke everything after a hash.
@@ -288,7 +288,7 @@ sub xst_shell_escape
   $ret =~ s/\\\'/\\_/g;
   $ret =~ s/\'//g;
   $ret =~ s/\\_/\'/g;
-  $ret =~ s/\\(.)/\1/g;
+  $ret =~ s/\\(.)/$1/g;
 
   return $ret;
 }
@@ -450,7 +450,7 @@ sub xst_parse_ini_line_read
 sub xst_parse_ini_sections
 {
   my ($file) = @_;
-  my @sections, $line;
+  my (@sections, $line);
 
   $fd = &xst_open_read_from_names ($file);
   

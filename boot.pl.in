@@ -124,7 +124,7 @@ sub xst_boot_parse_images
 sub xst_boot_set_global_kw
 {
   my ($file, $key) = @_;
-  my $buff, $i, $found;
+  my ($buff, $i, $found);
 
   $buff = &xst_buffer_load ($file);
   $found = 0;
@@ -161,7 +161,7 @@ sub xst_boot_set_global_kw
 sub xst_boot_set_global
 {
   my ($file, $key, $val) = @_;
-  my $buff, $i, $found;
+  my ($buff, $i, $found);
 
   $buff = &xst_buffer_load ($file);
   $found = 0;
@@ -202,7 +202,7 @@ sub xst_boot_set_global
 sub xst_boot_del_global
 {
   my ($file, $key) = @_;
-  my $buff, $i;
+  my ($buff, $i);
 
   $buff = &xst_buffer_load ($file);
 
@@ -255,7 +255,7 @@ sub xst_boot_conf_del_images
 sub xst_boot_conf_set_images
 {
   my ($fn, $key, $images) = @_;
-  my %hash, $i, @tmp_images;
+  my (%hash, $i, @tmp_images);
 
   @tmp_images = @$images;
   
@@ -271,9 +271,9 @@ sub xst_boot_conf_set_images
 sub xst_boot_conf_replace_image
 {
   my ($file, %image) = @_;
-  my $buff, $i, $found;
-  my $pre_space, $post_comment;
-  my @line, $key, $op, $txt;
+  my ($buff, $i, $found);
+  my ($pre_space, $post_comment);
+  my (@line, $key, $op, $txt);
 
   $buff = &xst_buffer_load ($file);
   &xst_buffer_join_lines ($buff);

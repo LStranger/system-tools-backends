@@ -284,7 +284,7 @@ sub get_fdisk
 
   for $dev (@check_devs)
   {
-    my $disk, $device, $point, $fs, $options, $check, $size, $bootable;
+    my ($disk, $device, $point, $fs, $options, $check, $size, $bootable);
     
     &xst_report_info(01, "Looking for partitions on $dev");
 
@@ -295,16 +295,16 @@ sub get_fdisk
       {
         @line = split(/[ \n\r\t]+/, $_);
 
-        $device = @line[0]; shift @line;
+        $device = $line[0]; shift @line;
         ($disk) = ($device =~ /([a-zA-Z\/]+)/);
 
         shift @line; shift @line;  # Start and end clusters.
 
-        ($size) = (@line[0] =~ /([0-9]+)/);
+        ($size) = ($line[0] =~ /([0-9]+)/);
 	$size = sprintf ("%.1fMB", $size / 1024);
         shift @line;
 
-        if (@line[0] ne "82") { next; }  # Not Swap
+        if ($line[0] ne "82") { next; }  # Not Swap
         else
 	  {
 	    push @cf_partition, {

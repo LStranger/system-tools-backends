@@ -56,8 +56,8 @@ sub xst_network_dialing_get
        );
   
   my ($file) = @_;
-  my %ret, @sections;
-  my $i, $j, $name, $val;
+  my (%ret, @sections);
+  my ($i, $j, $name, $val);
 
   &xst_run ("wvdialconf $xst_prefix/$file") if (!-e "$xst_prefix/$file");
   
@@ -127,7 +127,7 @@ sub xst_network_interface_active
 sub xst_network_sysconfig_ifaces_get_existing
 {
   local *IFACE_DIR;
-  my @ret, $i, $name;
+  my (@ret, $i, $name);
   
   if (opendir IFACE_DIR, "$xst_prefix/etc/sysconfig/network-scripts")
   {
@@ -149,7 +149,7 @@ sub xst_network_sysconfig_ifaces_get_existing
 
 sub xst_network_debian_ifaces_get_existing
 {
-  my @ret, @stanzas, $stanza;
+  my (@ret, @stanzas, $stanza);
   
   @stanzas = &xst_parse_interfaces_stanzas ("$xst_prefix/etc/network/interfaces");
 
@@ -283,9 +283,9 @@ sub xst_network_dialing_set
 	  "unknown" => "#i#"
 	  );
   my ($file, $values_hash) = @_;
-  my %hash, $section;
+  my (%hash, $section);
   my $ret;
-  my $i, $j;
+  my ($i, $j);
 
   foreach $i (keys %$values_hash)
   {
@@ -350,7 +350,7 @@ sub xst_network_rh62_interface_activate
 sub xst_network_remove_pap_entry
 {
   my ($file, $login) = @_;
-  my $i, $buff;
+  my ($i, $buff);
 
   $buff = &xst_buffer_load ($file);
 
@@ -414,8 +414,8 @@ sub xst_network_interfaces_down_changed
 sub xst_network_interface_set
 {
   my ($dev, $values_hash, $old_hash) = @_;
-  my %dist_attrib, %fn;
-  my $proc, $i, $res;
+  my (%dist_attrib, %fn);
+  my ($proc, $i, $res);
   
   %dist_attrib = &xst_network_get_interface_replace_table ();
   $proc = $dist_attrib{"iface_set"};
@@ -495,7 +495,7 @@ sub xst_network_get_pap_passwd
 sub xst_network_get_ppp_options_re
 {
   my ($file, $re) = @_;
-  my $fd, @res;
+  my ($fd, @res);
 
   $fd = &xst_open_read_from_names ("$file");
   return undef if !$fd;
@@ -514,7 +514,7 @@ sub xst_network_get_ppp_options_re
 sub xst_network_set_ppp_options_re
 {
   my ($file, $re, $value) = @_;
-  my $buff, $line, $replaced;
+  my ($buff, $line, $replaced);
 
   $buff = &xst_buffer_load ($file);
 
@@ -543,7 +543,7 @@ sub xst_network_set_ppp_options_connect
 sub xst_network_get_ppp_options_unsup
 {
   my ($file) = @_;
-  my $fd, $line, $res, $re;
+  my ($fd, $line, $res, $re);
   my @known_options = ("usepeerdns", "mtu", "mru", "user", "/dev/[^ \t]+", "[0-9]+",
                        "defaultroute", "debug", "persist", "escape", "crtscts", "connect",
                        "remotename", "hide-password", "noauth", "noipdefault", "ipparam");
@@ -573,7 +573,7 @@ sub xst_network_get_ppp_options_unsup
 sub xst_network_set_ppp_options_unsup
 {
   my ($file, $value) = @_;
-  my $buff, $line, $re;
+  my ($buff, $line, $re);
   my @known_options = ("usepeerdns", "mtu", "mru", "user", "/dev/[^ \t]+", "[0-9]+",
                        "defaultroute", "debug", "persist", "escape", "crtscts", "connect",
                        "remotename", "hide-password", "noauth", "noipdefault", "ipparam");
@@ -628,7 +628,7 @@ sub xst_network_rh62_replace_bootproto
 sub xst_network_deb22_parse_bootproto
 {
   my ($file, $iface) = @_;
-  my @stanzas, $stanza, $method, $bootproto;
+  my (@stanzas, $stanza, $method, $bootproto);
   my %debian_to_proto_name =
       (
        "bootp"    => "bootp",
@@ -665,7 +665,7 @@ sub xst_network_deb22_parse_bootproto
 sub xst_network_deb22_replace_bootproto
 {
   my ($file, $iface, $value) = @_;
-  my @stanzas, $stanza, $method, $bootproto;
+  my (@stanzas, $stanza, $method, $bootproto);
   my %proto_name_to_debian =
       (
        "bootp"    => "bootp",
@@ -692,7 +692,7 @@ sub xst_network_deb22_replace_bootproto
 sub xst_network_debian_parse_remote_address
 {
   my ($file, $iface) = @_;
-  my $str, @tuples, $tuple, @res;
+  my ($str, @tuples, $tuple, @res);
   
   @tuples = &xst_parse_interfaces_option_tuple ($file, $iface, "up", 1);
 
@@ -823,21 +823,21 @@ sub xst_network_get_parse_table
 		 WVDIAL       => "/etc/wvdial.conf" },
 	    table =>
 		   [
-		    [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
-		    [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
-		    [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
-		    [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-		    [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-		    [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-		    [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-		    [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
-		    [ statichost,    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-		    [ workgroup,     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
-		    [ description,   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
-		    [ winsserver,    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
-		    [ winsuse,       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
-		    [ dialing,       \&xst_network_dialing_get,     WVDIAL ],
-		    [ interface,     \&xst_network_interfaces_get ]
+		    [ "forward",       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
+		    [ "hostname",      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
+		    [ "domain",        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN ],
+		    [ "nameserver",    \&xst_parse_split_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
+		    [ "searchdomain",  \&xst_parse_split_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+		    [ "domainname",    \&xst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+		    [ "order",         \&xst_parse_split_first_array, HOST_CONF,    "order", "[ \t]+", "," ],
+		    [ "hostmatch",     \&xst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
+		    [ "statichost",    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+		    [ "workgroup",     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+		    [ "description",   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+		    [ "winsserver",    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+		    [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
+		    [ "interface",     \&xst_network_interfaces_get ]
 		    ]
 			 },
 
@@ -855,21 +855,21 @@ sub xst_network_get_parse_table
         WVDIAL      => "/etc/wvdial.conf" },
 	    table =>
           [
-           [ forward,       \&xst_parse_sh_bool,           OPTIONS, ip_forward ],
-           [ hostname,      \&xst_parse_line_first,        HOSTNAME ],
-           [ domain,				\&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-           [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-           [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-           [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-           [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-           [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
-           [ statichost,    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-           [ workgroup,     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
-           [ description,   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
-           [ winsserver,    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
-           [ winsuse,       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
-           [ dialing,       \&xst_network_dialing_get,     WVDIAL ],
-           [ interface,     \&xst_network_interfaces_get ]
+           [ "forward",       \&xst_parse_sh_bool,           OPTIONS, "ip_forward" ],
+           [ "hostname",      \&xst_parse_line_first,        HOSTNAME ],
+           [ "domain",				\&xst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+           [ "nameserver",    \&xst_parse_split_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
+           [ "searchdomain",  \&xst_parse_split_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+           [ "domainname",    \&xst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+           [ "order",         \&xst_parse_split_first_array, HOST_CONF,    "order", "[ \t]+", "," ],
+           [ "hostmatch",     \&xst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
+           [ "statichost",    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+           [ "workgroup",     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+           [ "description",   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+           [ "winsserver",    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+           [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+           [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
+           [ "interface",     \&xst_network_interfaces_get ]
            ]
              }
 	  );
@@ -906,36 +906,36 @@ sub xst_network_get_interfaces_parse_table
         CHAP  => "/etc/ppp/chap-secrets" },
 	    table =>
           [
-           [ bootproto,          \&xst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
-           [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
-           [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
-           [ name,               \&xst_parse_sh,      IFCFG, NAME ],
-           [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
-           [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
-           [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
-           [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
-           [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
-           [ gateway,            \&xst_parse_sh,      IFCFG, GATEWAY ],
-           [ peerdns,            \&xst_parse_sh_bool, IFCFG, PEERDNS ],
-           [ dns1,               \&xst_parse_sh,      IFCFG, DNS1 ],
-           [ dns2,               \&xst_parse_sh,      IFCFG, DNS2 ],
-           [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
-           [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
-           [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
-           [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
-           [ password,           \&xst_network_get_pap_passwd, PAP, "%login%" ],
-           [ password,           \&xst_network_get_pap_passwd, CHAP, "%login%" ],
-           [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
-           [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
-           [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
-           [ wvsection,          \&xst_parse_sh,      IFCFG, WVDIALSECT ],
-           [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
-           [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
-           [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
-           [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
-           [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
-           [ phone_number,       \&xst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
-           [ enabled,            \&xst_network_interface_active, IFACE, \&xst_network_active_interfaces_get ]
+           [ "bootproto",          \&xst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
+           [ "auto",               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
+           [ "user",               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+           [ "name",               \&xst_parse_sh,      IFCFG, NAME ],
+           [ "dev",                \&xst_parse_sh,      IFCFG, DEVICE ],
+           [ "address",            \&xst_parse_sh,      IFCFG, IPADDR ],
+           [ "netmask",            \&xst_parse_sh,      IFCFG, NETMASK ],
+           [ "broadcast",          \&xst_parse_sh,      IFCFG, BROADCAST ],
+           [ "network",            \&xst_parse_sh,      IFCFG, NETWORK ],
+           [ "gateway",            \&xst_parse_sh,      IFCFG, GATEWAY ],
+           [ "peerdns",            \&xst_parse_sh_bool, IFCFG, PEERDNS ],
+           [ "dns1",               \&xst_parse_sh,      IFCFG, DNS1 ],
+           [ "dns2",               \&xst_parse_sh,      IFCFG, DNS2 ],
+           [ "mtu",                \&xst_parse_sh,      IFCFG, MTU ],
+           [ "mru",                \&xst_parse_sh,      IFCFG, MRU ],
+           [ "remote_address",     \&xst_parse_sh,      IFCFG, REMIP ],
+           [ "login",              \&xst_parse_sh,      IFCFG, PAPNAME ],
+           [ "password",           \&xst_network_get_pap_passwd, PAP, "%login%" ],
+           [ "password",           \&xst_network_get_pap_passwd, CHAP, "%login%" ],
+           [ "serial_port",        \&xst_parse_sh,      IFCFG, MODEMPORT ],
+           [ "serial_speed",       \&xst_parse_sh,      IFCFG, LINESPEED ],
+           [ "ppp_options",        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
+           [ "wvsection",          \&xst_parse_sh,      IFCFG, WVDIALSECT ],
+           [ "set_default_gw",     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
+           [ "debug",              \&xst_parse_sh_bool, IFCFG, DEBUG ],
+           [ "persist",            \&xst_parse_sh_bool, IFCFG, PERSIST ],
+           [ "serial_escapechars", \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+           [ "serial_hwctl",       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+           [ "phone_number",       \&xst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           [ "enabled",            \&xst_network_interface_active, IFACE, \&xst_network_active_interfaces_get ]
            ]
              },
 
@@ -953,36 +953,36 @@ sub xst_network_get_interfaces_parse_table
         CHAP        => "/etc/ppp/chap-secrets" },
 	    table =>
           [
-           [ user,               \&xst_parse_trivial,                  0 ], # not supported.
-           [ dev,                \&xst_parse_trivial,                  IFACE ],
-           [ bootproto,          \&xst_network_deb22_parse_bootproto,  [INTERFACES, IFACE]],
-           [ auto,               \&xst_parse_interfaces_option_kw_not, [INTERFACES, IFACE], noauto ],
-           [ name,               \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], name ],
-           [ address,            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], address ],
-           [ netmask,            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], netmask ],
-           [ broadcast,          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], broadcast ],
-           [ network,            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], network ],
-           [ gateway,            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], gateway ],
-           [ wvsection,          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], provider ],
-           [ peerdns,            \&xst_parse_kw,                       PPP_OPTIONS, usepeerdns ],
-           [ dns1,               \&xst_parse_trivial,                  "" ], # not supported.
-           [ dns2,               \&xst_parse_trivial,                  "" ], # not supported.
-           [ mtu,                \&xst_parse_split_first_str,          PPP_OPTIONS, mtu, "[ \t]+" ],
-           [ mru,                \&xst_parse_split_first_str,          PPP_OPTIONS, mru, "[ \t]+" ],
-           [ remote_address,     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
-           [ login,              \&xst_parse_split_first_str,          PPP_OPTIONS, user, "[ \t]+" ],
-           [ password,           \&xst_network_get_pap_passwd,         PAP, "%login%" ],
-           [ password,           \&xst_network_get_pap_passwd,         CHAP, "%login%" ],
-           [ serial_port,        \&xst_network_get_ppp_options_re,     PPP_OPTIONS, "^(/dev/[^ \t]+)" ],
-           [ serial_speed,       \&xst_network_get_ppp_options_re,     PPP_OPTIONS, "^([0-9]+)" ],
-           [ ppp_options,        \&xst_network_get_ppp_options_unsup,  PPP_OPTIONS ],
-           [ set_default_gw,     \&xst_parse_kw,                       PPP_OPTIONS, defaultroute ],
-           [ debug,              \&xst_parse_kw,                       PPP_OPTIONS, debug ],
-           [ persist,            \&xst_parse_kw,                       PPP_OPTIONS, persist ],
-           [ serial_escapechars, \&xst_parse_split_first_str,          PPP_OPTIONS, escape, "[ \t]+" ],
-           [ serial_hwctl,       \&xst_parse_kw,                       PPP_OPTIONS, crtscts ],
-           [ phone_number,       \&xst_parse_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
-           [ enabled,            \&xst_network_interface_active,       IFACE,
+           [ "user",               \&xst_parse_trivial,                  0 ], # not supported.
+           [ "dev",                \&xst_parse_trivial,                  IFACE ],
+           [ "bootproto",          \&xst_network_deb22_parse_bootproto,  [INTERFACES, IFACE]],
+           [ "auto",               \&xst_parse_interfaces_option_kw_not, [INTERFACES, IFACE], "noauto" ],
+           [ "name",               \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
+           [ "address",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "address" ],
+           [ "netmask",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "netmask" ],
+           [ "broadcast",          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "broadcast" ],
+           [ "network",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
+           [ "gateway",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
+           [ "wvsection",          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
+           [ "peerdns",            \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
+           [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
+           [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
+           [ "mtu",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mtu", "[ \t]+" ],
+           [ "mru",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mru", "[ \t]+" ],
+           [ "remote_address",     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
+           [ "login",              \&xst_parse_split_first_str,          PPP_OPTIONS, "user", "[ \t]+" ],
+           [ "password",           \&xst_network_get_pap_passwd,         PAP, "%login%" ],
+           [ "password",           \&xst_network_get_pap_passwd,         CHAP, "%login%" ],
+           [ "serial_port",        \&xst_network_get_ppp_options_re,     PPP_OPTIONS, "^(/dev/[^ \t]+)" ],
+           [ "serial_speed",       \&xst_network_get_ppp_options_re,     PPP_OPTIONS, "^([0-9]+)" ],
+           [ "ppp_options",        \&xst_network_get_ppp_options_unsup,  PPP_OPTIONS ],
+           [ "set_default_gw",     \&xst_parse_kw,                       PPP_OPTIONS, "defaultroute" ],
+           [ "debug",              \&xst_parse_kw,                       PPP_OPTIONS, "debug" ],
+           [ "persist",            \&xst_parse_kw,                       PPP_OPTIONS, "persist" ],
+           [ "serial_escapechars", \&xst_parse_split_first_str,          PPP_OPTIONS, "escape", "[ \t]+" ],
+           [ "serial_hwctl",       \&xst_parse_kw,                       PPP_OPTIONS, "crtscts" ],
+           [ "phone_number",       \&xst_parse_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           [ "enabled",            \&xst_network_interface_active,       IFACE,
                                                                        \&xst_network_active_interfaces_get ]
            ]
              }
@@ -1020,25 +1020,25 @@ sub xst_network_get_replace_table
         WVDIAL       => "/etc/wvdial.conf" },
 	    table =>
           [
-           [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
-           [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
-           [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
-           [ hostname,      \&xst_network_run_hostname ],
-           [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
-           [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
-           [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
-           [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-           [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-           [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-           [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-           [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
-           [ statichost,    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-           [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
-           [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
-           [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
-           [ winsuse,       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
-           [ dialing,       \&xst_network_dialing_set,      WVDIAL ],
-           [ interface,     \&xst_network_interfaces_set,		OLD_HASH ]
+           [ "auto",          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+           [ "forward",       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
+           [ "hostname",      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+           [ "hostname",      \&xst_network_run_hostname ],
+           [ "gateway",       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+           [ "gateway_dev",   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+           [ "domain",        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+           [ "nameserver",    \&xst_replace_join_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
+           [ "searchdomain",  \&xst_replace_join_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+           [ "domainname",    \&xst_replace_join_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+           [ "order",         \&xst_replace_join_first_array, HOST_CONF,    "order", "[ \t]+", "," ],
+           [ "hostmatch",     \&xst_replace_join_first_bool,  HOST_CONF,    "multi", "[ \t]+", "on", "off" ],
+           [ "statichost",    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+           [ "workgroup",     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
+           [ "description",   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
+           [ "winsserver",    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+           [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
+           [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
+           [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
              },
 
@@ -1056,22 +1056,22 @@ sub xst_network_get_replace_table
         WVDIAL      => "/etc/wvdial.conf" },
 	    table =>
           [
-           [ forward,       \&xst_replace_sh_bool,          OPTIONS,     ip_forward ],
-           [ hostname,      \&xst_replace_line_first,       HOSTNAME ],
-           [ hostname,      \&xst_network_run_hostname ],
-           [ domain,				\&xst_replace_join_first_str,   RESOLV_CONF, domain, "[ \t]+" ],
-           [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF, nameserver, "[ \t]+" ],
-           [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF, search, "[ \t]+", "[ \t]+" ],
-           [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF, domain, "[ \t]+" ],
-           [ order,         \&xst_replace_join_first_array, HOST_CONF,   order, "[ \t]+", "," ],
-           [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,   multi, "[ \t]+", "on", "off" ],
-           [ statichost,    \&xst_replace_join_hash,        HOSTS,       "[ \t]+", "[ \t]+" ],
-           [ workgroup,     \&xst_replace_ini,              SMB_CONF,    "global", "workgroup" ],     
-           [ description,   \&xst_replace_ini,              SMB_CONF,    "global", "server string" ],
-           [ winsserver,    \&xst_replace_ini,              SMB_CONF,    "global", "wins server" ],
-           [ winsuse,       \&xst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
-           [ dialing,       \&xst_network_dialing_set,      WVDIAL ],
-           [ interface,     \&xst_network_interfaces_set,		OLD_HASH ]
+           [ "forward",       \&xst_replace_sh_bool,          OPTIONS,     "ip_forward" ],
+           [ "hostname",      \&xst_replace_line_first,       HOSTNAME ],
+           [ "hostname",      \&xst_network_run_hostname ],
+           [ "domain",				\&xst_replace_join_first_str,   RESOLV_CONF, "domain", "[ \t]+" ],
+           [ "nameserver",    \&xst_replace_join_all,         RESOLV_CONF, "nameserver", "[ \t]+" ],
+           [ "searchdomain",  \&xst_replace_join_first_array, RESOLV_CONF, "search", "[ \t]+", "[ \t]+" ],
+           [ "domainname",    \&xst_replace_join_first_str,   RESOLV_CONF, "domain", "[ \t]+" ],
+           [ "order",         \&xst_replace_join_first_array, HOST_CONF,   "order", "[ \t]+", "," ],
+           [ "hostmatch",     \&xst_replace_join_first_bool,  HOST_CONF,   "multi", "[ \t]+", "on", "off" ],
+           [ "statichost",    \&xst_replace_join_hash,        HOSTS,       "[ \t]+", "[ \t]+" ],
+           [ "workgroup",     \&xst_replace_ini,              SMB_CONF,    "global", "workgroup" ],     
+           [ "description",   \&xst_replace_ini,              SMB_CONF,    "global", "server string" ],
+           [ "winsserver",    \&xst_replace_ini,              SMB_CONF,    "global", "wins server" ],
+           [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
+           [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
+           [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
              }
 	  );
@@ -1110,33 +1110,33 @@ sub xst_network_get_interface_replace_table
       },
       table =>
        [
-        [ bootproto,          \&xst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
-        [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
-        [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
-        [ name,               \&xst_replace_sh,      IFCFG, NAME ],
-        [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
-        [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
-        [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
-        [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
-        [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
-        [ gateway,            \&xst_replace_sh,      IFCFG, GATEWAY ],
-        [ peerdns,            \&xst_replace_sh_bool, IFCFG, PEERDNS ],
-        [ dns1,               \&xst_replace_sh,      IFCFG, DNS1 ],
-        [ dns2,               \&xst_replace_sh,      IFCFG, DNS2 ],
-        [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
-        [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
-        [ remote_address,     \&xst_replace_sh,      IFCFG, REMIP ],
-        [ login,              \&xst_replace_sh,      IFCFG, PAPNAME ],
-        [ serial_port,        \&xst_replace_sh,      IFCFG, MODEMPORT ],
-        [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
-        [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
-        [ wvsection,          \&xst_replace_sh,      IFCFG, WVDIALSECT ],
-        [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
-        [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
-        [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],
-        [ serial_escapechars, \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
-        [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
-        [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+        [ "bootproto",          \&xst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
+        [ "auto",               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
+        [ "user",               \&xst_replace_sh_bool, IFCFG, USERCTL ],
+        [ "name",               \&xst_replace_sh,      IFCFG, NAME ],
+        [ "dev",                \&xst_replace_sh,      IFCFG, DEVICE ],
+        [ "address",            \&xst_replace_sh,      IFCFG, IPADDR ],
+        [ "netmask",            \&xst_replace_sh,      IFCFG, NETMASK ],
+        [ "broadcast",          \&xst_replace_sh,      IFCFG, BROADCAST ],
+        [ "network",            \&xst_replace_sh,      IFCFG, NETWORK ],
+        [ "gateway",            \&xst_replace_sh,      IFCFG, GATEWAY ],
+        [ "peerdns",            \&xst_replace_sh_bool, IFCFG, PEERDNS ],
+        [ "dns1",               \&xst_replace_sh,      IFCFG, DNS1 ],
+        [ "dns2",               \&xst_replace_sh,      IFCFG, DNS2 ],
+        [ "mtu",                \&xst_replace_sh,      IFCFG, MTU ],
+        [ "mru",                \&xst_replace_sh,      IFCFG, MRU ],
+        [ "remote_address",     \&xst_replace_sh,      IFCFG, REMIP ],
+        [ "login",              \&xst_replace_sh,      IFCFG, PAPNAME ],
+        [ "serial_port",        \&xst_replace_sh,      IFCFG, MODEMPORT ],
+        [ "serial_speed",       \&xst_replace_sh,      IFCFG, LINESPEED ],
+        [ "ppp_options",        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
+        [ "wvsection",          \&xst_replace_sh,      IFCFG, WVDIALSECT ],
+        [ "set_default_gw",     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
+        [ "debug",              \&xst_replace_sh_bool, IFCFG, DEBUG ],
+        [ "persist",            \&xst_replace_sh_bool, IFCFG, PERSIST ],
+        [ "serial_escapechars", \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+        [ "serial_hwctl",       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+        [ "phone_number",       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
       ]
     },
     "debian-2.2" =>
@@ -1154,33 +1154,33 @@ sub xst_network_get_interface_replace_table
         CHAP        => "/etc/ppp/chap-secrets" },
 	    table =>
           [
-# not sup  [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
-           [ bootproto,          \&xst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
-           [ auto,               \&xst_replace_interfaces_option_kw_not, [INTERFACES, IFACE], noauto ],
-           [ name,               \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], name ],
-           [ address,            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], address ],
-           [ netmask,            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], netmask ],
-           [ broadcast,          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], broadcast ],
-           [ network,            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], network ],
-           [ gateway,            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], gateway ],
-           [ wvsection,          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], provider ],
-           [ peerdns,            \&xst_replace_kw,                       PPP_OPTIONS, usepeerdns ],
-# not sup  [ dns1,               \&xst_replace_sh,                       IFCFG,       DNS1 ],
-# not sup  [ dns2,               \&xst_replace_sh,                       IFCFG, DNS2 ],
-           [ mtu,                \&xst_replace_join_first_str,           PPP_OPTIONS, mtu, "[ \t]+" ],
-           [ mru,                \&xst_replace_join_first_str,           PPP_OPTIONS, mru, "[ \t]+" ],
-           [ remote_address,     \&xst_network_debian_replace_remote_address, [INTERFACES, IFACE]],
-           [ login,              \&xst_replace_join_first_str,           PPP_OPTIONS, user, "[ \t]+" ],
-           [ serial_port,        \&xst_network_set_ppp_options_re,       PPP_OPTIONS, "^(/dev/[^ \t]+)" ],
-           [ serial_speed,       \&xst_network_set_ppp_options_re,       PPP_OPTIONS, "^([0-9]+)" ],
-           [ wvsection,          \&xst_network_set_ppp_options_connect,  PPP_OPTIONS ],
-           [ ppp_options,        \&xst_network_set_ppp_options_unsup,    PPP_OPTIONS ],
-           [ set_default_gw,     \&xst_replace_kw,                       PPP_OPTIONS, defaultroute ],
-           [ debug,              \&xst_replace_kw,                       PPP_OPTIONS, debug ],
-           [ persist,            \&xst_replace_kw,                       PPP_OPTIONS, persist ],
-           [ serial_escapechars, \&xst_replace_join_first_str,           PPP_OPTIONS, escape, "[ \t]+" ],
-           [ serial_hwctl,       \&xst_replace_kw,                       PPP_OPTIONS, crtscts ],
-           [ phone_number,       \&xst_replace_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+# not sup  [ "user",               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+           [ "bootproto",          \&xst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
+           [ "Auto",               \&xst_replace_interfaces_option_kw_not, [INTERFACES, IFACE], "noauto" ],
+           [ "name",               \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
+           [ "address",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "address" ],
+           [ "netmask",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "netmask" ],
+           [ "broadcast",          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "broadcast" ],
+           [ "network",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
+           [ "gateway",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
+           [ "wvsection",          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
+           [ "peerdns",            \&xst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
+# not sup  [ "dns1",               \&xst_replace_sh,                       IFCFG,       DNS1 ],
+# not sup  [ "dns2",               \&xst_replace_sh,                       IFCFG, DNS2 ],
+           [ "mtu",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mtu", "[ \t]+" ],
+           [ "mru",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mru", "[ \t]+" ],
+           [ "remote_address",     \&xst_network_debian_replace_remote_address, [INTERFACES, IFACE]],
+           [ "login",              \&xst_replace_join_first_str,           PPP_OPTIONS, "user", "[ \t]+" ],
+           [ "serial_port",        \&xst_network_set_ppp_options_re,       PPP_OPTIONS, "^(/dev/[^ \t]+)" ],
+           [ "serial_speed",       \&xst_network_set_ppp_options_re,       PPP_OPTIONS, "^([0-9]+)" ],
+           [ "wvsection",          \&xst_network_set_ppp_options_connect,  PPP_OPTIONS ],
+           [ "ppp_options",        \&xst_network_set_ppp_options_unsup,    PPP_OPTIONS ],
+           [ "set_default_gw",     \&xst_replace_kw,                       PPP_OPTIONS, "defaultroute" ],
+           [ "debug",              \&xst_replace_kw,                       PPP_OPTIONS, "debug" ],
+           [ "persist",            \&xst_replace_kw,                       PPP_OPTIONS, "persist" ],
+           [ "serial_escapechars", \&xst_replace_join_first_str,           PPP_OPTIONS, "escape", "[ \t]+" ],
+           [ "serial_hwctl",       \&xst_replace_kw,                       PPP_OPTIONS, "crtscts" ],
+           [ "phone_number",       \&xst_replace_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
            ]
              }
   );

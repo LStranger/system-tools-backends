@@ -168,9 +168,9 @@ sub xst_init
 
   # Set backend descriptors.
 
-  $xst_name = @args[0];
-  $xst_version = @args[1];
-  $xst_description = @args[2];
+  $xst_name = $args[0];
+  $xst_version = $args[1];
+  $xst_description = $args[2];
   shift @args; shift @args; shift @args;
 
   # Parse arguments.

@@ -71,7 +71,7 @@ sub xst_service_sysv_get_runlevels
 sub xst_service_sysv_get_status
 {
   my ($service) = @_;
-  my $rc_path, $initd_path;
+  my ($rc_path, $initd_path);
 
   ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
   
@@ -101,7 +101,7 @@ sub xst_service_sysv_get_status
 sub xst_service_sysv_add_link
 {
   my ($runlevel, $pre, $service) = @_;
-  my $rcd_path, $initd_path;
+  my ($rcd_path, $initd_path);
 
   ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
 
@@ -115,7 +115,7 @@ sub xst_service_sysv_remove_link
   local *RC_DIR;
   my $link;
   my $dir;
-  my $rcd_path, $initd_path;
+  my ($rcd_path, $initd_path);
 
   ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
   $dir = "$xst_prefix/$rcd_path/rc$runlevel.d";
@@ -178,7 +178,7 @@ sub xst_service_sysv_set_links
 sub xst_service_sysv_run_initd_script
 {
   my ($service, $arg) = @_;
-  my $rc_path, $initd_path;
+  my ($rc_path, $initd_path);
   my $str;
   my %map =
       ("restart" => "restarted",

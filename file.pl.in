@@ -103,7 +103,7 @@ $xst_backup_was_made = 0;
 
 sub xst_backup_file
 {
-  my $backup_file = @_[0];
+  my $backup_file = $_[0];
   my $backup_tool_dir = &xst_file_get_backup_path () . "/$xst_name/";
 
   # If this is the first backup created by this tool on this invocation,
@@ -317,7 +317,7 @@ sub xst_buffer_load
 sub xst_buffer_save
 {
   my ($buffer, $file) = @_;
-  my $fd, $i;
+  my ($fd, $i);
 
   &xst_debug_print_string ("\nfile:$file\n");
 
@@ -401,7 +401,7 @@ sub xst_run
   my ($tool_name, $tool_path, @argline);
   my $command;
 
-  ($tool_name, @argline) = split(/ /, @_[0]);
+  ($tool_name, @argline) = split(/ /, $_[0]);
 
   $tool_path = &xst_locate_tool ($tool_name);
   if ($tool_path eq "")
