@@ -38,7 +38,7 @@
 my $Usage =<<"End_of_Usage;";
 Usage: time-conf <--get | --set | --filter | --help>
                  [--prefix <location>] [--disable-immediate]
-                 [--verbose]
+                 [--verbose] [--progress]
 
        Major operations (specify one of these):
 
@@ -74,9 +74,21 @@ Usage: time-conf <--get | --set | --filter | --help>
 
        -v --verbose  Turns on diagnostic messages to standard error.
 
+          --progress Prints progress information suitable for interactive
+                     frontends to standard output. The progress information
+                     is printed before any XML, and consists of a decimal
+                     number saying how many dots to expect, followed by a
+                     newline, and a running line of dots as the operation
+                     progresses, followed by a newline after the last dot.
+                     The dots generated can be more or less than the
+                     number indicated on the first line.
+
 End_of_Usage;
 
 $version = "0.1.0";
+
+$progress_max = 3;
+
 
 # --- System config file locations --- #
 
@@ -113,7 +125,17 @@ $cf_sync_active = 0;
 
 $prefix = "";
 $verbose = 0;
+$progress = 0;
 $do_immediate = 1;
+
+
+# --- Progress printing --- #
+
+
+sub print_progress
+{
+  if ($progress) { print "."; }
+}
 
 
 # --- XML print formatting  --- #
@@ -948,15 +970,17 @@ sub check_servers
 
 sub get
 {
-  if ($verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
+  if ($progress) { $| = 1; print $progress_max . "\n"; }
 
+  if ($verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
   if ($verbose) { print STDERR "Getting time, date and timezone.\n"; }
 
-  read_ntp_conf;
-  get_time;
-  check_servers;
+  read_ntp_conf; print_progress;
+  get_time; print_progress;
+  check_servers; print_progress;
 
   if ($verbose) { print STDERR "Printing XML.\n"; }
+  if ($progress) { print "\n"; }
   xml_print;
 }
 
@@ -1076,6 +1100,7 @@ while (@ARGV)
   }
   elsif (@ARGV[0] eq "--disable-immediate")           { $do_immediate = 0; }
   elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $verbose = 1; }
+  elsif (@ARGV[0] eq "--progress")                    { $progress = 1; }
   else
   {
     print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";

@@ -45,7 +45,7 @@
 my $Usage =<<"End_of_Usage;";
 Usage: networking-conf <--get | --set | --filter | --help>
                        [--prefix <location>] [--disable-immediate]
-                       [--verbose]
+                       [--verbose] [--progress]
 
        Major operations (specify one of these):
 
@@ -83,9 +83,20 @@ Usage: networking-conf <--get | --set | --filter | --help>
 
        -v --verbose  Turns on diagnostic messages to standard error.
 
+          --progress Prints progress information suitable for interactive
+                     frontends to standard output. The progress information
+                     is printed before any XML, and consists of a decimal
+                     number saying how many dots to expect, followed by a
+                     newline, and a running line of dots as the operation
+                     progresses, followed by a newline after the last dot.
+                     The dots generated can be more or less than the
+                     number indicated on the first line.
+
 End_of_Usage;
 
 $version = "0.1.0";
+
+$progress_max = 5;
 
 # --- System config file locations --- #
 
@@ -125,7 +136,17 @@ $cf_forward = 0;
 
 $prefix = "";
 $verbose = 0;
+$progress = 0;
 $do_immediate = 1;
+
+
+# --- Progress printing --- #
+
+
+sub print_progress
+{
+  if ($progress) { print "."; }
+}
 
 
 # --- XML print formatting  --- #
@@ -1832,18 +1853,21 @@ sub get_immediate
 
 sub get
 {
+  if ($progress) { $| = 1; print $progress_max . "\n"; }
+
   if ($verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
 
   if ($verbose) { print STDERR "Finding interfaces.\n"; }
   get_immediate;
 
-  read_rc_config;
-  read_sysconfig_network;
-  read_network_interfaces;
-  read_network_options;
-  read_primary_interface;
+  read_rc_config; print_progress;
+  read_sysconfig_network; print_progress;
+  read_network_interfaces; print_progress;
+  read_network_options; print_progress;
+  read_primary_interface; print_progress;
 
   if ($verbose) { print STDERR "Printing XML.\n"; }
+  if ($progress) { print "\n"; }
   xml_print;
 }
 
@@ -1972,6 +1996,7 @@ while (@ARGV)
   }
   elsif (@ARGV[0] eq "--disable-immediate")           { $do_immediate = 0; }
   elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $verbose = 1; }
+  elsif (@ARGV[0] eq "--progress")                    { $progress = 1; }
   else
   {
     print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
