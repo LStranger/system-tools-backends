@@ -184,6 +184,33 @@ for ($i = 0; $login_defs_prop_array[$i] ne ""; $i += 2)
   $login_defs_prop_map {$login_defs_prop_array[$i + 1]} = $login_defs_prop_array[$i];
 }
 
+
+# --- Utility stuff --- #
+
+sub max
+{
+  return $_[0] > $_[1]? $_[0]: $_[1];
+}
+
+sub arr_cmp_recurse
+{
+	my ($a1, $a2) = @_;
+	my $i;
+	
+	return -1 if ($#$a1 != $#$a2);
+	
+	for ($i = 0; $i <= $#$a1; $i++) {
+	  if (ref (@$a1[$i]) eq "ARRAY") { # see if this is a reference.
+		  return -1 if arr_cmp_recurse (@$a1[$i], @$a2[$i]); # we assume it is a ref to an array.
+		} elsif (@$a1[$i] ne @$a2[$i]) {
+		  return -1;
+		}
+	}
+	
+	return 0;
+}
+
+
 # --- Confignuration manipulation --- #
 
 sub read_login_defs
@@ -208,7 +235,7 @@ sub read_login_defs
 sub read_passwd
 {
   local *FILE;
-	my @line;
+	my (@line, $copy);
 	my $i = 0;
 
   # Find the file.
@@ -225,10 +252,11 @@ sub read_passwd
   while (<FILE>)
   {
     chomp;      
-    @line = split ':';
+    @line = split ':', $_, -1;
 		unshift @line, sprintf ("%06d", $i);
-		$users_hash{sprintf ("%06d", $i)} = [@line];
-    push (@users, [@line]);
+		$copy = [@line];
+		$users_hash{sprintf ("%06d", $i)} = $copy;
+    push (@users, $copy);
 		$i ++;
   }
 	
@@ -238,7 +266,7 @@ sub read_passwd
 sub read_group
 {
   local *FILE;
-	my @line;
+	my (@line, $copy, @a);
 	my $i = 0;
 
   # Find the file.
@@ -255,10 +283,13 @@ sub read_group
   while (<FILE>)
   {
     chomp;      
-    @line = split ':';
+    @line = split ':', $_, -1;
 		unshift @line, sprintf ("%06d", $i);
-		$groups_hash{sprintf ("%06d", $i)} = [@line];
-    push (@groups, [@line]);
+		@a = split ',', pop @line;
+		push @line, [@a];
+		$copy = [@line];
+		$groups_hash{sprintf ("%06d", $i)} = $copy;
+    push (@groups, $copy);
 		$i ++;
   }
 	
@@ -287,12 +318,6 @@ sub write_group_passwd
 		return;
 	}
 
-	if ($group_last_modified > $parse_group_last_modified) 
-	{
-	  print STDERR "Password file may be inconsistent! No changes made.\n";
-		return;
-	}
-	
   foreach $i (keys (%users_hash)) 
 	{
 		$users_all{$i} |= 1;
@@ -335,20 +360,36 @@ sub write_group_passwd
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
-		&change_group ($groups_hash{$i}, $parse_groups_hash{$i}) if ($groups_all{$i} == 3);
+	  if ($groups_all{$i} == 3 && &arr_cmp_recurse ($groups_hash{$i}, $parse_groups_hash{$i}))
+		{
+		  &change_group ($groups_hash{$i}, $parse_groups_hash{$i});
+		}
 	}
 	
 	foreach $i (sort (keys (%users_all)))
 	{
-		&change_user ($users_hash{$i}, $parse_users_hash{$i}) if ($users_all{$i} == 3);
+	  if ($users_all{$i} == 3 && &arr_cmp_recurse ($users_hash{$i}, $parse_users_hash{$i}))
+		{
+		  &change_user ($users_hash{$i}, $parse_users_hash{$i});
+		}
 	}
 }
 
 sub del_user
 {
 	my $data = $_[0];
+	my $userdel;
 	
-	print "del user @$data[1]\n";
+	$userdel = be_locate_tool ("userdel");
+	if ($userdel eq "")
+	{
+		print STDERR "Couldn't find userdel program. User @$data[1] not removed.\n";
+		return;
+	}	
+	
+	$command = "$userdel -r \"" . @$data[$users_prop_map{"login"}] . "\"";
+		
+	print "del user @$data[1]: $command\n";
 	1;
 }
 
@@ -370,9 +411,9 @@ sub add_user
 	  "\" -p \"" . @$data[$users_prop_map{"password"}] .
 	  "\" -s \"" . @$data[$users_prop_map{"shell"}] .
 	  "\" -u \"" . @$data[$users_prop_map{"uid"}] .
-	  "\" " . @$data[$users_prop_map{"login"}];
+	  "\" \"" . @$data[$users_prop_map{"login"}] . "\"";
 		
-	print "add user @$data[1]\n";
+	print "add user @$data[1]: $command\n";
 	1;
 }
 
@@ -380,16 +421,43 @@ sub change_user
 {
 	my $old_data = $_[0];
 	my $new_data = $_[1];
+	my $usermod;
 	
-	print "change user @$old_data[1]\n";
+	$usermod = be_locate_tool ("usermod");
+	if ($usermod eq "")
+	{
+		print STDERR "Couldn't find usermod program. User @$data[1] not changed.\n";
+		return;
+	}	
+	
+	$command = "$usermod -c \"" . @$new_data[$users_prop_map{"comment"}] . 
+	  "\" -d \"" . @$new_data[$users_prop_map{"home"}] .
+	  "\" -g \"" . @$new_data[$users_prop_map{"gid"}] .
+	  "\" -p \"" . @$new_data[$users_prop_map{"password"}] .
+	  "\" -s \"" . @$new_data[$users_prop_map{"shell"}] .
+	  "\" -u \"" . @$new_data[$users_prop_map{"uid"}] .
+	  "\" -l \"" . @$new_data[$users_prop_map{"login"}] .
+	  "\" \"" . @$old_data[$users_prop_map{"login"}] . "\"";
+		
+	print "change user @$old_data[1]: $command\n";
 	1;
 }
 
 sub del_group
 {
 	my $data = $_[0];
+	my $groupdel;
 	
-	print "del group @$data[1]\n";
+	$groupdel = be_locate_tool ("groupdel");
+	if ($groupdel eq "")
+	{
+		print STDERR "Couldn't find groupdel program. Group @$data[1] not removed.\n";
+		return;
+	}	
+	
+	$command = "$groupdel \"" . @$data[$groups_prop_map{"name"}] . "\"";
+		
+	print "del group @$data[1]: $command\n";
 	
 	1;
 }
@@ -399,17 +467,18 @@ sub add_group
 	my $data = $_[0];
 	my $groupadd;
 	
-	print "add group @$data[1]\n";
 	$groupadd = be_locate_tool ("groupadd");
 	if ($groupadd eq "")
 	{
-		print STDERR "Couldn't find groupadd program. User @$data[1] not added.\n";
+		print STDERR "Couldn't find groupadd program. Group @$data[1] not added.\n";
 		return;
 	}	
 	
-	$command = "$groupadd -g \"" . @$data[$groups_prop_map{"gid"}] .
+	# We'll have to check this -f flag.
+	$command = "$groupadd -f -g \"" . @$data[$groups_prop_map{"gid"}] .
 	  "\" " . @$data[$groups_prop_map{"name"}];
 		
+	print "add group @$data[1]: $command\n";
 	1;
 }
 
@@ -417,8 +486,54 @@ sub change_group
 {
 	my $old_data = $_[0];
 	my $new_data = $_[1];
+	my ($groupmod, $gpasswd);
+	my ($n, $o, $i, $j, $r, @tmp); # for iterations
+
+	$groupmod = be_locate_tool ("groupmod");
+	if ($groupmod eq "")
+	{
+		print STDERR "Couldn't find groupmod program. Group @$old_data[1] not changed.\n";
+		return;
+	}	
 	
-	print "change group @$old_data[1]\n";
+	$gpasswd = be_locate_tool ("gpasswd");
+	if ($gpasswd eq "")
+	{
+		print STDERR "Couldn't find gpasswd program. Group @$old_data[1] members not changed.\n";
+		return;
+	}	
+	
+	$command = "$groupmod -g \"" . @$new_data[$groups_prop_map{"gid"}] .
+	  "\" -n \"" . @$new_data[$groups_prop_map{"name"}] . "\"" 
+		. " \"" . @$old_data[$groups_prop_map{"name"}] . "\"";
+		
+	print "change group @$old_data[1]: $command\n";
+	
+	# Let's see if the users that compose the group have changed.
+	if (&arr_cmp_recurse (@$new_data[$groups_prop_map{"users"}],
+	                      @$old_data[$groups_prop_map{"users"}])) {
+
+		$n = [ @{@$new_data[$groups_prop_map{"users"}]} ]; sort @$n;
+		$o = [ @{@$old_data[$groups_prop_map{"users"}]} ]; sort @$o;
+		
+		for ($i = 0, $j = 0; $i <= &max ($#$n, $#$o); ) {
+		  $r = @$n[$i] cmp @$o[$j]; 
+		  if ($r < 0) { # add this user to the group.
+			  $command = "$gpasswd -a \"" . @$n[$i] . "\" \"" . 
+				  @$new_data[$groups_prop_map{"name"}] . "\"";
+				$i ++;
+				print "add group member: $command\n";
+			} elsif ($r > 0) { # delete the user from the group.
+			  $command = "$gpasswd -d \"" . @$o[$j] . "\" \"" . 
+				  @$new_data[$groups_prop_map{"name"}] . "\"";
+				$j ++;
+				print "delete group member: $command\n";
+			} else {
+			  $i ++; $j ++;
+			}	
+		}	
+	}	
+		
 	1;
 }
 
@@ -581,7 +696,7 @@ sub xml_parse_groupdb
 sub xml_parse_group
 {
   my $tree = $_[0];
-	my @line = ();
+	my (@line, $copy, $a, @u);
 	
   shift @$tree;  # Skip attributes.
 
@@ -589,7 +704,8 @@ sub xml_parse_group
 	{
 		if ($groups_prop_map{@$tree[0]} ne undef)
 		{
-		  $line[$groups_prop_map{@$tree[0]}] = @$tree->[1][2];
+		  if (@$tree[0] eq "users") { $line[$groups_prop_map{@$tree[0]}] = @$tree->[1]; }
+			else { $line[$groups_prop_map{@$tree[0]}] = @$tree->[1][2]; }
 		}
 		elsif ($be_verbose)
 		{
@@ -600,8 +716,25 @@ sub xml_parse_group
 		shift @$tree;
 	}
 	
-	$groups_hash{sprintf ("%06d", $line[0])} = [@line];
-	push (@groups, [@line]);
+	# @$a should be a parse tree of the array of users.
+	$a = pop @line;
+	shift @$a;
+	while (@$a) {
+	  if (@$a[0] eq "user") {
+		  push @u, @$a->[1][2];
+		}
+		elsif ($be_verbose)
+		{
+		  print STDERR "Unexpected tag " . @$a[0] . " while parsing users.\n"
+		}
+		shift @$a;
+		shift @$a;
+	}
+	
+	push @line, [@u];
+	$copy = [@line];
+	$groups_hash{sprintf ("%06d", $line[0])} = $copy;
+	push (@groups, $copy);
 }	
 	
   
@@ -609,7 +742,7 @@ sub xml_parse_group
 
 sub xml_print
 {
-  my ($key, $i, $j);
+  my ($key, $i, $j, $k);
 
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE users []>\n\n";
@@ -669,9 +802,19 @@ sub xml_print
     &be_xml_vspace ();
 	  &be_xml_print ("<group>\n");
 		&be_xml_enter ();
-		for ($j = 0; $j < ($#groups_prop_array - 1) / 2; $j++) {
+		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
 			&be_xml_print ("<" . $groups_prop_map{$j} . ">" . $i->[$j] . "</" . $groups_prop_map {$j} . ">\n");
 		}
+		&be_xml_print ("<users>\n");
+		&be_xml_enter ();
+		$k = $i->[$groups_prop_map{"users"}];
+		foreach $j (@$k)
+		{
+			&be_xml_print ("<user>$j</user>\n");
+		}
+		&be_xml_leave ();
+		&be_xml_print ("</users>\n");
+
 		&be_xml_leave ();
 		&be_xml_print ("</group>\n");
 	}
