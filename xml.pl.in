@@ -530,6 +530,9 @@ sub gst_xml_scan
     $doc = &gst_xml_read_stdin ();
   }
 
+  # remove any blank or carriage return at the beginning of the xml
+  $doc =~ s/^[ \n]*//;
+
   &gst_debug_print_log_to_file ("in.xml", $doc);
 
   $$tool{"xml_doc"} = $doc if (&gst_is_tool ($tool));

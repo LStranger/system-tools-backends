@@ -1,3 +1,8 @@
+2003-08-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* xml.pl.in: made it to ignore any whitespace or carriage return
+	  at the beginning of the xml when parsing
+
 2003-08-09  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* general.pl.in: added a carriage return for synchronism with the
