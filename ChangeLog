@@ -1,3 +1,7 @@
+2002-09-13  Carlos Garnacho Parro  <garparr@teleline.es>
+
+	* platform.pl.in: Added FreeBSD 4 and FreeBSD 5 in $PLATFORM_INFO
+
 2002-09-03  Carlos Garnacho Parro  <garparr@teleline.es>
 
 	* Release 0.21.0
