@@ -469,7 +469,7 @@ sub x_parse_unique_string
   
   my $val = &x_get_token ($buf);
   goto ERROR unless defined ($val);
-  goto ERROR unless $val =~ /^\".+\"$/;
+  goto ERROR unless $val =~ /^\".*\"$/;
   
   $val =~ s/\"//g;
   $config->{$kw} = $val;
@@ -517,8 +517,9 @@ sub x_add_unique_string
 {
   my ($buf, $ptr, $kw, $new_val) = @_;
 
+  $new_val = "" unless defined ($new_val);
   &x_update_add_token ($buf, $ptr, $kw) if $kw;
-  $new_val = "\"" . $new_val . "\"" if $new_val;
+  $new_val = "\"" . $new_val . "\"";
   &x_update_add_token ($buf, $ptr, $new_val, 1);
 }
 
@@ -579,7 +580,7 @@ sub x_parse_list_string
 
   my @list;
   while (my $token = &x_peek_token ($buf)) {
-    if ($token =~ /^\".+\"$/) {
+    if ($token =~ /^\".*\"$/) {
       $token = &x_get_token ($buf);
       goto ERROR unless defined ($token);
       $token =~ s/\"//g;
@@ -639,7 +640,7 @@ sub x_update_list_string
   }
 
   while (@$new_val) {    
-    $$new_val[0] = "\"" . $$new_val[0] . "\"" if length ($$new_val[0]) > 1;
+    $$new_val[0] = "\"" . $$new_val[0] . "\"";
     &x_update_add_token ($buf, $ptr, $$new_val[0], 1);
     shift @$new_val;
   }
@@ -2129,7 +2130,7 @@ sub x_probe
 
   my $cfg_file = &x_probe_save ($orig_file, $config);
   my $list = &x_probe_run ($cfg_file, $modes);
-  #  unlink ($cfg_file);
+  unlink ($cfg_file);
 
   if ($list) {
     &x_probe_store ($config, $list);

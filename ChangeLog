@@ -1,6 +1,8 @@
 2001-10-02  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in: Use full paths to XFree86, don't try to depend on links.
+	(x_update_list_string): Emptry string is valid string! doh!
+	(x_add_unique_string): Ditto.
 
 	* users-conf.in: Rewrote profiles and login.defs stuff.
 	Removed/exchanged all old cruft so now it seems more like

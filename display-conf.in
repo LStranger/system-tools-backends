@@ -52,7 +52,7 @@ use POSIX qw(tmpnam);
 
 $name = "display";
 $version = "___version___";
-@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 turbolinux-7.0 debian-2.2 debian-woody mandrake-7.2);
+@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 turbolinux-7.0 debian-2.2 debian-woody mandrake-7.2 mandrake-8.0);
 
 $description =<<"end_of_description;";
        Configures XFree86 version 4.
@@ -63,6 +63,7 @@ end_of_description;
 $standard_locations =
 {
   'XFree3' => '/etc/X11/XF86Config',
+#  'XFree4' => '/etc/X11/XF86Config-4',
   'XFree4' => '/etc/X11/XF86Config-4',
 };
 
@@ -78,6 +79,7 @@ $platmap =
   'debian-2.2'     => $standard_locations,
   'debian-woody'   => $standard_locations,
   'mandrake-7.2'   => $standard_locations,
+  'mandrake-8.0'   => $standard_locations,
   'suse-7.0'       => $standard_locations,
   'turbolinux-7.0' => $standard_locations,
 };
