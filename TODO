@@ -2,7 +2,3 @@
 
   - Yellow pages support.
   - test commands' success and report otherwise.
-
-* networking-conf.in:
-
-  - Update the /etc/hosts entry for local host's IP. Needed for nmblookup.
