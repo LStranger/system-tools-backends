@@ -5,16 +5,18 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: setup-tools-backends\n"
+"Project-Id-Version: AC_PACKAGE_NAME AC_PACKAGE_VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-26 18:32+0900\n"
-"PO-Revision-Date: 2004-08-28 11:29+0900\n"
+"POT-Creation-Date: 2005-02-14 20:24+0900\n"
+"PO-Revision-Date: 2005-02-14 20:26+0900\n"
 "Last-Translator: Young-Ho Cha <ganadist at mizi.com>\n"
 "Language-Team: GNOME Korea <gnome-kr-hackers@lists.kldp.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. please, keep this list sorted
+#. service => [long_name, description]
 #: service-list.pl.in:36
 msgid "ACPI event handler"
 msgstr "ACPI 이벤트 처리기"
@@ -24,8 +26,8 @@ msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
-"ACPI 이벤트를 사용자 영역 프로그램에게 알려줍니다: 전원 단추같은 ACPI "
-"이벤트에 등록된 명령을 실행합니다."
+"ACPI 이벤트를 사용자 영역 프로그램에게 알려줍니다: 전원 단추같은 ACPI 이벤트"
+"에 등록된 명령을 실행합니다."
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
@@ -96,8 +98,7 @@ msgstr "부팅 메세지 기록"
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
-msgstr ""
-"/dev/console장치에서 로그파일로 모든 기록을 옮깁니다."
+msgstr "/dev/console장치에서 로그파일로 모든 기록을 옮깁니다."
 
 #: service-list.pl.in:45
 msgid ""
@@ -131,8 +132,8 @@ msgid ""
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
 msgstr ""
-"cpufreqd는 건전지 상태를 감시하면서 적절한 성능을 제공하도록 전원을 "
-"소비하지 않게 CPU의 클럭을 조절합니다"
+"cpufreqd는 건전지 상태를 감시하면서 적절한 성능을 제공하도록 전원을 소비하지 "
+"않게 CPU의 클럭을 조절합니다"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -287,8 +288,8 @@ msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
 msgstr ""
-"저장해 두었던 리눅스 ATA/IDE장치 드라이버 서브시스템에서의 다양한 "
-"하드디스크 ioctl 인터페이스의 값을 설정합니다."
+"저장해 두었던 리눅스 ATA/IDE장치 드라이버 서브시스템에서의 다양한 하드디스크 "
+"ioctl 인터페이스의 값을 설정합니다."
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
@@ -300,9 +301,8 @@ msgid ""
 "software when some significant (usually hardware-related) events take place. "
 "An example is when a USB or Cardbus device has just been plugged in."
 msgstr ""
-"hotplug는 USB나 카드버스 장치를 꽂았을 때와 같은 "
-"이벤트(특히 하드웨어 관련)가 발생하면 커널이 사용자 모드 " 
-"프로그램에게 전달할 때 쓰이는 프로그램입니다."
+"hotplug는 USB나 카드버스 장치를 꽂았을 때와 같은 이벤트(특히 하드웨어 관련)"
+"가 발생하면 커널이 사용자 모드 프로그램에게 전달할 때 쓰이는 프로그램입니다."
 
 #: service-list.pl.in:71
 msgid "internet superserver"
@@ -354,9 +354,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
-"joystick-device-check를 실행합니다. joystick-device-check는 /dev/js* "
-"장치파일이 쓰고 있는 커널버젼에 따라 맞게 만들어졌는지 "
-"확인하는 프로그램입니다."
+"joystick-device-check를 실행합니다. joystick-device-check는 /dev/js* 장치파일"
+"이 쓰고 있는 커널버젼에 따라 맞게 만들어졌는지 확인하는 프로그램입니다."
 
 #: service-list.pl.in:77
 msgid ""
@@ -410,8 +409,7 @@ msgstr "장치 만들기"
 msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
-msgstr ""
-"/dev디렉토리에 커널의 드라이버들이 쓸 장치파일을 만드는 스크립트입니다"
+msgstr "/dev디렉토리에 커널의 드라이버들이 쓸 장치파일을 만드는 스크립트입니다"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -506,8 +504,7 @@ msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
 msgstr ""
-"네트워크 시간 프로토콜(npt)서버에서 시간을 확인하고 시스템 시간을 "
-"조정합니다."
+"네트워크 시간 프로토콜(npt)서버에서 시간을 확인하고 시스템 시간을 조정합니다."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -518,8 +515,8 @@ msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
 msgstr ""
-"시스템의 time-of-day 동기화를 관리하고 설정하는 인터넷 표준 시간 서버와 "
-"동기화 하는 데몬입니다"
+"시스템의 time-of-day 동기화를 관리하고 설정하는 인터넷 표준 시간 서버와 동기"
+"화 하는 데몬입니다"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
@@ -620,8 +617,8 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
-"삼바 소프트웨어 모음은 유닉스 시스템을 위한 서버 메세지 블럭 프로토콜이 "
-"구현된 프로그램의 모음입니다."
+"삼바 소프트웨어 모음은 유닉스 시스템을 위한 서버 메세지 블럭 프로토콜이 구현"
+"된 프로그램의 모음입니다."
 
 #: service-list.pl.in:114
 msgid ""
@@ -822,30 +819,78 @@ msgstr ""
 "장 가능한 로깅 기능, 시간에 기반한 서비스 가능 능력, 시작할 수 있는 서버의 개"
 "수 제한, 등등, 그외 여러가지 기능을 가지고 있습니다."
 
-#: service.pl.in:224 service.pl.in:229
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "시스템 종료"
 
-#: service.pl.in:225 service.pl.in:231
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "문자 모드"
 
-#: service.pl.in:226 service.pl.in:230 service.pl.in:239
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "그래픽 모드"
 
-#: service.pl.in:227 service.pl.in:232
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "시스템을 재시작"
 
-#: service.pl.in:234
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "시스템에서 필요한 모든 서비스 시작"
 
-#: service.pl.in:235
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "기본 실행 레벨"
 
-#: service.pl.in:236
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "네트워크가 필요없는 실행 레벨"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "시스템 로그 감시"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "오디오 장치 사용"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "CD-ROM 장치 접근"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "모뎀장치 접근"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "모뎀장치로 인터넷 연결"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "팩스 주고 받기"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "플로피 드라이브 접근"
+
+#: users-conf.in:186
+msgid "Enable access to external storage devices automatically"
+msgstr "외부 저장장치에 자동으로 접근 가능"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "테이프 장치 접근"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "관리자 권한 얻을 수 있음"
+
+#: users-conf.in:491
+msgid "Default"
+msgstr "기본값"
+
+#: users-conf.in:492
+msgid "Default profile"
+msgstr "기본 프로파일"
