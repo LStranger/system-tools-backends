@@ -884,7 +884,7 @@ sub xst_network_interfaces_expand_iface
   my ($value) = @_;
   my ($i);
 
-  if (ref $value == "ARRAY")
+  if (ref $value eq "ARRAY")
   {
     foreach $i (@$value)
     {

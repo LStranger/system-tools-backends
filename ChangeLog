@@ -1,5 +1,7 @@
 2001-11-06  Arturo Espinosa Aldama  <arturo@ximian.com>
-	
+
+	* network.pl.in (xst_network_interfaces_expand_iface): bug fix.
+
 	* util.pl.in (xst_arr_merge): Merges scr array into dest array.
 
 	* network.pl.in (xst_network_sysconfig_rh72_ifaces_get_existing):
