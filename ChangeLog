@@ -1,5 +1,9 @@
 2001-02-16  Hans Petter Jansson  <hpj@ximian.com>
 
+	* report.pl.in: Make sure the same progress int is not printed twice.
+
+2001-02-16  Hans Petter Jansson  <hpj@ximian.com>
+
 	* platform.pl.in: Silence stderr output, disable early abort code.
 
 2001-02-15  Arturo Espinosa  <arturo@ximian.com>
