@@ -387,6 +387,8 @@ sub xst_network_dial2iface
   }
 
   $iface{"file"} = $iface{"name"} = $iface{"wvsection"} = $name;
+  $iface{"update_dns"} = 1 if ($iface{"update_dns"} eq "");
+  $iface{"set_default_gw"} = 1 if ($iface{"set_default_gw"} eq "");
   
   return \%iface;
 }
@@ -398,24 +400,21 @@ sub xst_network_iface2dial
 
   my %map = ("address"        => "address",
              "update_dns"     => "update_dns",
-             "login"          => "login",
-             "password"       => "password",
              "device"         => "serial_port",
              "speed"          => "serial_speed",
              "set_default_gw" => "set_default_gw",
              "persist"        => "persist",
-             "phone"          => "phone_number",
              "xst_dev"        => "dev"
              );
 
-  $dial = $$dial_hash{$iface{"name"}};
+  $dial = $$dial_hash{$$iface{"name"}};
 
   foreach $i (keys %map)
   {
-    $dial{$i} = $$iface{$map{$i}} if exists $$iface{$map{$i}};
+    $$dial{$i} = $$iface{$map{$i}} if exists $$iface{$map{$i}};
   }
 
-  $dial{"type"} = "dialer";
+  $$dial{"type"} = "dialer";
 }
 
 sub xst_network_suse70_get_ppp
@@ -446,7 +445,7 @@ sub xst_network_suse70_set_ppp
       push @ppp_devs, $i;
       
       # This takes care of connection name changes.
-      $wv = $$i{"wv"};
+      $wv = $$i{"wvsection"};
       $name = $$i{"name"};
 
       if ($wv ne $name)
@@ -467,11 +466,11 @@ sub xst_network_suse70_set_ppp
   {
     foreach $i (@ppp_devs)
     {
-      next OUTER if $ {$$iface{$i}}{"name"} eq $ {$$dial{$d}}{"name"};
+      next OUTER if $$i{"name"} eq $ {$$dial{$d}}{"name"};
     }
 
-    $section = xst_network_dialing_get_section_name ($$dial{$d});
-    &xst_replace_remove_ini_section ($wvfile, $section);
+    # Don't delete the defaults: that's not very polite.
+    delete $$dial{$d} unless $ {$$dial{$d}}{"name"} eq "Defaults";
   }
 
   return 0;
@@ -690,6 +689,8 @@ sub xst_network_dialing_set
   &xst_report_enter ();
   &xst_report ("network_dialing_set");
 
+  # Remove those that are in old, but not in values.
+  $old_hash = $$old_hash{"dialing"};
   OUTER: foreach $i (keys %$old_hash)
   {
     foreach $j (keys %$values_hash)
@@ -697,15 +698,16 @@ sub xst_network_dialing_set
       next OUTER if ($j eq $i) && ($ {$$values_hash{$j}}{"type"} eq $ {$$old_hash{$i}}{"type"});
     }
 
-    $section = xst_network_dialing_get_section_name ($$values_hash{$i});
+    $section = xst_network_dialing_get_section_name ($$old_hash{$i});
     $ret = -1 if &xst_replace_remove_ini_section ($file, $section);
   }
 
+  # Now save the current stuff.
   foreach $i (keys %$values_hash)
   {
     %hash = %{$$values_hash{$i}};
 
-    $section = xst_network_dialing_get_section_name ($hash{$i});
+    $section = xst_network_dialing_get_section_name (\%hash);
     delete $hash{"type"};
     delete $hash{"name"};
 

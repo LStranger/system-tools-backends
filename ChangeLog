@@ -1,3 +1,17 @@
+2001-06-01  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_dialing_set): Remove old sections
+	that are not in the new values.
+	(xst_network_suse70_set_ppp): Remove dialing hash entries,
+	instead of removing in the file: this is done in dialing_get.
+	(xst_network_iface2dial): don't overwrite login, phone and
+	password: that's done at frontend level.
+	Typo fixes.
+
+	Lots of other typo fixes in network.pl.in. Basicly, I left
+	SuSE 7.0 ppp management working, and did a lot of testing to
+	make sure of that.
+
 2001-06-01  Hans Petter Jansson  <hpj@ximian.com>
 
 	Implement inline replacing of NFS entries and options.
