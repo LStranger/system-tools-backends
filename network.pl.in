@@ -233,7 +233,9 @@ sub gst_network_enable_modem
 sub gst_network_enable_isdn
 {
   my ($hash, $dev, $command_pppd) = @_;
-  my ($command);
+  my ($config, $command);
+
+  $config = $$hash{"configuration"};
 
   $command = $command_pppd;
   $command .= " debug" if ($$config{"debug"});
@@ -242,7 +244,11 @@ sub gst_network_enable_isdn
   $command .= ($$config{"serial_hwctl"}) ? " crtscts" : " nocrtscts";
   $command .= ($$config{"set_default_gw"}) ? " defaultroute" : " nodefaultroute";
   $command .= " usepeerdns" if ($$config{"update_dns"});
+  $command .= " sync plugin userpass.so ipcp-accept-local ipcp-accept-remote";
   $command .= " plugin capiplugin.so";
+  $command .= " /dev/null";
+  $command .= " user " . $$config{"login"};
+  $command .= " number " . $$config{"phone_number"};
 
   return &gst_file_run ($command);
 }

@@ -1,3 +1,8 @@
+2005-02-13  Michael Vogt  <mvogt@acm.org>
+
+	* network.pl.in (gst_network_enable_isdn): made it really work with
+	ISDN
+
 2005-02-12  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* general.pl.in: added stupid missing function in i18n initialization.
