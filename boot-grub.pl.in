@@ -656,6 +656,7 @@ sub gst_boot_grub_parse_other
   my ($value, $grubdev, $dev, $root);
 
   $value = &gst_boot_grub_parse_cmd ($grub_conf, "rootnoverify", $entry);
+  $value = &gst_boot_grub_parse_cmd ($grub_conf, "root", $entry) if ($value eq undef);
   return undef if $value eq undef;
 
   $value =~ /^\(([^\)]+)\)/;

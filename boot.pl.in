@@ -244,9 +244,16 @@ sub gst_boot_entries_get
     $entry = &gst_parse_from_table ($dist_attrib{"fn"},
                                     $dist_attrib{"table"});
 
-    # if the entry doesn't contain any of these fields, then we can't understand it, just ignore it
-    if (exists ($$entry {"image"}) || exists ($$entry {"other"}))
+    if (exists ($$entry {"image"}))
     {
+      # this is filled even when it's a linux style entry, delete it
+      delete $$entry {"other"};
+      push @res, $entry;
+    }
+    elsif (exists ($$entry {"other"}))
+    {
+      # this may be filled, but it's not necessary
+      delete $$entry {"root"};
       push @res, $entry;
     }
 
