@@ -247,3 +247,19 @@ sub xst_replace_ini
   return 0;
 }
 
+sub xst_replace_join_hash
+{
+  my ($file, $re1, $re2, $value) = @_;
+  my $i, $res, $tmp, $val;
+
+  $res = 0;
+  
+  foreach $i (keys ($%value))
+  {
+    $val = join (&regexp_to_separator ($re2), @{$$value{$i}});
+    $tmp = &xst_replace_split ($file, $i, $re1, $val);
+    $res = $tmp if !$res;
+  }
+
+  return $res;
+}

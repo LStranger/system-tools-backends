@@ -1,5 +1,10 @@
 2001-02-06  Arturo Espinosa  <arturo@ximian.com>
 
+	* replace.pl.in: xst_replace_join_hash, the last of the replacing
+	  functions for network to be finished.
+
+2001-02-06  Arturo Espinosa  <arturo@ximian.com>
+
 	* be.pl.in: be_buffer_clean, be_buffer_join_lines: new functions to
 	  help with in-line editting.
 	* network-conf.in: support for "auto" and "description" tags when
