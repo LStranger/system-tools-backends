@@ -42,7 +42,7 @@ require "___scriptsdir___/x.pl";
 
 $name = "display";
 $version = "___version___";
-@platforms = qw(redhat-7.0 redhat-7.1 turbolinux-7.0 debian-woody);
+@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 turbolinux-7.0 debian-woody);
 
 $description =<<"end_of_description;";
        Configures XFree86 verion 4.
@@ -52,6 +52,7 @@ end_of_description;
 
 $platmap =
 {
+  "redhat-6.2"     => XFree3,
   "redhat-7.0"     => XFree4,
   "redhat-7.1"     => XFree4,
   "turbolinux-7.0" => XFree4,
@@ -59,7 +60,8 @@ $platmap =
 };
 
 $filemap = {
-  XFree4 => "/etc/X11/XF86Config-4",
+  XFree3 => '/etc/X11/XF86Config',
+  XFree4 => '/etc/X11/XF86Config-4',
 };
 
 @display_sections = qw(Device Monitor Screen Display ServerLayout);
@@ -119,25 +121,14 @@ sub xml_print
   &xst_xml_print_end ();
 }
 
-sub check_version
-{
-  # Currently supports ONLY X versions higher than 4.0.0
-  my $min_version = 400;
-  my $version = &x_version ();
-
-  if ( $version < $min_version) {
-    # TODO: Give error.
-    &xst_end ();
-    exit (2);
-  }
-}
-
 # Top-level actions.
 
 sub get
 {
-  my $config = &x_parse (&distro_file ());
-      
+  my $config = &x_parse (&distro_file ());  
+
+  &x_config_fix ($config, 1);
+
   &xst_end();
   &xml_print ($config);
 }
@@ -146,7 +137,8 @@ sub set
 {
   my $config = &x_parse (&distro_file ());
   my $xml_config = &xml_parse ();
-
+  &x_config_fix ($xml_config, 0);
+  
   &x_config_set (&distro_file (), $config, $xml_config);
   &xst_end ();
 }
@@ -194,5 +186,4 @@ $directives = {
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);
 &xst_platform_ensure_supported ($tool, @platforms);
-&check_version ();
 &xst_run ($tool);
