@@ -739,7 +739,7 @@ sub xst_boot_grub_replace_label
   }
   else
   {
-    $$buff[$line_no] =~ s/$title/$value/;
+    $$buff[$line_no] =~ s/^title([= \t][ \t]*).*/title\1$value/;
   }
   
   return &xst_file_buffer_save ($buff, $grub_conf);

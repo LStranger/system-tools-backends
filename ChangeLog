@@ -1,5 +1,7 @@
 2001-12-13  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* boot-grub.pl.in (xst_boot_grub_replace_label): fix: wrong regexp.
+
 	* util.pl.in (xst_item_is_in_list): style fix.
 
 	* general.pl.in (xst_directive_run): bugfix: the min arg count
