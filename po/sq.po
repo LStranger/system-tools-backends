@@ -7,13 +7,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-01-31 14:09+0100\n"
-"PO-Revision-Date: 2005-01-07 23:05+0100\n"
+"POT-Creation-Date: 2005-02-05 15:20+0100\n"
+"PO-Revision-Date: 2005-02-06 22:27+0100\n"
 "Last-Translator: Elian Myftiu <elian@alblinux.net>\n"
 "Language-Team: Albanian <gnome-albanian-perkthyesit@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -912,8 +912,8 @@ msgid "Access to floppy drives"
 msgstr "Hyrje në lexuesit floppy"
 
 #: users-conf.in:186
-msgid "Mount removable devices automatically"
-msgstr "Monto dispozitivat e çmontueshëm automatikisht"
+msgid "Enable access to external storage devices automatically"
+msgstr "Aktivizo hyrjen automatike në dispozitivat e çmontueshëm"
 
 #: users-conf.in:187
 msgid "Access to tape drives"
@@ -930,3 +930,4 @@ msgstr "Parazgjedhur"
 #: users-conf.in:492
 msgid "Default profile"
 msgstr "Profili i parazgjedhur"
+
