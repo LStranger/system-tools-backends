@@ -524,7 +524,7 @@ msgstr "IPsec 隧道实现"
 
 #: service-list.pl.in:103
 msgid "DARPA port to RPC program number mapper"
-msgstr ""DARPA 端口到 RPC 程序号码映射器
+msgstr "DARPA 端口到 RPC 程序号码映射器"
 
 #: service-list.pl.in:103
 msgid ""
