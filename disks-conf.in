@@ -552,15 +552,16 @@ sub get_fdisk
         ($size) = ($line[0] =~ /([0-9]+)/);
         shift @line;
 
-        if    ($line[0] eq "82" || $line[0] eq "5")  { next; }  # Swap or extended.
-        elsif ($line[0] eq "83")                     { $type = "ext2"; }
-        elsif ($line[0] eq "e")                      { $type = "vfat"; }
-        elsif ($line[0] eq "c")                      { $type = "fat32"; }
-        elsif ($line[0] eq "b")                      { $type = "fat32"; }
-        elsif ($line[0] eq "6")                      { $type = "msdos"; }
-        elsif ($line[0] eq "4")                      { $type = "msdos"; }
-        elsif ($line[0] eq "1")                      { $type = "msdos"; }
-        elsif ($line[0] eq "7")                      { $type = "hpfs"; }
+        if    ($line[0] eq "82" || $line[0] eq "5"  ||
+               $line[0] eq "f"  || $line[0] eq "85")  { next; }  # Swap or extended.
+        elsif ($line[0] eq "83")                      { $type = "ext2"; }
+        elsif ($line[0] eq "e")                       { $type = "vfat"; }
+        elsif ($line[0] eq "c")                       { $type = "fat32"; }
+        elsif ($line[0] eq "b")                       { $type = "fat32"; }
+        elsif ($line[0] eq "6")                       { $type = "msdos"; }
+        elsif ($line[0] eq "4")                       { $type = "msdos"; }
+        elsif ($line[0] eq "1")                       { $type = "msdos"; }
+        elsif ($line[0] eq "7")                       { $type = "hpfs"; }
         else { $type = ""; }
 
         &update_partition($disk, $device, "", $type, "noauto", 0, $size, 0,
