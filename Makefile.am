@@ -13,7 +13,8 @@ BACKENDSBODY = \
 	mouse-conf.in \
 	internetsharing-conf.in \
 	package-conf.in \
-	display-conf.in
+	display-conf.in \
+	font-conf.in
 
 PERLBODY = \
 	boot.pl.in     \

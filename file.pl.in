@@ -617,7 +617,7 @@ sub xst_file_rmtree
 
 
 # Open $file and put it into @buffer, for in-line editting.
-# \%buffer on success, undef on error.
+# \@buffer on success, undef on error.
 
 sub xst_file_buffer_load
 {
@@ -629,7 +629,7 @@ sub xst_file_buffer_load
   &xst_report ("file_buffer_load", $file);
 
   $fd = &xst_file_open_read_from_names ($file);
-  return [] if !$fd;
+  return unless $fd;
 
   @buffer = (<$fd>);
 

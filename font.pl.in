@@ -34,20 +34,10 @@ require "$SCRIPTSDIR/file.pl$DOTIN";
 
 use File::Copy;
 use File::Basename;
+use IO::File;
+use English;
 
 my $XST_FONT_DIR = "/usr/share/fonts/xst";
-
-
-BEGIN {
-  &xst_report_table ({
-    'font_install_success'    => ['info',  _('Font [%s] installed successfully.')],
-    'font_install_fail'       => ['warn',  _('File [%s] not installed.')],
-    'font_remove_success'     => ['info',  _('Font [%s] removed successfully.')],
-    'font_dir_update_success' => ['info',  _('Font dir [%s] updated successfully.')],
-    'font_dir_update_fail'    => ['warn',  _('Couldn\'t update font dir [%s].')],
-  }
-                     );
-}
 
 
 
@@ -467,7 +457,6 @@ sub xfs_parse_string_list
   return $list;
 }
 
-
 sub xfs_parse
 {
   my $fname = shift;
@@ -510,25 +499,6 @@ sub xfs_parse
 }
 
 
-
-
-sub get_x_fontpath
-{
-  my $cmd = &xst_file_locate_tool ('xset');
-  return unless $cmd;
-
-  my $output = &xst_file_run_backtick ("xset q");
-  return unless $output;
-
-  my $fonts = $1 if $output =~ /Font Path:\n\s+(.+)/;
-  unless ($fonts)
-  {
-    &xst_debug_print_line ("get_x_fontpath: Couldn't find 'Font Path' from 'xset q' output.");
-    return;
-  }
-
-  return split (/[ \t]*,[ \t]*/, $fonts);
-}
 
 
 # Check if valid ttf file.
@@ -593,12 +563,14 @@ sub font_xml_parse_install
   unless ($file)
   {
     # TODO: add reporing.
-    &xst_debug_print_line ("font_xml_parse_install: missing xml tag.");
+    &xst_debug_print_line ("font_xml_parse_install: missing xml tag 'file'.");
     return;
   }
 
   $config->{'install'} = [] unless exists $config->{'install'};
 
+  
+  
   if (-f $file)
   {
     my $font;
@@ -618,7 +590,7 @@ sub font_xml_parse_install
   else
   {
     # TODO: add reporing.
-    &xst_debug_print_line ("font_xml_parse_install: '$file' doesn\'t exist.");
+    &xst_debug_print_line ("font_xml_parse_install: '$file' doesn't exist.");
   }
 }
 
@@ -675,34 +647,48 @@ sub font_xml_parse_remove
   }
 }
 
-sub font_xml_parse
+sub font_xml_parse_old
 {
   my $tree = shift;
-  my $known_tags = {
-    'install' => \&font_xml_parse_install,
-    'remove'  => \&font_xml_parse_remove,
-  };
+  my @known_operation = qw (install remove);
 
   shift @$tree;  # Skip attributes.
-
-  my $config = {};
+  my $hash = {};
 
   while (@$tree) {
-    my $tag = $$tree[0];
+    my $tag = shift @$tree;
 
-    if (&xst_item_is_in_list ($tag, keys %$known_tags)) {
-      my $func = $known_tags->{$tag};
-      &$func ($config, $$tree[1]) if $func;
+    if (&xst_item_is_in_list ($tag, @known_operation))
+    {
+      $hash->{$tag} = [] unless exists $hash->{$tag};
+
+      my $path = &xst_xml_get_attribute ($$tree[0], 'file');
+      if ($path)
+      {
+        push @{$hash->{$tag}}, $path;
+      }
+      else
+      {
+        # TODO: add reporing.
+        &xst_debug_print_line ("font_xml_parse_install: missing xml tag 'file'.");
+      }
     }
 
-    else {
+    else
+    {
       my $msg = "received unknown xml tag $$tree[0]";
-      &xst_report ('xml_unexp_tag', $$tree[0]);
+      &xst_report ('xml_unexp_tag', $tag);
       &xst_debug_print_line ("font_xml_parse: $msg");
     }
 
     shift @$tree;
-    shift @$tree;
+  }
+
+  my $config = {};
+  foreach my $operation (keys %$hash)
+  {
+    my $paths = join (" ", @{$hash->{$operation}});
+    $config->{$operation} = &gp_invoke ($paths);
   }
 
   return $config;
@@ -718,7 +704,7 @@ sub font_add
   foreach my $entry (@install)
   {
     my $new_file;
-    for ($entry->{'type'})
+    for ($entry->{'format'})
     {
       /ttf/ and do
       {
@@ -726,23 +712,25 @@ sub font_add
         last;
       };
 
-      /t1/ and do
+      /type1/ and do
       {
         $new_file = 'Type1';
         last;
       };
 
       # default
-      &xst_report ('font_install_fail', $entry->{'file'});
       &xst_debug_print_line ("font_add: unknown font type '$_'");
       next;
     }
 
     $new_file = "$XST_FONT_DIR/$new_file/";
     &xst_file_create_path ($new_file, 0777) unless (-d $new_file);
-    $new_file .= lc (basename ($entry->{'file'}));
-    copy ($entry->{'file'}, $new_file);
-    &xst_report ('font_install_success', $entry->{'file'});
+
+    foreach my $fname (@{$entry->{'file'}})
+    {
+      copy ($fname, $new_file . lc (basename ($fname)));
+      &xst_report ('font_install_success', $fname);
+    }
   }
 }
 
@@ -755,8 +743,11 @@ sub font_remove
 
   foreach my $entry (@remove)
   {
-    unlink ($entry->{'file'});
-    &xst_report ('font_remove_success', $entry->{'file'});
+    foreach my $fname (@{$entry->{'file'}})
+    {
+      unlink ($fname);
+      &xst_report ('font_remove_success', $fname);
+    }
   }
 }
 
@@ -884,5 +875,683 @@ sub font_mungle
 }
 
 
-1;
 
+
+
+################################
+#                              #
+#         MAIN PROGRAM         #
+#                              #
+################################
+
+BEGIN {
+  &xst_report_table ({
+    'font_install_success'    => ['info',  _('Font [%s] installed successfully.')],
+    'font_install_fail'       => ['warn',  _('File [%s] not installed.')],
+    'font_remove_success'     => ['info',  _('Font [%s] removed successfully.')],
+    'font_dir_update_success' => ['info',  _('Font dir [%s] updated successfully.')],
+    'font_dir_update_fail'    => ['warn',  _('Couldn\'t update font dir [%s].')],
+
+    'font_list'               => ['info',  _('[%s] fonts read successfully.')],
+
+  });
+}
+
+my $font_map = {
+  'name' => [],
+  'get'  => [],
+  'set'  => [],
+};
+
+# Gets a hash of all fonts we currently support.
+# Hash keys are name of modules, values are lists of fonts.
+sub font_list
+{
+  my $names = $font_map->{'name'};
+  my $list = $font_map->{'get'};
+  my $fonts = {};
+
+  for (my $i = 0; $i < scalar @$list; $i++)
+  {
+    my $func = $$list[$i];
+
+    &xst_report ("font_list", $$names[$i]);
+
+    my $tmp = &$func ();
+    $fonts->{$$names[$i]} = $tmp if $tmp;
+  }
+
+  return $fonts;
+}
+
+# Check whether font exists in font list.
+# Returns true if yes, undef if not.
+sub font_exists
+{
+  my $font_list = shift;
+  my $font = shift;
+
+  foreach my $tmp (@$font_list)
+  {
+    # Maybe we should check for more things here.
+    return 1 if $tmp->{'name'} eq $font->{'name'};
+  }
+
+  return;
+}
+
+# Returns a hash of all fonts.
+# Unifies different systems, abstracts font systems.
+sub font_get_all
+{
+  my $font_list = [];
+  my $fonts = &font_list ();
+
+  foreach my $system (keys %$fonts)
+  {
+    my $tmp_list = $fonts->{$system};
+
+    foreach my $font (@$tmp_list)
+    {
+      push @$font_list, $font unless &font_exists ($font_list, $font);
+    }
+  }
+
+  return $font_list;
+}
+
+#
+sub font_lists_compare
+{
+  my $sys_fonts = shift;
+  my $xml_fonts = shift;
+
+  my $del = [];
+  my $add = [];
+
+  # Build list of removals
+  for (my $i = 0; $i < scalar @$sys_fonts; $i++)
+  {
+    my $font = $$sys_fonts[$i];
+
+    if (&font_exists ($xml_fonts, $font))
+    {
+      delete $$sys_fonts[$i];
+    }
+    else
+    {
+      push @$del, $font;
+    }
+  }
+
+  # Build list of additions
+  foreach my $font (@$sys_fonts)
+  {
+    next unless $font;
+    push @$add, $font;
+  }
+
+  return ($del, $add);
+}
+
+# Copy new font files to our fonts dir.
+# Pass a fontslist as single argument and modifies it's file locations.
+sub font_file_copy
+{
+  my $add = shift;
+  return unless $add;
+
+  foreach my $font (@$add)
+  {
+    my $type = $font->{'format'};
+    foreach my $file (@{$font->{'file'}})
+    {
+      my $path = $file->{'path'};
+      my $new_path = "$XST_FONT_DIR/$type/";
+      &xst_file_create_path ($new_path, 0755) unless (-d $new_path);
+      $new_path .= lc (basename ($new_path));
+      unless (-f $new_path)
+      {
+        copy ($path, $new_path);
+        $file->{'path'} = $new_path;
+      }
+    }
+  }
+}
+
+#
+sub font_file_del
+{
+  my $del = shift;
+  return unless $del;
+
+  foreach my $font (@$del)
+  {
+    foreach my $file (@{$font->{'file'}})
+    {
+      unlink $file->{'path'} if (-f $file->{'path'});
+    }
+  }
+}
+
+#
+sub font_set
+{
+  my $xml_fonts = shift;
+  return unless $xml_fonts;
+  return unless ref ($xml_fonts) eq 'ARRAY';
+
+  my $names = $font_map->{'name'};
+  my $get_functions = $font_map->{'get'};
+  my $set_functions = $font_map->{'set'};
+
+  for (my $i = 0; $i < scalar @$names; $i++)
+  {
+    my $get = $$get_functions[$i];
+    my $set = $$set_functions[$i];
+
+    my $sys_fonts = &$get ();
+    my ($del, $add) = &font_lists_compare ($sys_fonts, $xml_fonts);
+    &font_file_copy ($add);
+    &$set ($del, $add);
+    &font_file_del ($del);
+  }
+}
+
+# Pass list of fonts, prints out XML
+sub font_xml_print
+{
+  my $fonts = shift;
+
+  foreach my $font (@$fonts)
+  {
+    &xst_xml_print_line ("<font format=\"$font->{format}\" name=\"$font->{name}\" version=\"$font->{version}\"" .
+                         " familyname=\"$font->{familyname}\" speciesname=\"$font->{speciesname}\"" .
+                         " psname=\"$font->{psname}\" weight=\"$font->{weight}\" italicangle=\"$font->{italicangle}\">");
+
+    &xst_xml_enter ();
+    foreach my $file (@{$font->{'file'}})
+    {
+      &xst_xml_print_line ("<file type=\"$file->{type}\" path=\"$file->{path}\"" .
+                           " size=\"$file->{size}\" mtime=\"$file->{mtime}\"/>");
+    }
+    &xst_xml_leave ();
+    &xst_xml_print_line ("</font>");
+  }
+}
+
+# Just a dumb wrapper due to fact that we are using gnome-print's XML.
+sub font_xml_parse
+{
+  my $fname = shift;
+  my $font_list;
+
+  $font_list = &gp_parse ($fname);
+  return $font_list;
+}
+
+sub font_test
+{
+  my $dir = shift;
+  my $fonts = [];
+
+  $fonts = &gp_invoke ($dir, 0) if (-e $dir);
+
+  return $fonts;
+}
+
+
+################################
+#                              #
+#           MODULES            #
+#                              #
+################################
+
+# Each 'module' should register itself in their own BEGIN {} block. It should add
+# a name of the module and 3 function references
+# to $font_map global variable: list, install, and remove.
+# List function takes no arguments and returns ref to array of fonts.
+# Install function takes a ref to ARRAY containing fonts.
+# Remove function takes a ref to ARRAY containing fonts.
+
+
+################################
+#                              #
+#    Gnome-print module.       #
+#                              #
+################################
+
+# Module info:
+# This is THE MODULE since we use gnome-print's
+# XML format to interact with frontend.
+
+# Register.
+push @{$font_map->{'name'}}, 'Gnome-print';
+push @{$font_map->{'get'}}, \&gp_read_fontmaps;
+push @{$font_map->{'set'}}, \&gp_font_set;
+
+
+sub gp_run
+{
+  my $dir = shift;
+  my $user = shift;
+  my $set = shift;
+  $user = $user ? "--user " : "--dynamic ";
+  $set = $set ? "" : "--clean --target - ";
+
+  my $command = &xst_file_locate_tool ('/home/tambet/cvs/gnome-print/installer/gnome-font-install');
+  return unless $command;
+  $command = "$command --debug --recursive " . $set . $user . $dir;
+
+  open (FD, "$command 2>&1 |");
+  if (FD)
+  {
+    my @output = (<FD>);
+    close (FD);
+    return \@output;
+  }
+
+  # TODO: Give error;
+  return;
+}
+
+sub gp_parse_xml
+{
+  my $data = shift;
+  my $toplevel;
+
+  my $xml = shift @$data;
+  while (@$data)
+  {
+    my $tag = shift @$data;
+    unless ($toplevel)
+    {
+      $toplevel = $1 if $tag =~ /<(\S+)/;
+    }
+
+    last if $tag =~ /<\/$toplevel[ \t]+/;
+
+    $xml .= $tag;
+  }
+  return &gp_parse ($xml);
+}
+
+sub gp_run_collect
+{
+  my $data = shift;
+  my $xml;
+
+  return unless ($data || scalar @$data < 1);
+
+  while (@$data)
+  {
+    local $_ = $$data[0];
+
+    if (/<\?xml version/) { $xml = &gp_parse_xml ($data); };
+    # TODO: Add parser for all output messages and report them.
+
+    shift @$data;
+  }
+
+  return $xml;
+}
+
+sub gp_invoke
+{
+  my $dir = shift || '/';
+  my $set = shift;
+  my $user = $UID; # Used as a boolean here, we care only for root (uid 0, false) or other (!0, true).
+
+  my $proc = &xst_process_fork (\&gp_run, $dir, $user, $set);
+  &xst_process_list_check_ready (60, $proc);
+  my $list = &xst_process_result_collect ($proc, \&gp_run_collect);
+
+  return $list;
+}
+
+
+# gnome-font-installer output's (XML) parser.
+
+
+sub gp_parse_font
+{
+  my $font_list = shift;
+  my $tree = shift;
+  my $font;
+
+  $font = shift @$tree;
+  while (@$tree)
+  {
+    my $tag = shift @$tree;
+    my $data = shift @$tree;
+
+    $font->{$tag} = [] unless exists $font->{$tag};
+    push @{$font->{$tag}}, $$data[0];
+  }
+
+  push @$font_list, $font;
+}
+
+
+sub gp_parse
+{
+  my $fname = shift;
+  my $font_list = [];
+
+  my $tree = &xst_xml_scan ($fname);
+
+  unless ($$tree[0] eq 'fontmap')
+  {
+    # TODO: report
+    &xst_debug_print_line ("gp_parse: File '$fname' doesn't seem to be fontmap file.");
+    return;
+  }
+
+  $tree = $$tree[1];
+  unless (&xst_xml_get_attribute ($tree, 'version') >= 2)
+  {
+    # TODO: report
+    &xst_debug_print_line ("gp_parse: File '$fname' fontmap version should be 2.0 or higher.");
+    return;
+  }
+
+  shift @$tree;
+  while (@$tree)
+  {
+    my $tag = shift @$tree;
+    unless ($tag eq 'font')
+    {
+      # TODO: report
+      next;
+    }
+
+    &gp_parse_font ($font_list, shift @$tree);
+  }
+
+  return $font_list;
+}
+
+# Read gnome-print's fontmap files:
+#  $HOME/.gnome/fonts      (user)
+#  $SYSCONFDIR/gnome/fonts (dynamic)
+#  $DATADIR/gnome/fonts    (static)
+sub gp_read_fontmaps
+{
+  my $fontmap = 'gnome-print.fontmap';
+  my $home = $ENV{'HOME'};
+  my $prefix = '/opt'; # FIXME!
+  my $sysconfdir = "$prefix/etc";
+  my $datadir = "$prefix/share";
+
+  my @dirs = ("$home/.gnome/fonts", "$sysconfdir/gnome/fonts", "$datadir/gnome/fonts");
+
+  my @fontlist;
+  foreach my $dir (@dirs)
+  {
+    my @files;
+    push @files, "$dir/$fontmap";
+    opendir(DIR, $dir);
+    foreach my $file (grep { /\.fontmap$/ } readdir(DIR))
+    {
+      next if $file eq $fontmap;
+      push @files, "$dir/$file";
+    }
+    closedir(DIR);
+
+    foreach (@files)
+    {
+      my $font_ref = &gp_parse ($_);
+      push @fontlist, @$font_ref if $font_ref;
+    }
+  }
+
+  return \@fontlist;
+}
+
+sub gp_font_set
+{
+  my $del = shift;
+  my $add = shift;
+  my $font;
+
+  foreach $font (@$del)
+  {
+    1;
+  }
+
+  foreach $font (@$add)
+  {
+    1;
+  }
+}
+
+
+
+################################
+#                              #
+#          xfs module.         #
+#                              #
+################################
+
+# Module info:
+# This module is distro and version specific. Some xfs implementations (older?)
+# doesn't have truetype support.
+
+# Register.
+#push @{$font_map->{'name'}}, 'xfs';
+#push @{$font_map->{'get'}}, \&x_read_fonts;
+#push @{$font_map->{'set'}}, \&gp_font_install;
+
+
+sub xfs_get_fontpath
+{
+  my $cmd = &xst_file_locate_tool ('chkfontpath');
+  return unless $cmd;
+
+  my $fh = IO::File->new ("$cmd |");
+  return unless $fh;
+
+  my @output = <$fh>;
+  $fh->close;
+
+  my @fonts;
+  foreach (@output)
+  {
+    my $path = $1 if (/^\d+: (.+)$/);
+    $path =~ s/:unscaled$//;
+    push @fonts, $path if $path;
+  }
+
+  return \@fonts;
+}
+
+
+
+################################
+#                              #
+#         XFree module.        #
+#                              #
+################################
+
+# Module info:
+# Depends on:
+# Gnome-print module
+# xfs module
+
+# Register.
+push @{$font_map->{'name'}}, 'XFree';
+push @{$font_map->{'get'}}, \&x_read_fonts;
+push @{$font_map->{'set'}}, \&x_font_set;
+
+
+sub x_fontpath_get
+{
+  my $cmd = &xst_file_locate_tool ('xset');
+  return unless $cmd;
+
+  my $output = &xst_file_run_backtick ("$cmd q");
+  return unless $output;
+
+  $output = $1 if $output =~ /Font Path:\n\s+(.+)/;
+  unless ($output)
+  {
+    &xst_debug_print_line ("x_fontpath_get: Couldn't find 'Font Path' from 'xset q' output.");
+    return;
+  }
+
+  my @tmp =  split (/[ \t]*,[ \t]*/, $output);
+  my $fonts = [];
+  foreach (@tmp)
+  {
+    if (/^unix\/:/)
+    {
+      my $xfs_fonts = &xfs_get_fontpath ();
+      push @$fonts, @$xfs_fonts;
+    }
+    else
+    {
+      push @$fonts, $_;
+    }
+  }
+
+  return $fonts;
+}
+
+sub x_fontpath_add
+{
+  my $paths = shift || return;
+
+  my $line = join (",", @$paths);
+  &xst_file_run ("xset fp+ $line");
+}
+
+sub x_fonts_refresh
+{
+  &xst_file_run ("xset fp rehash");
+}
+
+sub x_fonts_dir_parse
+{
+  my $path = shift;
+  return unless $path;
+  my $file = shift || 'fonts.dir';
+
+  my $fh = IO::File->new ("$path/$file");
+  return unless $fh;
+
+  my @fonts;
+  while (<$fh>)
+  {
+    next if /^\d+\s+$/; # Probably the first line, showing the number of fonts.
+
+    if (/^(\S+) (\S+)/)
+    {
+      push @fonts, "$path/$1";
+    }
+  }
+
+  $fh->close ();
+  return @fonts;
+}
+
+sub x_fonts_dir_modify
+{
+  my $del = shift;
+  my $add = shift;
+  my $path = shift;
+  return unless $path;
+  my $file = shift || 'fonts.dir';
+
+  my $buf = &xst_file_buffer_load ("$path/$file");
+  return unless $buf;
+
+  # Find files which are to be removed
+  my @del_files;
+  foreach my $font (@$del)
+  {
+    foreach my $file (@{$font->{'path'}})
+    {
+      push @del_files, $file;
+    }
+  }
+
+  for (my $i = 1; $i < scalar @$buf; $i++)
+  {
+    my $line = $$buf[$i];
+    my ($fname, $xname) = split ('/ /', $line);
+
+    if (&xst_item_is_in_list ($fname, @del_files))
+    {
+      $line = '';
+      $$buf[0]--;
+    }
+  }
+
+  # Add
+  # FIXME: we don't have x fontname yet.
+
+  &xst_file_buffer_save ($buf, $file);
+}
+
+
+sub x_get_fonts
+{
+  my $x_font_path = &x_fontpath_get ();
+  return unless $x_font_path;
+
+  my $x_fonts = [];
+  foreach (@$x_font_path)
+  {
+    my @fonts = &x_fonts_dir_parse ($_);
+    push @$x_fonts, @fonts;
+  }
+
+  return $x_fonts;
+}
+
+sub x_read_fonts
+{
+  my $x_font_paths = &x_get_fonts ();
+  return unless $x_font_paths || scalar @$x_font_paths > 1;
+
+  return &gp_invoke (join (" ", @$x_font_paths), 0);
+}
+
+# Maybe it should be common function:
+# Scans font_list and returns list of different directories
+# these fotns are in.
+sub x_font_dirs
+{
+  my $font_list = shift;
+  my $dirlist = [];
+  my %seen = ();
+
+  foreach my $font (@$font_list)
+  {
+    foreach my $file (@{$font->{'file'}})
+    {
+      my $item = dirname ($file->{'path'});
+      push @$dirlist, $item unless $seen{$item}++; # It's a kinda magic! Oh wait, it's just perl :)
+    }
+  }
+
+  return $dirlist;
+}
+
+sub x_font_set
+{
+  my $del = shift;
+  my $add = shift;
+
+  my @tmp = @$del;
+  push @tmp, @$add;
+
+  my $path = &x_font_dirs (\@tmp);
+  &x_font_dir_modify ($del, $add, $path);
+
+  &x_font_refresh ();
+}
+
+
+
+1;

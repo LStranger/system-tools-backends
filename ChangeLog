@@ -1,3 +1,12 @@
+2001-11-24  Tambet Ingo  <tambet@ximian.com>
+
+	* font.pl.in: Implemented infrastructure and two modules:
+	gnome-print module and XFree module.
+
+	* file.pl.in: Fixed some typos.
+
+	* Makefile.am: Added font-conf to build.
+
 2001-11-23  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot-grub.pl.in: s/image/entry/, for a more consistent
