@@ -1,0 +1,1422 @@
+#!/usr/bin/perl
+
+# Simple networking configurator. Designed to be architecture- and distribution independent.
+#
+# Copyright (C) 2000 Helix Code, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@helixcode.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# WARNING: Works with Red Hat (and probably most derivates) and SuSE.
+# We're more than happy to receive patches for other distributions.
+
+# Configuration files affected:
+#
+# /etc/sysconfig/network
+# /etc/sysconfig/network-scripts/ifcfg-*
+# /etc/rc.config
+
+# Running programs affected/used:
+#
+# ifup
+# ifdown
+
+
+# --- Usage text --- #
+
+my $Usage =<<"End_of_Usage;";
+Usage: networking-conf <--get | --set | --filter | --help>
+                       [--prefix <location>] [--disable-immediate]
+                       [--verbose]
+
+       Major operations (specify one of these):
+
+       -g --get      Prints the current networking configuration to
+                     standard output, as as standalone XML document. The
+                     configuration is read from the host\'s system config
+                     files.
+
+       -s --set      Updates the system networking configuration from
+                     a standalone XML document read from standard input.
+                     The format is the same as for the document generated
+                     with --get.
+
+       -f --filter   Reads XML configuration from standard input, parses it,
+                     and writes the configurator\'s impression of it back to
+                     standard output. Good for debugging and parsing tests.
+
+       -h --help     Prints this page to standard output.
+
+          --version  Prints version information to standard output.
+
+       Modifiers (specify any combination of these):
+
+       -p --prefix <location>  Specifies a directory prefix where the
+                     configuration is looked for or stored. When storing
+                     (with --set), directories and files may be created.
+
+          --disable-immediate  With --set, prevents the configurator from
+                     running any commands that make immediate changes to
+                     the system configuration. Use with --prefix to make a
+                     dry run that won\'t affect your configuration.
+
+                     With --get, suppresses running of non-vital external
+                     programs that might take a long time to finish.
+
+       -v --verbose  Turns on diagnostic messages to standard error.
+
+End_of_Usage;
+
+$version = "0.1.0";
+
+# --- System config file locations --- #
+
+# We list each config file type with as many alternate locations as possible.
+# They are tried in array order. First found = used.
+
+# Right now there's only one entry per array, as I couldn't find any
+# typical deviations.
+
+@sysconfig_network_names = ( "/etc/sysconfig/network" );
+@rc_config_names =         ( "/etc/rc.config" );
+
+
+# --- Internal configuration variables --- #
+
+# Configuration is parsed/read to, and printed/written from, these temporary variables.
+
+$cf_networking = 0;
+
+$cf_interface = "";
+$cf_interface_list = ();
+$cf_hostip = "";
+$cf_netmask = "";
+$cf_gateway = "";
+$cf_method = "static";
+$cf_onboot = 1;
+$cf_forward = 0;
+
+
+# --- Operation modifying variables --- #
+
+# Variables are set to their default value, which may be overridden by user. Note
+# that a $prefix of "" will cause the configurator to use '/' as the base path,
+# and disables creation of directories and writing of previously non-existent
+# files.
+
+$prefix = "";
+$verbose = 0;
+$do_immediate = 1;
+
+
+# --- XML print formatting  --- #
+
+# enter: Call after entering a block. Increases indent level.
+# leave: Call before leaving a block. Decreases indent level.
+# indent: Call before printing a line. Indents to current level. 
+# vspace: Ensures there is a vertical space of one and only one line.
+
+$indent_level = 0;
+$have_vspace = 0;
+
+sub enter  { $indent_level += 2; }
+sub leave  { $indent_level -= 2; }
+sub indent { for ($i = 0; $i < $indent_level; $i++) { print " "; } $have_vspace = 0; }
+sub vspace { if (not $have_vspace) { print "\n"; $have_vspace = 1; } }
+
+
+# --- XML scanning --- #
+
+# This code tries to replace XML::Parser scanning from stdin in tree mode.
+
+
+@xml_scan_list;
+
+
+sub xml_scan_make_kid_array
+{
+  my %hash = {};
+  my @sublist;
+
+  @attr = @_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z]+)/g;
+  %hash = @attr;
+
+  push(@sublist, \%hash);
+  return(\@sublist);
+}
+
+
+sub xml_scan_recurse;
+
+sub xml_scan_recurse
+{
+  my @list;
+  if (@_) { @list = @_[0]->[0]; }
+
+  while (@xml_scan_list)
+  {
+    $el = @xml_scan_list[0]; shift @xml_scan_list;
+
+    if ((not $el) || $el =~ /^\<[!?].*\>$/s) { next; }  # Empty strings, PI and DTD must go.
+
+    if ($el =~ /^\<.*\/\>$/s)     # Empty.
+    {
+      $el =~ /^\<([a-zA-Z]+).*\/\>$/s;
+      push(@list, $1);
+      push(@list, xml_scan_make_kid_array($el));
+    }
+    elsif ($el =~ /^\<\/.*\>$/s)  # End.
+    {
+      last;
+    }
+    elsif ($el =~ /^\<.*\>$/s)    # Start.
+    {
+      $el =~ /^\<([a-zA-Z]+).*\>$/s;
+      push(@list, $1);
+      $sublist = xml_scan_make_kid_array($el);
+      push(@list, xml_scan_recurse($sublist));
+      next;
+    }
+    elsif ($el ne "")             # PCDATA.
+    {
+      push(@list, 0);
+      push(@list, "$el");
+    }
+  }
+
+  return(\@list);
+}
+
+
+sub xml_scan
+{
+  my $doc; my @tree;
+  read STDIN, $doc, 512000;  # Read in document (FIXME: ugly).
+  @xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg);  # pcdata, tag, pcdata, tag, ...
+
+  $tree = xml_scan_recurse;
+
+  return($tree);
+
+#  $" = "\n";
+#  print "@list\n";
+}
+
+
+@xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"' );
+
+sub xml_entities_to_plain
+{
+  my $in = @_[0];
+  my $out = "";
+  my @xe;
+
+  $in = $$in;
+
+  my @elist = ($in =~ /([^&]*)(\&[a-zA-Z]+\;)?/mg);  # text, entity, text, entity, ...
+
+  while (@elist)
+  {
+    # Join text.
+
+    $out = join('', $out, @elist[0]);
+    shift @elist;
+    
+    # Find entity and join its text equivalent.
+    # Unknown entities are simply removed.
+
+    for (@xe = @xml_entities; @xe; )
+    {
+      if (@xe[0] eq @elist[0]) { $out = join('', $out, @xe[1]); last; }
+      shift @xe; shift @xe;
+    }
+
+    shift @elist;
+  }
+
+  return($out);
+}
+
+
+sub xml_plain_to_entities
+{
+  my $in = @_[0];
+  my $out = "";
+  my @xe;
+  my $joined = 0;
+
+  $in = $$in;
+
+  my @clist = split(//, $in);
+
+  while (@clist)
+  {
+    # Find character and join its entity equivalent.
+    # If none found, simply join the character.
+
+    $joined = 0;  # Cumbersome.
+
+    for (@xe = @xml_entities; @xe && !$joined; )
+    {
+      if (@xe[1] eq @clist[0]) { $out = join('', $out, @xe[0]); $joined = 1; }
+      shift @xe; shift @xe;
+    }
+
+    if (!$joined) { $out = join('', $out, @clist[0]); }
+    shift @clist;
+  }
+
+  return($out);
+}
+
+
+# --- String and array manipulation --- #
+
+# Boolean/strings conversion.
+
+sub read_boolean
+{
+  if (@_[0] eq "true") { return(1); }
+  elsif (@_[0] eq "yes") { return(1); }
+  return(0);
+}
+
+sub print_boolean_yesno
+{
+  if (@_[0] == 1) { return("yes"); }
+  return("no");
+}
+
+sub print_boolean_truefalse
+{
+  if (@_[0] == 1) { return("true"); }
+  return("false");
+}
+
+
+# Pushes a value to an array, only if it's not already in there.
+# I'm sure there's a smarter way to do this. Should only be used for small lists,
+# as it's O(N^2). Larger lists with unique members should use a hash.
+
+sub push_unique
+{
+  my $arr = @_[0];
+  my $found;
+  my $i;
+
+  # Go through all elements in pushed list.
+
+  for ($i = 1; @_[$i]; $i++)
+  {
+    # Compare against all elements in destination array.
+
+    $found = "";
+    for $elem (@$arr)
+    {
+      if ($elem eq @_[$i]) { $found = $elem; last; }
+    }
+
+    if ($found eq "") { push(@$arr, @_[$i]); }
+  }
+}
+
+
+sub is_line_comment_start
+{
+  if (@_[0] =~ /^\#/) { return(1); }
+  return(0);
+}
+
+
+# --- IP calculation --- #
+
+# Both functions take two arguments: IP and netmask.
+
+
+sub ip_calc_network
+{
+  my @ip_reg1;
+  my @ip_reg2;
+
+  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  
+  @ip_reg1[0] = (@ip_reg1[0] * 1) & (@ip_reg2[0] * 1);
+  @ip_reg1[1] = (@ip_reg1[1] * 1) & (@ip_reg2[1] * 1);
+  @ip_reg1[2] = (@ip_reg1[2] * 1) & (@ip_reg2[2] * 1);
+  @ip_reg1[3] = (@ip_reg1[3] * 1) & (@ip_reg2[3] * 1);
+  
+  return(join('.', @ip_reg1));
+}
+
+
+sub ip_calc_broadcast
+{
+  my @ip_reg1;
+  my @ip_reg2;
+
+  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  
+  @ip_reg1 = ($cf_hostip =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+
+  @ip_reg1[0] = (@ip_reg1[0] * 1) | (~(@ip_reg2[0] * 1) & 255);
+  @ip_reg1[1] = (@ip_reg1[1] * 1) | (~(@ip_reg2[1] * 1) & 255);
+  @ip_reg1[2] = (@ip_reg1[2] * 1) | (~(@ip_reg2[2] * 1) & 255);
+  @ip_reg1[3] = (@ip_reg1[3] * 1) | (~(@ip_reg2[3] * 1) & 255);
+
+  return(join('.', @ip_reg1));
+}
+
+
+# --- File operations --- #
+
+@builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin", "/usr/bin",
+                   "/usr/local/bin" );
+
+sub locate_tool
+{
+  my $found = "";
+  my @user_paths;
+
+  # Extract user paths to try.
+
+  @user_paths = ($ENV{PATH} =~ /([^:]+):/mg);
+
+  # Try user paths.
+
+  for $path (@user_paths)
+  {
+    if (-x "$path/@_[0]") { $found = "$path/@_[0]"; last; }
+  }
+
+  # Try builtin paths.
+
+  for $path (@builtin_paths)
+  {
+    if (-x "$path/@_[0]") { $found = "$path/@_[0]"; last; }
+  }
+  
+  return($found);
+}
+
+
+sub open_read_from_names
+{
+  my $FILE;
+  my $fname = "";
+
+  for $name (@_)
+  {
+    if (open(FILE, "$prefix/$name")) { $fname = $name; last; }
+  }
+
+  if ($verbose)
+  {
+    (my $fullname = "$prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'
+    if ($fname ne "") { print STDERR "Reading options from \"$fullname\".\n"; }
+    else { print STDERR "Could not read \[@_\].\n"; }
+  }
+
+  return($FILE);
+}
+
+
+sub open_write_from_names
+{
+  my $FILE;
+  my $name;
+  my $fullname;
+
+  # Find out where it lives.
+
+  for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+
+  if ($name eq "")
+  {
+    # If we couldn't locate the file, and have no prefix, give up.
+
+    # If we have a prefix, but couldn't locate the file relative to '/',
+    # take the first name in the array and let that be created in $prefix.
+
+    if ($prefix eq "")
+    {
+      if ($verbose) { print STDERR "No file to replace: \[@_\].\n"; }
+      return(0);
+    }
+    else
+    {
+      $name = @_[0];
+      if ($verbose)
+      {
+        (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+        print STDERR "Could not find \[@_\]. Writing to \"$fullname\".\n";
+      }
+    }
+  }
+  elsif ($verbose)
+  {
+    (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+    print STDERR "Found \"$name\". Writing to \"$fullname\".\n";
+  }
+
+  ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
+  create_path($name);
+
+  # Make a backup if the file already exists - if the user specified a prefix,
+  # it might not.
+
+  if (stat($name))
+  {
+    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+    # to specify a $name list somehow, in the future.
+
+    system("cp $name $name.confsave >/dev/null 2>/dev/null");
+  }
+
+  # Truncate and return filehandle.
+
+  if (!open(FILE, ">$name") && $verbose)
+  {
+    print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+  }
+
+  return($FILE);
+}
+
+
+sub open_filter_write_from_names
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $name;
+
+  # Find out where it lives.
+
+  for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+
+  if ($name eq "")
+  {
+    # If we couldn't locate the file, and have no prefix, give up.
+
+    # If we have a prefix, but couldn't locate the file relative to '/',
+    # take the first name in the array and let that be created in $prefix.
+
+    if ($prefix eq "")
+    {
+      if ($verbose) { print STDERR "No file to patch: \[@_\].\n"; }
+      return(0, 0);
+    }
+    else
+    {
+      $name = @_[0];
+      if ($verbose)
+      {
+        (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+        print STDERR "Could not find \[@_\]. Patching \"$fullname\".\n";
+      }
+    }
+  }
+  elsif ($verbose)
+  {
+    (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+    print STDERR "Found \"$name\". Patching \"$fullname\".\n";
+  }
+
+  ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
+  create_path($name);
+
+  # Make a backup if the file already exists - if the user specified a prefix,
+  # it might not.
+
+  if (stat($name))
+  {
+    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+    # to specify a $name list somehow, in the future.
+
+    system("cp $name $name.confsave >/dev/null 2>/dev/null");
+  }
+
+  # Return filehandles. Backup file is used as filter input. It might be
+  # invalid, in which case the caller should just write to OUTFILE without
+  # bothering with INFILE filtering.
+
+  open(INFILE, "$name.confsave");
+
+  if (!open(OUTFILE, ">$name") && $verbose)
+  {
+    print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+  }
+
+  return($INFILE, $OUTFILE);
+}
+
+
+sub create_path
+{
+  my $path;
+
+  $path = @_[0];
+  my @pelem = split(/\//, $path);  # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
+
+  for ($path = ""; @pelem; shift @pelem)
+  {
+    if (@pelem[1] ne "")
+    {
+      $path = "$path@pelem[0]";
+      mkdir($path, 0770);
+      $path = "$path/";
+    }
+  }
+}
+
+
+# --- Configuration file manipulation --- #
+
+
+# Red Hat style /etc/sysconfig/network-scripts/ifcfg-*
+#
+# <filtered lines>
+# IPADDR=<ip>
+# NETMASK=<ip mask>
+# NETWORK=<network ip>
+# BROADCAST=<broadcast ip>
+# BOOTPROTO=<bootp|dhcp|none>
+# ONBOOT=<boolean>
+# <filtered lines>
+#
+# Determines the configuration of a specific network interface. First
+# argument must be the name of the interface.
+#
+# Exists: Red Hat [5|6].x
+#
+# Absent:
+
+sub read_sysconfig_network_scripts_ifcfg
+{
+  my $FILE;
+
+  # Find the file.
+
+  $FILE = open_read_from_names("/etc/sysconfig/network-scripts/ifcfg-@_[0]");
+  if (not FILE) { return; }
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if (@line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (@line[0] eq "IPADDR" && not is_line_comment_start(@line[1]))
+    { $cf_hostip = @line[1]; }
+    elsif (@line[0] eq "NETMASK" && not is_line_comment_start(@line[1]))
+    { $cf_netmask = @line[1]; }
+    elsif (@line[0] eq "BOOTPROTO" && not is_line_comment_start(@line[1]))
+    {
+      if (@line[1] eq "bootp")   { $cf_method = "bootp"; }
+      elsif (@line[1] eq "dhcp") { $cf_method = "dhcp"; }
+      else                       { $cf_method = "static"; }
+    }
+    elsif (@line[0] eq "ONBOOT" && not is_line_comment_start(@line[1]))
+    { $cf_onboot = read_boolean(@line[1]); }
+  }
+
+  close(FILE);
+}
+
+
+sub write_sysconfig_network_scripts_ifcfg
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $wrote_hostip = 0;
+  my $wrote_netmask = 0;
+  my $wrote_network = 0;
+  my $wrote_broadcast = 0;
+  my $wrote_method = 0;
+  my $wrote_onboot = 0;
+  my $cfl_network = "";
+  my $cfl_broadcast = "";
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names("/etc/sysconfig/network-scripts/ifcfg-@_[0]");
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Generate $cfl_network and $cfl_broadcast.
+
+  $cfl_network = ip_calc_network($cf_hostip, $cf_netmask);
+  $cfl_broadcast = ip_calc_broadcast($cf_hostip, $cf_netmask);
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if (@line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (@line[0] eq "IPADDR")
+    {
+      print OUTFILE "IPADDR=$cf_hostip\n";
+      $wrote_hostip = 1;
+    }
+    elsif (@line[0] eq "NETMASK")
+    {
+      print OUTFILE "NETMASK=$cf_netmask\n";
+      $wrote_netmask = 1;
+    }
+    elsif (@line[0] eq "NETWORK")
+    {
+      print OUTFILE "NETWORK=$cfl_network\n";
+      $wrote_network = 1;
+    }
+    elsif (@line[0] eq "BROADCAST")
+    {
+      print OUTFILE "BROADCAST=$cfl_broadcast\n";
+      $wrote_broadcast = 1;
+    }
+    elsif (@line[0] eq "BOOTPROTO")
+    {
+      print OUTFILE "BOOTPROTO=$cf_method\n";
+      $wrote_method = 1;
+    }
+    elsif (@line[0] eq "ONBOOT")
+    {
+      print OUTFILE join('', "ONBOOT=", print_boolean_yesno($cf_onboot), "\n");
+      $wrote_onboot = 1;
+    }
+    else { print OUTFILE; }
+  }
+
+  if (not $wrote_hostip)    { print OUTFILE "IPADDR=$cf_hostip\n"; }
+  if (not $wrote_netmask)   { print OUTFILE "NETMASK=$cf_netmask\n"; }
+  if (not $wrote_network)   { print OUTFILE "NETWORK=$cfl_network\n"; }
+  if (not $wrote_broadcast) { print OUTFILE "BROADCAST=$cfl_broadcast\n"; }
+  if (not $wrote_method)    { print OUTFILE "BOOTPROTO=$cf_method\n"; }
+  if (not $wrote_onboot)    { print OUTFILE join('', "ONBOOT=", print_boolean_yesno($cf_onboot), "\n"); }
+
+  close(OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
+
+
+# Red Hat style primary interface reader.
+#
+# Tries to figure out what the "primary" interface is, and calls
+# read_sysconfig_network_scripts_ifcfg on that interface.
+#
+# Must run after get_immediate and read_sysconfig_network, which will
+# (hopefully) provide information to identify the primary device.
+
+sub read_primary_interface
+{
+  # If the interface was specified, we use that.
+
+  if ($cf_interface ne "") { }
+
+  # If the known-interfaces list contains only one interface, we use that.
+  # This is actually not too uncommon, after weeding lo and dummy.
+
+  elsif ($#cf_interface_list == 0) { $cf_interface = @cf_interface_list[0]; }
+  
+  # If we have a gateway, try to find an interface with a matching subnet, by
+  # going through the interface configurations. This will fail if a gateway
+  # has been configured without any interfaces, or if the gateway is on a
+  # foreign, bridged subnet. Both are pretty rare conditions.
+
+  elsif ($cf_gateway ne "")
+  {
+    for $elem (@cf_interface_list)
+    {
+      read_sysconfig_network_scripts_ifcfg($elem);
+      if ($cf_netmask eq "") { next; }
+
+      if (ip_calc_network($cf_gateway, $cf_netmask) eq ip_calc_network($cf_hostip, $cf_netmask))
+      {
+        $cf_interface = $elem;
+	last;
+      }
+
+      $cf_hostip = "";
+      $cf_netmask = "";
+      $cf_method = "";
+      $cf_onboot = 0;
+    }
+  }
+
+  # Last ditch. Pick an interface from the list according to some built-in
+  # rules.
+
+  else
+  {
+    for $elem (@cf_interface_list)
+    {
+      if (($elem =~ /eth.*/) || ($elem =~ /hme.*/))
+      {
+        $cf_interface = $elem;
+        last;
+      }
+    }
+  }
+
+  if ($cf_interface ne "") { read_sysconfig_network_scripts_ifcfg($cf_interface); }
+}
+
+
+sub write_primary_interface
+{
+  # If the primary interface is not supplied, we can't assume anything,
+  # so configuration is not written.
+
+  if ($cf_interface ne "") { write_sysconfig_network_scripts_ifcfg($cf_interface); }
+  elsif ($verbose) { print STDERR "Warning: No primary interface specified - config unwritten.\n"; }
+}
+
+
+# Red Hat style /etc/sysconfig/network
+#
+# <filtered lines>
+# NETWORKING=<boolean>
+# FORWARD_IPV4=<boolean>
+# GATEWAY=<ip>
+# GATEWAYDEV=<interface>
+# <filtered lines>
+#
+# Determines the primary network configuration. BEWARE: This is actually a
+# sourced shell script. We rely on some lenience from the user (and the distro)
+# to be able to parse it correctly.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0
+#
+# Absent: SuSE 6.3, SunOS 5.7
+
+sub read_sysconfig_network
+{
+  my $FILE;
+
+  # Find the file.
+
+  $FILE = open_read_from_names(@sysconfig_network_names);
+  if (not FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if (@line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (@line[0] eq "NETWORKING" && not is_line_comment_start(@line[1]))
+    { $cf_networking = read_boolean(@line[1]); }
+    elsif (@line[0] eq "FORWARD_IPV4" && not is_line_comment_start(@line[1]))
+    { $cf_forward = read_boolean(@line[1]); }
+    elsif (@line[0] eq "GATEWAY" && not is_line_comment_start(@line[1]))
+    { $cf_gateway = @line[1]; }
+    elsif (@line[0] eq "GATEWAYDEV" && not is_line_comment_start(@line[1]))
+    { $cf_interface = @line[1]; }
+  }
+
+  close(FILE);
+}
+
+
+sub write_sysconfig_network
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $wrote_networking = 0;
+  my $wrote_forward = 0;
+  my $wrote_gateway = 0;
+  my $wrote_interface = 0;
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@sysconfig_network_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if (@line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (@line[0] eq "NETWORKING")
+    {
+      print OUTFILE join('', "NETWORKING=", print_boolean_yesno($cf_networking), "\n");
+      $wrote_networking = 1;
+    }
+    elsif (@line[0] eq "FORWARD_IPV4")
+    {
+      print OUTFILE join('', "FORWARD_IPV4=", print_boolean_truefalse($cf_forward), "\n");
+      $wrote_forward = 1;
+    }
+    elsif (@line[0] eq "GATEWAY")
+    {
+      print OUTFILE "GATEWAY=$cf_gateway\n";
+      $wrote_gateway = 1;
+    }
+    elsif (@line[0] eq "GATEWAYDEV")
+    {
+      print OUTFILE "GATEWAYDEV=$cf_interface\n";
+      $wrote_interface = 1;
+    }
+    else { print OUTFILE; }
+  }
+
+  if (not $wrote_networking)
+  { print OUTFILE join('', "NETWORKING=", print_boolean_yesno($cf_networking), "\n"); }
+  if (not $wrote_forward)
+  { print OUTFILE join('', "FORWARD_IPV4=", print_boolean_truefalse($cf_forward), "\n"); }
+  if (not $wrote_gateway)
+  { print OUTFILE "GATEWAY=$cf_gateway\n"; }
+  if (not $wrote_interface)
+  { print OUTFILE "GATEWAYDEV=$cf_interface\n"; }
+
+  close(OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
+
+
+# SuSE style /etc/rc.config
+#
+# <filtered lines>
+# FQHOSTNAME="<fully qualified hostname>"
+# SEARCHLIST="<space separated list of searchdomains>"
+# NAMESERVER="<space separated list of nameservers>"
+# <filtered lines>
+#
+# Determines the local hostname.domain, searchdomains and nameservers.
+# BEWARE: This is actually a sourced shell script. We rely on some lenience
+# from the user (and the distro) to be able to parse it correctly. The file
+# is read by SuSE configuration tools and translated to NET-3 config files
+# at strategic times.
+#
+# Exists: SuSE 6.3
+#
+# Absent: Red Hat 6.x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SunOS 5.7
+
+sub read_rc_config
+{
+  my $FILE;
+
+  # Find the file.
+
+  $FILE = open_read_from_names(@rc_config_names);
+  if (not FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
+    if (@line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (@line[0] eq "NETDEV_0" && not is_line_comment_start(@line[1]))
+    {
+      $cf_interface = @line[1];
+    }
+    elsif (@line[0] eq "IPADDR_0")
+    {
+      $cf_hostip = @line[1];
+    }
+    elsif (@line[0] eq "IFCONFIG_0")
+    {
+      shift @line;
+
+      while (@line)
+      {
+        if (is_line_comment_start(@line[0])) { last; }
+	
+	if (@line[0] eq "broadcast")
+	{
+	  # Calculate this ourselves.
+
+	  shift @line;
+	  shift @line;
+	}
+	elsif (@line[0] eq "netmask")
+	{
+	  $cf_netmask = @line[1];
+	  shift @line;
+	  shift @line;
+	}
+	elsif (@line[0] eq "bootp")
+	{
+	  $cf_method = "bootp";
+	  last;
+	}
+	elsif (@line[0] =~ /dhcp.*/)
+	{
+	  $cf_method = "dhcp";
+	  last;
+	}
+        elsif (@line[0] ne "") { $cf_hostip = @line[0]; shift @line; }
+	else { shift @line; }
+      }
+    }
+  }
+
+  close(FILE);
+}
+
+
+# SuSE /etc/rc.config likes all env arguments in double quotes. Since we're
+# really nice guys, we conform to that.
+
+sub write_rc_config
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $wrote_ipaddr = 0;
+  my $wrote_netdev = 0;
+  my $wrote_ifconfig = 0;
+  my $cfl_broadcast = "";
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@rc_config_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Generate broadcast address.
+  
+  $cfl_broadcast = ip_calc_broadcast($cf_hostip, $cf_netmask);
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if (@line[0] eq "IPADDR_0")
+    {
+      print OUTFILE "IPADDR_0=\"$cf_hostip\"\n";
+      $wrote_ipaddr = 1;
+    }
+    elsif (@line[0] eq "NETDEV_0")
+    {
+      print OUTFILE "NETDEV_0=\"$cf_interface\"\n";
+      $wrote_netdev = 1;
+    }
+    elsif (@line[0] eq "IFCONFIG_0")
+    {
+      if ($cf_method eq "dhcp") { print OUTFILE "IFCONFIG_0=\"dhcpclient\"\n"; }
+      elsif ($cf_method eq "bootp") { print OUTFILE "IFCONFIG_0=\"bootp\"\n"; }
+      else { print OUTFILE "IFCONFIG_0=\"$cf_hostip broadcast $cfl_broadcast netmask $cf_netmask\"\n"; }
+      $wrote_ifconfig = 1;
+    }
+    else
+    {
+      print OUTFILE;
+    }
+  }
+
+  if (not $wrote_ipaddr)   { print OUTFILE "IPADDR_0=\"$cf_hostip\"\n"; }
+  if (not $wrote_netdev)   { print OUTFILE "NETDEV_0=\"$cf_interface\"\n"; }
+  if (not $wrote_ifconfig)
+  {
+    if ($cf_method eq "dhcp") { print OUTFILE "IFCONFIG_0=\"dhcpclient\"\n"; }
+    elsif ($cf_method eq "bootp") { print OUTFILE "IFCONFIG_0=\"bootp\"\n"; }
+    else { print OUTFILE "IFCONFIG_0=\"$cf_hostip broadcast $cfl_broadcast netmask $cf_netmask\"\n"; }
+  }
+
+  close(OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
+
+
+# --- XML parsing --- #
+
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  # Scan XML to tree.
+
+  $tree = xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "networking" tag.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "networking") { xml_parse_networking(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($tree);
+}
+
+
+# <networking>...</networking>
+
+sub xml_parse_networking
+{
+  my $tree = @_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if    (@$tree[0] eq "primaryinterface") { $cf_interface = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "knowninterface")   { push(@cf_interface_list, xml_get_word(@$tree[1])); }
+    elsif (@$tree[0] eq "hostip")           { $cf_hostip = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "netmask")          { $cf_netmask = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "gateway")          { $cf_gateway = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "enabled")          { xml_parse_enabled(@$tree[1]); }
+    elsif (@$tree[0] eq "forward")          { xml_parse_forward(@$tree[1]); }
+    elsif (@$tree[0] eq "method")
+    {
+      $cf_method = xml_get_word(@$tree[1]);
+      if (($cf_method ne "dhcp") && ($cf_method ne "bootp")) { $cf_method = "static"; }
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+sub xml_parse_enabled
+{
+  my $tree = @_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  $cf_onboot = read_boolean(@$tree[0]->{state});
+}
+
+
+sub xml_parse_forward
+{
+  my $tree = @_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  $cf_forward = read_boolean(@$tree[0]->{state});
+}
+
+
+# Compresses node into a word and returns it.
+
+sub xml_get_word
+{
+  my $tree = @_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] == 0)
+    {
+      my $retval;
+
+      ($retval = @$tree[1]) =~ tr/ \n\r\t\f//d;
+      $retval = xml_entities_to_plain(\$retval);
+      return($retval);
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return("");
+}
+
+
+# Replaces misc. whitespace with spaces and returns text.
+
+sub xml_get_text
+{
+  my $tree = @_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] = 0)
+    {
+      ($retval = @$tree[1]) =~ tr/\n\r\t\f/    /;
+      $retval = xml_entities_to_plain(\$retval);
+      return($retval);
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+# --- XML printing --- #
+
+
+sub xml_print
+{
+  my $cfl_interface = xml_plain_to_entities(\$cf_interface);
+  my $cfl_hostip = xml_plain_to_entities(\$cf_hostip);
+  my $cfl_netmask = xml_plain_to_entities(\$cf_netmask);
+  my $cfl_gateway = xml_plain_to_entities(\$cf_gateway);
+  my $cfl_method = xml_plain_to_entities(\$cf_method);
+
+  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+  print "<!DOCTYPE networking []>\n\n";
+  print "<networking>\n";
+  enter;
+
+  vspace;
+  indent; print "<!-- Configuration starts here -->\n";
+  vspace;
+
+  # Hostname, domain, search domains, nameservers.
+
+  indent;
+  if ($cf_onboot) { print "<enabled state='yes'/>\n"; }
+  else            { print "<enabled state='no'/>\n"; }
+
+  vspace;
+
+  if ($cfl_interface ne "") { indent; print "<primaryinterface>$cfl_interface</primaryinterface>\n"; }
+  if ($cfl_hostip ne "") { indent; print "<hostip>$cfl_hostip</hostip>\n"; }
+  if ($cfl_netmask ne "") { indent; print "<netmask>$cfl_netmask</netmask>\n"; }
+  if ($cfl_gateway ne "") { indent; print "<gateway>$cfl_gateway</gateway>\n"; }
+  vspace;
+  if ($cfl_method ne "") { indent; print "<method>$cfl_method</method>\n"; }
+  vspace;
+
+  vspace;
+  indent; print "<!-- You shouldn't have to modify anything below this line -->\n";
+  vspace;
+
+  indent; 
+  if ($cf_forward) { print "<forward state='yes'/>\n"; }
+  else             { print "<forward state='no'/>\n"; }
+
+  vspace;
+  indent; print "<!-- You cannot modify anything below this line -->\n";
+  vspace;
+
+  for $elem (@cf_interface_list)
+  {
+    $elem = xml_plain_to_entities(\$elem);
+    if ($elem ne $cfl_interface)  # Hack: Don't list primary interface here.
+    { indent; print "<knowninterface>$elem</knowninterface>\n"; }
+  }
+
+  vspace;
+  indent; print "<!-- End of configuration -->\n";
+  vspace;
+
+  leave;
+  print "</networking>\n";
+}
+
+
+# --- Get (read) config --- #
+
+
+sub get_immediate
+{
+  my $if_cmd;
+  my $iftext;
+  my @list;
+
+  # Get a list of all interfaces, both configured and unconfigured.
+  # Should work on both GNU and Solaris.
+
+  $if_cmd = locate_tool("ifconfig");
+  $iftext = `$if_cmd -a 2>/dev/null`;
+
+  @list = ($iftext =~ /^([a-z0-9]+)[ :\t].*/mg);
+
+  if (not @list)
+  {
+    if ($verbose) { print STDERR "Warning: Couldn't find any network devices.\n"; }
+    return(0);
+  }
+  
+  # Remove loopback and dummy interfaces from the list.
+  
+  for $elem (@list)
+  {
+    if (!($elem =~ /^(lo)|(dummy).*/)) { push(@cf_interface_list, $elem); }
+  }
+}
+
+
+sub get
+{
+  if ($verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
+
+  if ($verbose) { print STDERR "Finding interfaces.\n"; }
+  get_immediate;
+
+  read_rc_config;
+  read_sysconfig_network;
+  read_primary_interface;
+
+  if ($verbose) { print STDERR "Printing XML.\n"; }
+  xml_print;
+}
+
+
+# --- Set (write) config --- #
+
+
+sub set_immediate
+{
+  my $ifup_cmd;
+  my $ifdown_cmd;
+  
+  $ifup_cmd = locate_tool("ifup");
+  $ifdown_cmd = locate_tool("ifdown");
+  
+  # Restart primary interface, so configuration can take effect.
+
+  if ($ifup_cmd ne "" && $ifdown_cmd ne "")
+  {
+    # Found ifup and ifdown utilities.
+
+    if ($cf_interface ne "")
+    {
+      if (!(system "$ifdown_cmd $cf_interface >/dev/null 2>/dev/null" &&
+            system "$ifup_cmd $cf_interface >/dev/null 2>/dev/null"))
+      {
+        if ($verbose) { print STDERR "Warning: Could not configure interface. Are you root?\n"; }
+      }
+      elsif ($verbose)
+      {
+        print STDERR "Primary interface configured.\n";
+      }
+    }
+    elsif ($verbose)
+    {
+      print STDERR "Warning: No primary interface given.\n";
+    }
+  }
+  elsif ($verbose)
+  {
+    print STDERR "Warning: No interface control utilities found.\n";
+  }
+}
+
+
+sub set
+{
+  if ($verbose) { print STDERR "Setting system configuration from XML input.\n"; }
+
+  if ($verbose) { print STDERR "Parsing XML.\n"; }
+  xml_parse;
+
+  $cf_networking = 1;  # This should really be calculated from the old value
+                       # and $cf_onboot. This hack will make it work, possibly
+                       # with a few extra boot messages, if the user doesn't
+                       # have a network.
+
+  write_rc_config;
+  write_sysconfig_network;
+  write_primary_interface;
+
+  if ($do_immediate)
+  {
+    if ($verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
+    set_immediate;
+  }
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+{
+  xml_parse;
+  xml_print;
+}
+
+
+# --- Main --- #
+
+$operation = "";  # Major operation user wants to perform. [get | set | filter]
+
+
+sub set_operation
+{
+  if ($operation ne "")
+  {
+    print STDERR "Error: You may specify only one major operation.\n\n";
+    print STDERR $Usage;
+    exit(1);
+  }
+
+  $operation = @_[0];
+}
+
+
+# Process options.
+
+while (@ARGV)
+{
+  if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { set_operation("get"); }
+  elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { set_operation("set"); }
+  elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { set_operation("filter"); }
+  elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+  elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+  {
+    if ($prefix ne "")
+    {
+      print STDERR "Error: You may specify --prefix only once.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    $prefix = @ARGV[1];
+
+    if ($prefix eq "")
+    {
+      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    shift @ARGV;  # For the argument.
+  }
+  elsif (@ARGV[0] eq "--disable-immediate")           { $do_immediate = 0; }
+  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $verbose = 1; }
+  else
+  {
+    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR $Usage; exit(1);
+  }
+
+  shift @ARGV;
+}
+
+
+# Do our thing.
+
+if    ($operation eq "get")    { get; }
+elsif ($operation eq "set")    { set; }
+elsif ($operation eq "filter") { filter; }
+else
+{
+  print STDERR "Error: No operation specified.\n\n";
+  print STDERR $Usage; exit(1);
+}
+

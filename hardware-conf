@@ -1,0 +1,1366 @@
+#!/usr/bin/perl
+
+# Hardware configurator. 
+# Designed to be architecture- and distribution independent.
+#
+# Version 0.0.1 - copyright (C) 2000 Helix Code, Inc.
+#
+# Authors: Bradford Hovinen <hovinen@helixcode.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/conf.modules /etc/X11/XF86Config /etc/isapnp.conf /dev/*
+
+# Running programs affected/used:
+#
+# /sbin/modprobe /sbin/rmmod /sbin/depmod /bin/uname /sbin/mknod
+# /bin/setserial
+
+# Other files used for information:
+#
+# /proc/devices /proc/cpuinfo /proc/ioports /proc/interrupts /proc/dma
+# /proc/modules /proc/bus/pci/* /proc/ide/* /proc/scsi/*
+
+
+# Note:
+#
+#   This backend program is just the tip of the iceberg -- there are
+#   many, many more parts to this under the hood. We're probably going
+#   to have to institute a system whereby there exist multiple
+#   configuration scriptlets in a particular directory, one for each
+#   class of hardware (e.g., IDE devices, video cards, serial ports),
+#   so that the user can install configuration scripts for new
+#   hardware types easily.
+
+# --- Usage text --- #
+
+my $Usage =<<'End_of_Usage;';
+Usage: memory-conf <--get | --set | --filter | --help>
+                 [--prefix <location>] [--disable-immediate]
+                 [--verbose]
+
+       Major operations (specify one of these):
+
+       -g --get      Prints the current time configuration to standard
+                     output, as as standalone XML document. The parameters
+                     are read from the host's low-level configuration.
+
+       -s --set      Updates the system time configuration from a standalone
+                     XML document read from standard input. The format is
+                     the same as for the document generated with --get.
+
+       -f --filter   Reads XML configuration from standard input, parses it,
+                     and writes the configurator's impression of it back to
+                     standard output. Good for debugging and parsing tests.
+
+       -h --help     Prints this page to standard output. That's all.
+
+       Modifiers (specify any combination of these):
+
+       -p --prefix <location>  Specifies a directory prefix where the
+                     configuration is looked for or stored. When storing
+                     (with --set), directories and files may be created.
+
+          --disable-immediate  With --set, prevents the configurator from
+                     running any commands that make immediate changes to
+                     the system configuration. Use with --prefix to make a
+                     dry run that won't affect your configuration.
+
+                     With --get, suppresses running of non-vital external
+                     programs that might take a long time to finish.
+
+       -v --verbose  Turns on diagnostic messages to standard error.
+
+End_of_Usage;
+
+
+# --- System config file locations --- #
+
+# We list each config file type with as many alternate locations as possible.
+# They are tried in array order. First found = used.
+
+@conf_modules_names =       ( "/etc/conf.modules", "/etc/modules.conf" );
+@XF86Config_names =         ( "/etc/X11/XF86Config" );
+
+# --- Internal configuration variables --- #
+
+# Configuration is parsed/read to, and printed/written from, these
+# temporary variables.
+
+# Hash of hardware devices, keyed by kernel identifier
+# Each entry is a hash with the following data:
+#
+#   id - kernel-level identifier (e.g. ide0, psaux, eth0, etc.)
+#   type - type of device: `Serial Port', `Video Adaptor', etc.
+#   vendor - self-explanatory
+#   model - ditto
+#   driver - kernel module or XFree86 driver, if any
+#   bus - connection - ISA, PCI, IDE, SCSI, USB, etc.
+#   {id,target,etc} - identifying characteristics on connection
+#   io - I/O port(s) used (array, if any)
+#   irq - IRQ(s) used (array, if any)
+#   dma - DMA channel(s) used (array, if any)
+#   ...and any other defining characteristics, according to the type
+#   of device
+
+%cf_hardware = ();
+
+# Hash of modules listed in /etc/conf.modules, indexed by module name
+# (or alias). Each entry contains the following data:
+#
+#   module - module name
+#   options - hash of module options as parsed from the options line
+
+%cf_modules = ();
+
+# Hash of items from /etc/isapnp.conf, indexed by something or other
+
+%cf_isapnp = ();
+
+# Array of devices referred to in XF86Config. Each entry is a hash
+# that has the device type, the driver, the XF86Config options and the
+# XF86Config identifier
+
+%cf_xf86config = ();
+
+# Array of I/O port allocations. Each entry is a hash with the keys
+# low, high, and device.
+
+@cf_ioports = ();
+
+# Hash of IRQ allocations. Maps IRQ numbers to arrays of devices
+
+%cf_irq = ();
+
+# Hash of DMA allocations. Maps DMA channel numbers to devices
+
+%cf_dma = ();
+
+# Array of serial ports. Entries are just UARTs
+
+@cf_serial = ();
+
+# Array of parallel ports. Entries are hashes containing the IRQ, DMA,
+# and modes
+
+@cf_parallel = ();
+
+# Array of IDE controllers. Entries are just empty arrays for now
+
+@cf_ide = ();
+
+# Array of SCSI controllers. Entries are just empty arrays for now
+
+@cf_scsi = ();
+
+# Array of NICs. Entries are hashes with the id and the MAC address
+
+@cf_nic = ();
+
+# --- Operation modifying variables --- #
+
+# Variables are set to their default value, which may be overridden by
+# user. Note that a $prefix of "" will cause the configurator to use
+# '/' as the base path, and disables creation of directories and
+# writing of previously non-existent files.
+
+$prefix = "";
+$verbose = 0;
+$do_immediate = 1;
+
+
+# --- XML print formatting  --- #
+
+# enter: Call after entering a block. Increases indent level.
+# leave: Call before leaving a block. Decreases indent level.
+# indent: Call before printing a line. Indents to current level. 
+# vspace: Ensures there is a vertical space of one and only one line.
+
+$indent_level = 0;
+$have_vspace = 0;
+
+sub enter  { $indent_level += 2; }
+sub leave  { $indent_level -= 2; }
+sub indent { for ($i = 0; $i < $indent_level; $i++) { print " "; } $have_vspace = 0; }
+sub vspace { if (not $have_vspace) { print "\n"; $have_vspace = 1; } }
+
+
+# --- XML scanning --- #
+
+# This code tries to replace XML::Parser scanning from stdin in tree mode.
+
+
+@xml_scan_list;
+
+
+sub xml_scan_make_kid_array
+  {
+    my %hash = {};
+    my @sublist;
+    
+    @attr = @_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z]+)/g;
+    %hash = @attr;
+    
+    push(@sublist, \%hash);
+    return(\@sublist);
+  }
+
+
+sub xml_scan_recurse;
+
+sub xml_scan_recurse
+  {
+    my @list;
+    if (@_) { @list = @_[0]->[0]; }
+    
+    while (@xml_scan_list)
+      {
+	$el = @xml_scan_list[0]; shift @xml_scan_list;
+	
+	if ((not $el) || $el =~ /^\<[!?].*\>$/s) { next; } # Empty strings, PI and DTD must go.
+	
+	if ($el =~ /^\<.*\/\>$/s) # Empty.
+	  {
+	    $el =~ /^\<([a-zA-Z]+).*\/\>$/s;
+	    push(@list, $1);
+	    push(@list, xml_scan_make_kid_array($el));
+	  }
+	elsif ($el =~ /^\<\/.*\>$/s) # End.
+	  {
+	    last;
+	  }
+	elsif ($el =~ /^\<.*\>$/s) # Start.
+	  {
+	    $el =~ /^\<([a-zA-Z]+).*\>$/s;
+	    push(@list, $1);
+	    $sublist = xml_scan_make_kid_array($el);
+	    push(@list, xml_scan_recurse($sublist));
+	    next;
+	  }
+	elsif ($el ne "")	# PCDATA.
+	  {
+	    push(@list, 0);
+	    push(@list, "$el");
+	  }
+      }
+    
+    return(\@list);
+  }
+
+
+sub xml_scan
+  {
+    my $doc; my @tree;
+    read STDIN, $doc, 512000;	# Read in document (FIXME: ugly).
+print STDERR $doc if $verbose;
+    @xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
+    
+    $tree = xml_scan_recurse;
+    
+    return($tree);
+    
+    #  $" = "\n";
+    #  print "@list\n";
+  }
+
+
+@xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"' );
+
+sub xml_entities_to_plain
+  {
+    my $in = @_[0];
+    my $out = "";
+    my @xe;
+    
+    $in = $$in;
+    
+    my @elist = ($in =~ /([^&]*)(\&[a-zA-Z]+\;)?/mg); # text, entity, text, entity, ...
+    
+    while (@elist)
+      {
+	# Join text.
+	
+	$out = join('', $out, @elist[0]);
+	shift @elist;
+	
+	# Find entity and join its text equivalent.
+	# Unknown entities are simply removed.
+	
+	for (@xe = @xml_entities; @xe; )
+	  {
+	    if (@xe[0] eq @elist[0]) { $out = join('', $out, @xe[1]); last; }
+	    shift @xe; shift @xe;
+	  }
+	
+	shift @elist;
+      }
+    
+    return($out);
+  }
+
+
+sub xml_plain_to_entities
+  {
+    my $in = @_[0];
+    my $out = "";
+    my @xe;
+    my $joined = 0;
+    
+    $in = $$in;
+    
+    my @clist = split(//, $in);
+    
+    while (@clist)
+      {
+	# Find character and join its entity equivalent.
+	# If none found, simply join the character.
+	
+	$joined = 0;		# Cumbersome.
+	
+	for (@xe = @xml_entities; @xe && !$joined; )
+	  {
+	    if (@xe[1] eq @clist[0]) { $out = join('', $out, @xe[0]); $joined = 1; }
+	    shift @xe; shift @xe;
+	  }
+	
+	if (!$joined) { $out = join('', $out, @clist[0]); }
+	shift @clist;
+      }
+    
+    return($out);
+  }
+
+
+# --- String and array manipulation --- #
+
+# Boolean/strings conversion.
+
+sub read_boolean
+  {
+    if (@_[0] eq "true") { return(1); }
+    elsif (@_[0] eq "yes") { return(1); }
+    return(0);
+  }
+
+sub print_boolean_yesno
+  {
+    if (@_[0] == 1) { return("yes"); }
+    return("no");
+  }
+
+sub print_boolean_truefalse
+  {
+    if (@_[0] == 1) { return("true"); }
+    return("false");
+  }
+
+
+# Pushes a value to an array, only if it's not already in there.
+# I'm sure there's a smarter way to do this. Should only be used for small lists,
+# as it's O(N^2). Larger lists with unique members should use a hash.
+
+sub push_unique
+  {
+    my $arr = @_[0];
+    my $found;
+    my $i;
+    
+    # Go through all elements in pushed list.
+    
+    for ($i = 1; @_[$i]; $i++)
+      {
+	# Compare against all elements in destination array.
+	
+	$found = "";
+	for $elem (@$arr)
+	  {
+	    if ($elem eq @_[$i]) { $found = $elem; last; }
+	  }
+	
+	if ($found eq "") { push(@$arr, @_[$i]); }
+      }
+  }
+
+
+sub is_line_comment_start
+  {
+    if (@_[0] =~ /^\#/) { return(1); }
+    return(0);
+  }
+
+
+# --- File operations --- #
+
+
+sub open_read_from_names
+  {
+    local *FILE;
+    my $fname = "";
+    
+    for $name (@_)
+      {
+	if (open(FILE, "$prefix/$name")) { $fname = $name; last; }
+      }
+    
+    if ($verbose)
+      {
+	(my $fullname = "$prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
+
+	if ($fname ne "") 
+	  { 
+	    print STDERR "Reading options from \"$fullname\".\n"; 
+	  }
+	else 
+	  { 
+	    print STDERR "Could not read \[@_\].\n"; 
+	  }
+      }
+    
+    return *FILE;
+  }
+
+
+sub open_write_from_names
+  {
+    local *FILE;
+    my $name;
+    my $fullname;
+    
+    # Find out where it lives.
+    
+    for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+    
+    if ($name eq "")
+      {
+	# If we couldn't locate the file, and have no prefix, give up.
+	
+	# If we have a prefix, but couldn't locate the file relative to '/',
+	# take the first name in the array and let that be created in $prefix.
+	
+	if ($prefix eq "")
+	  {
+	    if ($verbose) { print STDERR "No file to replace: \[@_\].\n"; }
+	    return(0);
+	  }
+	else
+	  {
+	    $name = @_[0];
+	    if ($verbose)
+	      {
+		(my $fullname = "$prefix/$name") =~ tr/\//\//s;
+		print STDERR "Could not find \[@_\]. Writing to \"$fullname\".\n";
+	      }
+	  }
+      }
+    elsif ($verbose)
+      {
+	(my $fullname = "$prefix/$name") =~ tr/\//\//s;
+	print STDERR "Found \"$name\". Writing to \"$fullname\".\n";
+      }
+    
+    ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+      create_path($name);
+    
+    # Make a backup if the file already exists - if the user specified a prefix,
+    # it might not.
+    
+    if (stat($name))
+      {
+	# NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+	# to specify a $name list somehow, in the future.
+	
+	system("cp $name $name.confsave >/dev/null 2>/dev/null");
+      }
+    
+    # Truncate and return filehandle.
+    
+    if (!open(FILE, ">$name") && $verbose)
+      {
+	print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+      }
+    
+    return *FILE;
+  }
+
+
+sub open_filter_write_from_names
+  {
+    local *INFILE;
+    local *OUTFILE;
+    my $name;
+    
+    # Find out where it lives.
+    
+    for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+    
+    if ($name eq "")
+      {
+	# If we couldn't locate the file, and have no prefix, give up.
+	
+	# If we have a prefix, but couldn't locate the file relative to '/',
+	# take the first name in the array and let that be created in $prefix.
+	
+	if ($prefix eq "")
+	  {
+	    if ($verbose) { print STDERR "No file to patch: \[@_\].\n"; }
+	    return(0, 0);
+	  }
+	else
+	  {
+	    $name = @_[0];
+	    if ($verbose)
+	      {
+		(my $fullname = "$prefix/$name") =~ tr/\//\//s;
+		print STDERR "Could not find \[@_\]. Patching \"$fullname\".\n";
+	      }
+	  }
+      }
+    elsif ($verbose)
+      {
+	(my $fullname = "$prefix/$name") =~ tr/\//\//s;
+	print STDERR "Found \"$name\". Patching \"$fullname\".\n";
+      }
+    
+    ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+      create_path($name);
+    
+    # Make a backup if the file already exists - if the user specified a prefix,
+    # it might not.
+    
+    if (stat($name))
+      {
+	# NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+	# to specify a $name list somehow, in the future.
+	
+	system("cp $name $name.confsave >/dev/null 2>/dev/null");
+      }
+    
+    # Return filehandles. Backup file is used as filter input. It might be
+    # invalid, in which case the caller should just write to OUTFILE without
+    # bothering with INFILE filtering.
+    
+    open(INFILE, "$name.confsave");
+    
+    if (!open(OUTFILE, ">$name") && $verbose)
+      {
+	print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+      }
+    
+    return(*INFILE, *OUTFILE);
+  }
+
+
+sub create_path
+  {
+    my $path;
+    
+    $path = @_[0];
+    my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
+    
+    for ($path = ""; @pelem; shift @pelem)
+      {
+	if (@pelem[1] ne "")
+	  {
+	    $path = "$path@pelem[0]";
+	    mkdir($path, 0770);
+	    $path = "$path/";
+	  }
+      }
+  }
+
+
+# --- XML parsing --- #
+
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+  {
+    # Scan XML to tree.
+    
+    $tree = xml_scan;
+    
+    # Walk the tree recursively and extract configuration parameters.
+    # This is the top level - find and enter the "networking" tag.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] eq "memory") { xml_parse_memory(@$tree[1]); }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+    
+    return($tree);
+  }
+
+
+# <memory>...</memory>
+
+sub xml_parse_memory
+  {
+    my $tree = @_[0];
+    
+    shift @$tree;		# Skip attributes.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] eq "swapdev") 
+	  { 
+	    push @cf_swapinfo, xml_parse_swapinfo (@$tree[1]); 
+	  }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+  }
+
+
+# <swap-device>...</swap-device>
+
+sub xml_parse_swapinfo
+  {
+    my $tree = @_[0];
+    my $node;
+    my $entry = {};
+    
+    shift @$tree;		# Skip attributes.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] eq 'device') 
+	  { 
+	    $entry->{device} = xml_get_word (@$tree[1]);
+	  }
+	elsif (@$tree[0] eq 'enabled') 
+	  {
+	    $node = @$tree[1];
+	    $entry->{enabled} = read_boolean (@$node[0]->{state});
+	  }
+	elsif (@$tree[0] eq 'priority') 
+	  { 
+	    $entry->{priority} = xml_get_word (@$tree[1]);
+	  }
+	elsif (@$tree[0] eq 'size') 
+	  { 
+	    $entry->{size} = xml_get_word (@$tree[1]);
+	  }
+	elsif (@$tree[0] eq 'isfile') 
+	  { 
+	    $node = @$tree[1];
+	    $entry->{is_file} = read_boolean (@$node[0]->{state});
+	  }
+	elsif (@$tree[0] eq 'isnew') 
+	  { 
+	    $node = @$tree[1];
+	    $entry->{is_new} = read_boolean (@$node[0]->{state});
+	  }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+
+    return $entry;
+  }
+
+# Compresses node into a word and returns it.
+
+sub xml_get_word
+  {
+    my $tree = @_[0];
+    
+    shift @$tree;		# Skip attributes.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] == 0)
+	  {
+	    my $retval;
+	    
+	    ($retval = @$tree[1]) =~ tr/ \n\r\t\f//d;
+	    $retval = xml_entities_to_plain(\$retval);
+	    return($retval);
+	  }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+    
+    return("");
+  }
+
+
+# Replaces misc. whitespace with spaces and returns text.
+
+sub xml_get_text
+  {
+    my $tree = @_[0];
+    
+    shift @$tree;		# Skip attributes.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] = 0)
+	  {
+	    ($retval = @$tree[1]) =~ tr/\n\r\t\f/    /;
+	    $retval = xml_entities_to_plain(\$retval);
+	    return($retval);
+	  }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+  }
+
+
+# --- XML printing --- #
+
+
+sub xml_print
+  {
+    print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+    print "<!DOCTYPE memory []>\n\n";
+    print "<hardware>\n";
+    enter;
+
+    vspace;
+    indent; print "<!-- Configuration starts here -->\n";
+    vspace;
+
+    foreach $entry (@cf_hardware)
+      {
+	indent; print "<device id='$entry->{id}'>\n";
+
+      LOOP: while (($key, $value) = each %$entry)
+	  {
+	    next if $key eq 'id';
+	    next if $key eq 'io';
+
+	  SWITCH: 
+	    {
+	      $_ = $key;
+	      /^ports/ && do 
+		{
+		  foreach $range (@$value)
+		    {
+		      indent; indent; print "<io low='$range->{low}' high='$range->{high}'/>\n";
+		    }
+		  last SWITCH;
+		};
+	      /^interrupts/ && do 
+		{
+		  foreach $number (@$value)
+		    {
+		      indent; indent; print "<interrupt number='$number'/>\n";
+		    }
+		  last SWITCH;
+		};
+	      /^dma/ && do 
+		{
+		  foreach $channel (@$value)
+		    {
+		      indent; indent; print "<dma channel='$channel'/>\n";
+		    }
+		  last SWITCH;
+		};
+	      /^modes/ && do
+		{
+		  foreach $mode (@$value)
+		    {
+		      indent; indent; print "<mode>$mode</mode>\n";
+		    }
+		  last SWITCH;
+		};
+	      (/^id/ || /^io/ || /^irq/) && next LOOP;
+
+	      indent; indent; print "<$key>$value</$key>\n";
+	    }
+	  }
+
+	indent; print "</device>\n";
+	vspace;
+      }
+
+    indent; print "<!-- End of configuration -->\n";
+    vspace;
+
+    leave;
+    print "</hardware>\n";
+  }
+
+
+# --- Get (read) config --- #
+
+###############################################################################
+# Reading and parsing configuration files, running programs to get
+# configuration info, etc.
+###############################################################################
+
+# This is going to choke when one tries to run it on a conf.modules
+# with conditionals. Hopefully no one will try to do that until I
+# implement that feature.
+
+sub read_conf_modules
+  {
+    local (*CONF_MODULES_FILE);
+    my (%real_names);
+
+    *CONF_MODULES_FILE = open_read_from_names (@conf_modules_names);
+
+  LINE: while (<CONF_MODULES_FILE>)
+      {
+	/^alias\s+([^\s]+)\s+([^\s]+)\n$/ && do
+	  {
+	    next LINE if $cf_modules{$1};   # Already exists????
+	    $cf_modules{$1} = 
+	      { 'module' => $2, 'options' => $cf_modules{$2}->{options} };
+	    $real_names{$2} = $1;
+	    delete $cf_modules{$2};
+	    next LINE;
+	  };
+	/^options\s+([^\s]+)\s+(.*)\n$/ && do
+	  {
+	    $module_name = $1;
+	    $module_name = $real_names{$1} if defined $real_names{$1};
+	    $cf_modules{$module_name}->{options} = { split /\s+|=/, $2 };
+	    next LINE;
+	  };
+      }
+
+    close CONF_MODULES_FILE;
+  }
+
+sub read_isapnp_conf
+  {
+  }
+
+# Section handlers
+
+sub handle_input_device
+  {
+    my ($entry);
+
+    $entry->{type} = 'input-device';
+
+    while (<XF86CONFIG_FILE>)
+      {
+	s/\s*#.*\n$//g;          # Strip out comments
+	next if not length;
+	last if /EndSection/;
+
+	/Identifier\s+\"([^\"]+)\"/ && do { $entry->{name} = $1; };
+	/Driver\s+\"([^\"]+)\"/     && do { $entry->{driver} = $1; };
+	/Option\s+\"([^\"]+)\"\s+\"([^\"])\"/ && do 
+	  { $entry->{$1} = [ split /\s+/, $2 ]; };
+      }
+
+    return $entry;
+  }
+
+sub read_XF86Config
+  {
+    local (*XF86CONFIG_FILE);
+    my ($entry);
+
+    my (%section_handler_table) = 
+      ( 'InputDevice' => \&handle_input_device );
+
+    *XF86CONFIG_FILE = open_read_from_names (@XF86Config_names);
+
+    while (<XF86CONFIG_FILE>)
+      {
+	s/\s*#.*\n$//g;          # Strip out comments
+	next if not length;
+	
+	if (/Section\s+\"([^\"]+)\"/)
+	  {
+	    push @cf_xf86config, &{$section_handler_table{$1}}
+	      if exists $section_handler_table{$1};
+	  }
+      }
+
+    close XF86CONFIG_FILE;
+  }
+
+# Read I/O port allocation
+
+sub read_proc_ioports
+  {
+    local (*IOPORTS_FILE);
+    my ($entry);
+
+    open IOPORTS_FILE, "/proc/ioports";
+
+    while (<IOPORTS_FILE>)
+      {
+	$entry = {};
+	($low, $high, $entry->{device}) = 
+	  /\A([0-9a-f]{4})-([0-9a-f]{4}) : (.+)\n/;
+
+	$entry->{low} = hex $low;
+	$entry->{high} = hex $high;
+
+	push @cf_ioports, $entry;
+      }
+
+    close IOPORTS_FILE;
+  }
+
+# Read IRQ allocation
+
+sub read_proc_interrupts
+  {
+    local (*IRQ_FILE);
+    my ($irq, $device);
+
+    open IRQ_FILE, "/proc/interrupts";
+
+    while (<IRQ_FILE>)
+      {
+	($irq, $device) =
+	  /^\s+(\d+):\s+\d+\s+[a-zA-Z\-]+\s+(.+)\n/;
+	$cf_irq{$irq} = [split /, /, $device]
+	  if defined $irq;
+      }
+
+    close IRQ_FILE;
+  }
+
+# Read DMA allocation
+
+sub read_proc_dma
+  {
+    local (*DMA_FILE);
+    my ($channel, $device);
+
+    open DMA_FILE, "/proc/interrupts";
+
+    while (<DMA_FILE>)
+      {
+	($channel, $device) =
+	  /\A\s+(\d+):\s+(.+)\Z/;
+	$cf_dma{$channel} = [split /, /, $device];
+      }
+
+    close DMA_FILE;
+  }
+
+# Read PCI bus device information
+
+sub read_proc_pci
+  {
+  }
+
+# Read IDE information
+
+sub read_proc_ide
+  {
+    local (*CONTROLLER_DIR);
+
+    opendir CONTROLLER_DIR, "/proc/ide";
+
+    if (CONTROLLER_DIR)
+      {
+	foreach $i (readdir (CONTROLLER_DIR))
+	  {
+	    next if not $i =~ /ide(\d+)/;
+	    $cf_ide[$1] = { 'id' => "ide$1" };
+	  }
+      }
+
+    closedir CONTROLLER_DIR;
+  }
+
+# Read SCSI information
+
+sub read_proc_scsi
+  {
+  }
+
+# Read parallel port information
+
+sub read_proc_parport
+  {
+    my ($entry, $line);
+    local (*PARPORT_DIR);
+
+    opendir PARPORT_DIR, "/proc/parport";
+    return if !PARPORT_DIR;
+
+    foreach $i (readdir (PARPORT_DIR))
+      {
+	next if not $i =~ /\d+/;
+	$entry = {'id' => "parport$i"};
+
+	open PARPORT_FILE, "/proc/parport/$i/hardware";
+
+	LINE: while (<PARPORT_FILE>)
+	  {
+	    /^base:[\s]+(0x[0-9a-f]+)/ && do { $entry->{io} = [$1]; next LINE; };
+	    /^irq:[\s]+(none|[0-9]+)/  && do { $entry->{irq} = [$1] if $1 ne 'none'; next LINE; };
+	    /^dma:[\s]+(none|[0-9]+)/  && do { $entry->{dma} = [$1] if $1 ne 'none'; next LINE; };
+	    /^modes:[\s]+([\d\w,]+)/   && do { $entry->{modes} = [split /,/, $1]; next LINE; };
+	  }
+
+	push @cf_parallel, $entry;
+
+	close PARPORT_FILE;
+      }
+
+    closedir PARPORT_DIR;
+  }
+
+# Find all serial ports by running setserial -g on /dev/ttyS*
+
+sub get_serial_ports
+  {
+    my ($entry, $line);
+
+    foreach $i ('/dev/ttyS0', '/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3')
+      {
+	$line = `setserial -g $i`;
+	$entry = {};
+	($entry->{id}, $entry->{uart}, $port, $irq) =
+	  ($line =~ /\/dev\/(ttyS[0-9]+), UART: ([0-9A-Za-z]+), Port: (0x[0-9a-f]+), IRQ: ([0-9]+)/);
+	next if $entry->{uart} eq 'unknown';
+
+	$entry->{type} = 'Serial Port';
+	$entry->{io} = [hex $port];
+	$entry->{irq} = [$irq];
+	push @cf_serial, $entry;
+      }
+  }
+
+# Find all network interfaces by running /sbin/ifconfig
+
+sub get_network_interfaces
+  {
+    local (*IFCONFIG_OUTPUT);
+
+    open IFCONFIG_OUTPUT, "/sbin/ifconfig -a|";
+
+    while (<IFCONFIG_OUTPUT>)
+      {
+	if (/^([\w\d]+)/)
+	  {
+	    next if $1 eq 'lo';
+	    $entry = { 'id' => $1 };
+	    /HWaddr (([A-F\d]{2}:){5}[A-F\d]{2})/ && do { $entry->{macaddr} = $1; };
+	    /Link encap:(\w+|(\w+\s)+\w+)/ && do { $entry->{type} = $1; };
+	    push @cf_nic, $entry;
+	  }
+      }
+  }
+
+# Find the record in the io ports list that contains a given I/O
+# port. Check to make sure it actually matches the given device.
+
+sub find_port_record
+  {
+    my ($port, $device) = @_;
+
+    foreach $entry (@cf_ioports)
+      {
+	if ($port >= $entry->{low} and $port <= $entry->{high})
+	  {
+	    $entry->{error} = 1 if $device && $device ne $entry->{device};
+	    return $entry;
+	  }
+      }
+
+    return undef;
+  }
+
+# Combine all the hardware configuration into one `master list',
+# finding any descrepencies and reporting them
+
+sub combine
+  {
+    my (%hardware);
+    my ($index);
+    my (@words) = ('Primary', 'Secondary', 'Tertiary', 'Quaternary');
+
+    $index = 0;
+
+    foreach $entry (@cf_serial)
+      {
+	next if not $entry->{id};
+
+	$hardware{$entry->{id}} = 
+	  {
+	   'type' => "Serial port",
+	   'id' => $entry->{id},
+	   'ports' => [ find_port_record ($entry->{io}->[0], $entry->{id}) ],
+	   'interrupts' => $entry->{irq},
+	   'name' => "$words[$index] serial port"
+	  };
+
+	$index++;
+      }
+
+    $index = 0;
+
+    foreach $entry (@cf_parallel)
+      {
+	next if not $entry->{id};
+
+	$hardware{$entry->{id}} =
+	  {
+	   'type' => "Parallel port",
+	   'id' => $entry->{id},
+	   'ports' => [ find_port_record ($entry->{io}->[0], $entry->{id}) ],
+	   'interrupts' => $entry->{irq},
+	   'name' => "$words[$index] parallel port"
+	  };
+
+	$index++;
+      }
+
+    $index = 0;
+
+    foreach $controller (@cf_ide)
+      {
+	next if not $controller->{id};
+
+	$entry = 
+	  { 
+	   'type' => "Disk controller", 
+	   'id' => $controller->{id}, 
+	   'ports' => [], 
+	   'interrupts' => [],
+	   'name' => "$words[$index] IDE disk controller"
+	  };
+
+	$hardware{$entry->{id}} = $entry;
+	$index++;
+      }
+
+    $index = 0;
+
+    foreach $nic (@cf_nic)
+      {
+	next if not $nic->{id};
+
+	$entry =
+	  {
+	   'type' => "Network interface card",
+	   'id' => $nic->{id},
+	   'subtype' => $nic->{type},
+	   'macaddr' => $nic->{macaddr},
+	   'ports' => [],
+	   'interrupts' => [],
+	   'dma' => [],
+	   'name' => "$words[$index] network interface card",
+	  };
+
+	$hardware{$entry->{id}} = $entry;
+	$index++;
+      }
+
+    $index_kbd = 0;
+    $index_mouse = 0;
+
+    foreach $device (@cf_xf86config)
+      {
+	if ($device->{driver} eq 'keyboard')
+	  {
+	    $entry =
+	      {
+	       'type' => "Keyboard",
+	       'id' => "XFree86:$device->{name}",
+	       'driver' => $device->{driver},
+	       'name' => "$words[$index_kdb] keyboard"
+	      }
+	  }
+	elsif ($device->{driver} eq 'mouse')
+	  {
+	    next;
+	  }
+
+	$hardware{$entry->{id}} = $entry;
+	$index_kbd++;
+	$index_mouse++;
+      }
+
+    foreach $entry (@cf_ioports)
+      {
+	push_unique ($hardware{$entry->{device}}->{ports}, $entry)
+	  if exists $hardware{$entry->{device}};
+      }
+
+    while (($irq, $devices) = each %cf_irq)
+      {
+	foreach $device (@$devices)
+	  {
+	    push_unique ($hardware{$device}->{interrupts}, $irq)
+	      if exists $hardware{$device};
+	  }
+      }
+
+    while (($channel, $devices) = each %cf_dma)
+      {
+	foreach $device (@$devices)
+	  {
+	    push_unique ($hardware{$device}->{dma}, $channel)
+	      if exists $hardware{$device};
+	  }
+      }
+
+    @cf_hardware = values %hardware;
+  }
+
+sub get
+  {
+    if ($verbose) 
+      { 
+	print STDERR "Getting system configuration, generating XML output.\n";
+      }
+    
+    if ($verbose) { print STDERR "Getting swap entries.\n"; }
+
+    # For each basic type of device, read all the information about it
+    # from all the different sources. FIXME: Perhaps we should read in
+    # some commonly-used files, like conf.modules and /proc/* first.
+    
+    # We're going to replace this with a more extensible, modular
+    # system soon, but for now, we'll just hardcode everything.
+
+    read_conf_modules;
+    read_isapnp_conf;
+    read_XF86Config;
+    read_proc_ioports;
+    read_proc_interrupts;
+    read_proc_dma;
+    read_proc_pci;
+    read_proc_ide;
+    read_proc_scsi;
+    read_proc_parport;
+    get_serial_ports;
+    get_network_interfaces;
+
+    combine;
+
+    if ($verbose) { print STDERR "Printing XML.\n"; }
+    xml_print;
+  }
+
+
+# --- Set (write) config --- #
+
+
+
+sub set
+  {
+    if ($verbose) 
+      { 
+	print STDERR "Setting system configuration from XML input.\n"; 
+      }
+
+    if ($verbose) { print STDERR "Parsing XML.\n"; }
+    xml_parse;
+    
+    if ($do_immediate)
+      {
+	if ($verbose) 
+	  { 
+	    print STDERR 
+	      "Changing running configuration via local utilities.\n"; 
+	  }
+# Set configuration here
+      }
+  }
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+  {
+    xml_parse;
+    xml_print;
+  }
+
+
+# --- Main --- #
+
+$operation = "";		# Major operation user wants to perform. [get | set | filter]
+
+
+sub set_operation
+  {
+    if ($operation ne "")
+      {
+	print STDERR "Error: You may specify only one major operation.\n\n";
+	print STDERR $Usage;
+	exit(1);
+      }
+    
+    $operation = @_[0];
+  }
+
+
+# Process options.
+
+while (@ARGV)
+  {
+    if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { set_operation("get"); }
+    elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { set_operation("set"); }
+    elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { set_operation("filter"); }
+    elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print STDERR $Usage; exit(0); }
+    elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+      {
+	if ($prefix ne "")
+	  {
+	    print STDERR "Error: You may specify --prefix only once.\n\n";
+	    print STDERR $Usage; exit(1);
+	  }
+	
+	$prefix = @ARGV[1];
+	
+	if ($prefix eq "")
+	  {
+	    print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
+	    print STDERR $Usage; exit(1);
+	  }
+	
+	shift @ARGV;		# For the argument.
+      }
+    elsif (@ARGV[0] eq "--disable-immediate")           { $do_immediate = 0; }
+    elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $verbose = 1; }
+    else
+      {
+	print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+	print STDERR $Usage; exit(1);
+      }
+
+    shift @ARGV;
+  }
+
+
+# Do our thing.
+
+if    ($operation eq "get")    { get; }
+elsif ($operation eq "set")    { set; }
+elsif ($operation eq "filter") { filter; }
+else
+  {
+    print STDERR "Error: No operation specified.\n\n";
+    print STDERR $Usage; exit(1);
+  }
+

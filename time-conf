@@ -1,0 +1,1098 @@
+#!/usr/bin/perl
+
+# Time configurator. Designed to be architecture- and distribution independent.
+#
+# Copyright (C) 2000 Helix Code, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@helixcode.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/ntp.conf
+# /etc/ntp/step-tickers
+# /etc/localtime
+
+# Running programs affected/used:
+#
+# date
+
+
+# --- Usage text --- #
+
+my $Usage =<<"End_of_Usage;";
+Usage: time-conf <--get | --set | --filter | --help>
+                 [--prefix <location>] [--disable-immediate]
+                 [--verbose]
+
+       Major operations (specify one of these):
+
+       -g --get      Prints the current time configuration to standard
+                     output, as as standalone XML document. The parameters
+                     are read from the host\'s low-level configuration.
+
+       -s --set      Updates the system time configuration from a standalone
+                     XML document read from standard input. The format is
+                     the same as for the document generated with --get.
+
+       -f --filter   Reads XML configuration from standard input, parses it,
+                     and writes the configurator\'s impression of it back to
+                     standard output. Good for debugging and parsing tests.
+
+       -h --help     Prints this page to standard output. That\'s all.
+
+          --version  Prints version information to standard output.
+
+       Modifiers (specify any combination of these):
+
+       -p --prefix <location>  Specifies a directory prefix where the
+                     configuration is looked for or stored. When storing
+                     (with --set), directories and files may be created.
+
+          --disable-immediate  With --set, prevents the configurator from
+                     running any commands that make immediate changes to
+                     the system configuration. Use with --prefix to make a
+                     dry run that won\'t affect your configuration.
+
+                     With --get, suppresses running of non-vital external
+                     programs that might take a long time to finish.
+
+       -v --verbose  Turns on diagnostic messages to standard error.
+
+End_of_Usage;
+
+$version = "0.1.0";
+
+# --- System config file locations --- #
+
+# We list each config file type with as many alternate locations as possible.
+# They are tried in array order. First found = used.
+
+@ntp_conf_names =         ( "/etc/ntp.conf" );
+@ntp_step_tickers_names = ( "/etc/ntp/step-tickers" );
+
+
+# --- Internal configuration variables --- #
+
+# Configuration is parsed/read to, and printed/written from, these temporary variables.
+
+$cf_year = 0;
+$cf_month = 0;
+$cf_mday = 0;
+$cf_hour = 0;
+$cf_minute = 0;
+$cf_second = 0;
+
+$cf_timezone = "";
+
+$cf_sync_active = 0;
+@cf_servers = ();
+
+
+# --- Operation modifying variables --- #
+
+# Variables are set to their default value, which may be overridden by user. Note
+# that a $prefix of "" will cause the configurator to use '/' as the base path,
+# and disables creation of directories and writing of previously non-existent
+# files.
+
+$prefix = "";
+$verbose = 0;
+$do_immediate = 1;
+
+
+# --- XML print formatting  --- #
+
+# enter: Call after entering a block. Increases indent level.
+# leave: Call before leaving a block. Decreases indent level.
+# indent: Call before printing a line. Indents to current level. 
+# vspace: Ensures there is a vertical space of one and only one line.
+
+$indent_level = 0;
+$have_vspace = 0;
+
+sub enter  { $indent_level += 2; }
+sub leave  { $indent_level -= 2; }
+sub indent { for ($i = 0; $i < $indent_level; $i++) { print " "; } $have_vspace = 0; }
+sub vspace { if (not $have_vspace) { print "\n"; $have_vspace = 1; } }
+
+
+# --- XML scanning --- #
+
+# This code tries to replace XML::Parser scanning from stdin in tree mode.
+
+
+@xml_scan_list;
+
+
+sub xml_scan_make_kid_array
+{
+  my %hash = {};
+  my @sublist;
+
+  @attr = @_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z]+)/g;
+  %hash = @attr;
+
+  push(@sublist, \%hash);
+  return(\@sublist);
+}
+
+
+sub xml_scan_recurse;
+
+sub xml_scan_recurse
+{
+  my @list;
+  if (@_) { @list = @_[0]->[0]; }
+
+  while (@xml_scan_list)
+  {
+    $el = @xml_scan_list[0]; shift @xml_scan_list;
+
+    if ((not $el) || $el =~ /^\<[!?].*\>$/s) { next; }  # Empty strings, PI and DTD must go.
+
+    if ($el =~ /^\<.*\/\>$/s)     # Empty.
+    {
+      $el =~ /^\<([a-zA-Z]+).*\/\>$/s;
+      push(@list, $1);
+      push(@list, xml_scan_make_kid_array($el));
+    }
+    elsif ($el =~ /^\<\/.*\>$/s)  # End.
+    {
+      last;
+    }
+    elsif ($el =~ /^\<.*\>$/s)    # Start.
+    {
+      $el =~ /^\<([a-zA-Z]+).*\>$/s;
+      push(@list, $1);
+      $sublist = xml_scan_make_kid_array($el);
+      push(@list, xml_scan_recurse($sublist));
+      next;
+    }
+    elsif ($el ne "")             # PCDATA.
+    {
+      push(@list, 0);
+      push(@list, "$el");
+    }
+  }
+
+  return(\@list);
+}
+
+
+sub xml_scan
+{
+  my $doc; my @tree;
+  read STDIN, $doc, 512000;  # Read in document (FIXME: ugly).
+  @xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg);  # pcdata, tag, pcdata, tag, ...
+
+  $tree = xml_scan_recurse;
+
+  return($tree);
+
+#  $" = "\n";
+#  print "@list\n";
+}
+
+
+@xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"' );
+
+sub xml_entities_to_plain
+{
+  my $in = @_[0];
+  my $out = "";
+  my @xe;
+
+  $in = $$in;
+
+  my @elist = ($in =~ /([^&]*)(\&[a-zA-Z]+\;)?/mg);  # text, entity, text, entity, ...
+
+  while (@elist)
+  {
+    # Join text.
+
+    $out = join('', $out, @elist[0]);
+    shift @elist;
+    
+    # Find entity and join its text equivalent.
+    # Unknown entities are simply removed.
+
+    for (@xe = @xml_entities; @xe; )
+    {
+      if (@xe[0] eq @elist[0]) { $out = join('', $out, @xe[1]); last; }
+      shift @xe; shift @xe;
+    }
+
+    shift @elist;
+  }
+
+  return($out);
+}
+
+
+sub xml_plain_to_entities
+{
+  my $in = @_[0];
+  my $out = "";
+  my @xe;
+  my $joined = 0;
+
+  $in = $$in;
+
+  my @clist = split(//, $in);
+
+  while (@clist)
+  {
+    # Find character and join its entity equivalent.
+    # If none found, simply join the character.
+
+    $joined = 0;  # Cumbersome.
+
+    for (@xe = @xml_entities; @xe && !$joined; )
+    {
+      if (@xe[1] eq @clist[0]) { $out = join('', $out, @xe[0]); $joined = 1; }
+      shift @xe; shift @xe;
+    }
+
+    if (!$joined) { $out = join('', $out, @clist[0]); }
+    shift @clist;
+  }
+
+  return($out);
+}
+
+
+# --- String and array manipulation --- #
+
+# Boolean/strings conversion.
+
+sub read_boolean
+{
+  if (@_[0] eq "true") { return(1); }
+  elsif (@_[0] eq "yes") { return(1); }
+  return(0);
+}
+
+sub print_boolean_yesno
+{
+  if (@_[0] == 1) { return("yes"); }
+  return("no");
+}
+
+sub print_boolean_truefalse
+{
+  if (@_[0] == 1) { return("true"); }
+  return("false");
+}
+
+
+# Pushes a value to an array, only if it's not already in there.
+# I'm sure there's a smarter way to do this. Should only be used for small lists,
+# as it's O(N^2). Larger lists with unique members should use a hash.
+
+sub push_unique
+{
+  my $arr = @_[0];
+  my $found;
+  my $i;
+
+  # Go through all elements in pushed list.
+
+  for ($i = 1; @_[$i]; $i++)
+  {
+    # Compare against all elements in destination array.
+
+    $found = "";
+    for $elem (@$arr)
+    {
+      if ($elem eq @_[$i]) { $found = $elem; last; }
+    }
+
+    if ($found eq "") { push(@$arr, @_[$i]); }
+  }
+}
+
+
+sub is_line_comment_start
+{
+  if (@_[0] =~ /^\#/) { return(1); }
+  return(0);
+}
+
+
+# --- File operations --- #
+
+
+sub open_read_from_names
+{
+  my $FILE;
+  my $fname = "";
+
+  for $name (@_)
+  {
+    if (open(FILE, "$prefix/$name")) { $fname = $name; last; }
+  }
+
+  if ($verbose)
+  {
+    (my $fullname = "$prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'
+    if ($fname ne "") { print STDERR "Reading options from \"$fullname\".\n"; }
+    else { print STDERR "Could not read \[@_\].\n"; }
+  }
+
+  return($FILE);
+}
+
+
+sub open_write_from_names
+{
+  my $FILE;
+  my $name;
+  my $fullname;
+
+  # Find out where it lives.
+
+  for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+
+  if ($name eq "")
+  {
+    # If we couldn't locate the file, and have no prefix, give up.
+
+    # If we have a prefix, but couldn't locate the file relative to '/',
+    # take the first name in the array and let that be created in $prefix.
+
+    if ($prefix eq "")
+    {
+      if ($verbose) { print STDERR "No file to replace: \[@_\].\n"; }
+      return(0);
+    }
+    else
+    {
+      $name = @_[0];
+      if ($verbose)
+      {
+        (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+        print STDERR "Could not find \[@_\]. Writing to \"$fullname\".\n";
+      }
+    }
+  }
+  elsif ($verbose)
+  {
+    (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+    print STDERR "Found \"$name\". Writing to \"$fullname\".\n";
+  }
+
+  ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
+  create_path($name);
+
+  # Make a backup if the file already exists - if the user specified a prefix,
+  # it might not.
+
+  if (stat($name))
+  {
+    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+    # to specify a $name list somehow, in the future.
+
+    system("cp $name $name.confsave >/dev/null 2>/dev/null");
+  }
+
+  # Truncate and return filehandle.
+
+  if (!open(FILE, ">$name") && $verbose)
+  {
+    print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+  }
+
+  return($FILE);
+}
+
+
+sub open_filter_write_from_names
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $name;
+
+  # Find out where it lives.
+
+  for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+
+  if ($name eq "")
+  {
+    # If we couldn't locate the file, and have no prefix, give up.
+
+    # If we have a prefix, but couldn't locate the file relative to '/',
+    # take the first name in the array and let that be created in $prefix.
+
+    if ($prefix eq "")
+    {
+      if ($verbose) { print STDERR "No file to patch: \[@_\].\n"; }
+      return(0, 0);
+    }
+    else
+    {
+      $name = @_[0];
+      if ($verbose)
+      {
+        (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+        print STDERR "Could not find \[@_\]. Patching \"$fullname\".\n";
+      }
+    }
+  }
+  elsif ($verbose)
+  {
+    (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+    print STDERR "Found \"$name\". Patching \"$fullname\".\n";
+  }
+
+  ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
+  create_path($name);
+
+  # Make a backup if the file already exists - if the user specified a prefix,
+  # it might not.
+
+  if (stat($name))
+  {
+    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+    # to specify a $name list somehow, in the future.
+
+    system("cp $name $name.confsave >/dev/null 2>/dev/null");
+  }
+
+  # Return filehandles. Backup file is used as filter input. It might be
+  # invalid, in which case the caller should just write to OUTFILE without
+  # bothering with INFILE filtering.
+
+  open(INFILE, "$name.confsave");
+
+  if (!open(OUTFILE, ">$name") && $verbose)
+  {
+    print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+  }
+
+  return($INFILE, $OUTFILE);
+}
+
+
+sub open_write_new_from_names
+{
+  my $FILE;
+  my $name;
+  my $fullname;
+
+  # Find out where it lives.
+
+  for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+
+  if ($name eq "")
+  {
+    # Take the first name in the array and let that be created in $prefix.
+
+    $name = @_[0];
+    if ($verbose)
+    {
+      (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+      print STDERR "Could not find \[@_\]. Writing to \"$fullname\".\n";
+    }
+  }
+  elsif ($verbose)
+  {
+    (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+    print STDERR "Found \"$name\". Writing to \"$fullname\".\n";
+  }
+
+  ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
+  create_path($name);
+
+  # Make a backup if the file already exists - if the user specified a prefix,
+  # it might not.
+
+  if (stat($name))
+  {
+    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+    # to specify a $name list somehow, in the future.
+
+    system("cp $name $name.confsave >/dev/null 2>/dev/null");
+  }
+
+  # Truncate and return filehandle.
+
+  if (!open(FILE, ">$name") && $verbose)
+  {
+    print STDERR "Error: Failed to write to \"$name\". Are you root?\n";
+  }
+
+  return($FILE);
+}
+
+
+sub create_path
+{
+  my $path;
+
+  $path = @_[0];
+  my @pelem = split(/\//, $path);  # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
+
+  for ($path = ""; @pelem; shift @pelem)
+  {
+    if (@pelem[1] ne "")
+    {
+      $path = "$path@pelem[0]";
+      mkdir($path, 0770);
+      $path = "$path/";
+    }
+  }
+}
+
+
+# --- Configuration file manipulation --- #
+
+# xntpd style /etc/ntp.conf
+#
+# <filtered lines>
+# server <server>
+# <filtered lines>
+#
+# Exists: Red Hat 6.x
+#
+# Absent:
+
+sub read_ntp_conf
+{
+  my $FILE;
+  
+  # Find the file.
+  
+  $FILE = open_read_from_names(@ntp_conf_names);
+  if (not FILE) { return; }
+  
+  # Parse the file.
+  
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if (@line[0] eq "") { shift(@line); }  # Leading whitespace.
+    
+    if (@line[0] eq "server" && @line[1] ne "127.127.1.0")  # Disregard loopback.
+    { push_unique(\@cf_servers, @line[1]); }
+  }
+}
+
+
+sub write_ntp_conf
+{
+  my $INFILE, $OUTFILE;
+  my $wrote_servers = 0;
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@ntp_conf_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if (@line[0] eq "") { shift(@line); }  # Leading whitespace.
+
+    if (@line[0] eq "server")
+    {
+      if (@line[1] eq "127.127.1.0") { print OUTFILE; }
+      elsif (!$wrote_servers)
+      {
+        for $elem (@cf_servers) { print OUTFILE "server $elem\n"; }
+        $wrote_servers = 1;
+      }
+    }
+    else { print OUTFILE; }
+  }
+  
+  if (!$wrote_servers)
+  {
+    for $elem (@cf_servers) { print OUTFILE "server $elem\n"; }
+    $wrote_servers = 1;
+  }
+  
+  close(OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
+
+
+# Red Hat style /etc/ntp/step-tickers
+#
+# <server>
+# <server>
+# ...
+#
+# This file is used as source for servers from which to sync the system
+# clock before xntpd is started. In Red Hat, this is done because xntpd
+# refuses to sync the clock if it is too much off.
+#
+# Exists: Red Hat 6.x
+#
+# Absent:
+
+sub write_ntp_step_tickers
+{
+  my $FILE;
+
+  # Find the file (it might very well not exist beforehand).
+
+  $FILE = open_write_from_names(@ntp_step_tickers_names);
+  if (not FILE) { return; }
+
+  # Write the file.
+
+  for $elem (@cf_servers) { print FILE "$elem\n"; }
+
+  close(FILE);
+}
+
+
+# Red Hat (?) style /etc/localtime
+#
+# Copied from /usr/share/zoneinfo/Etc/<match>, if found.
+# TODO: Otherwise, we generate it ourselves.
+#
+# Exists: Red Hat 6.x
+#
+# Absent:
+
+sub write_localtime
+{
+  my $tz, $name;
+	my $zonebase = "/usr/share/zoneinfo/Etc/";
+
+  # Dirty tricks.
+
+  $tz = $cf_timezone;
+  $tz =~ tr/+-0//d;
+  $tz = $tz * 1;
+  
+  if (!$tz) { $tz = "${zonebase}GMT"; }
+	elsif ($tz == 33) { $tz = "${zonebase}Iran"; }
+	elsif ($tz == 43) { $tz = "${zonebase}Asia/Kabul"; }
+	elsif ($tz == 53) { $tz = "${zonebase}Asia/Calcutta"; }
+	elsif ($tz == 63) { $tz = "${zonebase}Asia/Bangkok"; }
+	elsif ($tz == 93) { $tz = "${zonebase}Australia/Darwin"; }
+	elsif ($tz == 345) { $tz = "${zonebase}America/Guyana"; }
+  elsif ($cf_timezone =~ /\+.*/) { $tz = "${zonebase}GMT+$tz"; }
+  else { $tz = "${zonebase}GMT-$tz"; }
+
+  if (stat($tz) ne "")
+  {
+    # Badly needs fixing & porting.
+
+    $name = "/etc/localtime";
+
+    if ($verbose)
+    {
+      (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+      print STDERR "Writing timezone configuration to \"$fullname\".\n";
+    }
+
+    ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
+    create_path($name);
+
+    # Make a backup if the file already exists - if the user specified a prefix,
+    # it might not.
+
+    if (stat($name))
+    {
+      # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+      # to specify a $name list somehow, in the future.
+
+      system("cp $name $name.confsave >/dev/null 2>/dev/null");
+    }
+
+    # Replace the timezone info file.
+
+    unlink $name;
+    system("cp $tz $name >/dev/null 2>/dev/null");
+  }
+  
+  # TODO: We might not find a corresponding GMT[+|-] zone. If we don't,
+  # we'll have to make our own.
+}
+
+
+# --- XML parsing --- #
+
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  # Scan XML to tree.
+
+  $tree = xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "networking" tag.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "time") { xml_parse_time(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($tree);
+}
+
+
+# <networking>...</networking>
+
+sub xml_parse_time
+{
+  my $tree = @_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if    (@$tree[0] eq "year")     { $cf_year = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "month")    { $cf_month = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "monthday") { $cf_mday = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "hour")     { $cf_hour = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "minute")   { $cf_minute = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "second")   { $cf_second = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "timezone") { $cf_timezone = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "synchronization") { xml_parse_synchronization(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  if ($cf_timezone =~ /^(\+|-)0+$/) { $cf_timezone = "0000"; }  # GMT, eh?
+}
+
+
+sub xml_parse_synchronization
+{
+  my $tree = @_[0];
+
+  $cf_sync_active = read_boolean(@$tree[0]->{active});
+  shift @$tree;
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "server")  { push_unique(\@cf_servers, xml_get_word(@$tree[1])); }
+    
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+# Compresses node into a word and returns it.
+
+sub xml_get_word
+{
+  my $tree = @_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] == 0)
+    {
+      my $retval;
+
+      ($retval = @$tree[1]) =~ tr/ \n\r\t\f//d;
+      $retval = xml_entities_to_plain(\$retval);
+      return($retval);
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return("");
+}
+
+
+# Replaces misc. whitespace with spaces and returns text.
+
+sub xml_get_text
+{
+  my $tree = @_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] = 0)
+    {
+      ($retval = @$tree[1]) =~ tr/\n\r\t\f/    /;
+      $retval = xml_entities_to_plain(\$retval);
+      return($retval);
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+# --- XML printing --- #
+
+
+sub xml_print
+{
+  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+  print "<!DOCTYPE time []>\n\n";
+  print "<time>\n";
+  enter;
+
+  vspace;
+  indent; print "<!-- Configuration starts here -->\n";
+  vspace;
+
+  indent; print "<year>$cf_year</year>\n";
+  indent; print "<month>$cf_month</month>\n";
+  indent; print "<monthday>$cf_mday</monthday>\n";
+  
+  vspace;
+  
+  indent; print "<hour>$cf_hour</hour>\n";
+  indent; print "<minute>$cf_minute</minute>\n";
+  indent; print "<second>$cf_second</second>\n";
+
+  vspace;
+  indent; print "<timezone>$cf_timezone</timezone>\n";
+  vspace;
+  
+  vspace;
+  indent; print "<synchronization active='", print_boolean_yesno($cf_sync_active), "'>\n";
+  
+  enter;
+  
+  for $server (@cf_servers)
+  {
+    indent; print "<server>$server</server>\n";
+  }
+  
+  leave;
+  
+  indent; print "</synchronization>\n";
+  vspace;
+  
+  indent; print "<!-- End of configuration -->\n";
+  vspace;
+
+  leave;
+  print "</time>\n";
+}
+
+
+# --- Get (read) config --- #
+
+
+sub get_time
+{
+  my $datetext;
+  
+  $datetext = `date +%Y.%m.%d.%H:%M.%S.%z`;
+  
+  ($cf_year, $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_second, $cf_timezone) =
+    ($datetext =~ /^([0-9]+).([0-9]+).([0-9]+).([0-9]+):([0-9]+).([0-9]+).([-+0-9]+)/);
+
+  if ($cf_timezone =~ /\+.*/) { $cf_timezone =~ tr/+/-/; }
+  else { $cf_timezone =~ tr/-/+/; }
+
+  if ($cf_timezone =~ /^(\+|-)0+$/) { $cf_timezone = "0000"; }  # GMT, eh?
+
+  # TODO: We should fall back to internal Perl functions here.
+}
+
+
+sub check_servers
+{
+  if (-f "/etc/rc.d/init.d/xntpd")
+  {
+    if (!system "/etc/rc.d/init.d/xntpd status >/dev/null 2>/dev/null")
+    {
+      $cf_sync_active = 1;
+      if ($verbose) { print STDERR "Found XNTPD enabled.\n"; }
+    }
+    elsif ($verbose)
+    {
+      $cf_sync_active = 0;
+      print STDERR "Found XNTPD disabled.\n";
+    }
+  }
+  elsif ($verbose)
+  {
+    print STDERR "Warning: Could not find a way to check XNTPD status.\n";
+  }
+}
+
+
+sub get
+{
+  if ($verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
+
+  if ($verbose) { print STDERR "Getting time, date and timezone.\n"; }
+
+  read_ntp_conf;
+  get_time;
+  check_servers;
+
+  if ($verbose) { print STDERR "Printing XML.\n"; }
+  xml_print;
+}
+
+
+# --- Set (write) config --- #
+
+
+sub set_time
+{
+  system sprintf("date %02d%02d%02d%02d%04d.%02d >/dev/null 2>/dev/null",
+                 $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_year, $cf_second);
+}
+
+
+sub restart_servers
+{
+  if (-f "/etc/rc.d/init.d/xntpd")
+  {
+    if ($cf_sync_active)
+    {
+      if (system "/etc/rc.d/init.d/xntpd restart >/dev/null 2>/dev/null")
+      {
+        if ($verbose) { print STDERR "Warning: XNTPD restart failed.\n"; }
+      }
+      elsif ($verbose)
+      {
+        print STDERR "XNTPD restarted with new configuration.\n";
+      }
+    }
+    else
+    {
+      system "/etc/rc.d/init.d/xntpd stop >/dev/null 2>/dev/null";
+      if ($verbose) { print STDERR "XNTPD stopped.\n"; }
+    }
+  }
+  elsif ($verbose)
+  {
+    print STDERR "Warning: Could not find a way to restart XNTPD service.\n";
+  }
+}
+
+
+sub set
+{
+  if ($verbose) { print STDERR "Setting system configuration from XML input.\n"; }
+
+  if ($verbose) { print STDERR "Parsing XML.\n"; }
+  xml_parse;
+
+  write_ntp_conf;
+  write_ntp_step_tickers;
+  write_localtime;
+
+  if ($do_immediate)
+  {
+    if ($verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
+    set_time;
+    restart_servers;
+  }
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+{
+  xml_parse;
+  xml_print;
+}
+
+
+# --- Main --- #
+
+$operation = "";  # Major operation user wants to perform. [get | set | filter]
+
+
+sub set_operation
+{
+  if ($operation ne "")
+  {
+    print STDERR "Error: You may specify only one major operation.\n\n";
+    print STDERR $Usage;
+    exit(1);
+  }
+
+  $operation = @_[0];
+}
+
+
+# Process options.
+
+while (@ARGV)
+{
+  if    (@ARGV[0] eq "--get"    || @ARGV[0] eq "-g") { set_operation("get"); }
+  elsif (@ARGV[0] eq "--set"    || @ARGV[0] eq "-s") { set_operation("set"); }
+  elsif (@ARGV[0] eq "--filter" || @ARGV[0] eq "-f") { set_operation("filter"); }
+  elsif (@ARGV[0] eq "--help"   || @ARGV[0] eq "-h") { print $Usage; exit(0); }
+  elsif (@ARGV[0] eq "--version")                    { print "$version\n"; exit(0); }
+  elsif (@ARGV[0] eq "--prefix" || @ARGV[0] eq "-p")
+  {
+    if ($prefix ne "")
+    {
+      print STDERR "Error: You may specify --prefix only once.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    $prefix = @ARGV[1];
+
+    if ($prefix eq "")
+    {
+      print STDERR "Error: You must specify an argument to the --prefix option.\n\n";
+      print STDERR $Usage; exit(1);
+    }
+
+    shift @ARGV;  # For the argument.
+  }
+  elsif (@ARGV[0] eq "--disable-immediate")           { $do_immediate = 0; }
+  elsif (@ARGV[0] eq "--verbose" || @ARGV[0] eq "-v") { $verbose = 1; }
+  else
+  {
+    print STDERR "Error: Unrecognized option '@ARGV[0]'.\n\n";
+    print STDERR $Usage; exit(1);
+  }
+
+  shift @ARGV;
+}
+
+
+# Do our thing.
+
+if    ($operation eq "get")    { get; }
+elsif ($operation eq "set")    { set; }
+elsif ($operation eq "filter") { filter; }
+else
+{
+  print STDERR "Error: No operation specified.\n\n";
+  print STDERR $Usage; exit(1);
+}
