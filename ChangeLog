@@ -1,3 +1,32 @@
+2001-05-15  Hans Petter Jansson  <hpj@ximian.com>
+
+	* filesys.pl.in (xst_filesys_translate_ext2_device_to_label): Rename to
+	  xst_filesys_ext2_device_to_label.
+	  (xst_filesys_info_dup): Fix bug in options copying.
+	  (xst_filesys_info_merge_options): Fix typo in doc.
+	  (xst_filesys_info_set_options): Sync doc with actual use.
+	  (xst_filesys_info_match): Implement.
+	  (xst_filesys_info_match_options): Implement.
+	  (xst_filesys_info_match_data): Implement.
+	  (xst_filesys_table_find): Reimplement.
+	  (xst_filesys_table_find_info_equivalent): Implement.
+	  (xst_filesys_hash_to_table): Fix typo in doc.
+	  (xst_filesys_entry_identify): Implement.
+	  (xst_filesys_entry_identify_info): Implement.
+	  (xst_filesys_parse_fstab): Rename to xst_filesys_fstab_parse and shortened
+	  drastically.
+	  (xst_filesys_parse_mtab): Rename to xst_filesys_mtab_parse and shortened
+    drastically.
+	  (xst_filesys_fstab_get_next_entry_line): Implement.
+	  (xst_filesys_fstab_get_entry_line_fields): Implement.
+	  (xst_filesys_fstab_get_entry_line_comments): Leave unimplemented for now.
+	  (xst_filesys_info_print_options): Implement.
+	  (xst_filesys_info_print_entry): Implement.
+	  (xst_filesys_fstab_add_entry): Implement.
+	  (xst_filesys_fstab_update_entry): Implement.
+	  (xst_filesys_fstab_remove_entry): Implement.
+	  (xst_filesys_fstab_replace): Implement.
+
 2001-05-15  Chema Celorio  <chema@celorio.com>
 
 	* internetsharing-conf.in (xst_ishare_rules_get_ipchains): implement.
