@@ -526,6 +526,7 @@ sub conf_get_replace_table
    "redhat-7.0"   => "redhat-7.0",
    "redhat-7.1"   => "redhat-7.0",
    "redhat-7.2"   => "redhat-7.0",
+   "redhat-7.3"   => "redhat-7.0",
 
    "mandrake-7.1" => "redhat-7.0",
    "mandrake-7.2" => "redhat-7.0",
