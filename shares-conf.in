@@ -427,9 +427,10 @@ sub xml_print_export_smb
 sub xml_print
 {
   my ($config) = @_;
-  my ($tools, $import_table, $smb_export_table, $nfs_export_table, $i);
+  my ($tools, $smb_config, $import_table, $smb_export_table, $nfs_export_table, $i);
 
   $tools            = $$config{"tools"};
+  $smb_config       = $$config{"smb_config"};
   $import_table     = $$config{"imports"};
   $smb_export_table = $$config{"smb_exports"};
   $nfs_export_table = $$config{"nfs_exports"};
@@ -439,6 +440,12 @@ sub xml_print
   foreach $i (keys (%$tools))
   {
     &gst_xml_print_pcdata ($i, $$tools{$i});
+  }
+  &gst_xml_print_vspace ();
+
+  foreach $i (keys (%$smb_config))
+  {
+    &gst_xml_print_pcdata ($i, $$smb_config{$i});
   }
   &gst_xml_print_vspace ();
 
@@ -600,18 +607,35 @@ sub get_configured_exports
   return ($smb_exports, $nfs_exports);
 }
 
+sub get_smb_config
+{
+  my ($smb_conf, $exports);
+  my %config;
+
+  ($smb_conf, $exports) = &get_distro_files ();
+
+  $$config{"workgroup"}  = &gst_parse_ini ($smb_conf, "global", "workgroup");
+  $$config{"smbdesc"}    = &gst_parse_ini ($smb_conf, "global", "server string");
+  $$config{"winsserver"} = &gst_parse_ini ($smb_conf, "global", "wins server");
+  $$config{"winsuse"}    = &gst_parse_ini_bool ($smb_conf, "global", "wins support");
+
+  return $config;
+}
+
 # Top-level actions.
 
 sub get
 {
-  my ($tools, $imports, $smb_exports, $nfs_exports);
+  my ($tools, $smb_config, $imports, $smb_exports, $nfs_exports);
   my $config = {};
 
   $tools = &get_installed_tools ();
+  $smb_settings = &get_smb_config ();
 #  $imports = &get_configured_imports ();
   ($smb_exports, $nfs_exports) = &get_configured_exports ();
 
   $$config{"tools"}       = $tools;
+  $$config{"smb_config"}  = $smb_settings;
   $$config{"imports"}     = $imports;
   $$config{"smb_exports"} = $smb_exports;
   $$config{"nfs_exports"} = $nfs_exports;
