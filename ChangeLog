@@ -1,3 +1,13 @@
+2004-05-24  Carlos García Campos <elkalmail@yahoo.es>
+
+	* disks-conf.in: added support for device aliases to manage symlinks
+	for a device file. New method to scan buses, added scan_ide_bus and
+	scan_scsi_bus to scan buses looking for devices, later we read the
+	fstab file to complete it with mount options and removable devices
+	that are not present. Now disks-conf is more faster. In devices sort
+	function, when media is the same in both devices, it uses device name
+	to sort it.
+	
 2004-05-17  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network.pl.in, platform.pl.in, network-conf.in, users-conf.in,

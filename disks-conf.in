@@ -9,6 +9,7 @@
 #
 # Authors: Hans Petter Jansson <hpj@ximian.com>
 # Authors: Alvaro del Castillo <acs@barrapunto.com>
+# Authors: Carlos Garciía Campos <elkalmail@yahoo.es>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -92,24 +93,25 @@ $progress_max = 16;
 
 # --- Backend-specific helper subs --- #
 
-sub get_media_type
-{
-   my ($dev_clean, $dev_prefix);
-   
-   ($dev) = @_;   
-
-   ($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
-   
-   ($dev_prefix) = ($dev_clean =~ /(^[a-z]*)[a-z]/);
+# to filesys
+#sub get_media_type
+#{
+#   my ($dev_clean, $dev_prefix);
+#   
+#   ($dev) = @_;   
+#
+#  ($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
+#   
+#  ($dev_prefix) = ($dev_clean =~ /(^[a-z]*)[a-z]/);
   
-   if ($dev_prefix eq "hd") {
-      return ("disk-ide");
-   } elsif ($dev_prefix eq "sd") {
-      return ("disk-scsi");
-   } else {
-      return ("unknown");
-   }
-}
+#  if ($dev_prefix eq "hd") {
+#      return ("disk-ide");
+#   } elsif ($dev_prefix eq "sd") {
+#        return ("disk-scsi");
+#	{ else {
+#	    return ("unknown");
+#	 }
+#      }
 
 sub update_partition
 {
@@ -119,8 +121,8 @@ sub update_partition
   my $label;
   my ($start, $end);
 
-  ($disk, $device, $point, $fs, $options, $check, $size, $listed,
-   $bootable, $detected, $label, $start, $end) = @_;
+  ($disk, $device, $alias, $point, $fs, $options, $check, $size, 
+  $listed, $bootable, $detected, $label, $start, $end) = @_;
 
 
   if ($fs eq "auto") { $fs = ""; }
@@ -171,11 +173,12 @@ sub update_partition
           }
 
           if ($point ne "") { $cf_disks[$i]->{partitions}[$j]->{point} = $point; }
+	  if ($alias ne "") { $cf_disks[$i]->{partitions}[$j]->{alias} = $alias; }
           if ($fs) { $cf_disks[$i]->{partitions}[$j]->{type} = $fs; }
           if ($listed) { $cf_disks[$i]->{partitions}[$j]->{listed} = 1; }
-          if ($bootable) { $cf_disks[$i]->{partitions}[$j]->{bootable} = 1; }
-          if ($detected) { $cf_disks[$i]->{partitions}[$j]->{detected} = 1; }
-          if ($check) { $cf_disks[$i]->{partitions}[$j]->{check} = 1; }
+	  #if ($bootable) { $cf_disks[$i]->{partitions}[$j]->{bootable} = 1; }
+	  #if ($detected) { $cf_disks[$i]->{partitions}[$j]->{detected} = 1; }
+	  #if ($check) { $cf_disks[$i]->{partitions}[$j]->{check} = 1; }
           if ($size) { $cf_disks[$i]->{partitions}[$j]->{size} = $size; }
           if ($label) { $cf_disks[$i]->{partitions}[$j]->{label} = $label; }
 
@@ -238,12 +241,13 @@ sub update_partition
     else                      { %partition->{mounted} = 1; }
 
     %partition->{device} = $device;
+    %partition->{device} = $alias;
     %partition->{point} = $point;
     %partition->{type} = $fs;
     %partition->{listed} = $listed;
-    if ($bootable) { %partition->{bootable} = 1; }
-    if ($detected) { %partition->{detected} = 1; }
-    if ($check) { %partition->{check} = 1; }
+    #if ($bootable) { %partition->{bootable} = 1; }
+    #if ($detected) { %partition->{detected} = 1; }
+    #if ($check) { %partition->{check} = 1; }
     %partition->{size} = $size;
     %partition->{label} = $label;
     if ($start < $end) {
@@ -332,8 +336,13 @@ sub get_ide_setting
 
 sub get_cdrom_settings
 {
-   my (@devices) = @_;
-  
+   my ($device) = @_;
+ 
+   
+   if (!sysopen (RD, $device, O_RDONLY|O_NONBLOCK)) {
+      return;
+   }
+   
    if ($^O eq 'linux') {
       $CDROM_GET_CAPABILITY = 0x5331;
       
@@ -345,22 +354,18 @@ sub get_cdrom_settings
       $CDC_DVD_RAM    = 0x20000;
    }
 
-   foreach $device (@devices) {
-      if (!sysopen (RD, $device, O_RDONLY|O_NONBLOCK)) {
-	 next;
-      }
+   #foreach $device (@devices) {
    
-      my $drivetype = ioctl (RD, $CDROM_GET_CAPABILITY, 0);
+   my $drivetype = ioctl (RD, $CDROM_GET_CAPABILITY, 0);
 
-      &update_disk_data ($device, "play-audio", ($drivetype & $CDC_PLAY_AUDIO) ? 1 : 0);
-      &update_disk_data ($device, "write-cdr", ($drivetype & $CDC_CD_R) ? 1 : 0);
-      &update_disk_data ($device, "write-cdrw", ($drivetype & $CDC_CD_RW) ? 1 : 0);
-      &update_disk_data ($device, "read-dvd", ($drivetype & $CDC_DVD) ? 1 : 0);
-      &update_disk_data ($device, "write-dvdr", ($drivetype & $CDC_DVD_R) ? 1 : 0);
-      &update_disk_data ($device, "write-dvdram", ($drivetype & $CDC_DVD_RAM) ? 1 : 0);
+   &update_disk_data ($device, "play-audio", ($drivetype & $CDC_PLAY_AUDIO) ? 1 : 0);
+   &update_disk_data ($device, "write-cdr", ($drivetype & $CDC_CD_R) ? 1 : 0);
+   &update_disk_data ($device, "write-cdrw", ($drivetype & $CDC_CD_RW) ? 1 : 0);
+   &update_disk_data ($device, "read-dvd", ($drivetype & $CDC_DVD) ? 1 : 0);
+   &update_disk_data ($device, "write-dvdr", ($drivetype & $CDC_DVD_R) ? 1 : 0);
+   &update_disk_data ($device, "write-dvdram", ($drivetype & $CDC_DVD_RAM) ? 1 : 0);
    
-      close (RD);
-   }
+   close (RD);
 }
 
 sub update_disk_data
@@ -437,23 +442,48 @@ sub read_fstab
     if (&gst_ignore_line($line[0])) { next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
-    if ($device =~ /$LABEL=(.*)/) { $label = $1; $device = ""; }
-    else                          { $label = ""; }
+    if ($device =~ /$LABEL=(.*)/) { 
+       $label = $1; 
+       $device = ""; 
+    } else { 
+       $label = ""; 
+    }
 
     # we want to inform the backend about the swap
     if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||
-        $fs eq "iso9660")
-#        $fs eq "iso9660" || $fs eq "swap")
-    {
+        $fs eq "sysfs" || $fs eq "usbdevfs") {
       next;  # We can skip these filesystems for sure.
+    }
+
+    # look for symlinks to manage alias
+    my $alias = $device;
+    my $link;
+    while ($link = readlink ($alias)) {
+       $alias = $link;
+    }
+
+    if ($alias ne $device) {
+       my $temp = $alias;
+       $alias = $device;
+       $device = $temp;
+       # maybe device file is in short format
+       if (!($device =~ /^\/dev\/.*$/)) {
+	  $device = "/dev/$device";
+       }
+    } else {
+       # there is no alias
+       $alias = "";
     }
 
     if ($point eq "none") { $dir = ""; }
     ($disk) = ($device =~ /([a-zA-Z\/]+)/);
 
-    if ($disk eq "/dev/fd" || ($disk ne "" && $disk eq $device))
-    {
-      next;  # Skip floppies and CD-ROMs.
+    #if ($disk eq "/dev/fd" || ($disk ne "" && $disk eq $device)) {
+       #  next;  # Skip floppies and CD-ROMs.
+       #}
+    if (($disk eq "/dev/fd") || ($disk eq "/dev/scd")) {
+       # fd0, scd0 are not partitions
+       $disk = $device;
     }
 
     if (sysopen (HANDLE, $disk, O_RDONLY|O_NONBLOCK)) {
@@ -461,21 +491,17 @@ sub read_fstab
        close HANDLE;
     } else {
        &update_disk_data ($disk, "present", 0);
+
+       # by default, a removable device is a disk
+       if ($fs eq "iso9660") {
+	  $media = "cdrom";
+       } else {
+	  $media = "disk";
+       }
+
+       &update_disk_data ($disk, "media", $media);
     }
 
-    $media_type = &get_media_type ($disk);
-    if ($media_type eq "disk-ide") {
-       ($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
-       $model = `cat /proc/ide/$dev_clean/model 2>/dev/null`;
-       if ($model ne "") { &update_disk_data ($disk, "model", $model); }
-          $media = `cat /proc/ide/$dev_clean/media 2>/dev/null`;
-       if ($media ne "") { &update_disk_data ($disk, "media", $media); }
-       $dma = &get_ide_setting ($dev_clean, "using_dma");
-       if ($dma ne "") { &update_disk_data ($disk, "dma", $dma); }
-    } elsif ($media_type eq "disk-scsi") {
-       &update_disk_data ($disk, "media", "disk");
-    } elsif ($media_type eq "usb-storage") {
-    }
     
     # (Find and update) or (add) our internal disk/partition record.
 
@@ -491,14 +517,21 @@ sub read_fstab
        }
     }
     
-    if (($disk ne "" || $label ne "") && $type ne "empty") {
-      &update_partition ($disk, $device, $point, $fs, $options, $check, "", 1, 0, "", $label, 0, 0);
+    if ($disk eq $device) {
+       # Disk, not partition, we only want filesystem type, 
+       # mount point and mount options
+       # we use alias to manage symlinks
+       &update_disk_data ($disk, "alias", $alias);
+       &update_disk_data ($disk, "point", $point);
+       &update_disk_data ($disk, "type", $fs);
+       #&update_disk_data ($disk, "mount-options", $options);
+    } elsif (($disk ne "" || $label ne "") && $type ne "empty") {
+      &update_partition ($disk, $device, $alias, $point, $fs, $options, $check, "", 1, 0, "", $label, 0, 0);
     }
   }
 
   close(FILE);
 }
-
 
 sub write_fstab
 {
@@ -653,30 +686,144 @@ sub write_fstab
   close OUTFILE;
 }
 
-sub get_cdroms
+sub is_ide_scsi
 {
-   my @list_devices;
+   my ($dev) = @_;
 
-   $line = `cat /proc/sys/dev/cdrom/info | grep "drive name" | cut -d: -f2 2>/dev/null`;
-   $line =~ s/^\s*//;
-   $line =~ s/\s*$//;
-   @list_devices = split (/[ \r\t]+/, $line);
-
-   for (my $i = 0; $list_devices[$i]; $i++) {
-      my $dev = "/dev/$list_devices[$i]";
-      &update_disk_data ($dev, "media", "cdrom");
-      if ($list_devices[$i] =~ /^hd[a-d]/) {
-	 $model = `cat /proc/ide/$list_devices[$i]/model 2>/dev/null`;
-	 if ($model ne "") { &update_disk_data ($dev, "model", $model); }
-	 $dma = &get_ide_setting ($list_devices[$i], "using_dma");
-	 if ($dma ne "") { &update_disk_data ($dev, "dma", $dma); }
+   my $line = `cat /proc/cmdline`;
+   
+   if ($line && $line ne "") {
+      if ($line =~ /(.*)$dev=ide-scsi(.*)$/) {
+	 return 1;
+      } else {
+	 return 0;
       }
-      $list_devices[$i] = $dev;
+   } else {
+      return 0;
+   }
+}
+
+sub scan_ide_bus
+{
+   my ($list_devices) = @_;
+
+   if (! opendir (DIR, "/proc/ide/")) {
+      return;
    }
 
-   return @list_devices;
+   foreach (readdir (DIR)) {
+      if ($_ =~ /^hd[a-z]$/) {
+	 if (&is_ide_scsi ($_)) {
+	    next;
+	 }
+	 
+	 my $dma = &get_ide_setting ($_, "using_dma");
+	 my $model = `cat /proc/ide/$_/model 2>/dev/null`;
+	 my $media = `cat /proc/ide/$_/media 2>/dev/null`;
+	 if ($model ne "") { 
+	    &update_disk_data ("/dev/$_", "model", $model); 
+	    if ($media =~ /cdrom/) {
+	       &get_cdrom_settings ("/dev/$_");
+	    }
+	 }
+
+	 if ($media ne "") { &update_disk_data ("/dev/$_", "media", $media); }
+	 if ($dma ne "")   { &update_disk_data ("/dev/$_", "dma", $dma); }
+
+	 push (@$list_devices, "/dev/$_");
+      }
+   }
+   closedir (DIR);
 }
-	       
+
+sub scan_scsi_bus
+{
+   my ($list_devices) = @_;
+
+   if (! `cat /proc/scsi/scsi | grep "Host"`) {
+      return;
+   }
+   
+   @files = ( "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", 
+              "/dev/sde", "/dev/sdf", "/dev/sdg", "/dev/sdh",
+	      "/dev/sdi", "/dev/sdj", "/dev/sdk", "/dev/sdl",
+	      "/dev/sdm", "/dev/sdn", "/dev/sdo", "/dev/sdp",
+              "/dev/scd0", "/dev/scd1", "/dev/scd2", "/dev/scd3" );
+
+   $SCSI_IOCTL_GET_IDLUN      = 0x5382;
+   $SCSI_IOCTL_GET_BUS_NUMBER = 0x5386;
+
+   my $proc_scsi_file;
+   local *PROC_SCSI_FILE;
+   $proc_scsi_file = &gst_file_open_read_from_names ("/proc/scsi/scsi");
+   if (not $proc_scsi_file) { return; }
+   *PROC_SCSI_FILE = $proc_scsi_file;
+  
+   my @scsi = ();
+   for $dev (@files) {
+      if (sysopen (RD, $dev, O_RDONLY|O_NONBLOCK)) {
+	 my $info;
+	 if (ioctl (RD, $SCSI_IOCTL_GET_IDLUN, $info)) {
+	    my @scsi_info = unpack ("CCCCCC", $info);
+            my (%scsi_data);
+  
+            %scsi_data->{'device'} = $dev;
+            %scsi_data->{'id'} = $scsi_info[0] & 0xff;
+      	    %scsi_data->{'lun'} = ($scsi_info[0] >> 8) & 0xff;
+	    %scsi_data->{'channel'} = ($scsi_info[0] >> 16) & 0xff;
+	    %scsi_data->{'host'} = (($scsi_info[0] >> 24) & 0xff);
+
+            push (@scsi, \%scsi_data);
+	    push (@$list_devices, $dev);
+         }
+	 close (RD);
+      }
+   }
+   
+   my $vendor;
+   my $model;
+   my $media;
+   my ($host, $channel, $id, $lun);
+   my $i = 0;
+
+   while (<PROC_SCSI_FILE>) {
+      my $data = $_;
+      $data =~ s/^\s*//;
+      $data =~ s/\s*$//;
+      @line = split(":", $data);
+      if ($line[0] eq "Host") {
+         ($host, $channel, $id, $lun) = ($data =~ /^Host:.*scsi([0-9]+).*Channel:.*([0-9]+).*Id:.*([0-9]+).*Lun:.*([0-9]+).*$/);
+         
+         $i = 0;
+         while ($scsi[$i]) {
+            if ($scsi[$i]->{'id'} eq int ($id) && $scsi[$i]->{'lun'} eq int ($lun) &&
+                $scsi[$i]->{'channel'} eq int ($channel) && $scsi[$i]->{'host'} eq int ($host)) {
+                last;
+            }
+            $i++;
+         }
+      } elsif ($line[0] eq "Vendor") {
+         ($vendor, $model) = ($data =~ /^Vendor:(.*)Model:(.*)Rev:.*$/);
+         
+         $vendor =~ s/^\s*//;
+         $vendor =~ s/\s*$//;
+         $model  =~ s/^\s*//;
+         $model  =~ s/\s*$//;
+         
+         if ($scsi[$i]->{'device'}) { &update_disk_data ($scsi[$i]->{'device'}, "model", "$vendor $model");}
+      } elsif ($line[0] eq "Type") {
+         if ($data =~ /CD-ROM/) {
+            $media = "cdrom";
+	    &get_cdrom_settings ($scsi[$i]->{'device'});
+         } elsif ($data =~ /Direct-Access/) {
+            $media = "disk";
+         }
+         
+         if ($scsi[$i]->{'device'}) { &update_disk_data ($scsi[$i]->{'device'}, "media", $media);}
+      }
+   }
+   close (PROC_SCSI_FILE);
+}
 
 # fdisk -l <disk device>
 #
@@ -710,15 +857,21 @@ sub get_fdisk
 
   # Okay, so this is strictly not portable either. Patches welcome.
 
-  my @check_devs = ( "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/hdd",
-                     "/dev/hde", "/dev/hdf", "/dev/hdg", "/dev/hdh",
-
-                     "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd",
-                     "/dev/sde", "/dev/sdf",
-                     
-                     "/dev/eda", "/dev/edb", "/dev/edc", "/dev/edd",
-                     
-                     "/dev/xda", "/dev/xdb" );
+  #my @check_devs = ( "/dev/hda", "/dev/hdb", "/dev/hdc", "/dev/hdd",
+  #                  "/dev/hde", "/dev/hdf", "/dev/hdg", "/dev/hdh",
+  #
+  #                  "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd",
+  #                  "/dev/sde", "/dev/sdf",
+  #                  
+  #                  "/dev/eda", "/dev/edb", "/dev/edc", "/dev/edd",
+  #                  
+  #                   "/dev/xda", "/dev/xdb" );
+  
+  for ($i = 0; $cf_disks[$i]; $i++) {
+     if (($cf_disks[$i])->{media} =~ /disk/) {
+	push (@check_devs, ($cf_disks[$i])->{device});
+     }
+  }
 
   $fdisk_tool = &gst_file_locate_tool("fdisk");
   #my @check_devs = ("/dev/hdc"); # debug
@@ -727,18 +880,6 @@ sub get_fdisk
   {
     my ($disk, $device, $point, $fs, $options, $check, $size, $bootable, $fd);
    
-    # Delete cdrom devices
-    my $cdrom_found = 0;
-    for ($i = 0; $cf_disks[$i]; $i++) {
-       if (($cf_disks[$i])->{device} eq $dev) {
-	  if (($cf_disks[$i])->{media} eq "cdrom") {
-	     $cdrom_found = 1;
-	     last;
-	  }
-       }
-    }
-    if ($cdrom_found) { next; }
-    
     &gst_report ("disks_partition_probe", $dev);
 
     $fd = &gst_file_run_pipe_read ("fdisk -l $dev");
@@ -917,7 +1058,7 @@ sub get_fdisk
 	        $max_cyl = $fend; 
 	     }
              if ($fstart ne $fend) {
-	        &update_partition ($disk, "/dev/empty$empty_count", "", "empty", "noauto", 0, $fsize, 0,
+	        &update_partition ($disk, "/dev/empty$empty_count", "", "", "empty", "noauto", 0, $fsize, 0,
 	                           0, 1, "", $fstart, $fend);
 		$empty_count ++;
 	     }
@@ -934,7 +1075,7 @@ sub get_fdisk
 		$max_cyl = $fend;
 	     }
 	     if ($fend ne $fstart) {
-		&update_partition ($disk, "/dev/empty$empty_count", "", "empty", "noauto", 0, $fsize, 0,
+		&update_partition ($disk, "/dev/empty$empty_count", "", "", "empty", "noauto", 0, $fsize, 0,
 	                           0, 1, "", $fstart, $fend);
 		$empty_count ++;
 	     }
@@ -943,7 +1084,7 @@ sub get_fdisk
 
        # partition found update it
        if ($partition->{'end'} ne $partition->{'start'}) {
-	  &update_partition ($disk, $partition->{'device'}, "", $partition->{'type'}, "noauto", 0, 
+	  &update_partition ($disk, $partition->{'device'}, "", "", $partition->{'type'}, "noauto", 0, 
 	                     $partition->{'size'}, 0, $partition->{'bootable'}, 1, "", 
 			     $partition->{'start'}, $partition->{'end'});
        }
@@ -965,34 +1106,11 @@ sub get_fdisk
           # size = (number of cylinders) * (unit in bloks)
           # number of cylinders = last cylinder - first cylinder + 1
           my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
-          &update_partition ($disk, "/dev/empty$empty_count", "", "empty", "noauto", 0, $fsize, 0,
+          &update_partition ($disk, "/dev/empty$empty_count", "", "", "empty", "noauto", 0, $fsize, 0,
                              0, 1, "", $fstart, $fend);
        }
     }
-
-    # Time to get the model and media type
-    # We support IDE, SCSI and USB medias in general
-    # For the moment, we fix a IDE device
-
-    $media_type = &get_media_type ($dev);
-    if ($media_type eq "disk-ide") {
-       ($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
-       $model = `cat /proc/ide/$dev_clean/model 2>/dev/null`;
-       if ($model ne "") { &update_disk_data ($dev, "model", $model); }
-       $media = `cat /proc/ide/$dev_clean/media 2>/dev/null`;
-       if ($media ne "") {
-	  &update_disk_data ($dev, "media", $media);
-       }
-       $dma = &get_ide_setting ($dev_clean, "using_dma");
-       if ($dma ne "") { &update_disk_data ($dev, "dma", $dma); }
-    } elsif ($media_type eq "disk-scsi") {
-       $head = `fdisk -l $dev 2>/dev/null`;
-       if ($head ne "") {
-	  &update_disk_data ($dev, "media", "disk");
-       }
-    } elsif ($media_type eq "usb-storage") {
-       # TODO
-    }
+    
     &gst_file_close ($fd);
 
     &gst_report ("disks_size_query", $dev);
@@ -1011,43 +1129,6 @@ sub get_fdisk
 
     &gst_print_progress();
   }
-}
-
-sub get_scsi_options
-{
-   my $proc_scsi_file;
-   local *PROC_SCSI_FILE;
-   $proc_scsi_file = &gst_file_open_read_from_names ("/proc/scsi/scsi");
-   if (not $proc_scsi_file) { return; }
-   *PROC_SCSI_FILE = $proc_scsi_file;
-
-   my $disk = 'a';
-   my $cdrom = 0;
-   my ($vendor, $model, $dev);
-   while (<PROC_SCSI_FILE>) {
-      my $data = $_;
-      $data =~ s/^\s*//;
-      $data =~ s/\s*$//;
-      @line = split(":", $data);
-      if ($line[0] eq "Vendor") {
-	 ($vendor, $model) = ($data =~ /^Vendor:(.*)Model:(.*)Rev:.*$/);
-	 $vendor =~ s/^\s*//;
-	 $vendor =~ s/\s*$//;
-	 $model  =~ s/^\s*//;
-	 $model  =~ s/\s*$//;
-      } elsif ($line[0] eq "Type") {
-	 if ($data =~ /CD-ROM/) {
-	    $dev = "/dev/sr$cdrom";
-	    $cdrom++;
-	 } elsif ($data =~ /Direct-Access/) {
-	    $dev = "/dev/sd$disk";
-	    $disk++;
-	 } 
-	 if ($dev ne "") { &update_disk_data ($dev, "model", "$vendor $model"); }
-      }  
-   }
-
-   close (PROC_SCSI_FILE);
 }
 
 # --- XML parsing --- #
@@ -1157,17 +1238,21 @@ sub xml_parse_state
 
 sub sort_by_media
 {
-   my %medias = ("disk" => 1, "cdrom" => 2, "floppy" => 3);
+   my %medias = ("disk" => 1, "cdrom" => 2, "floppy" => 3, "" => 4);
 
-   $ia = $a->{media};
+   my $ia = $a->{media};
    $ia =~ s/^\s*//;
    $ia =~ s/\s*$//;
 
-   $ib = $b->{media};
+   my $ib = $b->{media};
    $ib =~ s/^\s*//;
    $ib =~ s/\s*$//;
-   
-   return (($medias{$ia}) <=> ($medias{$ib}));
+
+   if ($ia eq $ib) {
+      return ($a->{device} gt $b->{device});
+   } else {
+      return (($medias{$ia}) <=> ($medias{$ib}));
+   }
 }
 
 sub xml_print
@@ -1193,6 +1278,7 @@ sub xml_print
       &gst_xml_enter ();
 
       &gst_xml_print_line ("<device>" . %$disk->{device} . "</device>\n");
+      if (%$disk->{alias}) { &gst_xml_print_line ("<alias>" . %$disk->{alias} . "</alias>\n"); }
       
       if (%$disk->{size}) { 
           # The frontend wants KB
@@ -1201,8 +1287,9 @@ sub xml_print
       if (%$disk->{media}) { &gst_xml_print_line ("<media>" . %$disk->{media} . "</media>\n"); }
       if (%$disk->{model}) { &gst_xml_print_line ("<model>" . %$disk->{model} . "</model>\n"); }
       &gst_xml_print_state_tag ("present", %$disk->{present}); 
+      if (%$disk->{type})  { &gst_xml_print_line ("<type>" .  %$disk->{type} . "</type>\n"); }
+      if (%$disk->{point}) { &gst_xml_print_line ("<point>" . %$disk->{point} . "</point>\n"); }
       if (%$disk->{media} =~ /cdrom/) { 
-	 #&get_cdrom_disc_info (%$disk->{device});
 	 &gst_xml_print_state_tag ("play-audio",   %$disk->{"play-audio"});
 	 &gst_xml_print_state_tag ("write-cdr",    %$disk->{"write-cdr"});
 	 &gst_xml_print_state_tag ("write-cdrw",   %$disk->{"write-cdrw"});
@@ -1223,7 +1310,8 @@ sub xml_print
         &gst_xml_enter ();
 
         &gst_xml_print_line ("<device>" . %$partition->{device} . "</device>\n");
-        if (%$partition->{type}) { &gst_xml_print_line ("<type>" . %$partition->{type} . "</type>\n"); }
+	if (%$partition->{alias}) { &gst_xml_print_line ("<alias>" . %$partition->{alias} . "</alias>\n"); }
+        if (%$partition->{type})  { &gst_xml_print_line ("<type>" .  %$partition->{type} .  "</type>\n"); }
         if (%$partition->{point}) { &gst_xml_print_line ("<point>" . %$partition->{point} . "</point>\n"); }
         if (%$partition->{label}) { &gst_xml_print_line ("<label>" . %$partition->{label} . "</label>\n"); }
         if (%$partition->{size})
@@ -1235,8 +1323,8 @@ sub xml_print
 	if (%$partition->{start}) { &gst_xml_print_line ("<start>" . %$partition->{start} . "</start>\n"); }
 	if (%$partition->{end}) { &gst_xml_print_line ("<end>" . %$partition->{end} . "</end>\n"); }
 
-        &gst_xml_print_state_tag ("bootable", %$partition->{bootable});
-        &gst_xml_print_state_tag ("integritycheck", %$partition->{check});
+	#&gst_xml_print_state_tag ("bootable", %$partition->{bootable});
+	#&gst_xml_print_state_tag ("integritycheck", %$partition->{check});
         &gst_xml_print_state_tag ("mounted", %$partition->{mounted});
         if (%$partition->{free})
         {
@@ -1244,7 +1332,7 @@ sub xml_print
           &gst_xml_print_line ("<free>" . %$partition->{free}*(%$disk->{block_size}/1024) . "</free>\n");
         }        
         &gst_xml_print_state_tag ("listed", %$partition->{listed});
-        &gst_xml_print_state_tag ("detected", %$partition->{detected});
+	#&gst_xml_print_state_tag ("detected", %$partition->{detected});
 
         &gst_xml_leave ();
         &gst_xml_print_line ("</partition>\n");
@@ -1270,11 +1358,10 @@ sub get
 {
   setlocale (LC_ALL, "en_US");
  
-  
-  my @cdroms = &get_cdroms;
-  &get_cdrom_settings (@cdroms);
+  my @storages;
+  &scan_ide_bus (\@storages);
+  &scan_scsi_bus (\@storages);
   &get_fdisk;
-  &get_scsi_options;
   &read_fstab;
 
   &gst_report_end ();
