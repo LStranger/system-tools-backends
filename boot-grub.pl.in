@@ -351,8 +351,23 @@ sub xst_boot_grub_parse_image
 sub xst_boot_grub_parse_other
 {
   my ($grub_conf, $device_map, $mtab, $entry) = @_;
+  my ($value, $grubdev, $dev, $root);
 
-  return &xst_boot_grub_parse_file_cmd ($grub_conf, "chainloader", $device_map, $mtab, $entry);
+  $value = &xst_boot_grub_parse_cmd ($grub_conf, "chainloader", $entry);
+  return undef if $value eq undef;
+
+  $value =~ /^\(([^\)]+)\)/;
+  $grubdev = $1;
+
+  if ($grubdev eq undef)
+  {
+    $root = &xst_boot_grub_parse_cmd ($grub_conf, "root", $entry);
+    $root =~ /^\(([^\)]+)\)/;
+    $grubdev = $1;
+  }
+
+  $dev = &xst_boot_grub_grub2linux ($device_map, $grubdev);
+  return $dev;
 }
 
 sub xst_boot_grub_parse_timeout
@@ -483,6 +498,7 @@ sub xst_boot_grub_replace_cmd_in_buff
   }
   else
   {
+    $cmd = "\t$cmd" if $entry ne undef;
     &xst_boot_grub_insert_cmd ($buff, $line_no, $cmd, $value) if ($value ne undef);
   }
 }
@@ -576,8 +592,11 @@ sub xst_boot_grub_replace_image
 sub xst_boot_grub_replace_other
 {
   my ($grub_conf, $device_map, $mtab, $entry, $value) = @_;
+  my ($grubdev);
 
-  return &xst_boot_grub_replace_file_cmd ($grub_conf, "chainloader", $device_map, $mtab, $value, $entry);
+  $grubdev = &xst_boot_grub_linux2grub ($device_map, $value);
+  &xst_boot_grub_replace_cmd ($grub_conf, "root", "($grubdev)", $entry);
+  return &xst_boot_grub_replace_cmd ($grub_conf, "chainloader", "($grubdev)+1", $entry);
 }
 
 sub xst_boot_grub_replace_timeout

@@ -187,7 +187,7 @@ sub xst_boot_conf_get
    "redhat-6.2" => "redhat-6.2",
    "redhat-7.0" => "redhat-6.2",
    "redhat-7.1" => "redhat-6.2",
-   "redhat-7.2" => "redhat-6.2",
+   "redhat-7.2" => "redhat-7.2",
    
    "mandrake-7.1" => "redhat-6.2",
    "mandrake-7.2" => "mandrake-7.2",
@@ -319,10 +319,10 @@ sub xst_boot_entry_set
 
   foreach $j (keys (%fn))
   {
-    $ {$$dist_attrib{"fn"}}{$j} = &xst_parse_expand ($fn{$j}, "key", $$values_hash{"key"});
+    $fn{$j} = &xst_parse_expand ($ {$$dist_attrib{"fn"}}{$j}, "key", $$values_hash{"key"});
   }
   
-  return &xst_replace_from_table ($$dist_attrib{"fn"}, $$dist_attrib{"table"}, $values_hash);
+  return &xst_replace_from_table (\%fn, $$dist_attrib{"table"}, $values_hash);
 }
 
 sub xst_boot_entries_set
@@ -374,7 +374,7 @@ sub xst_boot_conf_set
    "redhat-6.2" => "redhat-6.2",
    "redhat-7.0" => "redhat-6.2",
    "redhat-7.1" => "redhat-6.2",
-   "redhat-7.2" => "redhat-6.2",
+   "redhat-7.2" => "redhat-7.2",
 
    "mandrake-7.1" => "redhat-6.2",
    "mandrake-7.2" => "mandrake-7.2",

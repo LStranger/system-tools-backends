@@ -2706,8 +2706,7 @@ sub xst_network_get_interface_replace_table
       fn =>
 	    {
         IFCFG => ["/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
-                  "/etc/sysconfig/networking/devices/ifcfg-#iface#",
-                  "/etc/sysconfig/network-scripts/ifcfg-#iface#"],
+                  "/etc/sysconfig/networking/devices/ifcfg-#iface#"],
         CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE  => "#iface#",
         WVDIAL => "/etc/wvdial.conf",

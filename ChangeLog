@@ -1,3 +1,19 @@
+2001-12-12  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_interface_replace_table): Don't replace
+	in the network-script files.
+
+	* boot.pl.in (xst_boot_conf_get): Oops: redhat 72 was behaving
+	like 62 for testing.
+	(xst_boot_entry_set): Use the copy for replacing. Was contaminating
+	further iterations.
+	(xst_boot_conf_set): rh 72 behaving like 62 for testing.
+
+	* boot-grub.pl.in (xst_boot_grub_parse_other): Corrected this
+	function: wrong semantics.
+	(xst_boot_grub_replace_cmd_in_buff): beautify the output.
+	(xst_boot_grub_replace_other): use the correct semantics.
+
 2001-12-11  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* xml.pl.in (xst_xml_print_structure): minor naming change.
