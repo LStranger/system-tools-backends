@@ -223,7 +223,7 @@ sub xst_replace_chat
   my ($file, $re, $value) = @_;
   my $buff, $i, $bak, $found, $substr;
 
-  $buff = &be_buffer_load ($file);
+  $buff = &xst_buffer_load ($file);
 
   SCAN: foreach $i (@$buff)
   {
@@ -262,7 +262,7 @@ sub xst_replace_chat
     $i = $bak . "\n";
   }
 
-  return &be_buffer_save ($buff, $file);
+  return &xst_buffer_save ($buff, $file);
 }
 
 

@@ -8,6 +8,7 @@
 	  already is in network.pl.in.
 	* network.pl.in: almost finished, lots of bug fixes. added bootproto support.
 	* replace.pl.in: xst_replace_chat implemented.
+	* network.pl.in, replace.pl.in: fixed conflicts with new general function namings.
 	
 2001-02-08  Hans Petter Jansson  <hpj@ximian.com>
 

@@ -39,7 +39,7 @@ sub xst_network_active_interfaces_get
   my $tool_ifconfig;
   my @ret = ();
 
-  $tool_ifconfig = &be_locate_tool ("ifconfig");
+  $tool_ifconfig = &xst_locate_tool ("ifconfig");
   
   open IFCONFIG, "$tool_ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
     open IFCONFIG, "$tool_ifconfig | sed 's/:* .*//;/^\$/D' |";
@@ -135,11 +135,11 @@ sub xst_network_rh62_interface_set
   my ($dev, $enabled) = @_;
   my @ifaces, $i, $dev;
 
-  return -1 if &be_run ("ifdown $dev");
+  return -1 if &xst_run ("ifdown $dev");
   
   if ($enabled)
   {
-    return -1 if &be_run ("ifup $dev");
+    return -1 if &xst_run ("ifup $dev");
   }
 
   return 0;
@@ -288,11 +288,12 @@ sub xst_ensure_local_host_entry
 sub xst_network_get_parse_table
 {
   my %dist_map =
-  (
-    "redhat-6.0" => "redhat-6.2",
-    "redhat-6.1" => "redhat-6.2",
-    "redhat-6.2" => "redhat-6.2"
-  );
+	 (
+	  "redhat-6.0" => "redhat-6.2",
+	  "redhat-6.1" => "redhat-6.2",
+	  "redhat-6.2" => "redhat-6.2",
+	  "redhat-7.0" => "redhat-6.2"
+	  );
 
   my %dist_tables =
   (
@@ -328,7 +329,7 @@ sub xst_network_get_parse_table
     }
   );
 
-  my $dist = $dist_map{$be_dist};
+  my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
   # FIXME: This is a fatal error, and should make us bail.
@@ -341,7 +342,8 @@ sub xst_network_get_interfaces_parse_table
 	 (
 	  "redhat-6.0" => "redhat-6.2",
 	  "redhat-6.1" => "redhat-6.2",
-	  "redhat-6.2" => "redhat-6.2"
+	  "redhat-6.2" => "redhat-6.2",
+	  "redhat-7.0" => "redhat-6.2"
 	  );
   
   my %dist_tables =
@@ -386,7 +388,7 @@ sub xst_network_get_interfaces_parse_table
 			 }
 	  );
 
-  my $dist = $dist_map{$be_dist};
+  my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
   # FIXME: This is a fatal error, and should make us bail.
@@ -396,11 +398,12 @@ sub xst_network_get_interfaces_parse_table
 sub xst_network_get_replace_table
 {
   my %dist_map =
-  (
-    "redhat-6.0" => "redhat-6.2",
-    "redhat-6.1" => "redhat-6.2",
-    "redhat-6.2" => "redhat-6.2"
-  );
+	 (
+	  "redhat-6.0" => "redhat-6.2",
+	  "redhat-6.1" => "redhat-6.2",
+	  "redhat-6.2" => "redhat-6.2",
+	  "redhat-7.0" => "redhat-6.2"
+	  );
 
   my %dist_tables =
   (
@@ -436,7 +439,7 @@ sub xst_network_get_replace_table
     }
   );
 
-  my $dist = $dist_map{$be_dist};
+  my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
   # FIXME: This is a fatal error, and should make us bail.
@@ -446,11 +449,12 @@ sub xst_network_get_replace_table
 sub xst_network_get_interface_replace_table
 {
   my %dist_map =
-  (
-    "redhat-6.0" => "redhat-6.2",
-    "redhat-6.1" => "redhat-6.2",
-    "redhat-6.2" => "redhat-6.2"
-  );
+	 (
+	  "redhat-6.0" => "redhat-6.2",
+	  "redhat-6.1" => "redhat-6.2",
+	  "redhat-6.2" => "redhat-6.2",
+	  "redhat-7.0" => "redhat-6.2"
+	  );
 
   my %dist_tables =
 	(
@@ -494,7 +498,7 @@ sub xst_network_get_interface_replace_table
     }
   );
   
-  my $dist = $dist_map{$be_dist};
+  my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
   # FIXME: This is a fatal error, and should make us bail.
