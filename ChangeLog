@@ -13,6 +13,7 @@ Wed Sep 12 21:42:03 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_rh62_parse_bootproto): If the
 	bootproto is unknown, report error, default to none.
+	(xst_network_suse70_parse_bootproto): same.
 
 	* service.pl.in (xst_service_sysv_get_runlevels): added missing
 	supported distros and removed bogus ones. Report an error if
