@@ -74,7 +74,7 @@ $version = "@VERSION@";
               "mandrake-7.1", "mandrake-7.2", "mandrake-9.0", "mandrake-9.1", "mandrake-9.2",
               "mandrake-10.0", "mandrake-10.1",
               "debian-2.2", "debian-3.0", "debian-sarge",
-              "suse-7.0", "turbolinux-7.0",
+              "suse-7.0", "suse-9.0", "turbolinux-7.0",
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0", "slackware-9.1.0",
               "freebsd-4", "freebsd-5",
               "gentoo",
@@ -173,61 +173,129 @@ for ($i = 0; $groups_prop_array[$i] ne ""; $i += 2)
 }
 
 %login_defs_prop_map = ();
-@login_defs_prop_array =
-(
- "QMAIL_DIR" ,     "qmail_dir",
- "MAIL_DIR" ,      "mailbox_dir",
- "MAIL_FILE" ,     "mailbox_file",
- "PASS_MAX_DAYS" , "pwd_maxdays",
- "PASS_MIN_DAYS" , "pwd_mindays",
- "PASS_MIN_LEN" ,  "pwd_min_length",
- "PASS_WARN_AGE" , "pwd_warndays",
- "UID_MIN" ,       "umin",
- "UID_MAX" ,       "umax",
- "GID_MIN" ,       "gmin",
- "GID_MAX" ,       "gmax",
- "USERDEL_CMD" ,   "del_user_additional_command",
- "CREATE_HOME" ,   "create_home",
- "", "");
-
-for ($i = 0; $login_defs_prop_array[$i] ne ""; $i += 2)
-{
-  $login_defs_prop_map {$login_defs_prop_array[$i]} = $login_defs_prop_array[$i + 1];
-  $login_defs_prop_map {$login_defs_prop_array[$i + 1]} = $login_defs_prop_array[$i];
-}
-
 %profiles_prop_map = ();
-@profiles_prop_array =
-(
- "NAME" ,          "name",
- "COMMENT",        "comment",
- "LOGINDEFS",      "login_defs",
- "HOME_PREFFIX",   "home_prefix",
- "SHELL",          "shell",
- "GROUP",          "group",
- "SKEL_DIR",       "skel_dir",
- "QMAIL_DIR" ,     "qmail_dir",
- "MAIL_DIR" ,      "mailbox_dir",
- "MAIL_FILE" ,     "mailbox_file",
- "PASS_RANDOM",    "pwd_random",
- "PASS_MAX_DAYS" , "pwd_maxdays",
- "PASS_MIN_DAYS" , "pwd_mindays",
- "PASS_MIN_LEN" ,  "pwd_min_length",
- "PASS_WARN_AGE" , "pwd_warndays",
- "UID_MIN" ,       "umin",
- "UID_MAX" ,       "umax",
- "GID_MIN" ,       "gmin",
- "GID_MAX" ,       "gmax",
- "USERDEL_CMD" ,   "del_user_additional_command",
- "CREATE_HOME" ,   "create_home",
- "", "");
 
-for ($i = 0; $profiles_prop_array[$i] ne ""; $i += 2)
+sub get_login_defs_prop_array
 {
-  $profiles_prop_map {$profiles_prop_array[$i]} = $profiles_prop_array[$i + 1];
-  $profiles_prop_map {$profiles_prop_array[$i + 1]} = $profiles_prop_array[$i];
+  my @prop_array;
+  my @login_defs_prop_array_default =
+    (
+     "QMAIL_DIR",      "qmail_dir",
+     "MAIL_DIR",       "mailbox_dir",
+     "MAIL_FILE",      "mailbox_file",
+     "PASS_MAX_DAYS",  "pwd_maxdays",
+     "PASS_MIN_DAYS",  "pwd_mindays",
+     "PASS_MIN_LEN",   "pwd_min_length",
+     "PASS_WARN_AGE",  "pwd_warndays",
+     "UID_MIN",        "umin",
+     "UID_MAX",        "umax",
+     "GID_MIN",        "gmin",
+     "GID_MAX",        "gmax",
+     "USERDEL_CMD",    "del_user_additional_command",
+     "CREATE_HOME",    "create_home",
+     "", "");
+
+  my @login_defs_prop_array_suse =
+    (
+     "QMAIL_DIR",      "qmail_dir",
+     "MAIL_DIR",       "mailbox_dir",
+     "MAIL_FILE",      "mailbox_file",
+     "PASS_MAX_DAYS",  "pwd_maxdays",
+     "PASS_MIN_DAYS",  "pwd_mindays",
+     "PASS_MIN_LEN",   "pwd_min_length",
+     "PASS_WARN_AGE",  "pwd_warndays",
+     "UID_MIN",        "umin",
+     "UID_MAX",        "umax",
+     "SYSTEM_GID_MIN", "gmin",
+     "GID_MAX",        "gmax",
+     "USERDEL_CMD",    "del_user_additional_command",
+     "CREATE_HOME",    "create_home",
+     "", "");
+  
+  if ($gst_dist =~ /^suse/)
+  {
+    @prop_array = @login_defs_prop_array_suse;
+  }
+  else
+  {
+    @prop_array = @login_defs_prop_array_default;
+  }
+
+  for ($i = 0; $prop_array [$i] ne ""; $i += 2)
+  {
+    $login_defs_prop_map {$prop_array [$i]}     = $prop_array [$i + 1];
+    $login_defs_prop_map {$prop_array [$i + 1]} = $prop_array [$i];
+  }
 }
 
+sub get_profiles_prop_array
+{
+  my @prop_array;
+  my @profiles_prop_array_default =
+    (
+     "NAME" ,          "name",
+     "COMMENT",        "comment",
+     "LOGINDEFS",      "login_defs",
+     "HOME_PREFFIX",   "home_prefix",
+     "SHELL",          "shell",
+     "GROUP",          "group",
+     "SKEL_DIR",       "skel_dir",
+     "QMAIL_DIR" ,     "qmail_dir",
+     "MAIL_DIR" ,      "mailbox_dir",
+     "MAIL_FILE" ,     "mailbox_file",
+     "PASS_RANDOM",    "pwd_random",
+     "PASS_MAX_DAYS" , "pwd_maxdays",
+     "PASS_MIN_DAYS" , "pwd_mindays",
+     "PASS_MIN_LEN" ,  "pwd_min_length",
+     "PASS_WARN_AGE" , "pwd_warndays",
+     "UID_MIN" ,       "umin",
+     "UID_MAX" ,       "umax",
+     "GID_MIN" ,       "gmin",
+     "GID_MAX" ,       "gmax",
+     "USERDEL_CMD" ,   "del_user_additional_command",
+     "CREATE_HOME" ,   "create_home",
+     "", "");
+
+  my @profiles_prop_array_suse =
+    (
+     "NAME" ,          "name",
+     "COMMENT",        "comment",
+     "LOGINDEFS",      "login_defs",
+     "HOME_PREFFIX",   "home_prefix",
+     "SHELL",          "shell",
+     "GROUP",          "group",
+     "SKEL_DIR",       "skel_dir",
+     "QMAIL_DIR" ,     "qmail_dir",
+     "MAIL_DIR" ,      "mailbox_dir",
+     "MAIL_FILE" ,     "mailbox_file",
+     "PASS_RANDOM",    "pwd_random",
+     "PASS_MAX_DAYS" , "pwd_maxdays",
+     "PASS_MIN_DAYS" , "pwd_mindays",
+     "PASS_MIN_LEN" ,  "pwd_min_length",
+     "PASS_WARN_AGE" , "pwd_warndays",
+     "UID_MIN" ,       "umin",
+     "UID_MAX" ,       "umax",
+     "GID_MIN" ,       "gmin",
+     "GID_MAX" ,       "gmax",
+     "USERDEL_CMD" ,   "del_user_additional_command",
+     "CREATE_HOME" ,   "create_home",
+     "", "");
+
+  if ($gst_dist =~ /suse/)
+  {
+    @prop_array = @profiles_prop_array_suse;
+  }
+  else
+  {
+    @prop_array = @profiles_prop_array_default;
+  }
+
+  for ($i = 0; $prop_array[$i] ne ""; $i += 2)
+  {
+    $profiles_prop_map {$prop_array [$i]}     = $prop_array [$i + 1];
+    $profiles_prop_map {$prop_array [$i + 1]} = $prop_array [$i];
+  }
+}
 
 my $rh_logindefs_defaults = {
   'shell'       => '/bin/bash',
@@ -277,9 +345,10 @@ my $logindefs_dist_map = {
   'slackware-9.1.0' => $gentoo_logindefs_defaults,
   'freebsd-4'       => $freebsd_logindefs_defaults,
   'freebsd-5'       => $freebsd_logindefs_defaults,
+  'suse-7.0'        => $gentoo_logindefs_defaults,
+  'suse-9.0'        => $gentoo_logindefs_defaults,
 
   # FIXME: I don't know about those, so using RH values for now.
-  'suse-7.0'        => $rh_logindefs_defaults,
   'turbolinux-7.0'  => $rh_logindefs_defaults,
   'slackware-8.0.0' => $rh_logindefs_defaults,
   'slackware-8.1'   => $rh_logindefs_defaults,
@@ -428,7 +497,6 @@ sub read_logindefs
     $logindefs->{"gmax"} = '60000';
   }
 }
-
 
 sub read_profiledb
 {
@@ -1441,4 +1509,8 @@ $directives = {
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);
 &gst_platform_ensure_supported ($tool, @platforms);
+
+&get_login_defs_prop_array ();
+&get_profiles_prop_array   ();
+
 &gst_run ($tool);
