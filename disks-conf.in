@@ -332,10 +332,7 @@ sub get_ide_setting
 
 sub get_cdrom_settings
 {
-   my @cd_name_sett = ("play-audio", "write-cdr", "write-cdrw", "read-dvd",
-                       "write-dvdr", "write-dvdram");
-   my @opts = ("Can play audio", "Can write CD-R", "Can write CD-RW", "Can read DVD", 
-               "Can write DVD-R", "Can write DVD-RAM");
+   my (@devices) = @_;
   
    if ($^O eq 'linux') {
       $CDROM_GET_CAPABILITY = 0x5331;
@@ -348,59 +345,23 @@ sub get_cdrom_settings
       $CDC_DVD_RAM    = 0x20000;
    }
 
-   $device = "/dev/hdc";
-   if (!open (RD, "<$device")) {
-      return;
-   }
-   
-   my $drivetype = ioctl (RD, $CDROM_GET_CAPABILITY, 0);
-
-   &update_disk_data ($device, "play-audio", ($drivetype & $CDC_PLAY_AUDIO) ? 1 : 0);
-   &update_disk_data ($device, "write-cdr", ($drivetype & $CDC_CD_R) ? 1 : 0);
-   &update_disk_data ($device, "write-cdrw", ($drivetype & $CDC_CD_RW) ? 1 : 0);
-   &update_disk_data ($device, "read-dvd", ($drivetype & $CDC_DVD) ? 1 : 0);
-   &update_disk_data ($device, "write-dvdr", ($drivetype & $CDC_DVD_R) ? 1 : 0);
-   &update_disk_data ($device, "write-dvdram", ($drivetype & $CDC_DVD_RAM) ? 1 : 0);
-   
-   close (RD);
-   return;
-
-   my $proc_cdrom_file;
-   local *PROC_CDROM_FILE;
-   $proc_cdrom_file = &gst_file_open_read_from_names ("/proc/sys/dev/cdrom/info");
-   if (not $proc_cdrom_file) { return; }
-   *PROC_CDROM_FILE = $proc_cdrom_file;
-   
-   my @devs;
-   while (<PROC_CDROM_FILE>) {
-      if ($_ =~ /drive name/) {
-	 ($line) = ($_ =~ /^drive name:(.*$)/);
-	 $line =~ s/^\s*//;
-	 $line =~ s/\s*$//;
-	 my @columns = split (" ", $line);
-	 for (my $i = 0; $columns[$i]; $i++) {
-	    $devs[$i] = "/dev/$columns[$i]";
-	 }
-      } elsif ($_ =~ /$opts[0]/) {
-	 ($line) = ($_ =~ /.*:(.*$)/);
-	 $line =~ s/^\s*//;
-	 $line =~ s/\s*$//;
-	 my @columns = split (" ", $line);
-	 my $i = 0;
-	 foreach (@columns) {
-	    $columns[$i] =~ s/^\s*//;
-	    $columns[$i] =~ s/\s*$//;
-	    &update_disk_data ($devs[$i], $cd_name_sett[0], "$columns[$i]");
-	    $i++;
-	 }
-	 shift @opts;
-	 shift @cd_name_sett;
+   foreach $device (@devices) {
+      if (!sysopen (RD, $device, O_RDONLY|O_NONBLOCK)) {
+	 next;
       }
-   }
-	 
-   close (PROC_CDROM_FILE);
-}
+   
+      my $drivetype = ioctl (RD, $CDROM_GET_CAPABILITY, 0);
 
+      &update_disk_data ($device, "play-audio", ($drivetype & $CDC_PLAY_AUDIO) ? 1 : 0);
+      &update_disk_data ($device, "write-cdr", ($drivetype & $CDC_CD_R) ? 1 : 0);
+      &update_disk_data ($device, "write-cdrw", ($drivetype & $CDC_CD_RW) ? 1 : 0);
+      &update_disk_data ($device, "read-dvd", ($drivetype & $CDC_DVD) ? 1 : 0);
+      &update_disk_data ($device, "write-dvdr", ($drivetype & $CDC_DVD_R) ? 1 : 0);
+      &update_disk_data ($device, "write-dvdram", ($drivetype & $CDC_DVD_RAM) ? 1 : 0);
+   
+      close (RD);
+   }
+}
 
 sub update_disk_data
 {
@@ -709,8 +670,11 @@ sub get_cdroms
 	 if ($model ne "") { &update_disk_data ($dev, "model", $model); }
 	 $dma = &get_ide_setting ($list_devices[$i], "using_dma");
 	 if ($dma ne "") { &update_disk_data ($dev, "dma", $dma); }
-      } 
+      }
+      $list_devices[$i] = $dev;
    }
+
+   return @list_devices;
 }
 	       
 
@@ -1305,9 +1269,10 @@ sub xml_print
 sub get
 {
   setlocale (LC_ALL, "en_US");
+ 
   
-  &get_cdroms;
-  &get_cdrom_settings;
+  my @cdroms = &get_cdroms;
+  &get_cdrom_settings (@cdroms);
   &get_fdisk;
   &get_scsi_options;
   &read_fstab;
@@ -1685,9 +1650,11 @@ sub dev_speed
    &gst_xml_print_end ("dev_speed");
 }
 
-sub mount_partition
+sub do_mount
 {
-   my ($device, $media, $typefs, $point, $mounted, $listed) = @_;
+   my ($device, $typefs, $point, $mounted, $listed) = @_;
+
+   my $error;
 
    if ($mounted) {
       $error = `umount $device 2>&1`;
@@ -1698,13 +1665,75 @@ sub mount_partition
 	 $error = `mount -t $typefs $device $point 2>&1`;
       }
    }
+   
+   return ($error);
+}
 
-   if (`mount | grep $device`) {
+sub mount_fs
+{
+   my ($tool, $device, $media, $typefs, $point, $mounted, $listed, $uid) = @_;
+
+   &gst_report_end ();
+   &gst_xml_print_begin ("mount");
+
+   my $error;
+
+   if ($uid == 0 || $mounted == 1) {
+      # allways umount as root
+      $error = &do_mount ($device, $typefs, $point, $mounted, $listed);
+   } else {
+      # try to mount as the user who launched the frontend
+      if (fork () == 0) {
+	 POSIX::setuid ($uid);
+        
+	 my $error;
+	 $error = &do_mount ($device, $typefs, $point, $mounted, $listed);
+	 if ($error ne "") {
+	    &gst_xml_print_line ("<error>" . $error  . "</error>\n");
+	 }
+      
+	 exit (0);
+      } else {
+	 wait ();
+      }
+   }
+
+   my $is_mounted = `mount | grep \"$device\"`;
+   if ($is_mounted && $mounted == 1) {
+      # umount failed
+      if ($error ne "") {
+	 &gst_xml_print_line ("<error>" . $error  . "</error>\n");
+      } 
+      $mounted = 1;
+   } elsif (!$is_mounted && $mounted == 0) {
+      # mount failed
+      if ($uid != 0) {
+	 # try again, now as root
+	 $error = &do_mount ($device, $typefs, $point, $mounted, $listed);
+	 if (`mount | grep \"$device\"`) {
+	    # mounted successfully at this time
+	    $mounted = 1;
+	 } else {
+	    # mount failed again
+	    if ($error ne "") {
+	       &gst_xml_print_line ("<error>" . $error  . "</error>\n");
+	    }
+	    $mounted = 0;
+	 }
+      } else {
+	 if ($error ne "") {
+	    &gst_xml_print_line ("<error>" . $error  . "</error>\n");
+	 }
+	 $mounted = 0;
+      }
+   } elsif ($is_mounted && $mounted == 0) {
+      # mounted successfully
       $mounted = 1;
    } else {
+      # umounted successfully
       $mounted = 0;
    }
-   
+  
    if ($error ne "") { 
       &gst_xml_print_line ("<error>" . $error  . "</error>\n"); 
    }
@@ -1735,16 +1764,18 @@ sub mount_partition
       &gst_xml_leave ();
       &gst_xml_print_line ("</cdrom>\n");
    }
-}
 
-sub mount_fs
-{
-   my ($tool, $device, $media, $typefs, $point, $mounted, $listed) = @_;
-   &gst_report_end ();
-   &gst_xml_print_begin ("mount");
-   &mount_partition ($device, $media, $typefs, $point, $mounted, $listed);
    &gst_xml_print_end ("mount");
 }
+
+#sub mount_fs
+#{
+#   my ($tool, $device, $media, $typefs, $point, $mounted, $listed) = @_;
+#   &gst_report_end ();
+#   &gst_xml_print_begin ("mount");
+#   &mount_partition ($device, $media, $typefs, $point, $mounted, $listed);
+#   &gst_xml_print_end ("mount");
+#}
 
 # --- Main --- #
 
@@ -1761,7 +1792,7 @@ $directives = {
                        "Return the speed of a device in kb/s" ],
   "cdrom_disc_info" => [ \&cdrom_disc_info, ["device"],
                        "Return info about the cdrom discs"],
-  "mount"           => [ \&mount_fs, ["device", "media", "typefs", "point", "mounted", "listed"], 
+  "mount"           => [ \&mount_fs, ["device", "media", "typefs", "point", "mounted", "listed", "uid"], 
                        "Immediatly mount or umount a given partition"],
 };
 
