@@ -1,15 +1,15 @@
 # setup-tools-backends ja.po.
-# Copyright (C) 2004 Free Software Foundation, Inc.
+# Copyright (C) 2004,2005 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gnome-system-tools package.
-# Takeshi AIHANA <aihana@gnome.gr.jp>, 2004.
+# Takeshi AIHANA <aihana@gnome.gr.jp>, 2004,2005.
 # Takayuki KUSANO <AE5T-KSN@asahi-net.or.jp>, 2004.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-05-18 01:41+0900\n"
-"PO-Revision-Date: 2004-05-18 01:40+0900\n"
+"POT-Creation-Date: 2005-01-01 17:20+0900\n"
+"PO-Revision-Date: 2005-01-01 17:17+0900\n"
 "Last-Translator: Takeshi AIHANA <aihana@gnome.gr.jp>\n"
 "Language-Team: Japanese <gnome-translation@gnome.gr.jp>\n"
 "MIME-Version: 1.0\n"
@@ -841,30 +841,78 @@ msgstr ""
 "御メカニズムと柔軟なログ記録機能を搭載し、いろいろなサービスを時間で有効にし"
 "たり、起動できるサーバの数を制限したり、いろんなことができます。"
 
-#: service.pl.in:191 service.pl.in:196
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "システムの停止"
 
-#: service.pl.in:192 service.pl.in:198
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "テキスト・モード"
 
-#: service.pl.in:193 service.pl.in:197 service.pl.in:206
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "グラフィカル・モード"
 
-#: service.pl.in:194 service.pl.in:199
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "システムの再起動"
 
-#: service.pl.in:201
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "システムに必須のサービスをすべて起動"
 
-#: service.pl.in:202
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "デフォルトのラン・レベル"
 
-#: service.pl.in:203
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "ネットワーク不要のラン・レベル"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "システム・ログの監視"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "オーディオ・デバイスを使う"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "CD-ROM ドライブへのアクセス"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "モデム・デバイスへのアクセス"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "モデム・デバイスを介したインターネット接続"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "FAX の送受信"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "フロッピー・ドライブへのアクセス"
+
+#: users-conf.in:186
+msgid "Mount removable devices automatically"
+msgstr "リムーバブル・デバイスの自動マウント"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "テープ・ドライブへのアクセス"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "システム管理者権限の取得が可能"
+
+#: users-conf.in:458
+msgid "Default"
+msgstr "デフォルト"
+
+#: users-conf.in:459
+msgid "Default profile"
+msgstr "デフォルトのプロファイル"
