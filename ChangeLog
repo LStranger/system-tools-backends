@@ -1,11 +1,20 @@
-2001-03-08  Hans Petter Jansson
+2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
+
+	* general.pl.in: Add $xst_debug flag.
+	  (xst_init): Honour --debug arg and XST_DEBUG env. Also some
+	  comments.
+
+	* debug.pl.in (xst_debug_print_indent): Use xst_debug_print_string().
+	  (xst_debug_print_string): Print to STDERR only if $xst_debug set.
+
+2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_quote): return() -> return, makes code look
 	more uniform.
 	(xst_xml_get_word): Missing semicolon added.
 	(xst_xml_get_text): Missing semicolon added.
 
-2001-03-08  Hans Petter Jansson
+2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
 	* debug.pl.in (xst_debug_open_output_file): Implement.
 	  (xst_debug_print_string_to_file): Implement.

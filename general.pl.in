@@ -40,6 +40,7 @@ $xst_operation = "";  # Major operation user wants to perform - [get | set | fil
 
 $xst_prefix = "";
 $xst_verbose = 0;
+$xst_debug = 0;
 $xst_do_immediate = 1;
 
 
@@ -165,10 +166,14 @@ sub xst_init
 {
   my @args = @_;
 
+  # Set backend descriptors.
+
   $xst_name = @args[0];
   $xst_version = @args[1];
   $xst_description = @args[2];
   shift @args; shift @args; shift @args;
+
+  # Parse arguments.
 
   while (@args)
   {
@@ -200,6 +205,7 @@ sub xst_init
     elsif ($args[0] eq "--verbose" || $args[0] eq "-v") { $xst_verbose = 1; }
     elsif ($args[0] eq "--progress")                    { $xst_progress = 1; }
     elsif ($args[0] eq "--report")                      { $xst_reporting = 1; }
+    elsif ($args[0] eq "--debug")                       { $xst_debug = 1; }
     else
     {
       print STDERR "Error: Unrecognized option '$args[0]'.\n\n";
@@ -209,12 +215,20 @@ sub xst_init
     shift @args;
   }
 
+  # Ensure that an operation was specified.
+
   if ($xst_operation eq "")
   {
     print STDERR "Error: No operation specified.\n\n";
     &xst_print_usage ();
     exit (1);
   }
+
+  # See if debug requested in env.
+
+  if ($ENV{"XST_DEBUG"}) { $xst_debug = 1; }
+
+  # Set up subsystems.
 
   &xst_begin ();
 }

@@ -48,6 +48,19 @@ sub xst_debug_print_string_to_file
 }
 
 
+sub xst_debug_print_string
+{
+  if ($xst_debug) { print STDERR $_[0]; }
+  &xst_debug_print_string_to_file ("debug", $_[0]);
+}
+
+
+sub xst_debug_print_line
+{
+  &xst_debug_print_string ($_[0] . "\n");
+}
+
+
 sub xst_debug_print_indent
 {
   my $indent = @_[0];
@@ -59,21 +72,7 @@ sub xst_debug_print_indent
     $indent_string .= "  ";
   }
 
-  print STDERR $indent_string;
-  &xst_debug_print_string_to_file ("debug", $indent_string);
-}
-
-
-sub xst_debug_print_string
-{
-  print STDERR $_[0];
-  &xst_debug_print_string_to_file ("debug", $_[0]);
-}
-
-
-sub xst_debug_print_line
-{
-  &xst_debug_print_string ($_[0] . "\n");
+  &xst_debug_print_string ($indent_string);
 }
 
 
