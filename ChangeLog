@@ -1,5 +1,9 @@
 2005-03-01  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* Release 1.1.92
+
+2005-03-01  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* network-conf.in, network.pl.in, platform.pl.in, service.pl.in,
 	services-conf.in, shares-conf.in, time-conf.in, users-conf.in:
 	Added support for Fedora Core 3, it's just like FC2

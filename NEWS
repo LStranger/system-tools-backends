@@ -1,3 +1,56 @@
+System Tools Backends Version 1.1.92, 2005-03-01
+------------------------------------------------
+
+The GNOME System Tools version 1.1.92 "Tararí que te ví" have been released.
+
+The System Tools Backends are a set of cross-platform scripts for Linux and other Unix systems. The backends provide an standard XML interface for modifying the configuration regarless of the distribution that's being used.
+
+Right now the System Tools Backends fully support various distros/OS such as: Redhat, Mandrake, SuSE, Fedora, Debian (and derivations like Ubuntu, Linex, Guadalinex...), Gentoo, Slackware, FreeBSD, OpenNA, PLD, Vine and Specifix.
+
+
+Changes since last release
+==========================
+
+  General
+  =======
+  - Added support for Fedora Core 3 (Garnacho)
+  - i18n fixes (Garnacho)
+
+  Network
+  =======
+  - Added directive for changing default gateway on the fly (Garnacho)
+  - Add support for dhcpcd (Garnacho)
+  - Fixed PPP calling (Michael Vogt, Garnacho)
+
+  Shares
+  ======
+  - Avoid print$ shares (Garnacho)
+  
+  Translations
+  ============
+  - bg (Alexander Shopov)
+  - ca (Josep Puigdemont i Casamajó)
+  - el (Kostas Papadimas)
+  - fi (Ilkka Tuohela)
+  - fr (Christophe Merlet)
+  - gu (Ankit Patel)
+  - it (Francesco Marletta)
+  - ko (Young-Ho Cha)
+  - lt (Žygimantas Beručka)
+  - nb (Kjartan Maraas)
+  - nl (Tino Meinen)
+  - pl (GNOME PL Team)
+  - pt (Duarte Loreto)
+  - pt_BR (Raphael Higino)
+  - th (Theppitak Karoonboonyanan)
+  - uk (Maxim Dziumanenko)
+
+Downloading
+===========
+You can get it from :
+ftp://ftp.gnome.org/pub/GNOME/sources/system-tools-backends/1.1/
+
+
 System Tools Backends Version 1.1.91, 2005-02-08
 ------------------------------------------------
 
