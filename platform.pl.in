@@ -60,6 +60,7 @@ $PLATFORM_INFO = {
   "mandrake-9.2"    => "Linux Mandrake 9.2 FiveStar",
   "mandrake-10.0"   => "Linux Mandrake 10.0",
   "mandrake-10.1"   => "Linux Mandrake 10.1",
+  "blackpanther-4.0" => "Black Panther Linux 4.0",
   "conectiva-9"     => "Conectiva Linux 9",
   "conectiva-10"    => "Conectiva Linux 10",
   "suse-7.0"        => "SuSE Linux 7.0",
@@ -88,7 +89,8 @@ sub check_lsb
   my %distmap =
       ("Debian" => "debian"),
       ("Mandrake" => "mandrake"),
-      ("Conectiva" => "conectiva");
+      ("Conectiva" => "conectiva"),
+      ("Blackpanther" => "blackpanther");
 
   # gst_prefix not required here: parse already does that for us.
   $dist = lc (&gst_parse_sh ("/etc/lsb-release", "DISTRIB_ID"));
@@ -201,6 +203,30 @@ sub check_mandrake
     }
   }
   close MANDRAKE;
+  return -1;
+}
+
+sub check_blackpanther
+{
+  open BLACKPANTHER, "$gst_prefix/etc/blackPanther-release" or return -1;
+
+  while (<BLACKPANTHER>)
+  {
+    $ver = $_;
+    chomp ($ver);
+    if ($ver =~ /^Linux Black Panther release (\S+)/)
+    {
+      close BLACKPANTHER;
+      return "blackPanther-$1";    
+    }
+    elsif ($ver =~ /^Black Panther ( L|l)inux release ([\d\.]+)/i)
+    {
+      close BLACKPANTHER;
+      return "blackPanther-$2";     
+    }
+  }
+
+  close BLACKPANTHER;
   return -1;
 }
 
@@ -368,8 +394,8 @@ sub gst_platform_guess
   my ($tool) = @_;
 
   my %check = (
-    # Red Hat check must run after Mandrake and Fedora
-    "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, 
+    # Red Hat check must run after Mandrake and Fedora, and Mandrake after BlackPanther
+    "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, \&check_blackpanther,
                  \&check_fedora, \&check_mandrake, \&check_conectiva, \&check_linuxppc, \&check_redhat,  \&check_openna,
                  \&check_turbolinux, \&check_slackware, \&check_gentoo,  \&check_pld ],
     "FreeBSD" => [ \&check_freebsd ],
