@@ -1,0 +1,86 @@
+#!/bin/sh
+#
+# Startup script to implement /etc/sysconfig/ipchains pre-defined rules.
+#
+# chkconfig: - 08 92
+#
+# description: Automates a packet filtering firewall with ipchains.
+#
+# Script Author:	Joshua Jensen <joshua@redhat.com>
+#   -- hacked up by gafton with help from notting
+#
+# config: /etc/sysconfig/ipchains
+
+IPCHAINS_CONFIG=/etc/network/ipchains
+
+if [ ! -x /sbin/ipchains ]; then
+    exit 0
+fi
+
+case "$1" in
+  start)
+	# don't do squat if we don't have the config file
+	if [ -f $IPCHAINS_CONFIG ]; then
+	    # If we don't clear these first, we might be adding to
+	    #  pre-existing rules.
+	    /sbin/ipchains -F
+	    /sbin/ipchains -X
+	    /sbin/ipchains -Z
+	    echo -n "Applying ipchains firewall rules: "
+		grep -v "^#" $IPCHAINS_CONFIG | ipchains-restore -p -f && \
+		    echo "success." || \
+		    echo "failure."
+	    echo
+#	    touch /var/lock/subsys/ipchains
+	fi
+	;;
+
+  stop)
+	/sbin/ipchains -F
+	/sbin/ipchains -X
+	echo -n "Resetting built-in chains to the default ACCEPT policy:"
+	/sbin/ipchains -P input ACCEPT && \
+	    /sbin/ipchains -P forward ACCEPT && \
+	    /sbin/ipchains -P output ACCEPT && \
+	  echo "success." || \
+	  echo "failure."
+	echo
+#	rm -f /var/lock/subsys/ipchains
+	;;
+
+  restart)
+	# "restart" is really just "start" as this isn't a daemon,
+	#  and "start" clears any pre-defined rules anyway.
+	#  This is really only here to make those who expect it happy
+	$0 start
+	;;
+
+  status)
+	/sbin/ipchains -nL
+	;;
+
+  panic)
+	echo -n "Changing target policies to DENY: "	
+	/sbin/ipchains -P input DENY && \
+	    /sbin/ipchains -P forward DENY && \
+	    /sbin/ipchains -P output DENY && \
+	  echo "success." || \
+	  echo "failure."
+	/sbin/ipchains -F
+	/sbin/ipchains -X
+	;;
+
+  save)
+	echo -n "Saving current rules to $IPCHAINS_CONFIG: "
+	ipchains-save > $IPCHAINS_CONFIG  2>/dev/null && \
+        echo "success." || \
+        echo "failure."
+	;;
+
+  *)
+	echo "Usage: $0 {start|stop|restart|status|panic|save}"
+	exit 1
+esac
+
+exit 0
+
