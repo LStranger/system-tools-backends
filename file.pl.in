@@ -100,7 +100,7 @@ sub xst_file_create_path_for_file
   }
 
   &xst_report_enter ();
-  &xst_report ("file_path_create", $_[0]);
+  &xst_report ("file_create_path", $_[0]);
   &xst_report_leave ();
 }
 
@@ -142,7 +142,7 @@ sub xst_file_backup_rotate_dirs
     }
     
     &xst_file_create_path_for_file ("$backup_tool_dir/1/");
-    &xst_report ("file_backup_rotated", $backup_tool_dir);
+    &xst_report ("file_backup_rotate", $backup_tool_dir);
   }
   
   &xst_report_enter ();

@@ -1,3 +1,7 @@
+2001-04-17  Arturo Espinosa  <arturo@ximian.com>
+
+	* file.pl.in: changed wrong report keys.
+	
 2001-04-14  Chema Celorio  <chema@celorio.com>
 
 	* time-conf.in (conf_get_replace_table): typo . duh !
