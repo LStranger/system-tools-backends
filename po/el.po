@@ -8,13 +8,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: el\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-02-11 12:51+0200\n"
+"POT-Creation-Date: 2005-03-16 01:03+0200\n"
 "PO-Revision-Date: 2005-02-11 12:56+0200\n"
 "Last-Translator: Kostas Papadimas <pkst@gnome.org>\n"
 "Language-Team:  <nls@tux.hellug.gr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -868,31 +868,31 @@ msgstr ""
 "ικανότητα έγκαιρης διαθεσιμότητας υπηρεσιών, και οριοθέτησης στον αριθμό των "
 "εξυπηρετητών που μπορεί να εκκινήσουν, ανάμεσα σε άλλα πράγματα."
 
-#: service.pl.in:226 service.pl.in:231
+#: service.pl.in:229 service.pl.in:234
 msgid "Halting the system"
 msgstr "Τερματισμός το συστήματος"
 
-#: service.pl.in:227 service.pl.in:233
+#: service.pl.in:230 service.pl.in:236
 msgid "Text mode"
 msgstr "Λειτουργία κειμένου"
 
-#: service.pl.in:228 service.pl.in:232 service.pl.in:241
+#: service.pl.in:231 service.pl.in:235 service.pl.in:244
 msgid "Graphical mode"
 msgstr "Γραφική λειτουργία"
 
-#: service.pl.in:229 service.pl.in:234
+#: service.pl.in:232 service.pl.in:237
 msgid "Rebooting the system"
 msgstr "Επανεκκίνηση του συστήματος"
 
-#: service.pl.in:236
+#: service.pl.in:239
 msgid "Starts all system neccesary services"
 msgstr "Εκκινεί όλες τις απαραίτητες υπηρεσίες του συστήματος"
 
-#: service.pl.in:237
+#: service.pl.in:240
 msgid "Default runlevel"
 msgstr "Προεπιλεγμένο runlevel"
 
-#: service.pl.in:238
+#: service.pl.in:241
 msgid "Networkless runlevel"
 msgstr "Runlevel χωρίς δίκτυο"
 
@@ -936,11 +936,10 @@ msgstr "Πρόσβαση σε  tape drives"
 msgid "Be able to get administrator privileges"
 msgstr "Δυνατότητα απόκτησης προνομίων διαχειριστή"
 
-#: users-conf.in:491
+#: users-conf.in:492
 msgid "Default"
 msgstr "Προεπιλεγμένο"
 
-#: users-conf.in:492
+#: users-conf.in:493
 msgid "Default profile"
 msgstr "Προεπιλεγμένο προφίλ"
-
