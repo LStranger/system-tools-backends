@@ -437,9 +437,9 @@ sub xml_print_export_smb
   &xst_xml_print_pcdata    ("path",       &xst_share_smb_info_get_point   ($info));
   &xst_xml_print_pcdata    ("comment",    &xst_share_smb_info_get_comment ($info));
   &xst_xml_print_state_tag ("enabled",    &xst_share_smb_info_get_enabled ($info));
-  &xst_xml_print_state_tag ("browseable", &xst_share_smb_info_get_browse  ($info));
+  &xst_xml_print_state_tag ("browse",     &xst_share_smb_info_get_browse  ($info));
   &xst_xml_print_state_tag ("public",     &xst_share_smb_info_get_public  ($info));
-  &xst_xml_print_state_tag ("writable",   &xst_share_smb_info_get_write   ($info));
+  &xst_xml_print_state_tag ("write",      &xst_share_smb_info_get_write   ($info));
 
   &xst_xml_leave ();
   &xst_xml_print_line ("</export>");

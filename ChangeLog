@@ -1,3 +1,7 @@
+2001-05-23  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in: XML tags: browseable -> browse, writable -> write.
+
 2001-05-24  Chema Celorio  <chema@celorio.com>
 
 	* network.pl.in (xst_network_get_interface_replace_table): added
