@@ -1,5 +1,13 @@
 Wed Jul 25 03:45:51 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* package-conf.in (get_package): missing comma.
+
+	* mouse-conf.in: mouse.pl doesn't exist. Can't require it.
+
+	* Makefile.am: Also s/___version___/$(VERSION)/.
+	* *-conf.in: Removed arbitrary value for $version and
+	assigned "___version___" instead. #3090 fixed.
+
 	* boot.pl.in (xst_boot_conf_edit_image): Removed append
 	key special case for quoting. Quote values only if they
 	contain spaces and are not already quoted.

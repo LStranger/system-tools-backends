@@ -54,7 +54,7 @@ require "___scriptsdir___/print.pl";
 # --- Tool information --- #
 
 $name = "print";
-$version = "0.1.0";
+$version = "___version___";
 @platforms = ("redhat-7.0", "redhat-7.1", "debian-2.2", "debian-woody", "turbolinux-7.0");
 
 $description =<<"end_of_description;";

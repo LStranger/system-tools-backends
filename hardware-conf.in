@@ -59,7 +59,7 @@ require "___scriptsdir___/xml.pl";
 # --- Tool information --- #
 
 $name = "hardware";
-$version = "0.1.0";
+$version = "___version___";
 
 $description =<<"end_of_description;";
        Configures hardware.

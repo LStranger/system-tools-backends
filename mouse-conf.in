@@ -39,14 +39,14 @@ require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";	
 require "___scriptsdir___/xml.pl";	
 require "___scriptsdir___/parse.pl";
-require "___scriptsdir___/mouse.pl";
+#require "___scriptsdir___/mouse.pl";
 }
 
 
 # -- Tool information --- #
 
 $name = "mouse";
-$version = "0.1.0";
+$version = "___version___";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", 
 	      "redhat-7.0", "redhat-7.1", "turbolinux-7.0");
 

@@ -41,7 +41,7 @@ require "___scriptsdir___/x.pl";
 # --- Tool information --- #
 
 $name = "display";
-$version = "0.1.0";
+$version = "___version___";
 @platforms = qw(redhat-7.0 redhat-7.1 turbolinux-7.0 debian-woody);
 
 $description =<<"end_of_description;";

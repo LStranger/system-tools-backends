@@ -39,7 +39,7 @@ require "___scriptsdir___/replace.pl";
 # --- Tool information --- #
 
 $name = "internetsharing";
-$version = "0.1.0";
+$version = "___version___";
 @platforms = ("redhat-7.0", "redhat-7.1",
               "mandrake-7.2", "turbolinux-7.0");
 

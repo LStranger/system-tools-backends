@@ -37,7 +37,7 @@ require "___scriptsdir___/xml.pl";
 # --- Tool information --- #
 
 $name = "package";
-$version = "0.0.1";
+$version = "___version___";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
               "mandrake-7.2", "suse-7.0", "turbolinux-7.0");
 
@@ -132,7 +132,7 @@ sub get_package
     "redhat"   => "$cmd_map{rpm}",
     "mandrake" => "$cmd_map{rpm}",
     "suse"     => "$cmd_map{rpm}",
-    "debian"   => "$cmd_map{deb}"
+    "debian"   => "$cmd_map{deb}",
     "turbolinux" => "$cmd_map{rpm}",
   );
 

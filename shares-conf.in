@@ -54,7 +54,7 @@ require "___scriptsdir___/share.pl";
 # --- Tool information --- #
 
 $name = "shares";
-$version = "0.1.0";
+$version = "___version___";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
               "redhat-7.1", "mandrake-7.2", "debian-2.2", "debian-woody", "suse-7.0", "turbolinux-7.0");
 
