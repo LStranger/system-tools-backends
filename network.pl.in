@@ -230,6 +230,23 @@ sub gst_network_enable_modem
   return $ret;
 }
 
+sub gst_network_enable_isdn
+{
+  my ($hash, $dev, $command_pppd) = @_;
+  my ($command);
+
+  $command = $command_pppd;
+  $command .= " debug" if ($$config{"debug"});
+  $command .= ($$config{"noauth"}) ? " noauth" : " auth";
+  $command .= ($$config{"persist"}) ? " persist" : " nopersist";
+  $command .= ($$config{"serial_hwctl"}) ? " crtscts" : " nocrtscts";
+  $command .= ($$config{"set_default_gw"}) ? " defaultroute" : " nodefaultroute";
+  $command .= " usepeerdns" if ($$config{"update_dns"});
+  $command .= " plugin capiplugin.so";
+
+  return &gst_file_run ($command);
+}
+
 sub gst_network_enable_iface_with_config
 {
   my ($hash) = @_;
@@ -252,7 +269,14 @@ sub gst_network_enable_iface_with_config
   {
     if (exists ($$hash{"configuration"}{"phone_number"}))
     {
-      $ret = &gst_network_enable_modem ($hash, $dev, $command_pppd, $command_chat);
+      if (&gst_network_check_pppd_plugin ("capiplugin"))
+      {
+        $ret = &gst_network_enable_isdn ($hash, $dev, $command_pppd);
+      }
+      else
+      {
+        $ret = &gst_network_enable_modem ($hash, $dev, $command_pppd, $command_chat);
+      }
     }
     else
     {

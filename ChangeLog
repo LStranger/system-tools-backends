@@ -1,5 +1,10 @@
 2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* network.pl.in (gst_network_enable_isdn): added, handles ISDN
+	connections. (gst_network_enable_iface_with_config): use it
+
+2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* shares-conf.in: fixed paths extraction from XML, added some extra
 	info to the XML to know which sharing servers exist/are active
 
