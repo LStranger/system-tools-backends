@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-setup-tools VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-04-18 15:37+0200\n"
-"PO-Revision-Date: 2004-04-18 16:48+0200\n"
+"POT-Creation-Date: 2004-09-05 12:20+0200\n"
+"PO-Revision-Date: 2004-09-05 16:48+0200\n"
 "Last-Translator: Miloslav Trmac <mitr@volny.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -99,7 +99,7 @@ msgstr "Záznamník zaváděcích zpráv"
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
-msgstr "Běží na pozadí a kopíruje všechny řetězce poslané na zařízení /dev/cosole do souboru záznamů"
+msgstr "Běží na pozadí a kopíruje všechny řetězce poslané na zařízení /dev/console do souboru záznamů"
 
 #: service-list.pl.in:45
 msgid ""
@@ -132,7 +132,10 @@ msgid ""
 "cpufreqd is used to monitor the status of the battery and adjust the "
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
-msgstr "cpufreqd se používá pro sledování stavu baterie a podle toho upravuje frekvenci CPU, aby zachoval nabití baterie a zároveň poskytoval optimální výkon"
+msgstr ""
+"cpufreqd se používá pro sledování stavu baterie a podle toho upravuje "
+"frekvenci CPU, aby zachoval nabití baterie a zároveň poskytoval optimální "
+"výkon"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -147,11 +150,7 @@ msgid ""
 "cron is a standard UNIX program that runs user-specified programs at "
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
-msgstr ""
-"cron je standardní program UNIXU, který spouští uživatelem určené programy "
-"periodicky v naplánovaných intervalech. vixie cron přidává k základnímu "
-"UNIXovému cronu další vlastnosti včetně lepšího zabezpečení a mocnějších "
-"možností nastavení."
+msgstr "cron je standardní program UNIXu, který spouští uživatelem určené programy periodicky v naplánovaných intervalech. vixie cron přidává k základnímu UNIXovému cronu další vlastnosti včetně lepšího zabezpečení a mocnějších možností nastavení."
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
@@ -412,7 +411,9 @@ msgstr "Vytvořit zařízení"
 msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
-msgstr "Skript, který vytvoří zařízení v /dev používaná pro komunikaci s ovladači v jádře"
+msgstr ""
+"Skript, který vytvoří zařízení v /dev používaná pro komunikaci s ovladači v "
+"jádře"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -486,7 +487,7 @@ msgstr ""
 
 #: service-list.pl.in:94
 msgid "Name service cache daemon"
-msgstr "Démon pro keš služeb jmen"
+msgstr "Démon pro cache služeb jmen"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
@@ -520,7 +521,9 @@ msgstr "Server Network Time Protocol (NTP)"
 msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
-msgstr "Démon, který nastavuje a udržuje systémový čas synchronně se standardními servery času na Internetu"
+msgstr ""
+"Démon, který nastavuje a udržuje systémový čas synchronně se standardními "
+"servery času na Internetu"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
@@ -766,7 +769,7 @@ msgstr ""
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
-msgstr "Virtuální stroj založený na Intel(TM) x86(TM)"
+msgstr "Virtuální stroj založený na Intel™ x86™"
 
 #: service-list.pl.in:131
 msgid ""
@@ -792,9 +795,7 @@ msgstr "Spouští a ukončuje démon Samba winbind"
 msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
-msgstr ""
-"Umožnit uživatelům spouštět aplikace pro Windows(tm) jednoduše kliknutím na "
-"ně (nebo napsáním ./soubor.exe)"
+msgstr "Umožnit uživatelům spouštět aplikace pro Windows™ jednoduše kliknutím na ně (nebo napsáním ./soubor.exe)"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
@@ -827,30 +828,30 @@ msgstr ""
 "přístupu, široké možnosti zaznamenávání, schopnost zpřístupňovat služby "
 "podle času a může omezit počet serverů, které lze spustit."
 
-#: service.pl.in:180 service.pl.in:185
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "Zastavování počítače"
 
-#: service.pl.in:181 service.pl.in:187
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "Textový režim"
 
-#: service.pl.in:182 service.pl.in:186 service.pl.in:194
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "Grafický režim"
 
-#: service.pl.in:183 service.pl.in:188
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "Restartování počítače"
 
-#: service.pl.in:190
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "Spustí všechny potřebné služby systému"
 
-#: service.pl.in:191
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "Implicitní úroveň běhu"
 
-#: service.pl.in:192
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Úroveň běhu bez sítě"
