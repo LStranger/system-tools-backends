@@ -38,6 +38,7 @@ require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
+require "___scriptsdir___/filesys.pl";
 
 
 # --- Tool information --- #
@@ -79,21 +80,28 @@ sub update_partition
   my ($disk, $device, $point, $fs, $options, $check);
   my ($listed, $bootable, $detected);
   my ($disk_found, $point_found) = (0, 0);
+  my $label;
 
   ($disk, $device, $point, $fs, $options, $check, $size, $listed,
-   $bootable, $detected) = @_;
+   $bootable, $detected, $label) = @_;
 
   if ($fs eq "auto") { $fs = ""; }
+  if ($label eq "")
+  {
+    if ($device eq "") { return; }
+    $label = xst_filesys_translate_ext2_device_to_label ($device);
+  }
 
   for ($i = 0; $cf_disks[$i]; $i++)
   {
-    if (($cf_disks[$i])->{device} eq $disk)
+    if ($disk eq "" || ($cf_disks[$i])->{device} eq $disk)
     {
       # Found disk. Now look for partition.
           
       for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
       {
-        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device)
+        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device ||
+            ($label ne "") && ($cf_disks[$i]->{partitions}[$j]->{label} eq $label))
         {
           # Found partition.
           
@@ -116,12 +124,14 @@ sub update_partition
           if ($detected) { $cf_disks[$i]->{partitions}[$j]->{detected} = 1; }
           if ($check) { $cf_disks[$i]->{partitions}[$j]->{check} = 1; }
           if ($size) { $cf_disks[$i]->{partitions}[$j]->{size} = $size; }
+          if ($label) { $cf_disks[$i]->{partitions}[$j]->{label} = $label; }
 
+          $disk_found = 1;
           $point_found = 1; last;
         }
       }
 
-      if (!$point_found)
+      if (!$point_found && $device)
       {
         # Make new partition entry.
 
@@ -138,12 +148,13 @@ sub update_partition
         if ($detected) { %partition->{detected} = 1; }
         if ($check) { %partition->{check} = 1; }
         %partition->{size} = $size;
+        %partition->{label} = $label;
 
         $bleh = $cf_disks[$i]->{partitions};
         push(@$bleh, \%partition);
+
+        $disk_found = 1; last;
       }
-            
-      $disk_found = 1; last;
     }
   }
 
@@ -164,6 +175,7 @@ sub update_partition
     if ($detected) { %partition->{detected} = 1; }
     if ($check) { %partition->{check} = 1; }
     %partition->{size} = $size;
+    %partition->{label} = $label;
 
     %disk->{device} = $disk;
     %disk->{partitions} = [];
@@ -177,18 +189,19 @@ sub update_partition
 
 sub get_partition
 {
-  my ($disk, $device) = @_;
+  my ($disk, $device, $label) = @_;
   my ($i, $j);
 
   for ($i = 0; $cf_disks[$i]; $i++)
   {
-    if (($cf_disks[$i])->{device} eq $disk)
+    if ($disk eq "" || ($cf_disks[$i])->{device} eq $disk)
     {
       # Found disk. Now look for partition.
 
       for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
       {
-        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device)
+        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device ||
+            ($device eq "" && $cf_disks[$i]->{partitions}[$j]->{label} eq $label))
         {
           # Found partition.
 
@@ -202,21 +215,20 @@ sub get_partition
 
 sub get_partition_data
 {
-  my ($disk, $device, $point, $fs, $options, $check);
-  my ($listed, $bootable);
+  my ($disk, $device, $label);
 
-  ($disk, $device, $point, $fs, $options, $check, $size, $listed,
-   $bootable, $detected) = @_;
+  ($disk, $device, $label) = @_;
 
   for ($i = 0; $cf_disks[$i]; $i++)
   {
-    if (($cf_disks[$i])->{device} eq $disk)
+    if ($disk eq "" || ($cf_disks[$i])->{device} eq $disk)
     {
       # Found disk. Now look for partition.
 
       for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
       {
-        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device)
+        if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device ||
+            ($device eq "" && $cf_disks[$i]->{partitions}[$j]->{label} eq $label))
         {
           # Found partition.
 
@@ -225,7 +237,8 @@ sub get_partition_data
                   $cf_disks[$i]->{partitions}[$j]->{listed},
                   $cf_disks[$i]->{partitions}[$j]->{mounted},
                   $cf_disks[$i]->{partitions}[$j]->{bootable},
-                  $cf_disks[$i]->{partitions}[$j]->{check});
+                  $cf_disks[$i]->{partitions}[$j]->{check},
+                  $cf_disks[$i]->{partitions}[$j]->{label});
         }
       }
     }
@@ -236,7 +249,7 @@ sub get_partition_data
 sub update_disk_size
 {
   my ($disk, $size);
-  
+
   ($disk, $size) = @_;
 
   for ($i = 0; $cf_disks[$i]; $i++)
@@ -280,14 +293,17 @@ sub read_fstab
 
   while (<FSTAB_FILE>)
   {
-    my ($disk, $device, $point, $fs, $options, $check);
+    my ($disk, $device, $point, $fs, $options, $check, $label);
 
     @line = split(/[ \n\r\t]+/, $_);
 
     if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "" || $line[0] =~ /$LABEL=.*/ || $line[0] =~ /$UUID=.*/) { next; }
+    if ($line[0] eq "") { next; }
     if (&xst_ignore_line($line[0])) { next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
+
+    if ($device =~ /$LABEL=(.*)/) { $label = $1; $device = ""; }
+    else                          { $label = ""; }
 
     if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||
         $fs eq "iso9660" || $fs eq "swap")
@@ -297,17 +313,17 @@ sub read_fstab
 
     if ($point eq "none") { $dir = ""; }
     ($disk) = ($device =~ /([a-zA-Z\/]+)/);
-    
-    if ($disk eq "/dev/fd" || $disk eq $device)
-    { 
-      next;  # Skip floppies, CD-ROMs and those pesky LABEL= lines (to be fixed).
+
+    if ($disk eq "/dev/fd" || ($disk ne "" && $disk eq $device))
+    {
+      next;  # Skip floppies and CD-ROMs.
     }
 
     # (Find and update) or (add) our internal disk/partition record.
 
-    if ($disk ne "")
+    if ($disk ne "" || $label ne "")
     {
-      &update_partition($disk, $device, $point, $fs, $options, $check, "", 1, 0);
+      &update_partition($disk, $device, $point, $fs, $options, $check, "", 1, 0, "", $label);
     }
   }
 
@@ -326,33 +342,54 @@ sub write_fstab
 
   while (<INFILE>)
   {
-    my ($disk, $device, $point, $fs, $options, $dump, $check);
-    my ($ipoint, $itype, $icheck, $ilisted, $imounted, $ibootable);
+    my ($disk, $device, $point, $fs, $options, $dump, $check, $label);
+    my ($ipoint, $itype, $icheck, $ilisted, $imounted, $ibootable, $ilabel);
 
     @line = split(/[ \n\r\t]+/, $_);
 
     if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "" || $line[0] =~ /$LABEL=.*/ || $line[0] =~ /$UUID=.*/) { print OUTFILE; next; }
+    if ($line[0] eq "") { print OUTFILE; next; }
     if (&xst_ignore_line($line[0])) { print OUTFILE; next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
     if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||
-        $fs eq "iso9660" || $fs eq "swap")
+        $fs eq "iso9660" || $fs eq "swap" || $device =~ /$\/dev\/fd.*/)
     {
       print OUTFILE; next;  # We can skip these filesystems for sure.
     }
 
     # By now, we know that the "entry" is "interesting". Check if known.
 
-    ($disk) = ($device =~ /([a-zA-Z\/]+)/);
+    if ($device =~ /$LABEL=(.*)/)
+    {
+      $label = $1;
+      $device = "";
+      $disk = "";
+    }
+    else
+    {
+      $label = "";
+      ($disk) = ($device =~ /([a-zA-Z\/]+)/);
+    }
 
-    ($ipoint, $itype, $ilisted, $imounted, $ibootable, $icheck) = &get_partition_data($disk, $device);
+    if ($disk eq "/dev/fd") { print OUTFILE; next; }
+
+    ($ipoint, $itype, $ilisted, $imounted, $ibootable, $icheck, $ilabel) =
+      &get_partition_data($disk, $device, $label);
 
     if ($ilisted)
     {
       # Write record if listedness requested.
-      
-      print OUTFILE $device . " ";
+
+      if ($ilabel ne "")
+      {
+        print OUTFILE "LABEL=" . $ilabel . " ";
+      }
+      else
+      {
+        print OUTFILE $device . " ";
+      }
+
       if ($ipoint eq "") { print OUTFILE "none "; }
       else { print OUTFILE $ipoint . " "; }
 
@@ -393,7 +430,7 @@ sub write_fstab
       
       # Indicate that parameters for this partition have been stored.
       
-      my $partition = &get_partition($disk, $device);
+      my $partition = &get_partition($disk, $device, $label);
       %$partition->{stored} = 1;
     }
     
@@ -461,7 +498,7 @@ sub write_fstab
 # Absent:
 #
 # The star is optional, and means that the partition is bootable. We could've
-# used /proc/partitions to &get this information, but it lists CD-ROM devices
+# used /proc/partitions to get this information, but it lists CD-ROM devices
 # and whatnot as well, without a disambiguating identifier. Then there is
 # portability, forward-compatibility, people without /proc, etc.
 
@@ -526,7 +563,7 @@ sub get_fdisk
         else { $type = ""; }
 
         &update_partition($disk, $device, "", $type, "noauto", 0, $size, 0,
-                         $bootable, 1);
+                          $bootable, 1);
       }
     }
     close(FDISK_HD);
@@ -622,6 +659,7 @@ sub xml_parse_partition
     if ($$tree[0] eq "device") { %partition->{device} = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "type") { %partition->{type} = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "point") { %partition->{point} = &xst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "label") { %partition->{label} = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "size") { %partition->{size} = &xst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "bootable") { %partition->{bootable} = &xml_parse_state($$tree[1]); }
     elsif ($$tree[0] eq "integritycheck") { %partition->{check} = &xml_parse_state($$tree[1]); }
@@ -684,6 +722,7 @@ sub xml_print
         &xst_xml_print_line ("<device>" . %$partition->{device} . "</device>\n");
         if (%$partition->{type}) { &xst_xml_print_line ("<type>" . %$partition->{type} . "</type>\n"); }
         if (%$partition->{point}) { &xst_xml_print_line ("<point>" . %$partition->{point} . "</point>\n"); }
+        if (%$partition->{label}) { &xst_xml_print_line ("<label>" . %$partition->{label} . "</label>\n"); }
         if (%$partition->{size})
         {
           &xst_xml_print_line ("<size>" . %$partition->{size} . "</size>\n");

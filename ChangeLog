@@ -1,5 +1,21 @@
 2001-04-27  Hans Petter Jansson  <hpj@ximian.com>
 
+	Did a h4rD<0r3 patch of disks-conf.in, to allow it to operate on
+	ext2 LABEL= devices found in the fstab.
+
+	* disks-conf.in (update_partition): If we have a device node, try to get
+	  its label. If we have a label, look for partitions with matching label
+	  in all disks. Set the label when appropriate. Retrofitted with the new
+	  filesys code.
+	  (get_partition): Look for label as well.
+	  (get_partition_data): Ditto.
+	  (read_fstab): Handle LABEL= lines.
+	  (write_fstab): Ditto.
+	  (xml_parse_partition): Parse <label> tags.
+	  (xml_print): Print <label> tags.
+
+2001-04-27  Hans Petter Jansson  <hpj@ximian.com>
+
 	* file.pl.in (xst_file_open_filter_write_from_names): Corrected a bug which
 	  would cause the file to never be found. Local variables don't propagate
 	  upwards.
