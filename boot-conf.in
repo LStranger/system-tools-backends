@@ -229,8 +229,6 @@ sub get
 {
   my $hash;
 
-  &xst_begin ();
-
   # Get information from .conf file
   $hash = &xst_boot_conf_get ();
 
@@ -259,8 +257,6 @@ sub set
 {
   my $hash;
   
-  &xst_begin ();
-
 #  $xst_input_file = "aaa";
   $hash = &xml_parse ();
 
@@ -281,7 +277,6 @@ sub filter
 {
   my $hash;
   
-  &xst_begin ();
   $hash = &xml_parse ();
   &xst_end ();
   &xml_print ($hash);

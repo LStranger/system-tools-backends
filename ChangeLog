@@ -1,5 +1,14 @@
 2001-03-13  Hans Petter Jansson  <hpj@ximian.com>
 
+	* boot-conf.in: Remove calls to xst_begin() - it's invoked by
+	  xst_init(). Unfortunately this makes the code asymmetric, but if
+	  we were to invoke it ourselves, we'd also have to call
+	  xst_platform_ensure_supported() in three places.
+
+	* network-conf.in: Ditto.
+
+2001-03-13  Hans Petter Jansson  <hpj@ximian.com>
+
 	* xml.pl.in (xst_xml_print_state_tag): Renamed from
 	  xst_xml_print_state. Removed spurious indent.
 	

@@ -267,8 +267,6 @@ sub get
 {
   my $hash;
 
-  &xst_begin ();
-  
   # network interface stuff
   $hash = &xst_network_conf_get ();
   &xst_network_ensure_loopback ($hash);
@@ -282,7 +280,6 @@ sub set
 {
   my $hash;
   
-  &xst_begin ();
   $hash = &xml_parse ();
 
   # check the success result of this.
@@ -300,7 +297,6 @@ sub filter
 {
   my $hash;
   
-  &xst_begin ();
   $hash = &xml_parse ();
   &xst_end ();
   &xml_print ($hash);
