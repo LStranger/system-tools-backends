@@ -67,7 +67,7 @@ $version = "@VERSION@";
               "debian-2.2", "debian-3.0", "debian-sarge",
               "suse-7.0", "turbolinux-7.0",
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0",
-              "gentoo", "pld-1.0");
+              "gentoo", "pld-1.0", "fedora-1");
 
 $description =<<"end_of_description;";
        Configures your system clock, timezone and time server list.
@@ -444,7 +444,8 @@ sub conf_get_parse_table
 
    "gentoo"          => "redhat-7.0",
 
-   "pld-1.0"         => "pld-1.0"
+   "pld-1.0"         => "pld-1.0",
+   "fedora-1"        => "redhat-7.0"
    );
 
   my %dist_tables =
@@ -600,7 +601,8 @@ sub conf_get_replace_table
 
    "gentoo"          => "redhat-7.0",
 
-   "pld-1.0"         => "pld-1.0"
+   "pld-1.0"         => "pld-1.0",
+   "fedora-1"        => "redhat-7.0"
    );
 
   my %dist_tables =

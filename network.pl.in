@@ -191,7 +191,8 @@ sub gst_network_get_broadcast_ping_cmd
        "mandrake-9.0" => "debian-2.2",
        "mandrake-9.1" => "debian-2.2",
        "suse-7.0"     => "debian-2.2", # FIXME: assumed that only redhat distros use -b.
-       "pld-1.0"      => "redhat-6.2"
+       "pld-1.0"      => "redhat-6.2",
+       "fedora-1"     => "redhat-6.2"
        );
 
   return $cmd_map{$dist_map{$gst_dist}};
@@ -1103,7 +1104,8 @@ sub gst_network_get_file
     "debian-sarge" => \&gst_network_deb22_get_file,
     "suse-7.0"     => \&gst_network_suse70_get_file,
 	  "turbolinux-7.0"   => \&gst_network_rh62_get_file,
-    "pld-1.0"      => \&gst_network_pld10_get_file
+    "pld-1.0"      => \&gst_network_pld10_get_file,
+    "fedora-1"     => \&gst_network_rh72_get_file
 	  );
 
   $proc = $dist_map{$gst_dist};
@@ -2160,7 +2162,8 @@ sub gst_network_ensure_loopback_interface
     "debian-sarge" => "lo",
     "suse-7.0"     => "",
 	  "turbolinux-7.0"   => "lo",
-    "pld-1.0"      => "lo"
+    "pld-1.0"      => "lo",
+    "fedora-1"     => ""
 	  );
 
   $dev = $dist_map {$gst_dist};
@@ -2264,7 +2267,8 @@ sub gst_network_get_parse_table
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
-    "pld-1.0"      =>  "pld-1.0"
+    "pld-1.0"      =>  "pld-1.0",
+    "fedora-1"     =>  "redhat-7.2"
 	  );
 
   my %dist_tables =
@@ -2528,7 +2532,8 @@ sub gst_network_get_interface_parse_table
     "debian-sarge" => "debian-3.0",
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
-    "pld-1.0"      => "pld-1.0"
+    "pld-1.0"      => "pld-1.0",
+    "fedora-1"     => "redhat-7.2"
 	  );
   
   my %dist_tables =
@@ -2959,7 +2964,8 @@ sub gst_network_get_replace_table
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
-    "pld-1.0"      => "pld-1.0"
+    "pld-1.0"      => "pld-1.0",
+    "fedora-1"     => "redhat-7.2"
 	  );
 
   my %dist_tables =
@@ -3215,7 +3221,8 @@ sub gst_network_get_interface_replace_table
     "debian-sarge" => "debian-3.0",
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
-    "pld-1.0"      => "pld-1.0"
+    "pld-1.0"      => "pld-1.0",
+    "fedora-1"     => "redhat-7.2"
 	  );
 
   my %dist_tables =

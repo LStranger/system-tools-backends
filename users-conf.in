@@ -77,7 +77,7 @@ $version = "@VERSION@";
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0",
               "freebsd-4", "freebsd-5",
               "gentoo",
-              "pld-1.0");
+              "pld-1.0", "fedora-1");
 
 $description =<<"end_of_description;";
        Manages system users.
@@ -239,9 +239,11 @@ my $logindefs_dist_map = {
   'mandrake-9.0'    => $rh_logindefs_defaults,
   'mandrake-9.1'    => $rh_logindefs_defaults,
   'pld-1.0'         => $rh_logindefs_defaults,
+  'fedora-1'        => $rh_logindefs_defaults,
   'debian-2.2'      => $rh_logindefs_defaults,
   'debian-3.0'      => $rh_logindefs_defaults,
   'debian-sarge'    => $rh_logindefs_defaults,
+  'gentoo'	        => $gentoo_logindefs_defaults,
 
   # FIXME: I don't know about those, so using RH values for now.
   'suse-7.0'        => $rh_logindefs_defaults,
@@ -251,7 +253,6 @@ my $logindefs_dist_map = {
   'slackware-9.0.0' => $rh_logindefs_defaults,
   'freebsd-4'       => $rh_logindefs_defaults,
   'freebsd-5'       => $rh_logindefs_defaults,
-  'gentoo'	        => $gentoo_logindefs_defaults,
 };
 
 

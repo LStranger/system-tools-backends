@@ -1,3 +1,14 @@
+2003-12-26  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* general.pl.in: made the backends to run even when the computer
+	  doesn't have the gettext perl library
+	* platform.pl.in: added Fedora Core 1 to the supported platforms
+	  list
+	* network-conf.in, network.pl.in: added support for Fedora Core 1
+	* service.pl.in, services-conf.in: ditto
+	* time-conf.in: ditto
+	* users-conf.in: ditto
+
 2003-12-24  Carlos Garcia Campos <elkalmail@yahoo.es>
 
 	* disks-conf.in: updated CD/DVD type content detection (data, blank,

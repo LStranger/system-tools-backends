@@ -50,7 +50,7 @@ $version = "@VERSION@";
 
               "debian-2.2", "debian-3.0", "debian-sarge",
 
-              "suse-7.0", "turbolinux-7.0", "pld-1.0");
+              "suse-7.0", "turbolinux-7.0", "pld-1.0", "fedora-1");
 
 $description =<<"end_of_description;";
        Configures which services are to be started or stopped at which runlevels

@@ -65,7 +65,8 @@ $PLATFORM_INFO = {
   "freebsd-4"       => "FreeBSD 4",
   "freebsd-5"       => "FreeBSD 5",
   "gentoo"          => "Gentoo Linux",
-  "pld-1.0"         => "PLD 1.0 Ra"
+  "pld-1.0"         => "PLD 1.0 Ra",
+  "fedora-1"        => "Fedora Core 1 (Yarrow)"
 };
   
 sub check_lsb
@@ -190,6 +191,25 @@ sub check_mandrake
   }
   close MANDRAKE;
   return -1;
+}
+
+sub check_fedora
+{
+    open FEDORA, "$gst_prefix/etc/fedora-release" or return -1;
+    while (<FEDORA>)
+    {
+      $ver = $_;
+      chomp ($ver);
+
+      if ($ver =~ /^Fedora Core release (\S+)/)
+      {
+        close FEDORA;
+        return "fedora-$1";
+      }
+    }
+
+    close FEDORA;
+    return -1;
 }
 
 sub check_turbolinux
@@ -318,9 +338,9 @@ sub gst_platform_guess
   # set $gst_dist and $gst_dist_version
   
   my %check = (
-    # Red Hat check must run after Mandrake
+    # Red Hat check must run after Mandrake and Fedora
     "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, 
-                 \&check_mandrake, \&check_linuxppc, \&check_redhat,  \&check_openna,
+                 \&check_fedora, \&check_mandrake, \&check_linuxppc, \&check_redhat,  \&check_openna,
                  \&check_turbolinux, \&check_slackware, \&check_gentoo,  \&check_pld ],
     "FreeBSD" => [ \&check_freebsd ],
     "SunOS"    => [ \&check_solaris ]

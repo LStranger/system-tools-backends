@@ -73,7 +73,9 @@ sub gst_service_sysv_get_paths
 
        "turbolinux-7.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
-       "pld-1.0"      => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"]
+       "pld-1.0"      => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+
+       "fedora-1"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"]
        );
   my $res;
 
@@ -113,7 +115,9 @@ sub gst_service_sysv_get_runlevels
 
        "turbolinux-7.0" => [3, 5],
 
-       "pld-1.0"        => [3, 5]
+       "pld-1.0"        => [3, 5],
+
+       "fedora-1"       => [3, 5]
        );
   my $res;
 
@@ -152,6 +156,7 @@ sub gst_service_get_verbose_runlevels
      
      "turbolinux-7.0" => "redhat-5.2",
      "pld-1.0"        => "redhat-5.2",
+     "fedora-1"       => "redhat-5.2",
     );
 
   %runlevels=
@@ -1009,6 +1014,7 @@ sub gst_service_get_service_parameters
   return \@actions;	
 }
 
+# stuff for checking whether service is running
 sub gst_service_debian_get_status
 {
   my ($service) = @_;
@@ -1039,21 +1045,46 @@ sub gst_service_debian_get_status
   return undef;
 }
 
+sub gst_service_redhat_get_status
+{
+  my ($service) = @_;
+  my ($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
+
+  if (-f "/var/lock/subsys/$service")
+  {
+    return 1;
+  }
+
+  return 0;
+}
+
 # returns true if the service is already running
 sub gst_service_get_status
 {
   my ($service) = @_;
   my %dist_map =
       (
-       "debian-2.2" => \&gst_service_debian_get_status,
-       "debian-3.0" => \&gst_service_debian_get_status,
-       "debian-sarge" => \&gst_service_debian_get_status
+       "debian-2.2"   => \&gst_service_debian_get_status,
+       "debian-3.0"   => \&gst_service_debian_get_status,
+       "debian-sarge" => \&gst_service_debian_get_status,
+       
+       "redhat-5.2"   => \&gst_service_redhat_get_status,
+       "redhat-6.0"   => \&gst_service_redhat_get_status,
+       "redhat-6.1"   => \&gst_service_redhat_get_status,
+       "redhat-6.2"   => \&gst_service_redhat_get_status,
+       "redhat-7.0"   => \&gst_service_redhat_get_status,
+       "redhat-7.1"   => \&gst_service_redhat_get_status,
+       "redhat-7.2"   => \&gst_service_redhat_get_status,
+       "redhat-7.3"   => \&gst_service_redhat_get_status,
+       "redhat-8.0"   => \&gst_service_redhat_get_status,
+       "redhat-9"     => \&gst_service_redhat_get_status,
+       "fedora-1"     => \&gst_service_redhat_get_status
       );
   my $proc;
 
   $proc = $dist_map {$gst_dist};
 
-  return 0 if ($proc eq undef);
+  return undef if ($proc eq undef);
 
   return &$proc ($service);
 }
