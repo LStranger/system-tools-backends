@@ -360,6 +360,7 @@ sub xst_end_directive
   my ($tool) = @_;
 
   &xst_report_set_threshold (-1);
+  &xst_debug_close_all ();
   exit (0);
 }
 
@@ -516,16 +517,18 @@ sub xst_directive_run
   {
     if ($#args < ($#$reqargs - 1))
     {
-      &xst_directive_fail ("directive_lowargs", $key, $#$reqargs, "$key," . join (',',@args));
+      &xst_directive_fail ("directive_lowargs", $key, $#$reqargs, join (',', $key, @args));
       return;
     }
   }
   if ($#args != $#$reqargs)
   {
-    &xst_directive_fail ("directive_badargs", $key, $#$reqargs + 1, "$key," . join (',',@args));
+    &xst_directive_fail ("directive_badargs", $key, $#$reqargs + 1, join (',', $key, @args));
     return;
   }
       
+  &xst_report ("directive_run", $key, join (',', @args)) unless $key eq "end";
+  
   $proc = $ {$$directives{$key}}[0];
   &$proc ($tool, @args);
 

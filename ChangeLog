@@ -1,3 +1,9 @@
+2001-08-21  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* general.pl.in (xst_directive_run): Report the directive that
+	is being processed.
+	(xst_end_directive): close all debug before exit. Just paranoic.
+
 2001-08-20  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in: Made probe caching. Removed some debugging messages.

@@ -164,6 +164,7 @@ sub xst_report
      "progress" => ["sys", _("%d")],
      "compat"   => ["info", _("%s.")],
 
+     "directive_run"            => ["info",  _("Running directive [%s] with args [%s].")],
      "directive_unsup"          => ["error", _("Directive [%s] not supported.")],
      "directive_invalid"        => ["error", _("Directive [%s] structure has wrong format.")],
      "directive_badargs"        => ["error", _("Directive [%s] requires exactly [%s] args in [%s].")],
