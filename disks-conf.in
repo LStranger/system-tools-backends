@@ -55,6 +55,7 @@ BEGIN {
   require "$SCRIPTSDIR/file.pl$DOTIN";
   require "$SCRIPTSDIR/xml.pl$DOTIN";
   require "$SCRIPTSDIR/filesys.pl$DOTIN";
+  require "$SCRIPTSDIR/partition.pl$DOTIN";
 }
 
 
@@ -63,8 +64,9 @@ BEGIN {
 $name = "disks";
 $version = "@VERSION@";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
-              "redhat-7.1",  "mandrake-7.2", "debian-2.2", "debian-woody", "debian-sarge",
-	      "suse-7.0", "suse-9.1", "suse-1.0", "unitedlinux-1.0", "turbolinux-7.0");
+              "redhat-7.1", "mandrake-7.2", "debian-2.2", "debian-woody", "debian-sarge",
+	      "debian-3.1", "suse-7.0", "suse-9.1", "suse-1.0", "unitedlinux-1.0", 
+	      "turbolinux-7.0");
 
 $description =<<"end_of_description;";
        Configures locally mounted partitioned media.
@@ -842,291 +844,73 @@ sub scan_floppy
    }
 }
 
-# fdisk -l <disk device>
-#
-# <&filtered lines>
-#
-# <partition device> [*] <start cluster> <end cluster> <blocks> <id> <verbose id>
-# <partition device> [*] <start cluster> <end cluster> <blocks> <id> <verbose id>
-# ...
-#
-# Exists: Red Hat 6.2 (Presumably all Linux)
-#
-# Absent:
-#
-# The star is optional, and means that the partition is bootable. We could've
-# used /proc/partitions to get this information, but it lists CD-ROM devices
-# and whatnot as well, without a disambiguating identifier. Then there is
-# portability, forward-compatibility, people without /proc, etc.
-
-# fdisk -s <disk device>
-#
-# <blocksize>
-
-sub sort_by_start
+sub get_fs_type
 {
-   return ($a->{'start'} <=> $b->{'start'});
-}
+   my ($device) = @_;
+   my ($cmd, $fd, $fstype, $line);
+   my ($filesys);
 
-sub get_fdisk
-{
-  my $check_dev = shift;
-
-  my $fdisk_tool;
-
-  for ($i = 0; $cf_disks[$i]; $i++) {
-     if (($cf_disks[$i])->{media} =~ /disk/) {
-	if ($check_dev) {
-	   if (($cf_disks[$i])->{device} eq $check_dev) {
-	      push (@check_devs, ($cf_disks[$i])->{device});
-	   }
-	} else {
-	   push (@check_devs, ($cf_disks[$i])->{device});
-	}
-     }
-  }
-
-  $fdisk_tool = &gst_file_locate_tool("fdisk");
-
-  for $dev (@check_devs)
-  {
-    my ($disk, $device, $point, $fs, $options, $check, $size, $bootable, $fd);
-   
-    &gst_report ("disks_partition_probe", $dev);
-
-    $fd = &gst_file_run_pipe_read ("fdisk -l $dev");
-    # We want to cache fdisk work!
-    
-    my @fdisk_data = <$fd>; 
-    my ($block_size, $dev_size);
-    my $unit = "";
-
-    # First of all we get the global disk data: size, unit
-    foreach (@fdisk_data) {
-        &update_disk_data ($dev, "present", 1);
-        if (/^Block size/) {
-	    # fdisk in Debian PowerPC
-            # Block size=512, Number of Blocks=78140160
-            ($block_size, $dev_size) = ($_ =~ /^Block size=([0-9]*)[^0-9]*([0-9]*).*$/);
-	    $last_end = $dev_size;
-	    # $unit must be 1024
-	    # my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
-	    # we need ($unit / 1024) = 1
-	    $unit = 1024;
-            &update_disk_data ($dev, "size", $dev_size);
-            &update_disk_data ($dev, "block_size", $block_size);
-            
-        } elsif (/^Disk/) {
-            # fdisk in Debian i386 
-            # Disk /dev/hda: 60.0 GB, 60022480896 bytes
-            ($dev_size) = ($_ =~ /^Disk [^0-9]* .* ([0-9]*) bytes$/);
-            $block_size=1024;
-	    
-            # fdisk in Suse Desktop i386
-            # Disk /dev/hda: 255 heads, 63 sectors, 2491 cylinders
-            if ($dev_size eq "") {
-                $dev_size = `fdisk -s $dev`;
-                $dev_size = $dev_size * $block_size;
-		($last_end) = ($_ =~ /^Disk [^0-9]* [0-9]+ heads, [0-9]+ sectors, ([0-9]+) cylinders$/);
-            } 
-            
-            &update_disk_data ($dev, "size", $dev_size/$block_size);
-            &update_disk_data ($dev, "block_size", $block_size);
-        } elsif (/^Units/) {
-	   # i386
-	   # Units = cylinders * 512
-	   
-	   # fdisk in Debian i386
-	   # Units = cylinders of 16065 * 512 = 8225280 bytes
-	   ($unit) = ($_ =~ /^Units = cylinders of [0-9]+ \* [0-9]+ = ([0-9]+) bytes$/);
-
-	   if ($unit eq "") {
-	      # fdisk in Suse Desktop i386
-	      # Units = cylinders of 16065 * 512 bytes
-	      my ($a, $b) = ($_ =~ /^Units = cylinders of ([0-9]+) \* ([0-9]+) bytes$/);
-	      $unit = $a * $b;
-	   }
-	} elsif (/^[0-9]+ heads/) {
-	   # i386
-	   # fdisk in Debian i386
-	   # 255 heads, 63 sectors/track, 1222 cylinders
-	   ($last_end) = ($_ =~ /^[0-9]+ heads, [0-9]+ sectors\/track, ([0-9]+) cylinders$/);
-	}
-
-    }
-    
-    # Now we get the data of each partition
-    my @fdisk_hash = ();
-    foreach (@fdisk_data)
-    {
-      if (/^\/dev/)
-      {
-        @line = split(/[ \n\r\t]+/, $_);
-
-	my (%parts);
-
-	# fdisk i386
-	#    Device Boot    Start       End    Blocks   Id  System
-	# /dev/hda3           694      1046   2835472+  83  Linux
-	#
-	# fdisk powerpc
-	#         #                    type name                 length   base     ( size )  system
-	# /dev/hdc3          Apple_Driver43 Macintosh                56 @ 120      ( 28.0k)  Driver 4.3
-
-	
-        # fdisk in Debian PowerBook gives the disks as the first line 
-        next if scalar @line == 1;
-
-	# device file
-	%parts->{'device'} = $line[0];
-        $device = $line[0]; shift @line;
-        ($disk) = ($device =~ /([a-zA-Z\/]+)/);
-        if ($line[0] eq "\*") {
-          # NOTE: Currently unused.
-	  %parts->{'bootable'} = 1;
-          $bootable = 1; shift @line;
-        }
-        else { %parts->{'bootable'} = 0; $bootable = 0; }
-	
-	# first cylinder of the partition
-	($start) = ($line[0] =~ /^([0-9]+)/);
-	if ($start eq "") {
-	   # there is no start cylinder, we are in powerpc
-	   # look for length @ base
-	   while ($line[0] ne "@") {
-	      ($length) = ($line[0] =~ /^([0-9]+)/);
-	      shift @line;
-	   }
-	   # skip @
-	   shift @line;
-	   #print "start $line[0]\n";
-	   ($start) = ($line[0] =~ /^([0-9]+)/);
-	   %parts->{'start'} = $start;
-	   $end = $start + $length - 1;
-	   %parts->{'end'} = $end;
-	   %parts->{'size'} = $length;
-	   %parts->{'type'} = "";
-	   push (@fdisk_hash, \%parts);
-	   # go to next device
-	   next;
-	}
-	%parts->{'start'} = $start;
-	shift @line;
-
-	# last cylinder of the partition
-	($end) = ($line[0] =~ /^([0-9]+)/);
-	%parts->{'end'} = $end;
-	shift @line;
-
-	# size of partition in blocks
-	($size) = ($line[0] =~ /([0-9]+)/);
-	%parts->{'size'} = $size;
-        shift @line;
-
-	# FIXME: add new popular ones, such as reiser and xfs and add
-	# those documented by fdisk.
-	if ($line[0] eq "5"  || $line[0] eq "f"  || $line[0] eq "85") { next; } # extended.
-	elsif ($line[0] eq "82") { $type = "swap"; }
-	elsif ($line[0] eq "83") { $type = "ext2"; }
-	elsif ($line[0] eq "e")  { $type = "vfat"; }
-	elsif ($line[0] eq "c" || $line[0] eq "b") { $type = "fat32"; }
-	elsif ($line[0] eq "6" || $line[0] eq "4" || $line[0] eq "1") { $type = "msdos"; }
-	elsif ($line[0] eq "7")  { $type = "ntfs"; }
-	else  { $type = ""; }
-
-	# fs type
-	%parts->{'type'} = $type;
-	push (@fdisk_hash, \%parts);
+   # if mounted get fs
+   $line = `mount | grep "$device"`;
+   if ($line ne "") {
+      # already mounted
+      ($filesys) = $line =~ /^$device on .* type (.*) .*$/;
+      if ($filesys) {
+	 return $filesys;
+      } else {
+	 return "unknown";
       }
-    }
+   }  
 
-    my ($prev_end) = 0; # last cylinder of previous partition
-    my $max_cyl = 0; # bigest cylinder found
-    
-    # In order to find empty partitions we have to sort 
-    # the array by start (first cylinder)
-    @ord = sort sort_by_start (@fdisk_hash);
-    my $empty_count = 1;
+   # Not already mounted
+   # Try to mount it
+   my ($dev) = ($device =~ /\/dev\/(.*)/);
+   my $point = "/tmp/disks-conf-$dev";
 
-    # Now we update the data and detect empty partitions
-    foreach $partition (@ord)
-    {
-       if ($partition->{'end'} > $max_cyl) {
-	  $max_cyl = $partition->{'end'};
-       }
-       
-       if ($prev_end ne 0) {
-	  if ($partition->{'start'} - 1 ne $prev_end) {
-	     # There is no partition, free space found
-	     my $fstart = $prev_end + 1;
-	     my $fend;
-	     $fend = $partition->{'start'} - 1;
-	     # size = (number of cylinders) * (unit in bloks)
-	     # number of cylinders = last cylinder - first cylinder + 1
-	     my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
-             if ($fend > $max_cyl) { 
-	        $max_cyl = $fend; 
-	     }
-             if ($fstart ne $fend) {
-	        &update_partition ($disk, "/dev/empty$empty_count", "", "", "empty", "noauto", 0, $fsize, 0,
-	                           0, 1, "", $fstart, $fend);
-		$empty_count ++;
-	     }
-	  }
-       } else {
-	  if ($partition->{'start'} ne 1) {
-	     # There is no partition, free space found in the top of the disk
-	     my $fstart = 1;
-             my $fend = $partition->{'start'} - 1;
-	     # size = (number of cylinders) * (unit in bloks)
-	     # number of cylinders = last cylinder - first cylinder + 1
-             my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
-             if ($fend > $max_cyl) {
-		$max_cyl = $fend;
-	     }
-	     if ($fend ne $fstart) {
-		&update_partition ($disk, "/dev/empty$empty_count", "", "", "empty", "noauto", 0, $fsize, 0,
-	                           0, 1, "", $fstart, $fend);
-		$empty_count ++;
-	     }
-	  }
-       }
+   mkdir ($point);
 
-       # partition found update it
-       if ($partition->{'end'} ne $partition->{'start'}) {
-	  &update_partition ($disk, $partition->{'device'}, "", "", $partition->{'type'}, "noauto", 0, 
-	                     $partition->{'size'}, 0, $partition->{'bootable'}, 1, "", 
-			     $partition->{'start'}, $partition->{'end'});
-       }
-       
-       if ($partition->{'end'} eq $last_end) {
-	  $prev_end = 0;
-       } else {
-	  $prev_end = $partition->{'end'};
-       }	
-    } 
-    
-    # Now we are out of the loop and we have to check if the current disk is 
-    # valid
-    if ($disk ne "") {
-       if (($max_cyl < $last_end) and ($max_cyl < ($last_end - 1))) {
-	  # There is no partition, free space found in the bottom of the disk
-	  my $fstart = $max_cyl + 1;
-          my $fend = $last_end;
-          # size = (number of cylinders) * (unit in bloks)
-          # number of cylinders = last cylinder - first cylinder + 1
-          my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
-          &update_partition ($disk, "/dev/empty$empty_count", "", "", "empty", "noauto", 0, $fsize, 0,
-                             0, 1, "", $fstart, $fend);
-       }
-    }
-    
-    &gst_file_close ($fd);
+   $cmd = "mount $device $point";
+   
+   $fd = &gst_file_run_pipe_read_with_stderr ($cmd);
+   
+   if (!$fd) {
+      my $err = `umount $device`;
+      rmdir ($point);
+      return "unknown";
+   }
 
-    &gst_report ("disks_size_query", $dev);
-    
-    &gst_print_progress ();
-  }
+   # Not mounted: not supported or unformatted
+   while (<$fd>) {
+      if (/not supported/) {
+	 ($filesys) = ($_ =~ /^mount: fs type (.*) not supported by kernel$/);
+      } elsif (/looks like swapspace/) {
+	 $filesys = "swap";
+      } elsif (/you must specify the filesystem type/) {
+	 $filesys = "none";
+      }
+   }
+
+   &gst_file_close ($fd);
+
+   if ($filesys) {
+      rmdir ($point);
+      return $filesys;
+   }
+
+   # Mounted by me
+   $line = `mount | grep "$device"`;
+   if ($line ne "") {
+      ($filesys) = ($line =~ /^$device on .* type (.*) .*$/);
+   }
+   
+   my $err = `umount $device`;
+   rmdir ($point);
+
+   if ($filesys) {
+      return $filesys;
+   } else {
+      return "unknown";
+   }  
 }
 
 # --- XML parsing --- #
@@ -1506,12 +1290,13 @@ sub test_xml
 sub get_cdrom_disc_info
 {
    my ($device, $alias) = @_;
+   my $cdrom;
 
    if ($alias eq " ") { undef ($alias); }
    
    if (!sysopen (RD, $device, O_RDONLY | O_NONBLOCK)) {
-      &gst_xml_print_state_tag ("empty", 1);
-      return;
+      $cdrom->{'empty'} = 1;
+      return $cdrom;
    }
 
    if ($^O eq 'linux') {
@@ -1554,13 +1339,12 @@ sub get_cdrom_disc_info
    }
 
    if (!ioctl (RD, $CDROMREADTOCHDR, $tochdr)) {
-      #&gst_xml_print_line ("<type-content>" . "blank"  . "</type-content>\n");
-      &gst_xml_print_state_tag ("empty", 1);
+      $cdrom->{'empty'} = 1;
       close (RD);
-      return;
+      return $cdrom;
    }
   
-   &gst_xml_print_state_tag ("empty", 0);
+   $cdrom->{'empty'} = 0;
    
    my ($start, $end);
    if ($^O =~ /bsd/) {
@@ -1643,43 +1427,63 @@ sub get_cdrom_disc_info
       $data --;
    }
    
-   &gst_xml_print_line ("<type-content>" . $cdtype  . "</type-content>\n");
+   $cdrom->{'cdtype'} = $cdtype;
    if (($cdtype eq "audio") || ($cdtype eq "mixed")) {
-      &gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
-      &gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
-      &gst_xml_print_line ("<data-tracks>" . $data . "</data-tracks>\n");
+      $cdrom->{'atracks'} = $audio;
+      $cdrom->{'duration'} = "$min:$sec";
+      $cdrom->{'dtracks'} = $data;
    }
 
    if (($cdtype eq "data") || ($cdtype eq "mixed")) {
       if (`mount | grep $device`) {
-	 &gst_xml_print_state_tag ("mounted", 1);
+	 $cdrom->{'mounted'} = 1;
 	 my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
-	 if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+	 if ($point) { $cdrom->{'point'} = $point; }
 	 my ($size) = `df $device | grep $device | awk  '/\\/dev/ {print \$2}'`;
-	 if ($size) { &gst_xml_print_line ("<size>" . $size . "</size>\n"); }
+	 if ($size) { $cdrom->{'size'} = $size; }
       } else {
-	 &gst_xml_print_state_tag ("mounted", 0);
+	 $cdrom->{'mounted'} = 0;
 	 # try to get mount point from fstab
 	 if ($device && ($line = `cat /etc/fstab | grep $device`)) {
 	    my @sline = split(/[ \n\r\t]+/, $line);
 	    my $point = $sline[1];
-	    if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); } 
+	    if ($point) { $cdrom->{'point'} = $point; }
 	 } elsif ($alias && ($line = `cat /etc/fstab | grep $alias`)) {
 	    my @sline = split(/[ \n\r\t]+/, $line);
 	    my ($point) = $sline[1];
-	    if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+	    if ($point) { $cdrom->{'point'} = $point; }
 	 }
       }
    }
+
+   return $cdrom;
 }
   
 sub cdrom_disc_info
 {
    my ($tool, $device, $alias) = @_;
+   my $cdrom;
    
+   $cdrom = &get_cdrom_disc_info ($device, $alias);
    &gst_report_end ();
    &gst_xml_print_begin ("disc_info");
-   &get_cdrom_disc_info ($device, $alias);
+   &gst_xml_print_state_tag ("empty", %$cdrom->{'empty'});
+   if (%$cdrom->{'empty'} == 0) {
+      &gst_xml_print_line ("<type-content>" . %$cdrom->{'cdtype'}  . "</type-content>\n");
+      
+      if (%$cdrom->{'cdtype'} eq "audio" || %$cdrom->{'cdtype'} eq "mixed") {
+	 &gst_xml_print_line ("<audio-tracks>" . %$cdrom->{'atracks'} . "</audio-tracks>\n");
+	 &gst_xml_print_line ("<duration>" . %$cdrom->{'duration'} . "</duration>\n");
+	 &gst_xml_print_line ("<data-tracks>" . %$cdrom->{'dtracks'} . "</data-tracks>\n");
+      }
+
+      if (%$cdrom->{'cdtype'} eq "data" || %$cdrom->{'cdtype'} eq "mixed") {
+	 &gst_xml_print_state_tag ("mounted", %$cdrom->{'mounted'});
+	 if (%$cdrom->{'point'}) { &gst_xml_print_line ("<point>" . %$cdrom->{'point'} . "</point>\n"); }
+	 if (%$cdrom->{'size'}) { &gst_xml_print_line ("<size>" . %$cdrom->{'size'} . "</size>\n"); }
+      }
+   }
+      
    &gst_xml_print_end ("disc_info");
 }	       
 
@@ -1917,14 +1721,25 @@ sub mount_fs
    &gst_xml_print_end ("mount");
 }
 
-#sub mount_fs
-#{
-#   my ($tool, $device, $media, $typefs, $point, $mounted, $listed) = @_;
-#   &gst_report_end ();
-#   &gst_xml_print_begin ("mount");
-#   &mount_partition ($device, $media, $typefs, $point, $mounted, $listed);
-#   &gst_xml_print_end ("mount");
-#}
+sub format
+{
+   my ($tool, $command, $device, $type, $options) = @_;
+
+   &gst_format_partition ($command, $device, $type, $options);
+   my $typefs = &get_fs_type ($device);
+   
+   &gst_report_end ();
+   &gst_xml_print_begin ("format");
+   
+   if ($typefs ne "none" && $typefs ne "unknown") {
+      &gst_xml_print_line ("<type>" . $typefs . "</type>\n");
+   } else {
+      # TODO: manage errors
+      &gst_xml_print_line ("<error> Unknown error</error>\n");
+   }
+   
+   &gst_xml_print_end ("format");
+}
 
 # --- Main --- #
 
@@ -1945,6 +1760,8 @@ $directives = {
                        "Return info about disks"],
   "mount"           => [ \&mount_fs, ["device", "media", "typefs", "point", "mounted", "listed", "uid"], 
                        "Immediatly mount or umount a given partition"],
+  "format"          => [ \&format, ["command", "device", "type", "options"],
+                       "Format a partition"],
 };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);
