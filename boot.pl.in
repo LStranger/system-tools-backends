@@ -359,6 +359,7 @@ sub xst_boot_conf_set
          table => [
 	           [ "boot",    \&xst_boot_lilo_replace_global,    LILO_CONF, "boot"    ],
 #	           [ "root",    \&xst_boot_lilo_replace_global,    LILO_CONF, "root"    ],
+             [ "timeout", \&xst_boot_lilo_replace_global,    LILO_CONF, "timeout" ],
              [ "timeout", \&xst_boot_lilo_replace_global,    LILO_CONF, "delay" ],
              [ "prompt",  \&xst_boot_lilo_replace_global_kw, LILO_CONF, "prompt"  ],
              [ "default", \&xst_boot_lilo_replace_global,    LILO_CONF, "default" ],
