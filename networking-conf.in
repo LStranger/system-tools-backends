@@ -1356,11 +1356,11 @@ sub get_immediate
     return(0);
   }
   
-  # Remove loopback and dummy interfaces from the list.
+  # Remove loopback, dummy and typical dialup interfaces from the list.
   
   for $elem (@list)
   {
-    if (!($elem =~ /^(lo)|(dummy).*/)) { push(@cf_interface_list, $elem); }
+    if (!($elem =~ /^(lo)|(dummy)|(ppp).*/)) { push(@cf_interface_list, $elem); }
   }
 }
 
