@@ -1,3 +1,34 @@
+2001-06-29  Hans Petter Jansson  <hpj@ximian.com>
+
+	This implements printer settings replacement and makes more code
+	shared between parsing and replacement functions.
+
+	* parse.pl.in (xst_parse_printcap_buffer_load): Insert.
+	  (xst_parse_printcap_get_next_stanza): Insert.
+	  (xst_parse_printcap_get_next_option): Insert.
+	  (xst_parse_printcap_parse_stanza): Insert.
+	  (xst_parse_printcap_parse_option): Insert.
+	  (xst_parse_printcap_find_stanza): Insert.
+	  (xst_parse_printcap_find_option): Insert.
+	  (xst_parse_printcap): Implement.
+	  (xst_parse_printcap_bool): Implement.
+
+	* replace.pl.in (xst_replace_printcap_buffer_load): Remove.
+	  (xst_replace_printcap_get_next_stanza): Remove.
+	  (xst_replace_printcap_get_next_option): Remove.
+	  (xst_replace_printcap_parse_stanza): Remove.
+	  (xst_replace_printcap_parse_option): Remove.
+	  (xst_replace_printcap_find_stanza): Remove.
+	  (xst_replace_printcap_find_option): Remove.
+	  (xst_replace_printcap_add_stanza): Use xst_parse_printcap_*() funcs.
+	  (xst_replace_printcap): Use xst_parse_printcap_*() funcs.
+
+	* print.pl.in (xst_print_conf_get): Remove stray variable.
+	  (xst_print_conf_set): Implement.
+	  (xst_print_get_printer_parse_table): Use xst_parse_printcap(), not
+	  generic xst_parse_cap().
+	  (xst_print_get_printer_replace_table): Implement.
+
 2001-06-29  Chema Celorio  <chema@celorio.com>
 
 	* network-conf.in: add suport for turbolinux 7.0

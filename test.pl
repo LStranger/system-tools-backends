@@ -95,14 +95,21 @@ sub test_interfaces
 
 # ---
 
-# $hash = &xst_print_conf_get ();
-# &xst_debug_print_struct ($hash);
+$hash = &xst_print_conf_get ();
+delete $$hash {'lp'};
+print $$hash{'lp0'}{'sd'} . "\n";
+# $$hash {'lp0'}->{'spooldir'} = "/var/pekk";
+# $$hash {'lp0'}->{'device'} = "pekk-port";
+$$hash {'lp0'}->{'suppress_headers'} = 0;
+&xst_print_conf_set ($hash);
+
+&xst_debug_print_struct ($hash);
 
 # &xst_replace_remove_cap_section ("/etc/printcap", "lp");
 
-&xst_replace_printcap ("/etc/printcap", "lp", "lpekk", "#", "100");
-&xst_replace_printcap ("/etc/printcap", "newlp", "loff", "", 1);
-&xst_replace_printcap_remove_printer ("/etc/printcap", "lp");
+# &xst_replace_printcap ("/etc/printcap", "lp", "lpekk", "#", "100");
+# &xst_replace_printcap ("/etc/printcap", "newlp", "loff", "", 1);
+# &xst_replace_printcap_remove_printer ("/etc/printcap", "lp");
 
 # $buf = &xst_replace_load_printcap_buffer ("/etc/printcap");
 #

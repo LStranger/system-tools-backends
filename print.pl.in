@@ -36,15 +36,15 @@ sub xst_print_conf_get
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"printers_get"};
   @printers = &$proc ();
-  $key = 0;
-  
+#  $key = 0;
+
   foreach $i (@printers)
   {
     foreach $j (keys (%fn))
     {
       my $spooldir = "/var/spool/lpd/$i";  # Not flexible, FIXME.
 
-      $value = $fn{$j};
+      $value = $fn {$j};
       $value =~ s/\#printer\#/$i/;
       $value =~ s/\#spooldir\#/$spooldir/;
       $ {$dist_attrib{"fn"}}{$j} = $value;
@@ -52,7 +52,7 @@ sub xst_print_conf_get
 
     $printer = &xst_parse_from_table ($dist_attrib{"fn"},
                                       $dist_attrib{"table"});
-    $hash{$i} = $printer;
+    $hash {$i} = $printer;
   }
 
   return \%hash;
@@ -60,14 +60,54 @@ sub xst_print_conf_get
 
 sub xst_print_conf_set
 {
-  my $values_hash = $_[0];
-  my $old_hash;
-  my %dist_attrib;
-  
+  my ($values_hash) = @_;
+  my ($old_hash);
+  my (%dist_attrib, %hash, %fn, @printers, $printer);
+  my ($dist, $value, $file, $proc);
+  my ($i, $j);
+  my $res = 0;
+
   $old_hash = &xst_print_conf_get ();
-#  %dist_attrib = &xst_print_get_replace_table ();
-#  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
-#                                  $values_hash, $old_hash);
+
+  %dist_attrib = &xst_print_get_printer_replace_table ();
+  %fn = %{$dist_attrib{"fn"}};
+
+  # Remove unspecified printers.
+
+  foreach $i (keys (%$old_hash))
+  {
+    if (!$$values_hash{$i})
+    {
+      # TODO: Delete spool dir recursively.
+      $proc = $dist_attrib {"printer_remove"};
+      &$proc ($fn {'PRINTCAP'}, $i);
+    }
+  }
+
+  # Change/add printer values as specified.
+
+  foreach $i (keys (%$values_hash))
+  {
+    foreach $j (keys (%fn))
+    {
+      my $spooldir = "/var/spool/lpd/$i";  # Not flexible, FIXME.
+
+      $value = $fn {$j};
+      $value =~ s/\#printer\#/$i/;
+      $value =~ s/\#spooldir\#/$spooldir/;
+      $ {$dist_attrib{"fn"}}{$j} = $value;
+    }
+
+    print "Doing replace for $i.\n";
+
+    my $tmpres = &xst_replace_from_table ($dist_attrib {"fn"},
+                                          $dist_attrib {"table"},
+                                          $$values_hash {$i},
+                                          $$old_hash {$i});
+
+    if ($tmpres < 0) { $res = $tmpres; }
+  }
+
   return $res;
 }
 
@@ -93,7 +133,6 @@ sub xst_print_get_printer_parse_table
     "redhat-7.0" =>
 	  {
       printers_get => \&xst_print_printers_get,
-#	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
 	    fn =>
 	    {
         PRINTCAP   => "/etc/printcap",
@@ -104,11 +143,11 @@ sub xst_print_get_printer_parse_table
       },
 	    table =>
       [
-        [ "spooldir",           \&xst_parse_cap,            [PRINTCAP,  PRINTER],    "sd" ],
-        [ "jobsize_max_k",      \&xst_parse_cap,            [PRINTCAP,  PRINTER],    "mx" ],
-        [ "suppress_headers",   \&xst_parse_cap_bool,       [PRINTCAP,  PRINTER],    "sh" ],
-        [ "device",             \&xst_parse_cap,            [PRINTCAP,  PRINTER],    "lp" ],
-        [ "filter",             \&xst_parse_cap,            [PRINTCAP,  PRINTER],    "if" ],
+        [ "spooldir",           \&xst_parse_printcap,       [PRINTCAP,  PRINTER],    "sd" ],
+        [ "jobsize_max_k",      \&xst_parse_printcap,       [PRINTCAP,  PRINTER],    "mx" ],
+        [ "suppress_headers",   \&xst_parse_printcap_bool,  [PRINTCAP,  PRINTER],    "sh" ],
+        [ "device",             \&xst_parse_printcap,       [PRINTCAP,  PRINTER],    "lp" ],
+        [ "filter",             \&xst_parse_printcap,       [PRINTCAP,  PRINTER],    "if" ],
         [ "papersize",          \&xst_parse_sh_export,      GENERAL,    PAPERSIZE         ],
         [ "type",               \&xst_parse_sh_export,      GENERAL,    PRINTERTYPE       ],
         [ "ascii_to_ps",        \&xst_parse_sh_export_bool, GENERAL,    ASCII_TO_PS       ],
@@ -131,7 +170,61 @@ sub xst_print_get_printer_parse_table
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
+}
+
+sub xst_print_get_printer_replace_table
+{
+  my %dist_map =
+	(
+	  "redhat-7.0" => "redhat-7.0",
+	  "redhat-7.1" => "redhat-7.0",
+    "debian-2.2" => "redhat-7.0"
+  );
+
+  my %dist_tables =
+  (
+    "redhat-7.0" =>
+	  {
+      printers_get   => \&xst_print_printers_get,
+      printer_remove => \&xst_replace_printcap_remove_printer,
+	    fn =>
+	    {
+        PRINTCAP   => "/etc/printcap",
+        GENERAL    => "#spooldir#/general.cfg",
+        POSTSCRIPT => "#spooldir#/postscript.cfg",
+        TEXTONLY   => "#spooldir#/textonly.cfg",
+        PRINTER    => "#printer#"
+      },
+	    table =>
+      [
+        [ "spooldir",           \&xst_replace_printcap,       [PRINTCAP,  PRINTER],    "sd", "=" ],
+        [ "jobsize_max_k",      \&xst_replace_printcap,       [PRINTCAP,  PRINTER],    "mx", "#" ],
+        [ "suppress_headers",   \&xst_replace_printcap,       [PRINTCAP,  PRINTER],    "sh", ""  ],
+        [ "device",             \&xst_replace_printcap,       [PRINTCAP,  PRINTER],    "lp", "=" ],
+        [ "filter",             \&xst_replace_printcap,       [PRINTCAP,  PRINTER],    "if", "=" ],
+        [ "papersize",          \&xst_replace_sh_export,      GENERAL,    PAPERSIZE              ],
+        [ "type",               \&xst_replace_sh_export,      GENERAL,    PRINTERTYPE            ],
+        [ "ascii_to_ps",        \&xst_replace_sh_export_bool, GENERAL,    ASCII_TO_PS            ],
+        [ "gsdevice",           \&xst_replace_sh,             POSTSCRIPT, GSDEVICE               ],
+        [ "resolution",         \&xst_replace_sh,             POSTSCRIPT, RESOLUTION             ],
+        [ "color",              \&xst_replace_sh,             POSTSCRIPT, COLOR                  ],
+        [ "gs_papersize",       \&xst_replace_sh,             POSTSCRIPT, PAPERSIZE              ],
+        [ "gs_options",         \&xst_replace_sh,             POSTSCRIPT, EXTRA_GS_OPTIONS       ],
+        [ "ps_send_eof",        \&xst_replace_sh_bool,        POSTSCRIPT, PS_SEND_EOF            ],
+        [ "pages_per_sheet",    \&xst_replace_sh,             POSTSCRIPT, NUP                    ],
+        [ "rt_margin",          \&xst_replace_sh,             POSTSCRIPT, RTLFTMAR               ],
+        [ "tb_margin",          \&xst_replace_sh,             POSTSCRIPT, TOPBOTMAR              ],
+        [ "text_options",       \&xst_replace_sh,             TEXTONLY,   TEXTONLYOPTIONS        ],
+        [ "trans_crlf",         \&xst_replace_sh_bool,        TEXTONLY,   CRLFTRANS              ],
+        [ "text_send_eof",      \&xst_replace_sh_bool,        TEXTONLY,   TEXT_SEND_EOF          ]
+      ]
+    }
+  );
+
+  my $dist = $dist_map{$xst_dist};
+  return %{$dist_tables{$dist}} if $dist;
+
   return undef;
 }
 

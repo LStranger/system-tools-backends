@@ -855,6 +855,196 @@ sub xst_parse_cap_bool
   return $res;
 }
 
+# Load a printcap file to buffer, join \ lines and split them back up into a
+# 'one option, printtool comment or section name per line' format.
+sub xst_parse_printcap_buffer_load
+{
+  my ($file) = @_;
+  my ($inbuf, @outbuf);
+
+  $inbuf = &xst_file_buffer_load ($file);
+  &xst_file_buffer_join_lines ($inbuf);
+
+  for $i (@$inbuf)
+  {
+    my ($comment) = ("");
+
+    chomp $i;
+    $comment = $1 if $i =~ s/^([ \t]*[\#].*)//;
+
+    if ($i ne "")
+    {
+      my @line = split /:/, $i;
+
+      if ($i =~ /^[a-z0-9]+/i)
+      {
+        push @outbuf, (@line [0] . ":\n");
+        shift @line;
+      }
+
+      for $elem (@line)
+      {
+        $elem =~ s/^[ \t]//;
+        $elem =~ s/[ \t]$//;
+        if ($elem ne "")
+        {
+          push @outbuf, ("\t:$elem:\n");
+        }
+      }
+    }
+    elsif ($comment ne "")
+    {
+      push @outbuf, ($comment . "\n");
+    }
+    else
+    {
+      push @outbuf, "\n";
+    }
+  }
+
+  return \@outbuf;
+}
+
+# Find next printer definition, returning (printtool-comment-lineno, stanza-name-lineno).
+sub xst_parse_printcap_get_next_stanza
+{
+  my ($buf, $line_no) = @_;
+  my ($last_printtool_line) = (-1);
+
+  while ($line_no <= $#$buf)
+  {
+    if ($$buf [$line_no] =~ /^\#\#PRINTTOOL3\#\#/)
+    {
+      $last_printtool_line = $line_no;
+    }
+    elsif ($$buf [$line_no] =~ /^[a-z0-9]+/i)
+    {
+      return ($last_printtool_line, $line_no);
+    }
+
+    $line_no++;
+  }
+
+  return (-1, -1);
+}
+
+# Find next printer option.
+sub xst_parse_printcap_get_next_option
+{
+  my ($buf, $line_no) = @_;
+
+  while ($line_no <= $#$buf)
+  {
+    if ($$buf [$line_no] =~ /^\#\#PRINTTOOL3\#\#/ ||
+        $$buf [$line_no] =~ /^[a-z0-9]+/i)
+    {
+      last;
+    }
+
+    if ($$buf [$line_no] =~ /^\t:/)
+    {
+      return $line_no;
+    }
+
+    $line_no++;
+  }
+
+  return -1;
+}
+
+sub xst_parse_printcap_parse_stanza
+{
+  my ($stanza) = @_;
+  my ($key);
+
+  $key = $1 if $stanza =~ /^([a-z0-9]+)/i;
+  return $key;
+}
+
+sub xst_parse_printcap_parse_option
+{
+  my ($option) = @_;
+  my ($key, $value);
+
+  $key   = $1 if $option =~ /^\t:([a-z0-9]+)/i;
+  $value = $1 if $option =~ /^\t:[a-z0-9]+[\#=]([a-z0-9\/_-]*)/i;
+  return ($key, $value);
+}
+
+# Locate stanza line for $printer in $buf, starting at $line_no.
+sub xst_parse_printcap_find_stanza
+{
+  my ($buf, $line_no, $printer) = @_;
+  my ($printtool_line_no, $found_printer);
+
+  while ((($printtool_line_no, $line_no) = &xst_parse_printcap_get_next_stanza ($buf, $line_no)))
+  {
+    if ($line_no == -1) { last; }
+
+    $found_printer = &xst_parse_printcap_parse_stanza ($$buf [$line_no]);
+    return ($printtool_line_no, $line_no) if ($found_printer eq $printer);
+    $line_no++;
+  }
+
+  return (-1, -1);
+}
+
+# Search buffer for option with key $key, starting
+# at $line_no position. Return line number, or -1 if not found.
+sub xst_parse_printcap_find_option
+{
+  my ($buf, $line_no, $key) = @_;
+  my $found_key;
+
+  while (($line_no = &xst_parse_printcap_get_next_option ($buf, $line_no)) != -1)
+  {
+    ($found_key) = &xst_parse_printcap_parse_option ($$buf [$line_no]);
+    return $line_no if ($found_key eq $key);
+    $line_no++;
+  }
+
+  return -1;
+}
+
+# High-level API.
+sub xst_parse_printcap
+{
+  my ($file, $section, $var) = @_;
+  my ($printtool_line_no, $stanza_line_no, $option_line_no);
+  my ($buf);
+  my ($key, $value);
+
+  $buf = &xst_parse_printcap_buffer_load ($file);
+
+  ($printtool_line_no, $stanza_line_no) = &xst_parse_printcap_find_stanza ($buf, 0, $section);
+  return undef if ($stanza_line_no == -1);
+
+  $option_line_no = &xst_parse_printcap_find_option ($buf, $stanza_line_no + 1, $var);
+  return undef if ($option_line_no == -1);
+
+  ($key, $value) = &xst_parse_printcap_parse_option ($$buf [$option_line_no]);
+  return $value;
+}
+
+# High-level API.
+sub xst_parse_printcap_bool
+{
+  my ($file, $section, $var) = @_;
+  my ($printtool_line_no, $stanza_line_no, $option_line_no);
+  my ($buf);
+  my ($key, $value);
+
+  $buf = &xst_parse_printcap_buffer_load ($file);
+
+  ($printtool_line_no, $stanza_line_no) = &xst_parse_printcap_find_stanza ($buf, 0, $section);
+  return 0 if ($stanza_line_no == -1);
+
+  $option_line_no = &xst_parse_printcap_find_option ($buf, $stanza_line_no + 1, $var);
+  return 0 if ($option_line_no == -1);
+
+  return 1;
+}
+
 # Debian interfaces(5) states that files starting with # are comments.
 # Also, leading and trailing spaces are ignored.
 sub xst_parse_interfaces_line_clean

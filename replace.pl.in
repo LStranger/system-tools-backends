@@ -697,56 +697,6 @@ sub xst_replace_remove_cap_section
   return $ret;
 }
 
-# Load a printcap file to buffer, join \ lines and split them back up into a
-# 'one option, printtool comment or section name per line' format.
-sub xst_replace_printcap_buffer_load
-{
-  my ($file) = @_;
-  my ($inbuf, @outbuf);
-
-  $inbuf = &xst_file_buffer_load ($file);
-  &xst_file_buffer_join_lines ($inbuf);
-
-  for $i (@$inbuf)
-  {
-    my ($comment) = ("");
-
-    chomp $i;
-    $comment = $1 if $i =~ s/^([ \t]*[\#].*)//;
-
-    if ($i ne "")
-    {
-      my @line = split /:/, $i;
-
-      if ($i =~ /^[a-z0-9]+/i)
-      {
-        push @outbuf, (@line [0] . ":\n");
-        shift @line;
-      }
-
-      for $elem (@line)
-      {
-        $elem =~ s/^[ \t]//;
-        $elem =~ s/[ \t]$//;
-        if ($elem ne "")
-        {
-          push @outbuf, ("\t:$elem:\n");
-        }
-      }
-    }
-    elsif ($comment ne "")
-    {
-      push @outbuf, ($comment . "\n");
-    }
-    else
-    {
-      push @outbuf, "\n";
-    }
-  }
-
-  return \@outbuf;
-}
-
 # Save a printcap buffer to file. This doesn't do any extra processing for now,
 # but it may do so in the future.
 sub xst_replace_printcap_buffer_save
@@ -759,71 +709,6 @@ sub xst_replace_printcap_buffer_save
   return $ret;
 }
 
-# Find next printer definition, returning (printtool-comment-lineno, stanza-name-lineno).
-sub xst_replace_printcap_get_next_stanza
-{
-  my ($buf, $line_no) = @_;
-  my ($last_printtool_line) = (-1);
-
-  while ($line_no <= $#$buf)
-  {
-    if ($$buf [$line_no] =~ /^\#\#PRINTTOOL3\#\#/)
-    {
-      $last_printtool_line = $line_no;
-    }
-    elsif ($$buf [$line_no] =~ /^[a-z0-9]+/i)
-    {
-      return ($last_printtool_line, $line_no);
-    }
-
-    $line_no++;
-  }
-
-  return (-1, -1);
-}
-
-# Find next printer option.
-sub xst_replace_printcap_get_next_option
-{
-  my ($buf, $line_no) = @_;
-
-  while ($line_no <= $#$buf)
-  {
-    if ($$buf [$line_no] =~ /^\#\#PRINTTOOL3\#\#/ ||
-        $$buf [$line_no] =~ /^[a-z0-9]+/i)
-    {
-      last;
-    }
-
-    if ($$buf [$line_no] =~ /^\t:/)
-    {
-      return $line_no;
-    }
-
-    $line_no++;
-  }
-
-  return -1;
-}
-
-sub xst_replace_printcap_parse_stanza
-{
-  my ($stanza) = @_;
-  my ($key);
-
-  $key = $1 if $stanza =~ /^([a-z0-9]+)/i;
-  return $key;
-}
-
-sub xst_replace_printcap_parse_option
-{
-  my ($option) = @_;
-  my ($key, $value);
-
-  ($key, $value) = ($option =~ /^\t:([a-z0-9]+)[\#=]?([a-z0-9]*)/i);
-  return ($key, $value);
-}
-
 sub xst_replace_printcap_print_stanza
 {
   my ($stanza) = @_;
@@ -834,41 +719,6 @@ sub xst_replace_printcap_print_option
 {
   my ($option, $type, $value) = @_;
   return "\t:" . $option . $type . $value . ":\n";
-}
-
-# Locate stanza line for $printer in $buf, starting at $line_no.
-sub xst_replace_printcap_find_stanza
-{
-  my ($buf, $line_no, $printer) = @_;
-  my ($printtool_line_no, $found_printer);
-
-  while ((($printtool_line_no, $line_no) = &xst_replace_printcap_get_next_stanza ($buf, $line_no)))
-  {
-    if ($line_no == -1) { last; }
-
-    $found_printer = &xst_replace_printcap_parse_stanza ($$buf [$line_no]);
-    return ($printtool_line_no, $line_no) if ($found_printer eq $printer);
-    $line_no++;
-  }
-
-  return (-1, -1);
-}
-
-# Search buffer for option with key $key, starting
-# at $line_no position. Return line number, or -1 if not found.
-sub xst_replace_printcap_find_option
-{
-  my ($buf, $line_no, $key) = @_;
-  my $found_key;
-
-  while (($line_no = &xst_replace_printcap_get_next_option ($buf, $line_no)) != -1)
-  {
-    ($found_key) = &xst_replace_printcap_parse_option ($$buf [$line_no]);
-    return $line_no if ($found_key eq $key);
-    $line_no++;
-  }
-
-  return -1;
 }
 
 sub xst_replace_printcap_add_stanza
@@ -901,7 +751,7 @@ sub xst_replace_printcap_remove_stanza_from_buf
   my ($splice_start, $splice_end);
 
   ($next_printtool_line_no, $next_stanza_line_no) =
-    &xst_replace_printcap_get_next_stanza ($buf, $stanza_line_no + 1);
+    &xst_parse_printcap_get_next_stanza ($buf, $stanza_line_no + 1);
 
   if ($printtool_line_no != -1)
   {
@@ -943,9 +793,9 @@ sub xst_replace_printcap_remove_printer
   my ($file, $printer) = @_;
   my ($buf, $printtool_line_no, $stanza_line_no);
 
-  $buf = &xst_replace_printcap_buffer_load ($file);
+  $buf = &xst_parse_printcap_buffer_load ($file);
 
-  ($printtool_line_no, $stanza_line_no) = &xst_replace_printcap_find_stanza ($buf, 0, $printer);
+  ($printtool_line_no, $stanza_line_no) = &xst_parse_printcap_find_stanza ($buf, 0, $printer);
   &xst_replace_printcap_remove_stanza_from_buf ($buf, $printtool_line_no, $stanza_line_no);
 
   $ret = &xst_replace_printcap_buffer_save ($file, $buf);
@@ -959,15 +809,15 @@ sub xst_replace_printcap
   my ($printtool_line_no, $stanza_line_no, $option_line_no);
   my ($buf, $ret);
 
-  $buf = &xst_replace_printcap_buffer_load ($file);
+  $buf = &xst_parse_printcap_buffer_load ($file);
 
-  ($printtool_line_no, $stanza_line_no) = &xst_replace_printcap_find_stanza ($buf, 0, $section);
+  ($printtool_line_no, $stanza_line_no) = &xst_parse_printcap_find_stanza ($buf, 0, $section);
   if ($stanza_line_no == -1)
   {
     ($printtool_line_no, $stanza_line_no) = &xst_replace_printcap_add_stanza ($buf, $section);
   }
 
-  $option_line_no = &xst_replace_printcap_find_option ($buf, $stanza_line_no + 1, $var);
+  $option_line_no = &xst_parse_printcap_find_option ($buf, $stanza_line_no + 1, $var);
   if ($option_line_no == -1)
   {
     $option_line_no = &xst_replace_printcap_add_option_slot ($buf, $stanza_line_no);
