@@ -45,3 +45,8 @@ package-conf
 display-conf
 x.pl
 font.pl
+partition.pl
+runlevel-conf
+font-conf
+boot-lilo.pl
+boot-grub.pl
