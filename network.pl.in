@@ -97,9 +97,8 @@ sub xst_network_active_interfaces_get
   my @ret = ();
 
   $tool_ifconfig = &xst_locate_tool ("ifconfig");
-  
-  open IFCONFIG, "$tool_ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
-    open IFCONFIG, "$tool_ifconfig | sed 's/:* .*//;/^\$/D' |";
+
+  open IFCONFIG, "/bin/sh -c \"$tool_ifconfig | sed 's/:* .*//;/^\$/D'\" |";
   
   while (<IFCONFIG>)
   {
@@ -114,8 +113,8 @@ sub xst_network_active_interfaces_get
   
 sub xst_network_interface_active
 {
-  my $search_iface = $_[0];
-  my @ifaces = &xst_network_active_interfaces_get ();
+  my ($search_iface, $proc) = @_;
+  my @ifaces = &$proc ();
 
   while ($ifaces[0])
   {
@@ -608,7 +607,7 @@ sub xst_network_get_interfaces_parse_table
            [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
            [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
            [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
-           [ enabled,            \&xst_network_interface_active, IFACE ]
+           [ enabled,            \&xst_network_interface_active, IFACE, \&xst_network_active_interfaces_get ]
            ]
              }
 	  );

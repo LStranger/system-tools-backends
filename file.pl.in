@@ -381,6 +381,7 @@ sub xst_buffer_join_lines
 sub xst_run
 {
   my ($tool_name, $tool_path, @argline);
+  my $command;
 
   ($tool_name, @argline) = split(/ /, @_[0]);
 
@@ -391,7 +392,10 @@ sub xst_run
     return;
   }
 
-  return (system ("$tool_path @argline 2>/dev/null >/dev/null"));
+  $command = "$tool_path @argline >/dev/null 2>&1";
+  $command =~ s/\"/\\\"/g;
+  
+  return (system ("/bin/sh -c \"$command\""));
 }
 
 

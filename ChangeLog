@@ -1,3 +1,9 @@
+2001-02-29  Arturo Espinosa  <arturo@ximian.com>
+
+	* file.pl.in (xst_run): run command with sh -c.
+	* network.pl.in (xst_network_interface_active): make interface discovery
+	  platform indpenedent: old method couldn't detect if ifconfig failed.
+	
 2001-02-28  Hans Petter Jansson  <hpj@ximian.com>
 
 	* disks-conf.in (read_fstab, write_fstab): Don't touch UUID= either.
