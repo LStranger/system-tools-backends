@@ -686,14 +686,12 @@ sub xml_print
         {
           &xst_xml_print_line ("<size>" . %$partition->{size} . "</size>\n");
         }
-        
-        &xst_xml_print_line ("<bootable state='" . &xst_print_boolean_truefalse(%$partition->{bootable}) . "'/>");
-                print "<integritycheck state='" . &xst_print_boolean_truefalse(%$partition->{check}) . "'/>\n";
 
-        &xst_xml_print_indent ();
-        print "<mounted state='" . &xst_print_boolean_truefalse(%$partition->{mounted}) . "'/>";
-        print "<listed state='" . &xst_print_boolean_truefalse(%$partition->{listed}) . "'/>";
-        print "<detected state='" . &xst_print_boolean_truefalse(%$partition->{detected}) . "'/>\n";
+        &xst_xml_print_state_tag ("bootable", %$partition->{bootable});
+        &xst_xml_print_state_tag ("integritycheck", %$partition->{check});
+        &xst_xml_print_state_tag ("mounted", %$partition->{mounted});
+        &xst_xml_print_state_tag ("listed", %$partition->{listed});
+        &xst_xml_print_state_tag ("detected", %$partition->{detected});
 
         &xst_xml_leave ();
         &xst_xml_print_line ("</partition>\n");

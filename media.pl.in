@@ -174,7 +174,7 @@ sub xst_media_xml_print
         &xst_xml_print_line ("<point_listed>" . $dev->{"point_listed"} . "</point_listed>\n");
       }
 
-      xst_xml_print_state ("mounted", $dev->{"is_mounted"}); print "\n";
+      xst_xml_print_state_tag ("mounted", $dev->{"is_mounted"});
     }
 
     &xst_xml_leave ();

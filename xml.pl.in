@@ -117,10 +117,9 @@ sub xst_xml_print_line
 }
 
 
-sub xst_xml_print_state
+sub xst_xml_print_state_tag
 {
-  &xst_xml_print_indent;
-  &xst_xml_print_string ("<" . @_[0] . " state='" . &xst_print_boolean_truefalse (@_[1]) . "'/>");
+  &xst_xml_print_line ("<" . @_[0] . " state='" . &xst_print_boolean_truefalse (@_[1]) . "'/>");
 }
 
 
