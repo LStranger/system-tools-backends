@@ -106,8 +106,8 @@ sub xst_parse_replace_files
 # combination that the arrays provide. Ex:
 # ["user", \&xst_parse_foo, [0, 1], [2, 3] ] will parse
 # using the combinatory of [0, 1]x[2, 3] until a result
-# ne undef is given. Check RedHat 7.2's parse table for
-# further enlightenment.
+# ne undef is given. Check RedHat 7.2's network parse table
+# for further enlightenment.
 sub xst_parse_run_entry
 {
   my ($hash, $key, $proc, $cp) = @_;
@@ -171,7 +171,7 @@ sub xst_parse_from_table
       @files = &xst_parse_replace_files (shift (@cp), $fn);
 
       # Don't unshift the resulting files if none were given.
-      unshift @cp, @files if $#files >= 0;
+      unshift @cp, @files if (scalar @files) > 0;
 
       &xst_parse_run_entry (\%hash, $key, $proc, \@cp);
     }

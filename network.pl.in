@@ -2441,6 +2441,7 @@ sub xst_network_get_replace_table
 	  "redhat-6.2"   => "redhat-6.2",
 	  "redhat-7.0"   => "redhat-7.0",
 	  "redhat-7.1"   => "redhat-7.0",
+	  "redhat-7.2"   => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
@@ -2495,6 +2496,46 @@ sub xst_network_get_replace_table
         RESOLV_CONF  => "/etc/resolv.conf",
         HOST_CONF    => "/etc/host.conf",
         HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/samba/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf"
+      },
+	    table =>
+          [
+           [ "auto",          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+           [ "hostname",      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+           [ "hostname",      \&xst_network_run_hostname ],
+           [ "gateway",       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+           [ "gatewaydev",    \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+           [ "domain",        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+           [ "domain",        \&xst_replace_join_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+           [ "nameserver",    \&xst_replace_join_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
+           [ "searchdomain",  \&xst_replace_join_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+           [ "order",         \&xst_replace_join_first_array, HOST_CONF,    "order", "[ \t]+", ",[ \t]*" ],
+           [ "hostmatch",     \&xst_replace_join_first_bool,  HOST_CONF,    "multi", "[ \t]+", "on", "off" ],
+           [ "statichost",    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+           [ "workgroup",     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
+           [ "description",   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
+           [ "winsserver",    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+           [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
+           [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
+           [ "dialing",       \&xst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
+           [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ],
+           [ "gateway",       \&xst_network_route_set_default_gw, "%gatewaydev%" ]
+           ]
+             },
+
+	  "redhat-7.2" =>
+	  {
+	    fn =>
+	    {
+        SYSCONFIG_NW => ["/etc/sysconfig/networking/profiles/default/network",
+                         "/etc/sysconfig/networking/network",
+                         "/etc/sysconfig/network"],
+        RESOLV_CONF  => ["/etc/sysconfig/networking/profiles/default/resolv.conf",
+                         "/etc/resolv.conf"],
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => ["/etc/sysconfig/networking/profiles/default/hosts",
+                         "/etc/hosts"],
         SMB_CONF     => "/etc/samba/smb.conf",
         WVDIAL       => "/etc/wvdial.conf"
       },
@@ -2615,6 +2656,7 @@ sub xst_network_get_interface_replace_table
 	  "redhat-6.2"   => "redhat-6.2",
 	  "redhat-7.0"   => "redhat-6.2",
 	  "redhat-7.1"   => "redhat-6.2",
+	  "redhat-7.2"   => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
     "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
@@ -2633,6 +2675,53 @@ sub xst_network_get_interface_replace_table
       fn =>
 	    {
         IFCFG  => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE  => "#iface#",
+        WVDIAL => "/etc/wvdial.conf",
+        PUMP   => "/etc/pump.conf"
+      },
+      table =>
+       [
+        [ "bootproto",          \&xst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
+        [ "auto",               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
+        [ "user",               \&xst_replace_sh_bool, IFCFG, USERCTL ],
+        [ "name",               \&xst_replace_sh,      IFCFG, NAME ],
+        [ "dev",                \&xst_replace_sh,      IFCFG, DEVICE ],
+        [ "address",            \&xst_replace_sh,      IFCFG, IPADDR ],
+        [ "netmask",            \&xst_replace_sh,      IFCFG, NETMASK ],
+        [ "broadcast",          \&xst_replace_sh,      IFCFG, BROADCAST ],
+        [ "network",            \&xst_replace_sh,      IFCFG, NETWORK ],
+        [ "gateway",            \&xst_replace_sh,      IFCFG, GATEWAY ],
+        [ "update_dns",         \&xst_network_pump_set_nodns, PUMP, "%dev%", "%bootproto%" ],
+        [ "update_dns",         \&xst_replace_sh_bool, IFCFG, PEERDNS ],
+        [ "dns1",               \&xst_replace_sh,      IFCFG, DNS1 ],
+        [ "dns2",               \&xst_replace_sh,      IFCFG, DNS2 ],
+        [ "mtu",                \&xst_replace_sh,      IFCFG, MTU ],
+        [ "mru",                \&xst_replace_sh,      IFCFG, MRU ],
+        [ "remote_address",     \&xst_replace_sh,      IFCFG, REMIP ],
+        [ "login",              \&xst_replace_sh,      IFCFG, PAPNAME ],
+        [ "serial_port",        \&xst_replace_sh,      IFCFG, MODEMPORT ],
+        [ "serial_speed",       \&xst_replace_sh,      IFCFG, LINESPEED ],
+        [ "ppp_options",        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
+        [ "wvsection",          \&xst_replace_sh,      IFCFG, WVDIALSECT ],
+        [ "set_default_gw",     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
+        [ "debug",              \&xst_replace_sh_bool, IFCFG, DEBUG ],
+        [ "persist",            \&xst_replace_sh_bool, IFCFG, PERSIST ],
+        [ "serial_escapechars", \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+        [ "serial_hwctl",       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+        [ "phone_number",       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+      ]
+    },
+
+    "redhat-7.2" =>
+	  {
+      iface_set    => \&xst_network_rh62_interface_activate,
+      iface_delete => \&xst_network_rh62_interface_delete,
+      ifaces_get   => \&xst_network_sysconfig_rh72_ifaces_get_existing,
+      fn =>
+	    {
+        IFCFG => ["/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
+                  "/etc/sysconfig/networking/devices/ifcfg-#iface#"],
         CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE  => "#iface#",
         WVDIAL => "/etc/wvdial.conf",

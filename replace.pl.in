@@ -56,6 +56,41 @@ require "$SCRIPTSDIR/parse.pl$DOTIN";
 # that parse becomes replace and split becomes join:
 # xst_parse_split_first_str -> xst_replace_join_first_str
 
+# Additional abstraction: replace table entries can have
+# arrays inside. The replace proc will be ran with every
+# combination that the arrays provide. Ex:
+# ["user", \&xst_replace_foo, [0, 1], [2, 3] ] will replace
+# using all possibilities in the combinatory of [0, 1]x[2, 3].
+# Check RedHat 7.2's network replace table for further
+# enlightenment.
+sub xst_replace_run_entry
+{
+  my ($values_hash, $key, $proc, $cp, $value) = @_;
+  my ($ncp, $i, $j, $res);
+
+  $ncp = [@$cp];
+  for ($i = 0; $i < scalar (@$cp); $i ++)
+  {
+      if (ref $$cp[$i] eq "ARRAY")
+      {
+          foreach $j (@{$$cp[$i]})
+          {
+              $$ncp[$i] = $j;
+              $res = -1 if &xst_replace_run_entry ($values_hash, $key, $proc, $ncp, $value);
+          }
+          return $res;
+      }
+  }
+  
+  # OK, the given entry didn't have any array refs in it...
+  
+  &xst_debug_print_line ("xst_replace_from_table: $key");
+  return -1 if (!&xst_parse_replace_hash_values ($ncp, $values_hash));
+  push (@$ncp, $$values_hash{$key});
+  $res = -1 if &$proc (@$ncp);
+  return $res;
+}
+
 # xst_replace_from_table takes a file mapping, a replace table, a hash
 # of values, probably made from XML parsing, and whose keys are
 # the same keys the table handles.
@@ -71,7 +106,7 @@ sub xst_replace_from_table
 {
   my ($fn, $table, $values_hash, $old_hash) = @_;
   my ($key, $proc, @param);
-  my ($i, @cp, @files, $res, $res2);
+  my ($i, @cp, @files, $res);
 
   $$fn{"OLD_HASH"} = $old_hash;
   
@@ -84,11 +119,7 @@ sub xst_replace_from_table
       $proc = shift (@cp);
       @files = &xst_parse_replace_files (shift (@cp), $fn);
       unshift @cp, @files if (scalar @files) > 0;
-      push (@cp, $$values_hash{$key});
-	 
-      &xst_debug_print_line ("xst_replace_from_table: $key");
-      next if (!&xst_parse_replace_hash_values (\@cp, $values_hash));
-      $res = -1 if &$proc (@cp);
+      $res = &xst_replace_run_entry ($values_hash, $key, $proc, \@cp, $$values_hash{$key});
     }
   }
 

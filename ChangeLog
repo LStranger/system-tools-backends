@@ -1,5 +1,12 @@
 Mon Nov  5 22:03:17 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network.pl.in (xst_network_get_interface_replace_table):
+	replace tables for rh72.
+	(xst_network_get_replace_table): same.
+
+	* replace.pl.in (xst_replace_run_entry): Converse of
+	xst_parse_run_entry.
+
 	* xml.pl.in (xst_xml_unquote): When unquoting, unquote any
 	&#num; entities.
 
