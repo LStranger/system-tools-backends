@@ -1337,5 +1337,80 @@ sub xst_replace_alchemist
 {
   my ($file, $varpath, $type, $value) = @_;
 
+  $varpath = "/adm_context/datatree/" . $varpath;
   return &xst_replace_xml_attribute_with_type ($file, $varpath, "VALUE", $type, $value);
+}
+
+sub xst_replace_alchemist_print
+{
+  my ($file, $printer, $varpath, $type, $value);
+
+  $varpath = "printconf/print_queues/" . $printer . "/" . $varpath;
+  return &xst_replace_alchemist ($file, $varpath, $type, $value);
+}
+
+# This could be split up.
+sub xst_replace_alchemist_print_option
+{
+  my ($file, $printer, $name, $type, $value);
+  my ($varpath, $model, $branch, $fd, $compressed, $options, $option);
+
+  ($model, $compressed) = &xst_xml_model_scan ($file);
+  $branch = &xst_xml_model_ensure ($model, "/adm_context/datatree/printconf/print_queues/" . $printer .
+                                   "/filter_data/foomatic_defaults");
+
+  # See if option is already defined.
+
+  $options = &xst_xml_model_get_children ($branch);
+
+  foreach $o (@$options)
+  {
+    my $opt_node = &xst_xml_model_find ($o, "name");
+    next if (!$opt_node);
+
+    if (&xst_xml_model_get_attribute ($opt_branch, "VALUE") eq $name)
+    {
+      $option = $o;
+      last;
+    }
+  }
+
+  # If not, create node for it.
+
+  if (!$option)
+  {
+    $option = &xst_xml_model_add ($branch, "", $option_default);
+  }
+
+  # Set the option attributes.
+
+  my $node = &xst_xml_model_ensure ($option, "name");
+  &xst_xml_model_set_attribute ($node, "TYPE", "STRING");
+  &xst_xml_model_set_attribute ($node, "VALUE", $name);
+
+  $node = &xst_xml_model_ensure ($option, "type");
+  &xst_xml_model_set_attribute ($node, "TYPE", "STRING");
+  &xst_xml_model_set_attribute ($node, "VALUE", $type);
+
+  $node = &xst_xml_model_ensure ($option, "default");
+  &xst_xml_model_set_attribute ($node, "TYPE", "STRING");
+  &xst_xml_model_set_attribute ($node, "VALUE", $value);
+
+  # Store it back.
+
+  if ($compressed == 1)
+  {
+    $fd = &xst_file_open_write_compressed ($file);
+  }
+  else
+  {
+    $fd = &xst_file_open_write_from_names ($file);
+  }
+
+  if ($fd == -1) { return -1; }
+
+  print $fd &xst_xml_model_print ($model);
+  close $fd;
+
+  return 0;
 }

@@ -122,7 +122,8 @@ sub xst_print_printers_get_rh71
 {
   my @printers;
 
-  @printers = &xst_parse_xml_children ("/etc/alchemist/namespace/printconf/local.adl");
+  @printers = &xst_parse_xml_child_names ("/etc/alchemist/namespace/printconf/local.adl",
+                                          "/adm_context/datatree/printconf/print_queues");
   return @printers;
 }
 
@@ -131,7 +132,7 @@ sub xst_print_get_printer_parse_table
   my %dist_map =
 	(
 	  "redhat-7.0" => "redhat-7.0",
-	  "redhat-7.1" => "redhat-7.0",
+	  "redhat-7.1" => "redhat-7.1",
     "debian-2.2" => "redhat-7.0",
 		"debian-woody" => "redhat-7.0"
   );
@@ -172,6 +173,39 @@ sub xst_print_get_printer_parse_table
         [ "trans_crlf",         \&xst_parse_sh_bool,        TEXTONLY,   CRLFTRANS         ],
         [ "text_send_eof",      \&xst_parse_sh_bool,        TEXTONLY,   TEXT_SEND_EOF     ]
       ]
+    },
+    "redhat-7.1" =>
+	  {
+      printers_get => \&xst_print_printers_get_rh71,
+	    fn =>
+	    {
+        PRINTCAP   => "/etc/printcap",
+        PRINTCONF  => "/etc/alchemist/namespace/printconf/local.adl",
+        PRINTER    => "#printer#"
+      },
+	    table =>
+      [
+#        [ "spooldir",           \&xst_parse_printcap,       [PRINTCAP,  PRINTER],    "sd" ],
+#        [ "jobsize_max_k",      \&xst_parse_printcap,       [PRINTCAP,  PRINTER],    "mx" ],
+#        [ "suppress_headers",   \&xst_parse_printcap_bool,  [PRINTCAP,  PRINTER],    "sh" ],
+#        [ "device",             \&xst_parse_printcap,       [PRINTCAP,  PRINTER],    "lp" ],
+#        [ "filter",             \&xst_parse_printcap,       [PRINTCAP,  PRINTER],    "if" ],
+#        [ "papersize",          \&xst_parse_sh_export,      GENERAL,    PAPERSIZE         ],
+#        [ "type",               \&xst_parse_sh_export,      GENERAL,    PRINTERTYPE       ],
+#        [ "ascii_to_ps",        \&xst_parse_sh_export_bool, GENERAL,    ASCII_TO_PS       ],
+#        [ "gsdevice",           \&xst_parse_sh,             POSTSCRIPT, GSDEVICE          ],
+#        [ "resolution",         \&xst_parse_sh,             POSTSCRIPT, RESOLUTION        ],
+#        [ "color",              \&xst_parse_sh,             POSTSCRIPT, COLOR             ],
+#        [ "gs_papersize",       \&xst_parse_sh,             POSTSCRIPT, PAPERSIZE         ],
+#        [ "gs_options",         \&xst_parse_sh,             POSTSCRIPT, EXTRA_GS_OPTIONS  ],
+#        [ "ps_send_eof",        \&xst_parse_sh_bool,        POSTSCRIPT, PS_SEND_EOF       ],
+#        [ "pages_per_sheet",    \&xst_parse_sh,             POSTSCRIPT, NUP               ],
+#        [ "rt_margin",          \&xst_parse_sh,             POSTSCRIPT, RTLFTMAR          ],
+#        [ "tb_margin",          \&xst_parse_sh,             POSTSCRIPT, TOPBOTMAR         ],
+#        [ "text_options",       \&xst_parse_sh,             TEXTONLY,   TEXTONLYOPTIONS   ],
+#        [ "trans_crlf",         \&xst_parse_sh_bool,        TEXTONLY,   CRLFTRANS         ],
+#        [ "text_send_eof",      \&xst_parse_sh_bool,        TEXTONLY,   TEXT_SEND_EOF     ]
+      ]
     }
   );
 
@@ -187,8 +221,9 @@ sub xst_print_get_printer_replace_table
   my %dist_map =
 	(
 	  "redhat-7.0" => "redhat-7.0",
-	  "redhat-7.1" => "redhat-7.0",
-    "debian-2.2" => "redhat-7.0"
+	  "redhat-7.1" => "redhat-7.1",
+    "debian-2.2" => "redhat-7.0",
+		"debian-woody" => "redhat-7.0"
   );
 
   my %dist_tables =
@@ -227,6 +262,42 @@ sub xst_print_get_printer_replace_table
         [ "text_options",       \&xst_replace_sh,             TEXTONLY,   TEXTONLYOPTIONS        ],
         [ "trans_crlf",         \&xst_replace_sh_bool,        TEXTONLY,   CRLFTRANS              ],
         [ "text_send_eof",      \&xst_replace_sh_bool,        TEXTONLY,   TEXT_SEND_EOF          ]
+      ]
+    },
+    "redhat-7.1" =>
+	  {
+      printers_get   => \&xst_print_printers_get_rh71,
+      printer_remove => \&xst_replace_printcap_remove_printer,
+	    fn =>
+	    {
+        PRINTCAP   => "/etc/printcap",
+        PRINTCONF  => "/etc/alchemist/namespace/printconf/local.adl",
+        PRINTER    => "#printer#"
+      },
+	    table =>
+      [
+#        [ "spooldir",           \&xst_replace_printcap,       [PRINTCAP,  PRINTER],    "sd", "=" ],
+#        [ "jobsize_max_k",      \&xst_replace_printcap,       [PRINTCAP,  PRINTER],    "mx", "#" ],
+#        [ "suppress_headers",   \&xst_replace_printcap,       [PRINTCAP,  PRINTER],    "sh", ""  ],
+        [ "device",             \&xst_replace_alchemist_print, PRINTCONF, PRINTER, "queue_data/local_printer_device/", "STRING" ],
+        [ "filter_type",        \&xst_replace_alchemist_print, PRINTCONF, PRINTER, "filter_type", "STRING" ],
+        [ "type",               \&xst_replace_alchemist_print, PRINTCONF, PRINTER, "queue_type", "STRING" ],
+        [ "printer_id",         \&xst_replace_alchemist_print, PRINTCONF, PRINTER, "filter_data/printer_id", "STRING" ],
+#        [ "filter",             \&xst_replace_printcap,        [PRINTCAP,  PRINTER],    "if", "=" ],
+#        [ "papersize",          \&xst_replace_sh_export,       GENERAL,    PAPERSIZE              ],
+#        [ "ascii_to_ps",        \&xst_replace_sh_export_bool,  GENERAL,    ASCII_TO_PS            ],
+        [ "gsdevice",           \&xst_replace_alchemist_print, PRINTCONF, "filter_data/gs_driver", "STRING" ],
+        [ "resolution",         \&xst_replace_alchemist_print_option, PRINTCONF, PRINTER, "Resolution", "enum" ]
+#        [ "color",              \&xst_replace_sh,              POSTSCRIPT, COLOR                  ],
+#        [ "gs_papersize",       \&xst_replace_sh,              POSTSCRIPT, PAPERSIZE              ],
+#        [ "gs_options",         \&xst_replace_sh,              POSTSCRIPT, EXTRA_GS_OPTIONS       ],
+#        [ "ps_send_eof",        \&xst_replace_sh_bool,         POSTSCRIPT, PS_SEND_EOF            ],
+#        [ "pages_per_sheet",    \&xst_replace_sh,              POSTSCRIPT, NUP                    ],
+#        [ "rt_margin",          \&xst_replace_sh,              POSTSCRIPT, RTLFTMAR               ],
+#        [ "tb_margin",          \&xst_replace_sh,              POSTSCRIPT, TOPBOTMAR              ],
+#        [ "text_options",       \&xst_replace_sh,              TEXTONLY,   TEXTONLYOPTIONS        ],
+#        [ "trans_crlf",         \&xst_replace_sh_bool,         TEXTONLY,   CRLFTRANS              ],
+#        [ "text_send_eof",      \&xst_replace_sh_bool,         TEXTONLY,   TEXT_SEND_EOF          ]
       ]
     }
   );

@@ -842,6 +842,24 @@ sub xst_xml_model_remove
   return -1;
 }
 
+sub xst_xml_model_get_children
+{
+  my ($branch) = @_;
+  my (@children);
+
+  if (!$branch) { return \@children; }
+
+  for ($i = 1; $i < @$branch; $i += 2)
+  {
+    if (@$branch [$i] ne "__unparsed__" && @$branch [$i] ne "0")
+    {
+      push @children, @$branch [$i + 1];
+    }
+  }
+
+  return \@children;
+}
+
 sub xst_xml_model_get_pcdata
 {
   my ($branch) = @_;

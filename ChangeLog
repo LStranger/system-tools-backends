@@ -1,3 +1,24 @@
+2001-07-19  Hans Petter Jansson  <hpj@ximian.com>
+
+	* xml.pl.in (xst_xml_model_get_children): Implement.
+	
+	* parse.pl.in (xst_parse_xml): Use new return convention of
+	  xst_xml_model_scan ().
+	  (xst_parse_xml_child_names): Renamed from xst_parse_xml_children ().
+	  Use new return convention of xst_xml_model_scan ().
+	  (xst_parse_alchemist): Implement.
+	  (xst_parse_alchemist_print): Implement.
+	  (xst_parse_alchemist_print_option): Implement.
+		
+	* replace.pl.in (xst_replace_alchemist): Add in alchemist's base data path.
+	  (xst_replace_alchemist_print): Implement.
+	  (xst_replace_alchemist_print_option): Implement.
+		
+	* print.pl.in (xst_print_printers_get_rh71): Use
+	  xst_parse_xml_child_names ().
+	  (xst_print_get_printer_parse_table): Begin rh71 table, not complete yet.
+	  (xst_print_get_printer_replace_table): Begin rh71 table, not complete yet.
+
 2001-07-18  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* file.pl.in (xst_file_run): Accept a flag arg $background

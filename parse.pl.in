@@ -1302,8 +1302,8 @@ sub xst_parse_xml
   my ($file, $varpath, $property) = @_;
   my ($model, $branch);
 
-  $model  = &xst_xml_model_scan ($file);
-  $branch = &xst_xml_model_find ($model, $varpath);
+  ($model) = &xst_xml_model_scan ($file);
+  $branch  = &xst_xml_model_find ($model, $varpath);
 
   if ($branch)
   {
@@ -1314,13 +1314,13 @@ sub xst_parse_xml
   return undef;
 }
 
-sub xst_parse_xml_children
+sub xst_parse_xml_child_names
 {
   my ($file, $varpath) = @_;
   my ($model, $branch, @children);
 
-  $model  = &xst_xml_model_scan ($file);
-  $branch = &xst_xml_model_find ($model, $varpath);
+  ($model) = &xst_xml_model_scan ($file);
+  $branch  = &xst_xml_model_find ($model, $varpath);
 
   if (!$branch) { return \@children; }
 
@@ -1342,4 +1342,53 @@ sub xst_parse_xml_children
   }
 
   return \@children;
+}
+
+sub xst_parse_alchemist
+{
+  my ($file, $varpath, $property);
+
+  $varpath = "/adm_context/datatree/" . $varpath;
+  return &xst_parse_xml ($file, $varpath, $property);
+}
+
+sub xst_parse_alchemist_print
+{
+  my ($file, $printer, $varpath, $property);
+
+  $varpath = "printconf/print_queues/" . $printer . "/" . $varpath;
+  return &xst_parse_alchemist ($file, $varpath, $property);
+}
+
+sub xst_parse_alchemist_print_option
+{
+  my ($file, $printer, $name);
+  my ($varpath, $model, $branch, $fd, $options, $option);
+
+  ($model) = &xst_xml_model_scan ($file);
+  $branch  = &xst_xml_model_find ($model, "/adm_context/datatree/printconf/print_queues/" . $printer .
+                                  "/filter_data/foomatic_defaults");
+
+  return undef if (!$branch);
+
+  $options = &xst_xml_model_get_children ($branch);
+
+  foreach $o (@$options)
+  {
+    my $opt_node = &xst_xml_model_find ($o, "name");
+    next if (!$opt_node);
+
+    if (&xst_xml_model_get_attribute ($opt_branch, "VALUE") eq $name)
+    {
+      $option = $o;
+      last;
+    }
+  }
+
+  return undef if (!$option);
+
+  my $node = &xst_xml_model_find ($option, "default");
+  return undef if (!$node);
+
+  return &xst_xml_model_get_attribute ($node, "VALUE");
 }
