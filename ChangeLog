@@ -1,4 +1,8 @@
-2005-03-05  Carlos Garnacho Parro  <carlosg gnome org>
+2005-03-07  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* Release 1.2.0
+
+2005-03-05  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* network.pl.in: don't activate the interface after having changed
 	if it was left disabled

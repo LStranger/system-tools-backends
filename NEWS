@@ -1,3 +1,34 @@
+System Tools Backends Version 1.2.0, 2005-03-07
+-----------------------------------------------
+
+The System Tools Backends version 1.2.0 "Eleee mi niñooo!!" have been released.
+
+The System Tools Backends are a set of cross-platform scripts for Linux and other Unix systems. The backends provide an standard XML interface for modifying the configuration regarless of the distribution that's being used.
+
+Right now the System Tools Backends fully support various distros/OS such as: Redhat, Mandrake, SuSE, Fedora, Debian (and derivations like Ubuntu, Linex, Guadalinex...), Gentoo, Slackware, FreeBSD, OpenNA, PLD, Vine and Specifix.
+
+Changes since last release
+==========================
+
+  Network
+  =======
+  - Don't activate any interface after having changed if it was disabled (Garnacho)
+
+  Translations
+  ============
+  - hi (Rajesh Ranjan)
+  - hu (Szabolcs Varga)
+  - ja (Takeshi AIHANA)
+  - ro (Mişu Moldovan)
+  - sr, sr@Latn (Danilo Šegan)
+  - vi (Abel Cheung)
+  - zh_TW (GNOME HK Team)
+
+Downloading
+===========
+You can get it from :
+ftp://ftp.gnome.org/pub/GNOME/sources/system-tools-backends/1.2/
+
 System Tools Backends Version 1.1.92, 2005-03-01
 ------------------------------------------------
 
