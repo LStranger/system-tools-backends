@@ -1211,7 +1211,7 @@ sub xml_parse
 
   while (@$tree)
   {
-    if (@$tree[0] eq "networking") { xml_parse_networking(@$tree[1]); }
+    if ($$tree[0] eq "networking") { xml_parse_networking($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -1231,16 +1231,16 @@ sub xml_parse_networking
 
   while (@$tree)
   {
-    if    (@$tree[0] eq "primaryinterface") { $cf_interface = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "knowninterface")   { push(@cf_interface_list, be_xml_get_word(@$tree[1])); }
-    elsif (@$tree[0] eq "hostip")           { $cf_hostip = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "netmask")          { $cf_netmask = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "gateway")          { $cf_gateway = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "enabled")          { xml_parse_enabled(@$tree[1]); }
-    elsif (@$tree[0] eq "forward")          { xml_parse_forward(@$tree[1]); }
-    elsif (@$tree[0] eq "method")
+    if    ($$tree[0] eq "primaryinterface") { $cf_interface = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "knowninterface")   { push(@cf_interface_list, be_xml_get_word($$tree[1])); }
+    elsif ($$tree[0] eq "hostip")           { $cf_hostip = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "netmask")          { $cf_netmask = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "gateway")          { $cf_gateway = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "enabled")          { xml_parse_enabled($$tree[1]); }
+    elsif ($$tree[0] eq "forward")          { xml_parse_forward($$tree[1]); }
+    elsif ($$tree[0] eq "method")
     {
-      $cf_method = be_xml_get_word(@$tree[1]);
+      $cf_method = be_xml_get_word($$tree[1]);
       if (($cf_method ne "dhcp") && ($cf_method ne "bootp")) { $cf_method = "static"; }
     }
 
@@ -1255,7 +1255,7 @@ sub xml_parse_enabled
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  $cf_onboot = be_read_boolean(@$tree[0]->{state});
+  $cf_onboot = be_read_boolean($$tree[0]->{state});
 }
 
 
@@ -1265,7 +1265,7 @@ sub xml_parse_forward
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  $cf_forward = be_read_boolean(@$tree[0]->{state});
+  $cf_forward = be_read_boolean($$tree[0]->{state});
 }
 
 

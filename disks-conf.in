@@ -598,7 +598,7 @@ sub xml_parse
 
   while (@$tree)
   {
-    if (@$tree[0] eq "disks") { xml_parse_toplevel(@$tree[1]); }
+    if ($$tree[0] eq "disks") { xml_parse_toplevel($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -616,7 +616,7 @@ sub xml_parse_toplevel
 
   while (@$tree)
   {
-    if (@$tree[0] eq "disk") { xml_parse_disk(@$tree[1]); }
+    if ($$tree[0] eq "disk") { xml_parse_disk($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -635,11 +635,11 @@ sub xml_parse_disk
 
   while (@$tree)
   {
-    if (@$tree[0] eq "device") { %disk->{device} = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "size") { %disk->{size} = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "partition")
+    if ($$tree[0] eq "device") { %disk->{device} = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "size") { %disk->{size} = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "partition")
     {
-      my %partition = xml_parse_partition(@$tree[1]);
+      my %partition = xml_parse_partition($$tree[1]);
       $bleh = %disk->{partitions};
       push(@$bleh, \%partition);
     }
@@ -660,15 +660,15 @@ sub xml_parse_partition
 
   while (@$tree)
   {
-    if (@$tree[0] eq "device") { %partition->{device} = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "type") { %partition->{type} = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "point") { %partition->{point} = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "size") { %partition->{size} = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "bootable") { %partition->{bootable} = xml_parse_state(@$tree[1]); }
-    elsif (@$tree[0] eq "integritycheck") { %partition->{check} = xml_parse_state(@$tree[1]); }
-    elsif (@$tree[0] eq "mounted") { %partition->{mounted} = xml_parse_state(@$tree[1]); }
-    elsif (@$tree[0] eq "listed") { %partition->{listed} = xml_parse_state(@$tree[1]); }
-    elsif (@$tree[0] eq "detected") { %partition->{detected} = xml_parse_state(@$tree[1]); }
+    if ($$tree[0] eq "device") { %partition->{device} = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "type") { %partition->{type} = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "point") { %partition->{point} = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "size") { %partition->{size} = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "bootable") { %partition->{bootable} = xml_parse_state($$tree[1]); }
+    elsif ($$tree[0] eq "integritycheck") { %partition->{check} = xml_parse_state($$tree[1]); }
+    elsif ($$tree[0] eq "mounted") { %partition->{mounted} = xml_parse_state($$tree[1]); }
+    elsif ($$tree[0] eq "listed") { %partition->{listed} = xml_parse_state($$tree[1]); }
+    elsif ($$tree[0] eq "detected") { %partition->{detected} = xml_parse_state($$tree[1]); }
     
     shift @$tree; shift @$tree;
   }
@@ -683,7 +683,7 @@ sub xml_parse_state
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(be_read_boolean(@$tree[0]->{state}));
+  return(be_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -722,7 +722,7 @@ sub xml_print
       
       while (@$partitions)
       {
-        my $partition = @$partitions[0];
+        my $partition = $$partitions[0];
 
         be_xml_vspace ();
         be_xml_print ("<partition>\n");

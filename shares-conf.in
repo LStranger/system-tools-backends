@@ -947,10 +947,10 @@ sub write_exports
         my $clients = $shares[2];
         while (@$clients)
         {
-          if (@$clients[0] ne "")
+          if ($$clients[0] ne "")
           {
-            print FILE " @$clients[0]";               # Pattern
-            if (@$clients[1]) { print FILE "(rw)"; }  # Writeable
+            print FILE " $$clients[0]";               # Pattern
+            if ($$clients[1]) { print FILE "(rw)"; }  # Writeable
           }
           shift @$clients; shift @$clients;
         }
@@ -981,7 +981,7 @@ sub xml_parse
 
   while (@$tree)
   {
-    if (@$tree[0] eq "shares") { xml_parse_toplevel(@$tree[1]); }
+    if ($$tree[0] eq "shares") { xml_parse_toplevel($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -999,8 +999,8 @@ sub xml_parse_toplevel
 
   while (@$tree)
   {
-    if (@$tree[0] eq "import") { xml_parse_import(@$tree[1]); }
-    elsif (@$tree[0] eq "export") { xml_parse_export(@$tree[1]); }
+    if ($$tree[0] eq "import") { xml_parse_import($$tree[1]); }
+    elsif ($$tree[0] eq "export") { xml_parse_export($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -1013,20 +1013,20 @@ sub xml_parse_import
   my $type = "", $host = "", $path = "", $comment = "", $user = "",
      $password = "", $mounted = 0, $detected = 0, $point = "", $listed = 0;
 
-  $type = @$tree[0]->{type};
+  $type = $$tree[0]->{type};
   shift @$tree;
   
   while (@$tree)
   {
-    if (@$tree[0] eq "host")        { $host = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "path")     { $path = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "user")     { $user = be_xml_get_text(@$tree[1]); }
-    elsif (@$tree[0] eq "password") { $password = be_xml_get_text(@$tree[1]); }
-    elsif (@$tree[0] eq "comment")  { $comment = be_xml_get_text(@$tree[1]); }
-    elsif (@$tree[0] eq "point")    { $point = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "mounted")  { $mounted = xml_parse_mounted(@$tree[1]); }
-    elsif (@$tree[0] eq "detected") { $detected = xml_parse_detected(@$tree[1]); }
-    elsif (@$tree[0] eq "listed")   { $listed = xml_parse_listed(@$tree[1]); }
+    if ($$tree[0] eq "host")        { $host = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "path")     { $path = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "user")     { $user = be_xml_get_text($$tree[1]); }
+    elsif ($$tree[0] eq "password") { $password = be_xml_get_text($$tree[1]); }
+    elsif ($$tree[0] eq "comment")  { $comment = be_xml_get_text($$tree[1]); }
+    elsif ($$tree[0] eq "point")    { $point = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "mounted")  { $mounted = xml_parse_mounted($$tree[1]); }
+    elsif ($$tree[0] eq "detected") { $detected = xml_parse_detected($$tree[1]); }
+    elsif ($$tree[0] eq "listed")   { $listed = xml_parse_listed($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -1051,7 +1051,7 @@ sub xml_parse_mounted
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(be_read_boolean(@$tree[0]->{state}));
+  return(be_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -1061,7 +1061,7 @@ sub xml_parse_detected
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(be_read_boolean(@$tree[0]->{state}));
+  return(be_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -1071,7 +1071,7 @@ sub xml_parse_listed
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(be_read_boolean(@$tree[0]->{state}));
+  return(be_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -1080,7 +1080,7 @@ sub xml_parse_export
   my $tree = $_[0];
   my $type = "";
 
-  $type = @$tree[0]->{type};
+  $type = $$tree[0]->{type};
   shift @$tree;
   
   if ($type eq "nfs")
@@ -1089,8 +1089,8 @@ sub xml_parse_export
     
     while (@$tree)
     {
-      if (@$tree[0] eq "path")          { $path = be_xml_get_word(@$tree[1]); }
-      elsif (@$tree[0] eq "allow")      { push(@$clients, xml_parse_allow(@$tree[1])); }
+      if ($$tree[0] eq "path")          { $path = be_xml_get_word($$tree[1]); }
+      elsif ($$tree[0] eq "allow")      { push(@$clients, xml_parse_allow($$tree[1])); }
 
       shift @$tree;
       shift @$tree;
@@ -1110,13 +1110,13 @@ sub xml_parse_export
 
     while (@$tree)
     {
-      if (@$tree[0] eq "name")          { $name = be_xml_get_word(@$tree[1]); }
-      elsif (@$tree[0] eq "path")       { $path = be_xml_get_word(@$tree[1]); }
-      elsif (@$tree[0] eq "comment")    { $comment = be_xml_get_text(@$tree[1]); }
-      elsif (@$tree[0] eq "enabled")    { $enabled = xml_parse_enabled(@$tree[1]); }
-      elsif (@$tree[0] eq "browse")     { $browseable = xml_parse_browseable(@$tree[1]); }
-      elsif (@$tree[0] eq "public")     { $public = xml_parse_public(@$tree[1]); }
-      elsif (@$tree[0] eq "write")      { $writeable = xml_parse_writeable(@$tree[1]); }
+      if ($$tree[0] eq "name")          { $name = be_xml_get_word($$tree[1]); }
+      elsif ($$tree[0] eq "path")       { $path = be_xml_get_word($$tree[1]); }
+      elsif ($$tree[0] eq "comment")    { $comment = be_xml_get_text($$tree[1]); }
+      elsif ($$tree[0] eq "enabled")    { $enabled = xml_parse_enabled($$tree[1]); }
+      elsif ($$tree[0] eq "browse")     { $browseable = xml_parse_browseable($$tree[1]); }
+      elsif ($$tree[0] eq "public")     { $public = xml_parse_public($$tree[1]); }
+      elsif ($$tree[0] eq "write")      { $writeable = xml_parse_writeable($$tree[1]); }
 
       shift @$tree;
       shift @$tree;
@@ -1153,8 +1153,8 @@ sub xml_parse_allow
 
   while (@$tree)
   {
-    if (@$tree[0] eq "pattern")       { $pattern = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "write")      { $write = xml_parse_writeable(@$tree[1]); }
+    if ($$tree[0] eq "pattern")       { $pattern = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "write")      { $write = xml_parse_writeable($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -1172,7 +1172,7 @@ sub xml_parse_enabled
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(be_read_boolean(@$tree[0]->{state}));
+  return(be_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -1182,7 +1182,7 @@ sub xml_parse_browseable
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(be_read_boolean(@$tree[0]->{state}));
+  return(be_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -1192,7 +1192,7 @@ sub xml_parse_public
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(be_read_boolean(@$tree[0]->{state}));
+  return(be_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -1202,7 +1202,7 @@ sub xml_parse_writeable
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(be_read_boolean(@$tree[0]->{state}));
+  return(be_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -1304,10 +1304,10 @@ sub xml_print
         my $clients = $shares[2];
         while (@$clients)
         {
-          if (@$clients[0] ne "")
+          if ($$clients[0] ne "")
           {
-            be_xml_print ("<allow><pattern>@$clients[0]</pattern><write state='");
-            print be_print_boolean_truefalse(@$clients[1]);
+            be_xml_print ("<allow><pattern>$$clients[0]</pattern><write state='");
+            print be_print_boolean_truefalse($$clients[1]);
             print "'/></allow>\n";
           }
           shift @$clients; shift @$clients;

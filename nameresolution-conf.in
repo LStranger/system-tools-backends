@@ -743,7 +743,7 @@ sub xml_parse
 
   while (@$tree)
   {
-    if (@$tree[0] eq "nameresolution") { xml_parse_resolving(@$tree[1]); }
+    if ($$tree[0] eq "nameresolution") { xml_parse_resolving($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -762,18 +762,18 @@ sub xml_parse_resolving
 
   while (@$tree)
   {
-    if    (@$tree[0] eq "hostname")        { $cf_hostname = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "domain")          { $cf_domain = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "hostnamereverse") { $cf_hostname_reverse = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "domainreverse")   { $cf_domain_reverse = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "workgroup")       { $cf_workgroup = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "description")     { $cf_description = be_xml_get_text(@$tree[1]); }
-    elsif (@$tree[0] eq "winsserver")      { $cf_winsserver = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "searchdomain")    { push(@cf_searchdomains, be_xml_get_word(@$tree[1])); }
-    elsif (@$tree[0] eq "nameserver")      { push(@cf_nameservers, be_xml_get_word(@$tree[1])); }
-    elsif (@$tree[0] eq "statichost")      { xml_parse_statichost(@$tree[1]); }
-    elsif (@$tree[0] eq "order")           { xml_parse_order(@$tree[1]); }
-    elsif (@$tree[0] eq "hostmatch")       { xml_parse_hostmatch(@$tree[1]); }
+    if    ($$tree[0] eq "hostname")        { $cf_hostname = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "domain")          { $cf_domain = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "hostnamereverse") { $cf_hostname_reverse = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "domainreverse")   { $cf_domain_reverse = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "workgroup")       { $cf_workgroup = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "description")     { $cf_description = be_xml_get_text($$tree[1]); }
+    elsif ($$tree[0] eq "winsserver")      { $cf_winsserver = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "searchdomain")    { push(@cf_searchdomains, be_xml_get_word($$tree[1])); }
+    elsif ($$tree[0] eq "nameserver")      { push(@cf_nameservers, be_xml_get_word($$tree[1])); }
+    elsif ($$tree[0] eq "statichost")      { xml_parse_statichost($$tree[1]); }
+    elsif ($$tree[0] eq "order")           { xml_parse_order($$tree[1]); }
+    elsif ($$tree[0] eq "hostmatch")       { xml_parse_hostmatch($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -793,8 +793,8 @@ sub xml_parse_statichost
 
   while (@$tree)
   {
-    if    (@$tree[0] eq "ip")    { $ip = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "alias") { push(@alias, be_xml_get_word(@$tree[1])); }
+    if    ($$tree[0] eq "ip")    { $ip = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "alias") { push(@alias, be_xml_get_word($$tree[1])); }
 
     shift @$tree;
     shift @$tree;
@@ -822,8 +822,8 @@ sub xml_parse_order
 
   while (@$tree)
   {
-    if (@$tree[0] eq "") { shift @$tree; shift @$tree; next; }
-    push(@cf_order, @$tree[0]);
+    if ($$tree[0] eq "") { shift @$tree; shift @$tree; next; }
+    push(@cf_order, $$tree[0]);
 
     shift @$tree;
     shift @$tree;
@@ -839,7 +839,7 @@ sub xml_parse_hostmatch
 
   # Check attribute; 'all' or 'first'.
 
-  if (@$tree[0]->{return} eq "all") { $cf_hostmatch = 0; }
+  if ($$tree[0]->{return} eq "all") { $cf_hostmatch = 0; }
   else { $cf_hostmatch = 1; }
 }
 

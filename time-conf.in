@@ -310,7 +310,7 @@ sub xml_parse
 
   while (@$tree)
   {
-    if (@$tree[0] eq "time") { xml_parse_time(@$tree[1]); }
+    if ($$tree[0] eq "time") { xml_parse_time($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -330,14 +330,14 @@ sub xml_parse_time
 
   while (@$tree)
   {
-    if    (@$tree[0] eq "year")     { $cf_year = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "month")    { $cf_month = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "monthday") { $cf_mday = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "hour")     { $cf_hour = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "minute")   { $cf_minute = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "second")   { $cf_second = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "timezone") { $cf_timezone = be_xml_get_word(@$tree[1]); }
-    elsif (@$tree[0] eq "synchronization") { xml_parse_synchronization(@$tree[1]); }
+    if    ($$tree[0] eq "year")     { $cf_year = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "month")    { $cf_month = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "monthday") { $cf_mday = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "hour")     { $cf_hour = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "minute")   { $cf_minute = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "second")   { $cf_second = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "timezone") { $cf_timezone = be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "synchronization") { xml_parse_synchronization($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -351,12 +351,12 @@ sub xml_parse_synchronization
 {
   my $tree = $_[0];
 
-  $cf_sync_active = be_read_boolean(@$tree[0]->{active});
+  $cf_sync_active = be_read_boolean($$tree[0]->{active});
   shift @$tree;
 
   while (@$tree)
   {
-    if (@$tree[0] eq "server")  { push_unique(\@cf_servers, be_xml_get_word(@$tree[1])); }
+    if ($$tree[0] eq "server")  { push_unique(\@cf_servers, be_xml_get_word($$tree[1])); }
     
     shift @$tree;
     shift @$tree;

@@ -226,9 +226,9 @@ sub arr_cmp_recurse
 	return -1 if ($#$a1 != $#$a2);
 	
 	for ($i = 0; $i <= $#$a1; $i++) {
-	  if (ref (@$a1[$i]) eq "ARRAY") { # see if this is a reference.
-		  return -1 if arr_cmp_recurse (@$a1[$i], @$a2[$i]); # we assume it is a ref to an array.
-		} elsif (@$a1[$i] ne @$a2[$i]) {
+	  if (ref ($$a1[$i]) eq "ARRAY") { # see if this is a reference.
+		  return -1 if arr_cmp_recurse ($$a1[$i], $$a2[$i]); # we assume it is a ref to an array.
+		} elsif ($$a1[$i] ne $$a2[$i]) {
 		  return -1;
 		}
 	}
@@ -428,7 +428,7 @@ sub del_user
 {
 	my $data = $_[0];
 	
-	$command = "$cmd_userdel -r \'" . @$data[$users_prop_map{"login"}] . "\'";
+	$command = "$cmd_userdel -r \'" . $$data[$users_prop_map{"login"}] . "\'";
 	my_system ($command);
 }
 
@@ -436,13 +436,13 @@ sub add_user
 {
 	my $data = $_[0];
 	
-	$command = "$cmd_useradd -c \'" . @$data[$users_prop_map{"comment"}] . 
-	  "\' -d \'" . @$data[$users_prop_map{"home"}] .
-	  "\' -g \'" . @$data[$users_prop_map{"gid"}] .
-	  "\' -p \'" . @$data[$users_prop_map{"password"}] .
-	  "\' -s \'" . @$data[$users_prop_map{"shell"}] .
-	  "\' -u \'" . @$data[$users_prop_map{"uid"}] .
-	  "\' \'" . @$data[$users_prop_map{"login"}] . "\'";
+	$command = "$cmd_useradd -c \'" . $$data[$users_prop_map{"comment"}] . 
+	  "\' -d \'" . $$data[$users_prop_map{"home"}] .
+	  "\' -g \'" . $$data[$users_prop_map{"gid"}] .
+	  "\' -p \'" . $$data[$users_prop_map{"password"}] .
+	  "\' -s \'" . $$data[$users_prop_map{"shell"}] .
+	  "\' -u \'" . $$data[$users_prop_map{"uid"}] .
+	  "\' \'" . $$data[$users_prop_map{"login"}] . "\'";
 	my_system ($command);
 }
 
@@ -451,14 +451,14 @@ sub change_user
 	my $old_data = $_[0];
 	my $new_data = $_[1];
 	
-	$command = "$cmd_usermod -c \'" . @$new_data[$users_prop_map{"comment"}] . 
-	  "\' -d \'" . @$new_data[$users_prop_map{"home"}] .
-	  "\' -g \'" . @$new_data[$users_prop_map{"gid"}] .
-	  "\' -s \'" . @$new_data[$users_prop_map{"shell"}] .
-	  "\' -p \'" . @$new_data[$users_prop_map{"password"}] .
-	  "\' -u \'" . @$new_data[$users_prop_map{"uid"}] .
-	  "\' -l \'" . @$new_data[$users_prop_map{"login"}] .
-	  "\' \'" . @$old_data[$users_prop_map{"login"}] . "\'";
+	$command = "$cmd_usermod -c \'" . $$new_data[$users_prop_map{"comment"}] . 
+	  "\' -d \'" . $$new_data[$users_prop_map{"home"}] .
+	  "\' -g \'" . $$new_data[$users_prop_map{"gid"}] .
+	  "\' -s \'" . $$new_data[$users_prop_map{"shell"}] .
+	  "\' -p \'" . $$new_data[$users_prop_map{"password"}] .
+	  "\' -u \'" . $$new_data[$users_prop_map{"uid"}] .
+	  "\' -l \'" . $$new_data[$users_prop_map{"login"}] .
+	  "\' \'" . $$old_data[$users_prop_map{"login"}] . "\'";
 	my_system ($command);
 }
 
@@ -466,7 +466,7 @@ sub del_group
 {
 	my $data = $_[0];
 
-	$command = "$cmd_groupdel \'" . @$data[$groups_prop_map{"name"}] . "\'";
+	$command = "$cmd_groupdel \'" . $$data[$groups_prop_map{"name"}] . "\'";
 	my_system ($command);
 }
 
@@ -475,8 +475,8 @@ sub add_group
 	my $data = $_[0];
 	
 	# We'll have to check this -f flag.
-	$command = "$cmd_groupadd -f -g \'" . @$data[$groups_prop_map{"gid"}] .
-	  "\' " . @$data[$groups_prop_map{"name"}];
+	$command = "$cmd_groupadd -f -g \'" . $$data[$groups_prop_map{"gid"}] .
+	  "\' " . $$data[$groups_prop_map{"name"}];
 	my_system ($command);
 }
 
@@ -486,29 +486,29 @@ sub change_group
 	my $new_data = $_[1];
 	my ($n, $o, $i, $j, $r, @tmp); # for iterations
 
-	$command = "$cmd_groupmod -g \'" . @$new_data[$groups_prop_map{"gid"}] .
-	  "\' -n \'" . @$new_data[$groups_prop_map{"name"}] . "\'" 
-		. " \'" . @$old_data[$groups_prop_map{"name"}] . "\'";
+	$command = "$cmd_groupmod -g \'" . $$new_data[$groups_prop_map{"gid"}] .
+	  "\' -n \'" . $$new_data[$groups_prop_map{"name"}] . "\'" 
+		. " \'" . $$old_data[$groups_prop_map{"name"}] . "\'";
 	my_system ($command);
 	
 	# Let's see if the users that compose the group have changed.
-	if (&arr_cmp_recurse (@$new_data[$groups_prop_map{"users"}],
-	                      @$old_data[$groups_prop_map{"users"}])) {
+	if (&arr_cmp_recurse ($$new_data[$groups_prop_map{"users"}],
+	                      $$old_data[$groups_prop_map{"users"}])) {
 
-		$n = [ @{@$new_data[$groups_prop_map{"users"}]} ]; sort @$n;
-		$o = [ @{@$old_data[$groups_prop_map{"users"}]} ]; sort @$o;
+		$n = [ @{$$new_data[$groups_prop_map{"users"}]} ]; sort @$n;
+		$o = [ @{$$old_data[$groups_prop_map{"users"}]} ]; sort @$o;
 		
 		for ($i = 0, $j = 0; $i <= &max ($#$n, $#$o); ) {
-		  $r = @$n[$i] cmp @$o[$j]; 
+		  $r = $$n[$i] cmp $$o[$j]; 
 		  if ($r < 0) { # add this user to the group.
-			  $command = "$cmd_gpasswd -a \'" . @$n[$i] . "\' \'" . 
-				  @$new_data[$groups_prop_map{"name"}] . "\'";
+			  $command = "$cmd_gpasswd -a \'" . $$n[$i] . "\' \'" . 
+				  $$new_data[$groups_prop_map{"name"}] . "\'";
 				$i ++;
 				
 				my_system ($command);
 			} elsif ($r > 0) { # delete the user from the group.
-			  $command = "$cmd_gpasswd -d \'" . @$o[$j] . "\' \'" . 
-				  @$new_data[$groups_prop_map{"name"}] . "\'";
+			  $command = "$cmd_gpasswd -d \'" . $$o[$j] . "\' \'" . 
+				  $$new_data[$groups_prop_map{"name"}] . "\'";
 				$j ++;
 				
 				my_system ($command);
@@ -537,7 +537,7 @@ sub xml_parse
 
   while (@$tree)
   {
-    if (@$tree[0] eq "users") { &xml_parse_users(@$tree[1]); }
+    if ($$tree[0] eq "users") { &xml_parse_users($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -554,14 +554,14 @@ sub xml_parse_users
 
   while (@$tree)
 	{
-	  if (@$tree[0] eq "logindefs") { &xml_parse_login_defs (@$tree[1]); }
-		elsif (@$tree[0] eq "passwd_last_modified") { &xml_parse_passwd_last_modified (@$tree[1]); }
-		elsif (@$tree[0] eq "group_last_modified") { &xml_parse_group_last_modified (@$tree[1]); }
-		elsif (@$tree[0] eq "userdb") { &xml_parse_userdb (@$tree[1]); }
-		elsif (@$tree[0] eq "groupdb") { &xml_parse_groupdb (@$tree[1]); }
+	  if ($$tree[0] eq "logindefs") { &xml_parse_login_defs ($$tree[1]); }
+		elsif ($$tree[0] eq "passwd_last_modified") { &xml_parse_passwd_last_modified ($$tree[1]); }
+		elsif ($$tree[0] eq "group_last_modified") { &xml_parse_group_last_modified ($$tree[1]); }
+		elsif ($$tree[0] eq "userdb") { &xml_parse_userdb ($$tree[1]); }
+		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1]); }
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing users.\n"
+		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing users.\n"
 		}
 
     shift @$tree;
@@ -577,13 +577,13 @@ sub xml_parse_login_defs
 	
 	while (@$tree)
 	{
-		if ($login_defs_prop_map{@$tree[0]} ne undef)
+		if ($login_defs_prop_map{$$tree[0]} ne undef)
 		{
-		  $login_defs{@$tree[0]} = @$tree->[1][2];
+		  $login_defs{$$tree[0]} = $$tree->[1][2];
 		}
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing logindefs.\n"
+		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing logindefs.\n"
 		}
 		
 		shift @$tree;
@@ -597,8 +597,8 @@ sub xml_parse_passwd_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	print STDERR "passwd_last_modified tag contents is not PCDATA only.\n" if (@$tree[0] ne "0" && $be_verbose);
-	$passwd_last_modified = @$tree[1];
+	print STDERR "passwd_last_modified tag contents is not PCDATA only.\n" if ($$tree[0] ne "0" && $be_verbose);
+	$passwd_last_modified = $$tree[1];
 }	
 
 sub xml_parse_group_last_modified
@@ -607,8 +607,8 @@ sub xml_parse_group_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	print STDERR "group_last_modified tag contents is not PCDATA only.\n" if (@$tree[0] ne "0" && $be_verbose);
-	$group_last_modified = @$tree[1];
+	print STDERR "group_last_modified tag contents is not PCDATA only.\n" if ($$tree[0] ne "0" && $be_verbose);
+	$group_last_modified = $$tree[1];
 }	
 
 sub xml_parse_userdb
@@ -619,10 +619,10 @@ sub xml_parse_userdb
 
   while (@$tree)
 	{
-	  if (@$tree[0] eq "user") { &xml_parse_user (@$tree[1]); }
+	  if ($$tree[0] eq "user") { &xml_parse_user ($$tree[1]); }
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing userdb.\n"
+		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing userdb.\n"
 		}
 
     shift @$tree;
@@ -639,13 +639,13 @@ sub xml_parse_user
 
 	while (@$tree)
 	{
-		if ($users_prop_map{@$tree[0]} ne undef)
+		if ($users_prop_map{$$tree[0]} ne undef)
 		{
-		  $line[$users_prop_map{@$tree[0]}] = @$tree->[1][2];
+		  $line[$users_prop_map{$$tree[0]}] = $$tree->[1][2];
 		}
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing user.\n"
+		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing user.\n"
 		}
 		
 		shift @$tree;
@@ -664,10 +664,10 @@ sub xml_parse_groupdb
 
   while (@$tree)
 	{
-	  if (@$tree[0] eq "group") { &xml_parse_group (@$tree[1]); }
+	  if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1]); }
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing groupdb.\n"
+		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing groupdb.\n"
 		}
 
     shift @$tree;
@@ -684,14 +684,14 @@ sub xml_parse_group
 
 	while (@$tree)
 	{
-		if ($groups_prop_map{@$tree[0]} ne undef)
+		if ($groups_prop_map{$$tree[0]} ne undef)
 		{
-		  if (@$tree[0] eq "users") { $line[$groups_prop_map{@$tree[0]}] = @$tree->[1]; }
-			else { $line[$groups_prop_map{@$tree[0]}] = @$tree->[1][2]; }
+		  if ($$tree[0] eq "users") { $line[$groups_prop_map{$$tree[0]}] = $$tree->[1]; }
+			else { $line[$groups_prop_map{$$tree[0]}] = $$tree->[1][2]; }
 		}
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing group.\n"
+		  print STDERR "Unexpected tag " . $$tree[0] . " while parsing group.\n"
 		}
 		
 		shift @$tree;
@@ -702,12 +702,12 @@ sub xml_parse_group
 	$a = pop @line;
 	shift @$a;
 	while (@$a) {
-	  if (@$a[0] eq "user") {
-		  push @u, @$a->[1][2];
+	  if ($$a[0] eq "user") {
+		  push @u, $$a->[1][2];
 		}
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . @$a[0] . " while parsing users.\n"
+		  print STDERR "Unexpected tag " . $$a[0] . " while parsing users.\n"
 		}
 		shift @$a;
 		shift @$a;
