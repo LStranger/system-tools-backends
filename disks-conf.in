@@ -622,7 +622,7 @@ sub xml_print
       
       while (@$partitions)
       {
-        my $partition = $partitions[0];
+        my $partition = @$partitions[0];
 
         be_xml_vspace;
         be_xml_indent; print "<partition>\n";
