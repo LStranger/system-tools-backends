@@ -1,5 +1,9 @@
 2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
+	* Makefile.am: Remove nameresolution-conf relics.
+
+2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
+
 	* general.pl.in: Add $xst_debug flag.
 	  (xst_init): Honour --debug arg and XST_DEBUG env. Also some
 	  comments.
