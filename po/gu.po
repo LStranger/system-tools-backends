@@ -1,22 +1,24 @@
+# translation of system-tools-backends.HEAD.gu.po to Gujarati
 # translation of setup-tools-backends.HEAD.gu.po to Gujarati
 # translation of setup-tools-backends.HEAD.po to Gujarati
 # This file is distributed under the same license as the PACKAGE package.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
-# Ankit Patel <ankit@redhat.com>, 2004.
+# Ankit Patel <ankit@redhat.com>, 2004, 2005.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: setup-tools-backends.HEAD.gu\n"
+"Project-Id-Version: system-tools-backends.HEAD.gu\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-18 12:20+0200\n"
-"PO-Revision-Date: 2004-08-20 14:55+0530\n"
+"POT-Creation-Date: 2005-02-22 07:46+0100\n"
+"PO-Revision-Date: 2005-02-24 17:46+0530\n"
 "Last-Translator: Ankit Patel <ankit@redhat.com>\n"
-"Language-Team: Gujarati\n"
+"Language-Team: Gujarati <gu@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.3.1\n"
-"Plural-Forms: Plural-Forms: nplurals=2; plural=(n!=1);\n\n"
+"X-Generator: KBabel 1.9.1\n"
+"Plural-Forms: Plural-Forms: Plural-Forms: nplurals=2; plural=(n!=1);\n\n"
+"\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -78,7 +80,7 @@ msgstr ""
 
 #: service-list.pl.in:42
 msgid "Audio mixer"
-msgstr "આેડિયો મિક્સર"
+msgstr "ઓડિયો મિક્સર"
 
 #: service-list.pl.in:42
 msgid "This program adjusts the settings of an audio mixing device"
@@ -485,7 +487,7 @@ msgstr "નામ સેવા કેશ ડીમન"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
-msgstr "ડીમન કે જે માેટે ભાગની નામની સેવાની મંજૂરીઓના માટે કેશ પૂરુ પાડે છે."
+msgstr "ડીમન કે જે મોટે ભાગની નામની સેવાની મંજૂરીઓના માટે કેશ પૂરુ પાડે છે."
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
@@ -626,7 +628,7 @@ msgid ""
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
 "saslauthd એ સર્વર પ્રક્રિયા છે કે જે સાદા લખાણના સત્તાધિકરણની મંજૂરીcyrus-sasl "
-"લાઈબ્રેરીના આધારે કરે છેે."
+"લાઈબ્રેરીના આધારે કરે છે."
 
 #: service-list.pl.in:115
 msgid ""
@@ -667,7 +669,7 @@ msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
-"FAM એ ફાઈલનું ધ્યાન રાખતું ડીમન છે. જ્યારે ફાઈલો બદલાય છે ત્યારેઅહેવાલો મેળવવા માટે વપરાય "
+"FAM એ ફાઈલનું ધ્યાન રાખતું ડીમન છે. જ્યારે ફાઈલો બદલાય છે ત્યારે અહેવાલો મેળવવા માટે વપરાય "
 "છે. આ સેવા વાપરવા માટે તમારે xinetd સેવા સક્રિય કરવી જ પડશે."
 
 #: service-list.pl.in:120
@@ -690,7 +692,9 @@ msgstr "OpenSSH SSH સર્વર"
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
-msgstr "ssh એ દૂરસ્થ મશીન પર પ્રવેશ કરવા માટેનો અને દૂરસ્થ મશીન પર આદેશો ચલાવવા માટેનો કાર્યક્રમ છે."
+msgstr ""
+"ssh એ દૂરસ્થ મશીન પર પ્રવેશ કરવા માટેનો અને દૂરસ્થ મશીન પર આદેશો ચલાવવા માટેનો કાર્યક્રમ "
+"છે."
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
@@ -814,31 +818,79 @@ msgstr ""
 "રીતે પ્રવેશની ક્ષમતાઓ છે, સમય આધારિત ઉપ્લબ્ધ સેવાઓ પણ કરવાની ક્ષમતા છે, અને ઘણા સર્વરો કે "
 "જે શરુ થવાના છે તેના પર મર્યાદા પણ મૂકી શકે છે, બીજી બધી બાબતોમાંથી."
 
-#: service.pl.in:208 service.pl.in:213
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "સિસ્ટમ અટકાવી રહ્યા છીએ"
 
-#: service.pl.in:209 service.pl.in:215
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "લખાણવાળી સ્થિતિ"
 
-#: service.pl.in:210 service.pl.in:214 service.pl.in:223
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "ગ્રાફિકલ સ્થિતિ"
 
-#: service.pl.in:211 service.pl.in:216
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "સિસ્ટમ ફરીથી શરુ કરી રહ્યા છીએ"
 
-#: service.pl.in:218
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "બધી સિસ્ટમની જરુરી સેવાઓ ચાલુ કરે છે"
 
-#: service.pl.in:219
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "મૂળભુત રનલેવલ"
 
-#: service.pl.in:220
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "નેટવર્ક વિનાના રનલેવલ"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "સિસ્ટમ લોગનું ધ્યાન રાખો"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "ઓડિયો ઉપકરણો વાપરો"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "CD-ROM ડ્રાઈવોનો વપરાશ"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "મોડેમ ઉપકરણોનો વપરાશ"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "મોડેમ ઉપકરણો મારફતે ઈન્ટરનેટ સાથે જોડો"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "ફેક્સો મોકલો અને મેળવો"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "ફ્લોપી ડ્રાઈવોનો વપરાશ"
+
+#: users-conf.in:186
+msgid "Enable access to external storage devices automatically"
+msgstr "બાહ્ય સંગ્રહસ્થાન ઉપકરણોનો વપરાશ આપોઆપ સક્રિય કરો"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "ટેપ ડ્રાઈવોનો વપરાશ"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "સંચાલન વિશેષાધિકારો મેળવવા માટે સમર્થ"
+
+#: users-conf.in:491
+msgid "Default"
+msgstr "મૂળભુત"
+
+#: users-conf.in:492
+msgid "Default profile"
+msgstr "મૂળભુત રૂપરેખા"
 
