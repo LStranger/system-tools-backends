@@ -54,6 +54,12 @@ sub xst_file_get_debug_path
 }
 
 
+sub xst_file_get_data_path
+{
+  return (&xst_file_get_base_path (). "/data");
+}
+
+
 sub xst_create_path
 {
   my $path;
@@ -323,9 +329,20 @@ sub xst_buffer_save
   $fd = &xst_open_write_from_names ($file);
   return -1 if !$fd;
 
-  foreach $i (@$buffer)
+  if (@$buffer < 1)
   {
-    print $fd $i;
+    # We want to write single line.
+    print $fd $buffer;
+  }
+
+  else
+  {
+    # Let's print array
+    
+    foreach $i (@$buffer)
+    {
+      print $fd $i;
+    }
   }
 
   close $fd;

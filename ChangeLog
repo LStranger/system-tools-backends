@@ -1,3 +1,13 @@
+2001-03-21  Tambet Ingo  <tambet@ximian.com>
+
+	* users-conf.in (xml_scan): We need raw xml and slightly modified from xst_xml_scan.
+	(save_profiles): Implement.
+
+	* file.pl.in (xst_file_get_data_path): Implement.
+	(xst_buffer_save): Now it can write one line of text also.
+
+	* users-conf.in (xml_print_profiles): Don't print empty tags if no profiles defined.
+
 2001-03-20  Arturo Espinosa  <arturo@ximian.com>
 
 	Bug fixes for Debian port to work well.
