@@ -1,3 +1,9 @@
+2004-08-06  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: fixed interface activation in slackware, there's
+	no command that automatically parses rc.inet1.conf, so now the
+	function parses the file itself
+
 2004-08-05  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* service.pl.in: added support for mdk 7.2 (and ALT Linux) for

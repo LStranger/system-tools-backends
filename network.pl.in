@@ -1714,6 +1714,8 @@ sub gst_network_suse70_interface_activate
 sub gst_network_slackware91_interface_activate_by_dev
 {
   my ($dev, $enabled) = @_;
+  my ($address, $netmask, $gateway);
+  my ($file) = "/etc/rc.d/rc.inet1.conf";
   my ($ret) = 0;
 
   &gst_report_enter ();
@@ -1722,8 +1724,32 @@ sub gst_network_slackware91_interface_activate_by_dev
   {
     &gst_report ("network_iface_activate", $dev);
 
-    $ret = &gst_file_run ("ifconfig $dev up") if ($dev =~ /^eth/);
-    $ret = &gst_file_run ("ppp-go") if ($dev =~ /^ppp/);
+    if ($dev =~ /^ppp/)
+    {
+      $ret = &gst_file_run ("ppp-go");
+    }
+    else
+    {
+      if (&gst_parse_rcinet1conf_bool ($file, $dev, USE_DHCP))
+      {
+        # Use DHCP
+        $ret = &gst_file_run ("dhclient $dev");
+      }
+      else
+      {
+        $address = &gst_parse_rcinet1conf   ($file, $dev, "IPADDR");
+        $netmask = &gst_parse_rcinet1conf   ($file, $dev, "NETMASK");
+        $gateway = &gst_network_get_gateway ($file, "GATEWAY", $address, $netmask);
+
+        $ret = &gst_file_run ("ifconfig $dev $address netmask $netmask up");
+
+        # Add the gateway if necessary
+        if ($gateway ne undef)
+        {
+          &gst_file_run ("route add default gw $gateway");
+        }
+      }
+    }
   }
   else
   {
