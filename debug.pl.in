@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-# Functions for file manipulation. Find, open, read, write, backup, etc.
+# Functions for hacker debug.
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
