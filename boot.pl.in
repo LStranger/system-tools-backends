@@ -330,12 +330,19 @@ sub xst_boot_conf_replace_image
     $key = shift @line;
     $op = shift @line;
 
-    if (exists $image{$key})
+    if (exists $image{$key} && $image{$key})
     {
       $i = $pre_space . $key . $op . $image{$key} . $post_comment . "\n";
       delete $image{$key};
       next;
     }
+
+    elsif (exists $image{$key} && !$image{$key})
+    {
+      $i = $pre_space . $key . $post_comment . "\n";
+      delete $image{$key};
+      next;
+    }   
 
     elsif ($i ne "") # Delete unknown "junk"... yes, we are cruel!
                      # We can do that cause on reading we include all lines, no matter what.
@@ -407,7 +414,7 @@ sub xst_boot_replace_from_table
     }
     else
     {
-      &xst_boot_del_global ("/etc/lilo.conf", $key);
+      &xst_boot_del_global ("/home/tambeti/lilo.conf", $key);
     }
   }
 
@@ -431,7 +438,7 @@ sub xst_boot_conf_set
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/etc/lilo.conf"},
+		 LILO_CONF => "/home/tambeti/lilo.conf"},
 	    table => [
                 [ 'prompt',  \&xst_boot_set_global_kw, LILO_CONF, 'prompt' ],
                 [ 'lba32',   \&xst_boot_set_global_kw, LILO_CONF, 'lba32' ],
@@ -471,7 +478,7 @@ sub xst_boot_conf_get
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/etc/lilo.conf" },
+		 LILO_CONF => "/home/tambeti/lilo.conf" },
 	    table => [
                 [ 'prompt',  \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
                 [ 'lba32',   \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],

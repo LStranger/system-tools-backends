@@ -1,3 +1,7 @@
+2001-02-27  Tambet Ingo  <tambet@ximian.com>
+
+	* boot-conf.in (set_immediate): New function, we didn't actually run lilo before.
+
 2001-02-26  Arturo Espinosa  <arturo@ximian.com>
 
 	* network-conf.in (xml_parse_dialing): set the file item if none came from the XML.

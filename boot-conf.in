@@ -29,7 +29,7 @@
 
 # Running programs affected:
 #
-# lilo
+# /sbin/lilo
 
 
 require "___scriptsdir___/general.pl";
@@ -120,6 +120,7 @@ sub xml_parse_image
   my $tree = $_[0];
   my $image = $_[1];
   my %hash;
+  my $buf;
 
   shift @$tree;
 
@@ -241,6 +242,19 @@ sub get
 # --- Set (write) config --- #
 
 
+sub set_immediate
+{
+  if (&xst_run("lilo"))
+  {
+    &xst_report_warning(3, "Failed to run lilo");
+  }
+  else
+  {
+    &xst_report_info(1, "Succesfully executed lilo");
+  }
+}
+
+
 sub set
 {
   my $hash;
@@ -252,6 +266,11 @@ sub set
 
   &xst_boot_conf_set ($hash);
 
+  if ($xst_do_immediate)
+  {
+    &set_immediate;
+  }
+  
   &xst_end ();
 }
 
