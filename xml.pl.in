@@ -41,6 +41,32 @@ $xst_indent_level = 0;
 $xst_have_vspace = 0;
 
 
+sub xst_xml_print_begin
+{
+  &xst_xml_print_string ("<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n");
+  &xst_xml_print_string ("<!DOCTYPE $xst_name []>\n\n");
+  &xst_xml_print_string ("<$xst_name>\n");
+
+  &xst_xml_enter ();
+
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
+  &xst_xml_print_vspace ();
+}
+
+
+sub xst_xml_print_end
+{
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<!-- End of configuration -->\n");
+  &xst_xml_print_vspace ();
+
+  &xst_xml_leave ();
+
+  &xst_xml_print_string ("</$xst_name>\n");
+}
+
+
 sub xst_xml_enter
 {
   $xst_indent_level += 2;
@@ -66,7 +92,7 @@ sub xst_xml_print_indent
   my $indent_string;
 
   for ($i = 0; $i < $xst_indent_level; $i++) { $indent_string .= " "; }
-  print $indent_string;
+  &xst_xml_print_string ($indent_string);
   $xst_have_vspace = 0;
 }
 
@@ -75,7 +101,7 @@ sub xst_xml_print_vspace
 {
   if (not $xst_have_vspace)
   {
-    print "\n";
+    &xst_xml_print_string ("\n");
     $xst_have_vspace = 1;
   }
 }
@@ -83,15 +109,18 @@ sub xst_xml_print_vspace
 
 sub xst_xml_print_line
 {
+  my $line;
+  ($line = $_[0]) =~ tr/\n//d;
+
   &xst_xml_print_indent ();
-  &xst_xml_print_string ($_[0]);
+  &xst_xml_print_string ($line . "\n");
 }
 
 
 sub xst_xml_print_state
 {
   &xst_xml_print_indent;
-  print "<" . @_[0] . " state='" . &xst_print_boolean_truefalse (@_[1]) . "'/>";
+  &xst_xml_print_string ("<" . @_[0] . " state='" . &xst_print_boolean_truefalse (@_[1]) . "'/>");
 }
 
 

@@ -1,5 +1,15 @@
 2001-03-13  Hans Petter Jansson  <hpj@ximian.com>
 
+	* xml.pl.in (xst_xml_print_begin): Implement.
+	  (xst_xml_print_end): Implement.
+	  (xst_xml_print_indent): Use xst_xml_print_string.
+	  (xst_xml_print_vspace): Use xst_xml_print_string.
+	  (xst_xml_print_state): Use xst_xml_print_string.
+
+	* disks-conf.in (xml_print): Use xst_xml_print_(begin|end).
+
+2001-03-13  Hans Petter Jansson  <hpj@ximian.com>
+
 	* debug.pl.in: Fixed bug, debug 9 was not being rotated out.
 
 2001-03-12  Arturo Espinsoa  <arturo@ximian.com>

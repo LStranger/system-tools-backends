@@ -649,14 +649,8 @@ sub xml_parse_state
 
 sub xml_print
 {
-  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
-  print "<!DOCTYPE disks []>\n\n";
-  print "<disks>\n";
-  &xst_xml_enter ();
+  &xst_xml_print_begin ();
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
-  &xst_xml_print_vspace ();
   &xst_xml_print_line ("<!-- Local fixed media and partitions -->\n");
   &xst_xml_print_vspace ();
 
@@ -715,12 +709,7 @@ sub xml_print
     shift @disks;
   }
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- End of configuration -->\n");
-  &xst_xml_print_vspace ();
-
-  &xst_xml_leave ();
-  print "</disks>\n";
+  &xst_xml_print_end ();
 }
 
 
