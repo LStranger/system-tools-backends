@@ -1,3 +1,14 @@
+2001-12-06  Tambet Ingo  <tambet@ximian.com>
+
+	* font.pl.in (font_cmp_files): Implement.
+	(gp_run): Include aliases to font search.
+	(gp_read_fontmaps): Add new font to fontlist only
+	if it's not there already.
+	(x_get_fonts): Ditto.
+	(x_fonts_dir_parse): Check for all font file types
+	not just .pfb.
+
+
 2001-12-05  Tambet Ingo  <tambet@ximian.com>
 
 	* font.pl.in: Removed big chunks of old code.

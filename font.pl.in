@@ -545,6 +545,25 @@ sub font_list
   return $fonts;
 }
 
+# Internal. Shouldn't be called by anythiing but font_cmp.
+sub font_cmp_files
+{
+  my $files1 = shift;
+  my $files2 = shift;
+
+  return if ($files1 && ! $files2);
+  return if ($files2 && ! $files1);
+
+  my (@path1, @path2);
+  foreach (@$files1) { push @path1, $_->{'path'} if exists $_->{'path'}; }
+  foreach (@$files2) { push @path2, $_->{'path'} if exists $_->{'path'}; }
+
+  return if (scalar @path1 != scalar @path2);
+
+  # FIXME: Check if @path1 == @path2
+  return 1;
+}
+
 # Return true if the two fonts are equal.
 sub font_cmp
 {
@@ -556,6 +575,9 @@ sub font_cmp
 
   if ($font1->{'name'} eq $font2->{'name'} &&
       $font1->{'format'} eq $font2->{'format'})
+#  if ($font1->{'name'} eq $font2->{'name'} &&
+#      $font1->{'format'} eq $font2->{'format'} &&
+#      &font_cmp_files ($font1->{'file'}, $font2->{'file'}))
   {
     return 1;
   }
@@ -811,7 +833,7 @@ sub gp_run
 
   my $command = &xst_file_locate_tool ('/home/tambet/opt/bin/gnome-font-install');
   return unless $command;
-  $command = "$command --debug --recursive " . $set . $user . $dir;
+  $command = "$command --debug --recursive -a /usr/share/fonts/adobe-urw.font " . $set . $user . $dir;
 
   open (FD, "$command 2>&1 |");
   if (FD)
@@ -981,7 +1003,12 @@ sub gp_read_fontmaps
     foreach (@files)
     {
       my $font_ref = &gp_parse ($_) if (-f $_);
-      push @fontlist, @$font_ref if $font_ref;
+      next unless $font_ref;
+
+      foreach my $font (@$font_ref)
+      {
+        push @fontlist, $font unless &font_exists (\@fontlist, $font);
+      }
     }
   }
 
@@ -1156,6 +1183,9 @@ sub x_fonts_dir_parse
   my $fh = IO::File->new ("$path/$file");
   return unless $fh;
 
+  # Known font suffixes
+  my @suffixlist = qw (.afm .pfm .pfa .pfb .ttf);
+
   my @fonts;
   while (<$fh>)
   {
@@ -1163,7 +1193,8 @@ sub x_fonts_dir_parse
 
     if (/^(\S+) (\S+)/)
     {
-      push @fonts, "$path/$1";
+      my $f = basename ($1, @suffixlist);
+      push @fonts, "$path/$f.*";
     }
   }
 
@@ -1230,7 +1261,12 @@ sub x_get_fonts
   foreach (@$x_font_path)
   {
     my @fonts = &x_fonts_dir_parse ($_);
-    push @$x_fonts, @fonts;
+    next unless scalar @fonts;
+
+    foreach my $font (@fonts)
+    {
+      push @$x_fonts, $font unless &xst_item_is_in_list ($font, @$x_fonts);
+    }
   }
 
   return $x_fonts;
@@ -1283,7 +1319,7 @@ sub x_add_font
     if    ($font->{'format'} eq 'type1') { push @$type1, $font; }
     elsif ($font->{'format'} eq 'truetype') { push @$true, $font; }
 
-    else { &xst_debug_print_line ("x_add_font: unknonw font type: $font->{format}."); }
+    else { &xst_debug_print_line ("x_add_font: unknonw font type: $font->{format}.") }
   }
 
   # Install type1 fonts.
