@@ -2,6 +2,11 @@
 
 	* x.pl.in (general_parse_section): Split lines with
 	Text::ParseWords (right way).
+	Added additional field and comments to control struct $sections.
+	(parse_kw_list): Add to the end of list only if defined.
+	(x_update_keyword): Quote new values if neccesary.
+	(x_update_keyword): Check that new values have at least
+	on space between.
 
 2001-07-02  Tambet Ingo  <tambet@ximian.com>
 
