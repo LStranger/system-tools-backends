@@ -809,9 +809,9 @@ sub gst_network_freebsd_interfaces_get_info
     if ($dev)
     {
       $ifaces{$dev}{"hwaddr"}  = $1 if /ether[ \t]+([^ \t]+)/i;
-#      $$ifaces{$dev}{"addr"}    = $1 if /inet[ \t]+([^ \t]+)/i;
-#      $$ifaces{$dev}{"mask"}    = $1 if /netmask[ \t]+([^ \t]+)/i;
-#      $$ifaces{$dev}{"bcast"}   = $1 if /broadcast[ \t]+([^ \t]+)/i;
+      $ifaces{$dev}{"addr"}    = $1 if /inet[ \t]+([^ \t]+)/i;
+      $ifaces{$dev}{"mask"}    = $1 if /netmask[ \t]+([^ \t]+)/i;
+      $ifaces{$dev}{"bcast"}   = $1 if /broadcast[ \t]+([^ \t]+)/i;
     }
   }
   
@@ -844,10 +844,10 @@ sub gst_network_linux_interfaces_get_info
     if ($dev)
     {
       $ifaces{$dev}{"hwaddr"}  = $1 if /HWaddr[ \t]+([^ \t]+)/i;
-#      $$ifaces{$dev}{"addr"}    = $1 if /addr:([^ \t]+)/i;
-#      $$ifaces{$dev}{"mask"}    = $1 if /mask:([^ \t]+)/i;
-#      $$ifaces{$dev}{"bcast"}   = $1 if /bcast:([^ \t]+)/i;
-      $ifaces{$dev}{"enabled"}  = 1  if /^UP[ \t]/i;
+      $ifaces{$dev}{"addr"}    = $1 if /addr:([^ \t]+)/i;
+      $ifaces{$dev}{"mask"}    = $1 if /mask:([^ \t]+)/i;
+      $ifaces{$dev}{"bcast"}   = $1 if /bcast:([^ \t]+)/i;
+      $ifaces{$dev}{"enabled"} = 1  if /^UP[ \t]/i;
     }
   }
   
@@ -1581,6 +1581,14 @@ sub gst_network_interfaces_get
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"ifaces_get"};
   @ifaces = &$proc ();
+
+  # clear unneeded hash elements
+  foreach $i (keys %$hash)
+  {
+    delete $$hash{$i}{"addr"};
+    delete $$hash{$i}{"bcast"};
+    delete $$hash{$i}{"mask"};
+  }
 
   foreach $i (@ifaces)
   {

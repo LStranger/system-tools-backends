@@ -766,7 +766,7 @@ sub get_network_conf
 
   foreach $i (keys %$ifaces)
   {
-    if (($$ifaces{$i}{"active"} == 1)
+    if (($$ifaces{$i}{"enabled"} == 1)
         && ($$ifaces{$i}{"dev"} ne "lo"))
     {
       $$ifaces{$i}{"network"} = &gst_network_ipv4_calc_subnet ($$ifaces{$i}{"addr"},
