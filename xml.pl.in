@@ -666,13 +666,13 @@ sub xst_xml_get_state
   return &xst_read_boolean ($$tree[0]->{state});
 }
 
-
 # XML model operations.
 
+# Locate a node from the branch leading up to it.
 sub xst_xml_model_find
 {
   my ($model, $varpath) = @_;
-  my (@path, $branch);
+  my ($branch, @path);
 
   $branch = $model;
   @path   = split /\//, $varpath;
@@ -701,6 +701,108 @@ sub xst_xml_model_find
   }
 
   return $branch;
+}
+
+# Add a branch to another branch. Allows duplicates.
+sub xst_xml_model_add
+{
+  my ($model, $varpath, $addpath) = @_;
+  my ($branch, @path);
+
+  @path = split /\//, $addpath;
+  $branch = &xst_xml_model_find ($model, $varpath);
+  if ($branch == undef)
+  {
+    return -1;
+  }
+
+  for $elem (@path)
+  {
+    my %hash;
+    my @list = ();
+
+    push @list, \%hash;
+
+    push @$branch, $elem;
+    push @$branch, \@list;
+
+    $branch = \@list;
+  }
+
+  return 0;
+}
+
+# Ensure a branch exists, by extending the branch with given elements, if needed.
+sub xst_xml_model_ensure
+{
+  my ($model, $varpath) = @_;
+  my ($branch, @path);
+
+  $branch = $model;
+  @path   = split /\//, $varpath;
+
+  for $elem (@path)
+  {
+    next if ($elem eq "");
+
+    my @children = @$branch;
+    my $parent_branch = $branch;
+
+    shift @children;  # Attributes
+    $branch = undef;
+
+    while (@children)
+    {
+      if (@children [0] eq $elem)
+      {
+        shift @children;
+        $branch = shift @children;
+        last;
+      }
+
+      shift @children;
+      shift @children;
+    }
+
+    if ($branch == undef)
+    {
+      my %hash;
+      my @list = ();
+
+      push @list, \%hash;
+
+      push @$parent_branch, $elem;
+      push @$parent_branch, \@list;
+
+      $branch = \@list;
+    }
+  }
+
+  return $branch;
+}
+
+sub xst_xml_model_remove
+{
+  my ($model, $varpath, $tag) = @_;
+  my ($branch);
+
+  @path = split /\//, $addpath;
+  $branch = &xst_xml_model_find ($model, $varpath);
+  if ($branch == undef)
+  {
+    return -1;
+  }
+
+  for ($i = 1; $i < @$branch; $i += 2)
+  {
+    if (@$branch [$i] eq $tag)
+    {
+      @$branch = (@$branch [0 .. $i - 1], @$branch [$i + 2 .. @$branch - 1]);
+      return 0;
+    }
+  }
+
+  return -1;
 }
 
 1;

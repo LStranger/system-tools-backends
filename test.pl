@@ -99,9 +99,11 @@ sub test_interfaces
 # $tree = &xst_xml_scan ("/etc/alchemist/namespace/printconf/local.adl");
 # &xst_debug_print_struct ($tree);
 
-# $model = &xst_xml_model_scan ("/etc/alchemist/namespace/printconf/local.adl");
-# print &xst_xml_model_print ($model);
+$model = &xst_xml_model_scan ("/etc/alchemist/namespace/printconf/local.adl");
+&xst_xml_model_ensure ($model, "/adm_context/datatree/printconf/print_queues/lpnew/faan/pekk/fette/");
+&xst_xml_model_remove ($model, "/adm_context/datatree/printconf/print_queues/", "lpekk");
+print &xst_xml_model_print ($model);
 
-print &xst_parse_xml ("/etc/alchemist/namespace/printconf/local.adl",
-                      "/adm_context/datatree/printconf/print_queues/lpekk/filter_type", "VALUE") . "\n";
+# print &xst_parse_xml ("/etc/alchemist/namespace/printconf/local.adl",
+#                       "/adm_context/datatree/printconf/print_queues/lpekk/filter_type", "VALUE") . "\n";
 
