@@ -76,6 +76,8 @@ $PLATFORM_INFO = {
   "pld-1.0"         => "PLD 1.0 Ra",
   "pld-1.1"         => "PLD 1.1 Ra",
   "pld-1.99"        => "PLD 1.99 Ac-pre",
+  "vine-3.0"        => "Vine Linux 3.0",
+  "vine-3.1"        => "Vine Linux 3.1",
   "fedora-1"        => "Fedora Core 1 (Yarrow)",
   "fedora-2"        => "Fedora Core 2 (Tettnang)"
 };
@@ -339,6 +341,22 @@ sub check_pld
   return -1;
 }
 
+sub check_vine
+{
+  open RELEASE, "$gst_prefix/etc/vine-release" or return -1;
+  while (<RELEASE>)
+  {
+    chomp;
+    if(/^Vine Linux ([0-9.]+)\s+.*/)
+    {
+      close RELEASE;
+      return "vine-$1";
+    }
+  }
+  close RELEASE;
+  return -1;
+}
+
 sub check_freebsd
 {
   my ($sysctl_cmd, @output);
@@ -395,8 +413,8 @@ sub gst_platform_guess
   my ($tool) = @_;
 
   my %check = (
-    # Red Hat check must run after Mandrake and Fedora, and Mandrake after BlackPanther
-    "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, \&check_blackpanther,
+    # Red Hat check must run after Vine, Mandrake and Fedora, and Mandrake after BlackPanther
+    "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, \&check_blackpanther, \&check_vine,
                  \&check_fedora, \&check_mandrake, \&check_conectiva, \&check_linuxppc, \&check_redhat,  \&check_openna,
                  \&check_turbolinux, \&check_slackware, \&check_gentoo,  \&check_pld ],
     "FreeBSD" => [ \&check_freebsd ],

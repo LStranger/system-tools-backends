@@ -74,7 +74,7 @@ sub gst_service_sysv_get_paths
        "conectiva-10" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
        "debian-2.2"   => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
-       "debian-3.0" => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
+       "debian-3.0"   => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
        "debian-sarge" => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
 
        "suse-7.0"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d", "../"],
@@ -88,6 +88,9 @@ sub gst_service_sysv_get_paths
 
        "fedora-1"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        "fedora-2"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+
+       "vine-3.0"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "vine-3.1"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        );
   my $res;
 
@@ -143,6 +146,9 @@ sub gst_service_sysv_get_runlevels
 
        "fedora-1"       => [3, 5],
        "fedora-2"       => [3, 5],
+       
+       "vine-3.0"       => [3, 5],
+       "vine-3.1"       => [3, 5],
        );
   my $res;
 
@@ -194,6 +200,9 @@ sub gst_service_get_verbose_runlevels
      "pld-1.99"       => "redhat-5.2",
      "fedora-1"       => "redhat-5.2",
      "fedora-2"       => "redhat-5.2",
+
+     "vine-3.0"       => "redhat-5.2",
+     "vine-3.1"       => "redhat-5.2",
 
      "slackware-9.1.0" => "slackware-9.1.0",
      "slackware-10.0.0" => "slackware-9.1.0",

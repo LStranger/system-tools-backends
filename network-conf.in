@@ -77,6 +77,7 @@ $version = "@VERSION@";
               "turbolinux-7.0", "fedora-1", "fedora-2",
               "pld-1.0", "pld-1.1", "pld-1.99",
               "conectiva-9", "conectiva-10",
+              "vine-3.0", "vine-3.1",
               "slackware-9.1.0", "slackware-10.0.0",
               "gentoo", "freebsd-5");
 
