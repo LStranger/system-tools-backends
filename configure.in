@@ -38,6 +38,6 @@ echo "
 
 Configuration (BACKENDS):
 
-	The Backends Will be installed in : ${scriptsdir}
+	The backends will be installed in : ${scriptsdir}
 	Compiler:		${CC} 
 "

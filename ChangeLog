@@ -1,3 +1,7 @@
+2001-08-13  Tambet Ingo  <tambet@ximian.com>
+
+	* configure.in: Fixed capitalization.
+
 2001-08-09  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* ishare.pl.in (xst_ishare_fwrules_get_ipchains): Small
