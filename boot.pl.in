@@ -38,12 +38,12 @@ require "$SCRIPTSDIR/replace.pl$DOTIN";
 require "$SCRIPTSDIR/boot-grub.pl$DOTIN";
 
 my @global_vars = qw (default prompt timeout append root);
-my @common_image_vars = qw (label);
+my @common_image_vars = qw (label type);
 my @image_vars = (@common_image_vars, qw (entry append root));
 my @other_vars = (@common_image_vars, qw (other table));
 
 
-sub xst_boot_known_var
+sub xst_boot_lilo_known_var
 {
   my $key = shift;
   my $list = shift;
@@ -58,8 +58,7 @@ sub xst_boot_known_var
   $key = lc ($key);
   
   # Hard coded know variables which are not standard lilo.conf variables.
-  return 1 if ($key eq 'xstentrytype');
-  return 1 if ($key eq 'key' && !$from_xml); # 'key' is valid in xml only.
+  return 0 if ($key eq 'key' && $from_xml); # 'key' is valid in xml only.
   
   return &xst_item_is_in_list ($key, @$list);
 }
@@ -69,7 +68,7 @@ sub xst_boot_lilo_parse_global_kw
   my ($file, $key) = @_;
   my $fd;
 
-  return undef unless &xst_boot_known_var ($key, \@global_vars, 0);
+  return undef unless &xst_boot_lilo_known_var ($key, \@global_vars, 0);
   
   $fd = &xst_file_open_read_from_names ($file);
   if (! $fd)
@@ -102,7 +101,7 @@ sub xst_boot_lilo_parse_global
   my ($file, $key) = @_;
   my ($fd, $line, $re);
 
-  return undef unless &xst_boot_known_var ($key, \@global_vars, 0);
+  return undef unless &xst_boot_lilo_known_var ($key, \@global_vars, 0);
   
   $re = "[ \t]*=[ \t]*";
   $fd = &xst_file_open_read_from_names ($file);
@@ -168,12 +167,9 @@ sub xst_boot_lilo_parse_entries
     
     next if $found < 0;
     
-    if ($line =~ /^\#[ \t]*(\w+)/)
-    {
-      next if $1 ne "XstEntryType";
+    $line =~ s/^\#[ \t]*XstEntryType/type/;
 
-      $line =~ s/^\#[ \t]*//;
-    }
+    next if $line =~ /^\#/;
 
     $line = &xst_parse_process_sh_line ($line);
     next if ($line =~ /^$/);
@@ -182,7 +178,7 @@ sub xst_boot_lilo_parse_entries
     my $key = shift @line;
 
     # Only deal with known variables
-    next unless &xst_boot_known_var ($key, $known_vars, 0);
+    next unless &xst_boot_lilo_known_var ($key, $known_vars, 0);
     
     my $val = shift @line;
     $val =~ s/^[ \t]+//;
@@ -203,7 +199,7 @@ sub xst_boot_lilo_replace_global_kw
   my ($buff, $i, $found);
   my $lineno = 0;
 
-  return 0 unless &xst_boot_known_var ($key, \@global_vars, 0);
+  return 0 unless &xst_boot_lilo_known_var ($key, \@global_vars, 0);
   
   $buff = &xst_file_buffer_load ($file);
   $found = 0;
@@ -253,7 +249,7 @@ sub xst_boot_lilo_replace_global
   my $quote = '"';
   my $lineno = 0;
 
-  return 0 unless &xst_boot_known_var ($key, \@global_vars, 0);
+  return 0 unless &xst_boot_lilo_known_var ($key, \@global_vars, 0);
 
   $val = "\"$val\"" if ($val =~ /[ \t]/ && (! ($val =~ /^\".+\"$/)));
   $val = "\"$val\"" if ($val =~ /\=/ && (!($val =~ /^\".+\"$/)));
@@ -308,12 +304,12 @@ sub xst_boot_lilo_replace_global
 }
 
 
-sub xst_boot_del_global
+sub xst_boot_lilo_del_global
 {
   my ($file, $key) = @_;
   my ($buff, $i);
 
-  return 0 unless &xst_boot_known_var ($key, \@global_vars, 0);
+  return 0 unless &xst_boot_lilo_known_var ($key, \@global_vars, 0);
   
   $buff = &xst_file_buffer_load ($file);
 
@@ -335,7 +331,7 @@ sub xst_boot_del_global
 
 # Scans @buff until finds first line which looks like entry.
 # Returns line number or -1 if no entry found.
-sub xst_boot_conf_find_entry
+sub xst_boot_lilo_conf_find_entry
 {
   my ($buff, $lineno) = @_;
   my $i;
@@ -354,12 +350,12 @@ sub xst_boot_conf_find_entry
 
 # Deletes lines from $buff starting from $lineno till the next entry
 # or till end of the file if no more entries left.
-sub xst_boot_conf_delete_entry
+sub xst_boot_lilo_conf_delete_entry
 {
   my ($buff, $lineno) = @_;
   my ($end, $i);
 
-  $end = &xst_boot_conf_find_entry ($buff, $lineno + 1);
+  $end = &xst_boot_lilo_conf_find_entry ($buff, $lineno + 1);
   $end = scalar @$buff if ($end < 0);
 
   for ($i = $lineno; $i < $end; $i++)
@@ -372,7 +368,7 @@ sub xst_boot_conf_delete_entry
 
 
 # Edit entry in $buff which starts at $lineno. Get changes from $entry.
-sub xst_boot_conf_edit_entry
+sub xst_boot_lilo_conf_edit_entry
 {
   my ($entry, $buff, $lineno) = @_;
 
@@ -380,20 +376,17 @@ sub xst_boot_conf_edit_entry
   $known_vars = \@other_vars if (!$known_vars && exists $entry->{'other'});
   return $buff unless $known_vars;
   
-  my $end = &xst_boot_conf_find_entry ($buff, $lineno + 1);
+  my $end = &xst_boot_lilo_conf_find_entry ($buff, $lineno + 1);
   $end = scalar @$buff if ($end < 0);
 
   for ($lineno; $lineno < $end; $lineno++)
   {
     # Special case:
-    if ($$buff[$lineno] =~ /^[ \t]*(\#)[ \t]*XstEntryType/i)
-    {
-      $$buff[$lineno] =~ s/$1//;
-    }
+    $$buff[$lineno] =~ s/^\#[ \t]*XstEntryType/type/;
     
     # Get the variable.
     my $key = $1 if ($$buff[$lineno] =~ /^[ \t]*([\w\-]+)/);
-    next if ($key && (!&xst_boot_known_var ($key, $known_vars, 0)));    
+    next if ($key && (!&xst_boot_lilo_known_var ($key, $known_vars, 0)));    
     next unless $key;
 
     unless (exists ($entry->{$key}))
@@ -405,7 +398,16 @@ sub xst_boot_conf_edit_entry
 
     # Read old value
     my $old_val = $$buff[$lineno];
-    $old_val =~ s/^[ \t]*$key[ \t]*=[ \t]*//; #everything till value
+
+    if ($key eq "type")
+    {
+      $old_val =~ s/^\#[ \t]*XstEntryType[ \t]*=[ \t]*//;
+    }
+    else
+    {
+      $old_val =~ s/^[ \t]*$key[ \t]*=[ \t]*//; #everything till value
+    }
+    
     $old_val =~ s/[ \t]*\#.*$//;              #post comment;
     chomp $old_val;
 
@@ -417,7 +419,7 @@ sub xst_boot_conf_edit_entry
       $val = "\"$val\"" if ($val =~ /\=/ && (!($val =~ /^\".+\"$/)));
 
       $$buff[$lineno] =~ s/$old_val/$val/;
-      $$buff[$lineno] = "#" . $$buff[$lineno] if ($key =~ /XstEntryType/i);
+      $$buff[$lineno] = "#" . $$buff[$lineno] if ($key eq "type");
     }
     
     delete $entry->{$key};
@@ -426,16 +428,25 @@ sub xst_boot_conf_edit_entry
   # Add new fields.
   foreach my $key (keys %$entry)
   {
-    next unless &xst_boot_known_var ($key, $known_vars, 1);
+    next unless &xst_boot_lilo_known_var ($key, $known_vars, 1);
     
     my $val = $entry->{$key};
     $val = "\"$val\"" if ($val =~ /[ \t]/ && (! ($val =~ /^\".+\"$/)));
     $val = "\"$val\"" if ($val =~ /\=/ && (!($val =~ /^\".+\"$/)));
 
-    my $line = "\t$key";
+    my $line;
+
+    if ($key eq "type")
+    {
+      $line = "#\tXstEntryType";
+    }
+    else
+    {
+      $line = "\t$key";
+    }
+    
     $line .= " = $val" if $val;
     $line .= "\n";
-    $line = "#" . $line if ($key =~ /XstEntryType/i);
     
     $$buff[$end -1] .= $line;
   }
@@ -443,7 +454,7 @@ sub xst_boot_conf_edit_entry
 
 
 # Add $entry to the end of $buff.
-sub xst_boot_conf_add_entry
+sub xst_boot_lilo_conf_add_entry
 {
   my ($entry, $buff) = @_;
   my ($line, $key, $value, $known_vars);
@@ -471,15 +482,22 @@ sub xst_boot_conf_add_entry
   # Parameters for entry
   foreach $key (keys %$entry)
   {
-    next unless &xst_boot_known_var ($key, $known_vars, 1);
+    next unless &xst_boot_lilo_known_var ($key, $known_vars, 1);
     
     $value = $$entry{$key};
     $value = "\"$value\"" if ($value =~ /[ \t]/ && (!($value =~ /^\".+\"$/)));
     $value = "\"$value\"" if ($value =~ /\=/&& (!($value =~ /^\".+\"$/)));
 
     $line = "";
-    $line = "# " if $key eq "XstEntryType";
-    $line .= "\t$key";
+
+    if ($key eq "type")
+    {
+      $line = "#\tXstEntryType";
+    }
+    else
+    {
+      $line .= "\t$key";
+    }
     
     $line .= " = " . $value if $value;
     $line .= "\n";
@@ -488,7 +506,7 @@ sub xst_boot_conf_add_entry
   }
 }
 
-sub xst_boot_conf_set_entries
+sub xst_boot_lilo_conf_set_entries
 {
   my ($file, $key, $entries) = @_;
   my ($buff, $lineno, $found, $entry);
@@ -499,7 +517,7 @@ sub xst_boot_conf_set_entries
   &xst_file_buffer_join_lines ($buff);
 
   my $entry_nr = -1;
-  $lineno = &xst_boot_conf_find_entry ($buff, 0);
+  $lineno = &xst_boot_lilo_conf_find_entry ($buff, 0);
   while ($lineno > 0)
   {
     $entry_nr++;
@@ -516,7 +534,7 @@ sub xst_boot_conf_set_entries
         {
           # Found entry, change it if neccecary,
           # remove %entry from @entries and find new entry.
-          &xst_boot_conf_edit_entry ($entry, $buff, $lineno);
+          &xst_boot_lilo_conf_edit_entry ($entry, $buff, $lineno);
           $entry = undef;
           last;
         }
@@ -524,16 +542,16 @@ sub xst_boot_conf_set_entries
     }
 
     # Found entry wasn't in our @entries list: delete.
-    $buff = &xst_boot_conf_delete_entry ($buff, $lineno) if ($found <= 0);
+    $buff = &xst_boot_lilo_conf_delete_entry ($buff, $lineno) if ($found <= 0);
 
     # Search new entry line.
-    $lineno = &xst_boot_conf_find_entry ($buff, $lineno + 1);
+    $lineno = &xst_boot_lilo_conf_find_entry ($buff, $lineno + 1);
   }
 
   # At this point @entries contains only new entries, let's add them.
   foreach $entry (@$entries)
   {
-    &xst_boot_conf_add_entry ($entry, $buff);
+    &xst_boot_lilo_conf_add_entry ($entry, $buff);
   }
 
   &xst_file_buffer_clean ($buff);
@@ -684,12 +702,12 @@ sub xst_boot_get_entries_parse_table
          },
          table =>
              [
-#              ["XstEntryType", \&xst_boot_grub_parse_type]
-              ["label",        \&xst_parse_trivial, ENTRY],
-#              ["root",         \&],
-#              ["other",        \&],
-#              ["image",        \&],
-#              ["append",       \&]
+              ["label",  \&xst_parse_trivial,        ENTRY],
+              ["root",   \&xst_boot_grub_parse_root, [GRUB_CONF, ENTRY]],
+              ["type",   \&xst_boot_grub_parse_type, [GRUB_CONF, ENTRY], "%root%"]
+              ["other",  \&],
+              ["image",  \&],
+              ["append", \&]
               
               ]
                 }

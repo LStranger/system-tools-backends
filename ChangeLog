@@ -1,3 +1,22 @@
+2001-11-27  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* boot-grub.pl.in (xst_boot_grub_parse_cmd): use
+	xst_boot_grub_search_entry.
+	(xst_boot_grub_parse_root): Infer the root.
+
+	* partition.pl.in (xst_partition_scan_info): renamed.
+
+	* boot-grub.pl.in (xst_boot_grub_get_next_entry): Read
+	until a title cmd or EOF is found.
+	(xst_boot_grub_search_entry): Use get_next_entry to get
+	a specified entry.
+	(xst_boot_grub_get_entries): Now use get_next_entry.
+	(xst_boot_grub_parse_type): Parse the type from the
+	grub.conf or deduct from the partition id.
+
+	* boot.pl.in: renamed a bunch of stuff, made the
+	XstEntryType key be "type" only instead.
+
 2001-11-27  Hans Petter Jansson  <hpj@ximian.com>
 
 	* service.pl.in (xst_service_proc_get_owner): Implement.

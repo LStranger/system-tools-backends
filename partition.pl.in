@@ -215,7 +215,7 @@ require "$SCRIPTSDIR/report.pl$DOTIN";
 	"fe" => "Windows NT Disk Administrator hidden",
 	"ff" => "Xenix Bad Block Table");
 
-sub xst_filesys_scan_types
+sub xst_partition_scan_info
 {
   my ($fd, $line);
   my (%table);

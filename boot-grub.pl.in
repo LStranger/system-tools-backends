@@ -35,6 +35,7 @@ require "$SCRIPTSDIR/file.pl$DOTIN";
 require "$SCRIPTSDIR/xml.pl$DOTIN";
 require "$SCRIPTSDIR/parse.pl$DOTIN";
 require "$SCRIPTSDIR/replace.pl$DOTIN";
+require "$SCRIPTSDIR/partition.pl$DOTIN";
 
 
 # Grub device notation converters.
@@ -105,19 +106,55 @@ sub xst_boot_grub_clean_line
   return $line;
 }
 
-sub xst_boot_grub_get_entries
+sub xst_boot_grub_line_is_title
 {
-  my ($grubconf) = @_;
-  my ($fd, $line, @res);
-  
-  $fd = &xst_file_open_read_from_names ("$grubconf");
-  return undef if !$fd;
-  
+  my ($line) = @_;
+
+  if ($line =~ /^title[= \t][ \t]*(.*)$/)
+  {
+    return $1;
+  }
+
+  return undef;
+}
+
+sub xst_boot_grub_get_next_entry
+{
+  my ($fd) = @_;
+  my ($line, $res);
+
   while ($line = <$fd>)
   {
     $line = &xst_boot_grub_clean_line ($line);
-    push @res, $1 if $line =~ /^title[= \t][ \t]*(.*)$/;
+    $res = &xst_boot_grub_line_is_title ($line);
+    last if $res ne undef;
   }
+  
+  return $res;
+}
+
+sub xst_boot_grub_search_entry
+{
+  my ($fd, $entry) = @_;
+  my ($title);
+
+  while ($title = &xst_boot_grub_get_next_entry ($fd))
+  {
+    return 1 if $title eq $entry;
+  }
+
+  return 0;
+}
+
+sub xst_boot_grub_get_entries
+{
+  my ($grubconf) = @_;
+  my ($fd, $line, @res, $title);
+  
+  $fd = &xst_file_open_read_from_names ("$grubconf");
+  return undef if !$fd;
+
+  push @res, $title while ($title = &xst_boot_grub_get_next_entry ($fd));
   close $fd;
 
   return \@res;
@@ -133,10 +170,7 @@ sub xst_boot_grub_parse_cmd
   
   if ($entry ne undef)
   {
-    while ($line = <$fd>)
-    {
-	 last if $line =~ /^[ \t]+title[= \t][ \t]*$entry[ \t]+$/;
-    }
+    return undef if not &xst_boot_grub_search_entry ($fd, $entry);
   }
 
   while ($line = <$fd>)
@@ -147,8 +181,8 @@ sub xst_boot_grub_parse_cmd
 
     if ($line =~ /^$cmd[= \t][ \t]*(.*)/)
     {
-	 close $fd;
-	 return $1;
+      close $fd;
+      return $1;
     }
   }
   close $fd;
@@ -188,6 +222,63 @@ sub xst_boot_grub_parse_default
   $default = 0 if $default eq undef;
 
   return $$entries[$default];
+}
+
+sub xst_boot_grub_parse_root
+{
+  my ($grub_conf, $entry) = @_;
+  my ($root);
+
+  $fd = &xst_file_open_read_from_names ("$grub_conf");
+  return undef if not &xst_boot_grub_search_entry ($fd, $entry);
+
+  while ($line = <$fd>)
+  {
+    $line = &xst_boot_grub_clean_line ($line);
+    next if $line =~ /^[ \t]*$/;
+    last if &xst_boot_grub_line_is_title ($line) ne undef;
+
+    if ($line =~ /^root \(([^\)])\)/)
+    {
+      $root = $1;
+      last;
+    }
+
+    if ($line =~ /^(kernel|chainload) \(([^\)])\)/)
+    {
+      $root = $2;
+    }
+  }
+
+  return &xst_boot_grub_grub2linux ($root);
+}
+
+sub xst_boot_grub_parse_type
+{
+  my ($grub_conf, $entry, $rootdev) = @_;
+  my ($line, $res, $partinfo);
+
+  $fd = &xst_file_open_read_from_names ("$grub_conf");
+  return undef if not &xst_boot_grub_search_entry ($fd, $entry);
+
+  while ($line = <$fd>)
+  {
+    chomp $line;
+    if ($line =~ /^\#[ \t]*XstEntryType[ \t]+(.*)$/)
+    {
+      $res = $1;
+      last;
+    }
+  }
+  close $fd;
+
+  if ($res eq undef)
+  {
+    $partinfo = &xst_partition_scan_info ();
+    $res = $$partinfo{$rootdev};
+  }
+  
+  return $res;
 }
 
 1;
