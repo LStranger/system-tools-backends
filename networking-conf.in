@@ -7,6 +7,7 @@
 #
 # Authors: Hans Petter Jansson <hpj@helixcode.com>
 #          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
+#          Tambet Ingo <tambeti@sa.ee> Improved Debian support.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -203,10 +204,10 @@ sub read_network_interfaces_into_hash
       if (not $current_iface) { next; }
 
       # Make sure the attribute has been properly set
-      if (not $line[1]) { next; }
+      # if (not $line[1]) { next; }
 
       # Set the attribute
-      $$current_iface{$line[0]} = join(' ', $line[1..$#line]);
+      $$current_iface{$line[0]} = join(' ', $line[1]);
     }
   }
 
@@ -400,7 +401,8 @@ sub write_network_interfaces
         }
         $wrote_gateway = 1;
       }
-      elsif ($line[0] eq "onboot")
+      # elsif ($line[0] eq "onboot")
+      elsif ($line[0] eq "noauto")
       {
         push @iface_lines, "    noauto\n";
         $wrote_onboot = 1;
@@ -466,7 +468,9 @@ sub write_network_interfaces
   {
     foreach $output_line (@iface_lines)
     {
-      print OUTFILE "$output_line";
+      # Make sure noauto gets removed if $cf_onboot = TRUE.
+      if (!(($output_line =~ /noauto/) && $cf_onboot eq 1))
+      { print OUTFILE "$output_line"; }
     }
   }
 
