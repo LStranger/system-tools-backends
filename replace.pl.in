@@ -1277,3 +1277,58 @@ sub xst_replace_xml_attribute
   return 0;
 }
 
+sub xst_replace_xml_pcdata_with_type
+{
+  my ($file, $varpath, $type, $data) = @_;
+  my ($model, $branch, $fd, $compressed);
+
+  ($model, $compressed) = &xst_xml_model_scan ($file);
+  $branch = &xst_xml_model_ensure ($model, $varpath);
+
+  &xst_xml_model_set_pcdata ($branch, $data);
+  &xst_xml_model_set_attribute ($branch, "TYPE", $type);
+
+  if ($compressed == 1)
+  {
+    $fd = &xst_file_open_write_compressed ($file);
+  }
+  else
+  {
+    $fd = &xst_file_open_write_from_names ($file);
+  }
+
+  if ($fd == -1) { return -1; }
+
+  print $fd &xst_xml_model_print ($model);
+  close $fd;
+
+  return 0;
+}
+
+sub xst_replace_xml_attribute_with_type
+{
+  my ($file, $varpath, $attr, $type, $value) = @_;
+  my ($model, $branch, $fd, $compressed);
+
+  ($model, $compressed) = &xst_xml_model_scan ($file);
+  $branch = &xst_xml_model_ensure ($model, $varpath);
+
+  &xst_xml_model_set_attribute ($branch, $attr, $value);
+  &xst_xml_model_set_attribute ($branch, "TYPE", $type);
+
+  if ($compressed == 1)
+  {
+    $fd = &xst_file_open_write_compressed ($file);
+  }
+  else
+  {
+    $fd = &xst_file_open_write_from_names ($file);
+  }
+
+  if ($fd == -1) { return -1; }
+
+  print $fd &xst_xml_model_print ($model);
+  close $fd;
+
+  return 0;
+}

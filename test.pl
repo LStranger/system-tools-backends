@@ -9,7 +9,7 @@ require "share.pl";
 require "print.pl";
 
 
-@platforms = ( "redhat-6.2", "redhat-7.0", "debian-2.2" );
+@platforms = ( "redhat-6.2", "redhat-7.0", "redhat-7.1", "debian-2.2" );
 
 
 &xst_init ("test", "0.0.0", "Test script.", @ARGV);
