@@ -1,26 +1,28 @@
+# translation of pa.po to Punjabi
 # Copyright (C) 2004 THE setup-tools-backends'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the setup-tools-backends package.
 # Punjab Linux Technology <punjablinux@netscape.net>, 2004.
-# , fuzzy
-# 
-# 
+# Amanpreet Singh Alam <aalam@redhat.com>, 2004.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: setup-tools-backends 1.0\n"
+"Project-Id-Version: pa\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2004-07-13 15:37+0530\n"
-"PO-Revision-Date: 2004-07-13 15:48+0530\n"
-"Last-Translator: Amanpreet Singh Alam <amanlinux@netscape.net>\n"
-"Language-Team: Punjabi <indlinux-punjabi@lists.sourceforge.net>\n"
+"PO-Revision-Date: 2004-08-02 18:15+0530\n"
+"Last-Translator: Amanpreet Singh Alam <aalam@redhat.com>\n"
+"Language-Team: Punjabi <pa@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.3.1\n"
+"Plural-Forms: Plural-Forms: nplurals=2; plural=(n != 1);\n\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
 #: service-list.pl.in:36
 msgid "ACPI event handler"
-msgstr ""
+msgstr "ACPI ਘਟਨਾ ਹੈਂਡਰ"
 
 #: service-list.pl.in:36
 msgid ""
@@ -37,31 +39,30 @@ msgid "web server"
 msgstr "ਵੈਬ ਸਰਵਰ"
 
 #: service-list.pl.in:38 service-list.pl.in:70
-msgid ""
-"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
-msgstr ""
+msgid "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+msgstr "ਆਪਚੇ ਵਰਡ ਵਾਇਡ ਵੈਬ ਸਰਵਰ ਹੈ| ਇਹ HTML ਫਾਇਲਾਂ ਤੇ CGI ਨੂੰ ਪੇਸ਼ ਕਰਨ ਦੇ ਕੰਮ ਆਉਦਾ ਹੈ"
 
 #: service-list.pl.in:39
 msgid "Run missed scheduled jobs at startup"
-msgstr ""
+msgstr "ਸ਼ੁਰੂ ਤੇ ਨਿਯਮਿਤ ਕੰਮ ਚਲਾਉਣ ਤੋਂ ਰਿਹਾ ਕਾਰਜ ਹੁਣ ਚਲਾਓ"
 
 #: service-list.pl.in:39
 msgid "Run cron jobs that were left out due to downtime"
-msgstr ""
+msgstr "ਸਖਤ ਸਮੇਂ ਕਰਕੇ ਖਾਸ ਕੰਮ ਜੋ ਰਹਿ ਗਏ ਚਲਾਓ"
 
 #: service-list.pl.in:40
 msgid "Automatic power management daemon"
-msgstr ""
+msgstr "ਸਵੈ-ਚਾਲਿਤ ਊਰਜਾ ਪ੍ਰਬੰਧਨ ਡਾਇਮੋਨ"
 
 #: service-list.pl.in:40
 msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
-msgstr ""
+msgstr "apmd ਬੈਟਰੀ ਦੀ ਸਥਿਤੀ ਜਾਂਚ ਰਿਹਾ ਹੈ ਅਤੇ ਇਹ syslog(8) ਲਾੱਗ ਆਨ ਕਰਦਾ ਹੈ| ਇਹ ਬੈਟਰੀ ਘੱਟ ਹੋਣ ਸਮੇਂ ਮਸ਼ੀਨ ਨੂੰ ਬੰਦ ਕਰ ਦਿੰਦਾ ਹੈ|"
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
-msgstr ""
+msgstr "ਦਿੱਤੇ ਸਮੇਂ ਤੇ ਕਮਾਂਡ ਚਲਾਓ"
 
 #: service-list.pl.in:41
 msgid ""
@@ -75,15 +76,15 @@ msgstr "ਆਡੀਓ ਮਿਕਸਰ"
 
 #: service-list.pl.in:42
 msgid "This program adjusts the settings of an audio mixing device"
-msgstr ""
+msgstr "ਇਹ ਕਾਰਜ ਇੱਕ ਆਡੀਓ ਮਿਕਸਰ ਜੰਤਰ ਦੀ ਵਿਵਸਥਾ ਨਿਰਧਾਰਿਤ ਕਰਦਾ ਹੈ"
 
 #: service-list.pl.in:43
 msgid "BinFormat Support"
-msgstr ""
+msgstr "BinFormat ਸਹਾਇਕ"
 
 #: service-list.pl.in:43
 msgid "Support for running non ELF binaries on Linux"
-msgstr ""
+msgstr "ਲੀਨਕਸ ਤੇ ਨਾ-ELF ਬਾਈਨਰੀ ਚਲਾਉਣ ਲਈ ਸਹਾਇਕ"
 
 #: service-list.pl.in:44
 msgid "Boot messages recorder"
@@ -93,7 +94,7 @@ msgstr "ਬੂਟ ਸੁਨੇਹਾ ਸੰਭਾਲ"
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
-msgstr ""
+msgstr "ਪਿੱਠਵਰਤੀ ਚਲਾਉ ਤੇ ਸਾਰੀਆਂ ਸਤਰਾਂ /dev/console ਜੰਤਰ ਤੋਂ ਨਕਲ ਕਰਕੇ ਲਾਗ ਫਾਇਲ ਵਿੱਚ ਭੇਜੋ"
 
 #: service-list.pl.in:45
 msgid ""
@@ -124,11 +125,11 @@ msgstr ""
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
-msgstr ""
+msgstr "ਸਮਾਂ-ਸਾਰਣੀ ਕਮਾਂਡਾਂ ਨੂੰ ਵੇਖਾਉਣ ਲਈ ਪੇਸ਼ਕਾਰੀ"
 
 #: service-list.pl.in:49
 msgid "Run scheduled jobs"
-msgstr ""
+msgstr "ਸਮਾਂ-ਬੱਧ ਕੰਮ ਕਰੋ"
 
 #: service-list.pl.in:49
 msgid ""
@@ -139,11 +140,11 @@ msgstr ""
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
-msgstr ""
+msgstr "Common Unix Printing System"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr ""
+msgstr "Internet Printing Protocol, ਵਰਜਨ 1.1 ਤੇ ਅਧਾਰਿਤ ਪ੍ਰਿੰਟਿੰਗ ਸਿਸਟਮ"
 
 #: service-list.pl.in:52
 msgid ""
@@ -151,6 +152,8 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"ਇੱਕ ਅੰਦਰੂਨੀ xinetd ਸੇਵਾ ਜੋ ਕਿ ਮੌਜੂਦਾ ਸਿਸਟਮ ਸਮਾਂ ਪ੍ਰਾਪਤ ਕਰਦੀ ਹੈ ਅਤੇ ਇਸਤਰਾਂ ਛਾਪਦੀ ਹੈ: 'Wed Nov 13 22:30:27 EST 2002'.  ਇਹ tcp "
+"ਵਰਜਨ ਹੈ| ਤੁਹਾਨੂੰ xinetd ਨੂੰ ਇਹ ਸੇਵਾ ਵਰਤਣ ਲਈ ਯੋਗ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ"
 
 #: service-list.pl.in:53
 msgid ""
@@ -158,22 +161,24 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"ਇੱਕ ਅੰਦਰੂਨੀ xinetd ਸੇਵਾ ਜੋ ਕਿ ਮੌਜੂਦਾ ਸਿਸਟਮ ਸਮਾਂ ਪ੍ਰਾਪਤ ਕਰਦੀ ਹੈ ਅਤੇ ਇਸਤਰਾਂ ਛਾਪਦੀ ਹੈ: 'Wed Nov 13 22:30:27 EST 2002'.  ਇਹ udp"
+"ਵਰਜਨ ਹੈ| ਤੁਹਾਨੂੰ xinetd ਨੂੰ ਇਹ ਸੇਵਾ ਵਰਤਣ ਲਈ ਯੋਗ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ"
 
 #: service-list.pl.in:54 service-list.pl.in:55
 msgid "Dynamic DNS Client"
-msgstr ""
+msgstr "ਡਾਈਨਮਿਕ DNS ਕਲਾਂਇਟ"
 
 #: service-list.pl.in:54
 msgid "A Dynamic DNS Name service from www.dyndns.org"
-msgstr ""
+msgstr "www.dyndns.org ਤੋਂ ਇੱਕ ਡਾਈਨਮਿਕ DNS ਕਲਾਂਇਟ"
 
 #: service-list.pl.in:55
 msgid "A Dynamic DNS Name service from www.dhis.org"
-msgstr ""
+msgstr "www.dhis.org ਤੋਂ ਡਾਈਨਮਿਕ DNS ਕਲਾਂਇਟ"
 
 #: service-list.pl.in:56
 msgid "Dict Dictionary Server"
-msgstr ""
+msgstr "Dict ਸ਼ਬਦ-ਕੋਸ਼ ਸਰਵਰ"
 
 #: service-list.pl.in:57
 msgid ""
@@ -185,23 +190,23 @@ msgstr ""
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the udp version. You must enable xinetd to use this service."
-msgstr ""
+msgstr "ਇੱਕ xinetd ਅੰਦਰੂਨੀ ਸੇਵਾ ਜੋ ਕਿ ਕਲਾਂਇਟ ਨੂੰ ਅੱਖਰ ਵਾਪਿਸ ਕਰਦੀ ਹੈ| ਇਹ ਇੱਕ udp ਵਰਜਨ ਹੈ| ਤੁਹਾਨੂੰ xinetd ਨੂੰ ਇਹ ਸੇਵਾ ਵਰਤਣ ਲਈ ਯੋਗ ਕਰਨਾ ਚਾਹੀਦਾ ਹੈ|"
 
 #: service-list.pl.in:59
 msgid "Sound mixing server"
-msgstr ""
+msgstr "ਸਾਊਡ ਮਿਕਸਿਗ ਸਰਵਰ"
 
 #: service-list.pl.in:59
 msgid "The Enlightened Sound Daemon"
-msgstr ""
+msgstr "ਵਾਧੂ ਧੁਨੀ ਪੇਸ਼ਕਾਰੀ"
 
 #: service-list.pl.in:60
 msgid "Exim SMTP Server"
-msgstr ""
+msgstr "Exim SMTP ਸਰਵਰ"
 
 #: service-list.pl.in:61
 msgid "file alteration monitor"
-msgstr ""
+msgstr "ਫਾਇਲ ਬਦਲਵਾਂ ਜਾਂਚਕਾਰ"
 
 #: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
@@ -209,7 +214,7 @@ msgstr ""
 
 #: service-list.pl.in:63
 msgid "Text-to-speech system"
-msgstr ""
+msgstr "ਪਾਠ ਤੋਂ ਆਵਾਜ਼ ਸਿਸਟਮ"
 
 #: service-list.pl.in:63
 msgid "Festival is a general purpose text-to-speech system"
@@ -221,7 +226,7 @@ msgstr "ਮੇਲ ਪ੍ਰਾਪਤ ਕਰਤਾ"
 
 #: service-list.pl.in:64
 msgid "A Mail Fetcher from external Servers"
-msgstr ""
+msgstr "ਬਾਹਰੀ ਸਰਵਰਾਂ ਤੋਂ ਪੱਤਰ ਪ੍ਰਾਪਤ ਸੇਵਾ"
 
 #: service-list.pl.in:65
 msgid "IPv6 Tunnel Broker"
@@ -229,7 +234,7 @@ msgstr "IPv6 ਟਨਲ ਬਰੋਕਰ"
 
 #: service-list.pl.in:65
 msgid "A IPv6 Dynamic Tunnel Broker"
-msgstr ""
+msgstr "ਇੱਕIPv6 ਡਾਇਨਾਮਿਕ Tunnel Broker"
 
 #: service-list.pl.in:66
 msgid "GNOME Display Manager"
@@ -252,7 +257,7 @@ msgstr ""
 
 #: service-list.pl.in:68
 msgid "Set hard disk parameters"
-msgstr ""
+msgstr "ਹਾਰਡ ਡਿਸਕ ਪੈਰਾਮੀਟਰ ਨਿਰਧਾਰਿਤ ਕਰੋ"
 
 #: service-list.pl.in:68
 msgid ""
@@ -262,7 +267,7 @@ msgstr ""
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
-msgstr ""
+msgstr "ਲੀਨਕਸ ਤਰੁੰਤ-ਪਲੱਗ ਸਹਾਇਤਾ"
 
 #: service-list.pl.in:69
 msgid ""
@@ -273,43 +278,43 @@ msgstr ""
 
 #: service-list.pl.in:71
 msgid "internet superserver"
-msgstr ""
+msgstr "ਇੰਟਰਨੈੱਟ ਸੁਪਰਸਰਵਰ"
 
 #: service-list.pl.in:71
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
-msgstr ""
+msgstr "inetd ਇੱਕ ਡਾਇਮੋਨ ਨੂੰ ਚਲਾਉਣ ਲਈ ਕਈ ਹੋਰਾਂ ਨੂੰ ਸ਼ਾਮਿਲ ਕਰਦੀ ਹੈ, ਇਸ ਕਰਕੇ ਸਿਸਟਮ ਤੇ ਲੋਡ ਘਟਾ ਦਿੰਦੀ ਹੈ"
 
 #: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
-msgstr ""
+msgstr "IPv4 ਪੈਕੇਟ ਫਿਲਟਰ ਕਰਨ ਅਤੇ NAT ਲਈ ਪ੍ਰਬੰਧਕੀ ਸੰਦ"
 
 #: service-list.pl.in:72
 msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
-msgstr ""
+msgstr "ਲੀਨਕਸ ਕਰਨਲ ਵਿੱਚ Iptables IP ਦੀ ਸਾਰਣੀ ਵਿੱਚ ਫਿਲਟਰ ਨਿਯਮਾਂ ਪੈਕੇਟਾਂ ਦੀ ਵਿਵਸਥਾ, ਪ੍ਰਬੰਧਨ ਅਤੇ ਜਾਂਚ ਦੇ ਕੰਮ ਆਉਦਾ ਹੈ|"
 
 #: service-list.pl.in:73
 msgid "IrDA stack for Linux"
-msgstr ""
+msgstr "ਲੀਨਕਸ ਲਈ IrDA ਸਟਾਕ"
 
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol"
-msgstr ""
+msgstr "ਇੰਟਰਨੈੱਟ ਕੀ ਐਕਸਚੇਜ ਪਰੋਟੋਕੋਲ"
 
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol openbsd implementation"
-msgstr ""
+msgstr "ਇੰਟਰਨੈੱਟ ਕੀ ਐਕਸਚੇਜ ਪਰੋਟੋਕੋਲ openbsd ਸਥਾਪਨਾ"
 
 #: service-list.pl.in:75
 msgid "start and stop ISDN services"
-msgstr ""
+msgstr "ਸੇਵਾ ISDN ਸ਼ੁਰੂ ਤੇ ਬੰਦ"
 
 #: service-list.pl.in:76
 msgid "Check and fix joystick device nodes"
-msgstr ""
+msgstr "ਜਾਏਸਟਿੱਕ ਜੰਤਰ ਨੋਡ ਦੀ ਜਾਂਚ ਤੇ ਨਿਰਧਾਰਨ"
 
 #: service-list.pl.in:76
 msgid ""
@@ -327,27 +332,25 @@ msgstr ""
 
 #: service-list.pl.in:78
 msgid "Kernel Log Daemon"
-msgstr ""
+msgstr "ਕਰਨਲ ਲਾਗ ਪੇਸ਼ਕਾਰੀ"
 
 #: service-list.pl.in:78
-msgid ""
-"klogd is a system daemon which intercepts and logs Linux kernel messages."
-msgstr ""
+msgid "klogd is a system daemon which intercepts and logs Linux kernel messages."
+msgstr "klogd ਇੱਕ ਸਿਸਟਮ ਪੇਸ਼ਕਾਰ ਹੈ, ਜੋ ਕਿ ਲੀਨਕਸ ਕਰਨਲ ਸੁਨੇਹਾ ਨੂੰ ਵੇਖਦਾ ਹੈ ਅਤੇ ਲਾਗ ਤਿਆਰ ਕਰਦਾ ਹੈ|"
 
 #: service-list.pl.in:79
-msgid ""
-"This runs the hardware probe, and optionally configures changed hardware."
-msgstr ""
+msgid "This runs the hardware probe, and optionally configures changed hardware."
+msgstr "ਇਹ ਹਾਰਡਵੇਅਰ ਜਾਂਚ ਕਰਦਾ ਹੈ ਅਤੇ ਚੋਣਵੇਂ ਰੂਪ ਵਿੱਚ ਹਾਰਡਵੇਅਰ ਤਬਦੀਲੀ ਦੀ ਸੰਰਚਨਾ ਕਰਦਾ ਹੈ"
 
 #: service-list.pl.in:80 service-list.pl.in:81
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
-msgstr ""
+msgstr "LIRC ਇੱਕ ਪੈਕੇਜ ਹੈ, ਜੋ ਕਿ ਤੁਹਾਨੂੰ ਆਮ ਵਰਤੇ ਜਾਦੇ ਰਿਮੋਟ ਕੰਟਰੋਲ ਦੇ ਇਨਫਰਾ-ਰੈੱਡ ਸੰਕੇਤ ਨੂੰ ਡੀਕੋਡ ਕਰਨ ਤੇ ਭੇਜਣ ਵਿੱਚ ਸਹਾਇਕ ਹੈ"
 
 #: service-list.pl.in:82
 msgid "Starts misc programs that should be started"
-msgstr ""
+msgstr "ਫੁਟਕਲ ਕਾਰਜ ਜੋ ਕਿ ਸ਼ੁਰੂ ਹੋਣੇ ਚਾਹੀਦੇ ਹਨ, ਸ਼ੁਰੂ ਕਰੋ"
 
 #: service-list.pl.in:83
 msgid ""
@@ -367,11 +370,11 @@ msgstr ""
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
-msgstr ""
+msgstr "ਸਿਸਟਮ ਲਾਗ ਤਬਦੀਲ"
 
 #: service-list.pl.in:85
 msgid "Modern logging daemon"
-msgstr ""
+msgstr "ਮਾਡਰਨ ਲਾਗਿੰਗ ਪੇਸ਼ਕਾਰ"
 
 #: service-list.pl.in:86
 msgid "Load kernel modules"
@@ -409,56 +412,56 @@ msgstr ""
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
-msgstr ""
+msgstr "ਬੂਟ ਸਮੇਂ ਸੰਰਚਿਤ ਸਾਰੇ ਨੈੱਟਵਰਕ ਇੰਟਰਫੇਸ਼ ਨੂੰ ਸਰਗਰਮ/ਅਕਰਮਕ ਕਰੋ"
 
 #: service-list.pl.in:92
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS server functionality, which is configured via the /etc/"
 "exports file."
-msgstr ""
+msgstr "NFS ਇੱਕ ਹਰਮਨ-ਪਿਆਰਾ ਪਰੋਟੋਕੋਲ ਹੈ, ਜੋ ਕਿ TCP/IP ਨੈੱਟਵਰਕ ਤੇ ਫਾਇਲ ਸਾਂਝੀਆਂ ਕਰਨ ਦੇ ਕੰਮ ਆਉਦਾ ਹੈ| ਇਹ ਸੇਵਾ NFS ਸਰਵਰ ਅਧੀਨ ਦਿੱਤੀ ਜਾਦੀ ਹੈ, ਜਿਸ ਦੀ ਸੰਰਚਨਾ /etc/exports ਫਾਇਲ਼ ਰਾਹੀ ਸੰਭਵ ਹੈ|"
 
 #: service-list.pl.in:93
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS file locking functionality."
-msgstr ""
+msgstr "NFS ਇੱਕ ਹਰਮਨ-ਪਿਆਰਾ ਪਰੋਟੋਕੋਲ ਹੈ, ਜੋ ਕਿ TCP/IP ਨੈੱਟਵਰਕ ਤੇ ਫਾਇਲ ਸਾਂਝੀਆਂ ਕਰਨ ਦੇ ਕੰਮ ਆਉਦਾ ਹੈ| ਇਹ ਸੇਵਾ NFS ਫਾਇਲ਼ ਲਾਕਿੰਗ ਦੇ ਅਧੀਨ ਉਪਲੱਬਧ ਹੈ|"
 
 #: service-list.pl.in:94
 msgid "Name service cache daemon"
-msgstr ""
+msgstr "ਨਾਂ ਸੇਵਾ ਕੈਂਚੇ ਪੇਸ਼ਕਾਰ"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
-msgstr ""
+msgstr "ਪੇਸ਼ਕਾਰ ਜੋ ਕਿ ਬਹੁਤ ਆਮ ਨਾਂ ਸੇਵਾ ਬੇਨਤੀ ਲਈ ਕੈਂਚੇ ਦਿੰਦਾ ਹੈ|"
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
-msgstr ""
+msgstr "Network Time Protocol ਪੇਸ਼ਕਾਰ"
 
 #: service-list.pl.in:95
 msgid "ntpd is the NTPv4 daemon."
-msgstr ""
+msgstr "ntpd ਇੱਕ NTPv4 ਪੇਸ਼ਕਾਰ ਹੈ"
 
 #: service-list.pl.in:96 service-list.pl.in:97
 msgid "Update the system time over the network"
-msgstr ""
+msgstr "ਸਿਸਟਮ ਸਮਾਂ ਨੈਟਵਰਕ ਤੇ ਨਵੀਵੀਕ੍ਰਿਤ ਕਰੋ"
 
 #: service-list.pl.in:96 service-list.pl.in:97
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
-msgstr ""
+msgstr "Network Time Protocol (ntp) ਸਰਵਰ ਤੋਂ ਸਮਾਂ ਵੇਖੋ ਤੇ ਮੁੜ ਕੇ ਸਿਸਟਮ ਦਾ ਸਮਾਂ ਅਨੁਸਾਰ ਨਿਰਧਾਰਿਤ ਕਰੋ|"
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
-msgstr ""
+msgstr "Network Time Protocol (NTP) ਸਰਵਰ"
 
 #: service-list.pl.in:98
 msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
-msgstr ""
+msgstr "ਪੇਸ਼ਕਾਰ ਜੋ ਕਿ ਸਰਵਰ ਦਾ ਸਮਾਂ ਨੈੱਟਵਰਕ ਦੇ ਸਰਵਰ ਦੇ ਸਮੇਂ ਮੁਤਾਬਕ ਨਿਰਧਾਰਿਤ ਕਰਦਾ ਹੈ ਅਤੇ ਸਮੇਂ ਸਮੇਂ ਤੇ ਸਮਕਾਲੀ ਕਰਦਾ ਰਹਿੰਦਾ ਹੈ|"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
@@ -470,11 +473,11 @@ msgstr "PCMCIA ਸੇਵਾਵਾਂ"
 
 #: service-list.pl.in:101
 msgid "Caching-Only DNS Server"
-msgstr ""
+msgstr "ਕੈਂਚੇ ਹੀ DNS ਸਰਵਰ"
 
 #: service-list.pl.in:102
 msgid "IPsec tunnel implementation"
-msgstr ""
+msgstr "IPsec ਟਨਲ ਸਥਾਪਨਾ"
 
 #: service-list.pl.in:103
 msgid "DARPA port to RPC program number mapper"
@@ -489,11 +492,11 @@ msgstr ""
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
-msgstr ""
+msgstr "ਮੇਲ ਟਰਾਂਸਪੋਰਟ ਏਜੰਟ"
 
 #: service-list.pl.in:106
 msgid "Point to Point Protocol daemon"
-msgstr ""
+msgstr "ਪੁਆਇੰਟ ਤੋਂ ਪੁਆਇੰਟ ਪਰੋਟੋਕੋਲ ਪੇਸ਼ਕਾਰੀ"
 
 #: service-list.pl.in:106
 msgid ""
@@ -503,13 +506,13 @@ msgstr ""
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
-msgstr ""
+msgstr "ਨਿੱਜੀ ਵਾਧਾ HTTP ਪਰਾਕਸੀ"
 
 #: service-list.pl.in:108
 msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
-msgstr ""
+msgstr "ਜਿਆਦਾ ਰਲਵੇਂ ਨੰਬਰ ਬਣਾਉਣ ਲਈ ਜਿਆਦਾ ਗੁਣਵੱਤਾ ਵਾਲਾ ਨੰਬਰ ਨਿਰਮਾਤਾ, ਜੋ ਕਿ ਸਿਸਟਮ ਈਨਟਰੋਪੀ ਪੂਲ ਵਿੱਚ ਸੰਭਾਲ ਤੇ ਪ੍ਰਾਪਤ ਕਰ ਸਕੇ"
 
 #: service-list.pl.in:109
 msgid ""
@@ -573,7 +576,7 @@ msgstr ""
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
-msgstr ""
+msgstr "ਸੀਰੀਅਲ ਪੋਰਟ ਜਾਣਕਾਰੀ ਪ੍ਰਾਪਤ ਕਰੋ/ਭੇਜੋ"
 
 #: service-list.pl.in:118
 msgid ""
@@ -589,15 +592,15 @@ msgstr ""
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
-msgstr ""
+msgstr "S.M.A.R.T. ਦੀ ਵਰਤੋਂ ਕਰਕੇ ਸੰਭਾਲਣ ਸਿਸਟਮ ਦਾ ਕੰਟਰੋਲ ਤੇ ਜਾਂਚ"
 
 #: service-list.pl.in:121
 msgid "Perl-based spam filter using text analysis"
-msgstr ""
+msgstr "ਪਾਠ ਜਾਂਚ ਵਰਤ ਕੇ ਪਰਲ ਆਧਾਰਿਤ ਸਪਸ ਫਿਲਟਰ"
 
 #: service-list.pl.in:122
 msgid "Simple Network Management Protocol (SNMP) Daemon"
-msgstr ""
+msgstr "Simple Network Management Protocol (SNMP) ਪੇਸ਼ਕਾਰ"
 
 #: service-list.pl.in:123 service-list.pl.in:124
 msgid "OpenSSH SSH server"
@@ -611,11 +614,11 @@ msgstr ""
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
-msgstr ""
+msgstr "OpenSSH ਸਰਵਰ ਪੇਸ਼ਕਾਰ"
 
 #: service-list.pl.in:125
 msgid "Linux system logging utilities"
-msgstr ""
+msgstr "ਲੀਨਕਸ ਸਿਸਟਮ ਲਾਗਿੰਗ ਉਪਯੋਗਤਾ"
 
 #: service-list.pl.in:125
 msgid ""
@@ -647,7 +650,7 @@ msgstr ""
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
-msgstr ""
+msgstr "ਕਰਨਲ ਰਲਵੇ ਅੰਕ ਸਰੋਤ ਜੰਤਰ"
 
 #: service-list.pl.in:129
 msgid ""
@@ -658,7 +661,7 @@ msgstr ""
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
-msgstr ""
+msgstr "Intel(TM) x86(TM)-ਆਧਾਰਿਤ ਫਰਜ਼ੀ ਮਸ਼ੀਨ"
 
 #: service-list.pl.in:131
 msgid ""
@@ -668,7 +671,7 @@ msgstr ""
 
 #: service-list.pl.in:132
 msgid "Web-based administration toolkit"
-msgstr ""
+msgstr "ਵੈਬ-ਆਧਾਰਿਤ ਪ੍ਰਬੰਧਕੀ ਸੰਦ"
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
@@ -728,7 +731,7 @@ msgstr "ਸਿਸਟਮ ਨੂੰ ਮੁਡ਼ ਚਾਲੂ ਕੀਤਾ ਜਾ 
 
 #: service.pl.in:208
 msgid "Starts all system neccesary services"
-msgstr ""
+msgstr "ਸਾਰੀਂ ਸਿਸਟਮ ਸੇਵਾਵਾਂ ਸ਼ੁਰੂ ਕਰੋ"
 
 #: service.pl.in:209
 msgid "Default runlevel"
