@@ -36,9 +36,9 @@
 
   <complexType name="serviceType">
     <sequence>
-      <element type="actionType" name="action"/>
-      <element type="string"     name="name"/>
-      <element type="integer"    name="priority"/>
+      <element type="actionType"  name="action"/>
+      <element type="string"      name="name"/>
+      <element type="unsignedInt" name="priority"/>
     </sequence>
   </complexType>
 

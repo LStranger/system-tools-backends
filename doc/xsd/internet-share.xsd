@@ -53,15 +53,15 @@
 
   <complexType name="timeoutType">
     <sequence>
-	 <element type="unsignedInt" name="tcp"    minOccurs="0">
-	 <element type="unsignedInt" name="tcpfin" minOccurs="0">
-	 <element type="unsignedInt" name="udp"    minOccurs="0">
+	 <element type="unsignedInt" name="tcp"    minOccurs="0"/>
+	 <element type="unsignedInt" name="tcpfin" minOccurs="0"/>
+	 <element type="unsignedInt" name="udp"    minOccurs="0"/>
     </sequence>
   </complexType>
 
   <complexType name="forwardType">
     <sequence>
-	 <element type="ip_addressType" name="ip_address">
+	 <element type="ip_addressType" name="ip_address"/>
     </sequence>
   </complexType>
 
