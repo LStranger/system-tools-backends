@@ -5,7 +5,9 @@
 #
 # Copyright (C) 2002 Ximian, Inc.
 #
-# Authors: Carlos Garnacho Parro <garparr@teleline.es>
+# Authors: Carlos Garnacho Parro <garparr@teleline.es>,
+#          Hans Petter Jansson <hpj@ximian.com>,
+#          Arturo Espinosa <arturo@ximian.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -38,6 +40,136 @@ require "$SCRIPTSDIR/file.pl$DOTIN";
 require "$SCRIPTSDIR/report.pl$DOTIN";
 require "$SCRIPTSDIR/service-list.pl$DOTIN";
 
+# Where is the SysV subsystem installed?
+sub xst_service_sysv_get_paths
+{
+  my %dist_map =
+      (
+       # xst_dist => [rc.X dirs location, init.d scripts location]
+       "redhat-5.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-6.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-6.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-6.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-7.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-7.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+
+       "mandrake-7.1" => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "mandrake-7.2" => ["/etc/rc.d", "/etc/rc.d/init.d"],
+
+       "debian-2.2"   => ["/etc", "/etc/init.d"],
+       "debian-woody" => ["/etc", "/etc/init.d"],
+
+       "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d"],
+
+       "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"]
+       );
+  my $res;
+
+  $res = $dist_map{$xst_dist};
+  &xst_report ("service_sysv_unsupported", $xst_dist) if ($res eq undef);
+  return @$res;
+}
+
+# Those runlevels that are usually used. Maybe we should add
+# the current running runlevel, using the "runlevel" command.
+sub xst_service_sysv_get_runlevels
+{
+  my %dist_map =
+      (
+       "redhat-5.2"     => [3, 5],
+       "redhat-6.0"     => [3, 5],
+       "redhat-6.1"     => [3, 5],
+       "redhat-6.2"     => [3, 5],
+       "redhat-7.0"     => [3, 5],
+       "redhat-7.1"     => [3, 5],
+       "redhat-7.2"     => [3, 5],
+
+       "mandrake-7.1"   => [3, 5],
+       "mandrake-7.2"   => [3, 5],
+
+                         "debian-2.2"     => [2, 3],
+                         "debian-woody"   => [2, 3],
+
+       "suse-7.0"       => [3, 5],
+
+       "turbolinux-7.0" => [3, 5]
+       );
+  my $res;
+
+  $res = $dist_map{$xst_dist};
+  &xst_report ("service_sysv_unsupported", $xst_dist) if ($res eq undef);
+  return @$res;
+}
+
+# --- Plain process utilities --- #
+
+# Get owner (login) of named process.
+# FIXME: Works only on modern Linux, probably.
+# FIXME: Need a version of this that examines all instances of process name.
+sub xst_service_proc_get_owner
+{
+  my ($service) = @_;
+  my ($pid, $owner);
+  my $res = 0;
+
+  &xst_report_enter ();
+
+  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
+  # FIXME: Portable to other UNIXen?
+  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
+  chomp $pid;
+
+  if ($pid)
+  {
+    $owner = &xst_file_run_backtick ("ps --no-headers -p $pid -o user");
+  }
+  else
+  {
+    $owner = undef;
+  }
+
+  &xst_report_leave ();
+  return $owner;
+}
+
+# FIXME: Need a version of this that stops all instances of process name.
+sub xst_service_proc_stop
+{
+  my ($service) = @_;
+  my ($pid);
+  my $res = 0;
+
+  &xst_report_enter ();
+
+  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
+  # FIXME: Portable to other UNIXen?
+  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
+  chomp $pid;
+
+  if ($pid)
+  {
+    kill "SIGTERM", $pid;
+    $res = 1;
+  }
+
+  &xst_report_leave ();
+  return $res;
+}
+
+# FIXME: Need a version of this that starts all instances of process name.
+sub xst_service_proc_start
+{
+  my ($cmd, $user) = @_;
+  my ($fqsu, $fqcmd);
+
+  $fqcmd = &xst_file_get_cmd_path ($cmd);
+  $fqsu  = &xst_file_get_cmd_path ("su");
+
+  # Can't use xst_file_run_bg here, since it clobbers the quotes.
+  system ("$fqsu -c \"$fqcmd &\" $user >/dev/null 2>/dev/null");
+}
+
 sub xst_service_sysv_installed
 {
   my ($service) = @_;
@@ -58,6 +190,32 @@ sub xst_service_sysv_installed
   return $res;
 }
 
+sub xst_service_sysv_list_dir
+{
+    my ($path) = @_;
+    my ($service, @services);
+
+    foreach $service (<$path/*>)
+    {
+        if (-x $service)
+        {
+            $service =~ s/.*\///;
+            push @services, $service;
+        }
+    }
+
+    return \@services;
+}
+
+
+sub xst_service_sysv_list_available
+{
+    my ($rcd_path, $initd_path);
+    
+    ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+
+    return &xst_service_sysv_list_dir ($initd_path);
+}
 
 # Return 1 or 0: is the service running?
 # Depends on the rc script to support the "status" arg.
@@ -114,36 +272,143 @@ sub xst_service_sysv_get_status_any
   return 0;
 }
 
-
-# Where is the SysV subsystem installed?
-sub xst_service_sysv_get_paths
+# Set start links and remove stop links at the usual runlevels.
+# Old start link is removed, in case the priority is different from $pri.
+sub xst_service_sysv_set_links_active
 {
-  my %dist_map =
-      (
-       # xst_dist => [rc.X dirs location, init.d scripts location]
-       "redhat-5.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-6.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-6.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-6.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-7.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-7.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+  my ($pri, $service) = @_;
 
-       "mandrake-7.1" => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "mandrake-7.2" => ["/etc/rc.d", "/etc/rc.d/init.d"],
+  foreach $runlevel (&xst_service_sysv_get_runlevels ())
+  {
+    &xst_service_sysv_remove_link ($runlevel, $service);
+    &xst_service_sysv_add_link ($runlevel, "S", $pri, $service);
+  }
+}
 
-       "debian-2.2"   => ["/etc", "/etc/init.d"],
-       "debian-woody" => ["/etc", "/etc/init.d"],
+# Set stop links and remove start links at the usual runlevels.
+sub xst_service_sysv_set_links_inactive
+{
+  my ($pri, $service) = @_;
 
-       "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d"],
+  foreach $runlevel (&xst_service_sysv_get_runlevels ())
+  {
+    &xst_service_sysv_remove_link ($runlevel, "$service");
+    &xst_service_sysv_add_link ($runlevel, "K", $pri, $service);
+  }
+}
 
-       "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"]
-       );
-  my $res;
+# Set links for active/inactive service at the given priority.
+sub xst_service_sysv_set_links
+{
+  my ($pri, $service, $active) = @_;
 
-  $res = $dist_map{$xst_dist};
-  &xst_report ("service_sysv_unsupported", $xst_dist) if ($res eq undef);
-  return @$res;
+  if ($active)
+  {
+    &xst_service_sysv_set_links_active ($pri, $service);
+  }
+  else
+  {
+    &xst_service_sysv_set_links_inactive (100 - $pri, $service);
+  }
+}
+
+# Run the init.d script for the corresponding service, with
+# arg, which can be "stop", "start" or "restart".
+sub xst_service_sysv_run_initd_script
+{
+  my ($service, $arg) = @_;
+  my ($rc_path, $initd_path);
+  my $str;
+  my %map =
+      ("restart" => "restarted",
+       "stop" => "stopped",
+       "start" => "started");
+
+  &xst_report_enter ();
+  
+  if (!exists $map{$arg})
+  {
+    &xst_report ("service_sysv_op_unk", $arg);
+    &xst_report_leave ();
+    return -1;
+  }
+
+  $str = $map{$arg};
+
+  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+
+  if (-f "$initd_path/$service")
+  {
+    if (!&xst_file_run ("$initd_path/$service $arg"))
+    {
+      &xst_report ("service_sysv_op_success", $service, $str);
+      &xst_report_leave ();
+      return 0;
+    }
+  }
+  
+  &xst_report ("service_sysv_op_failed", $service, $str);
+  &xst_report_leave ();
+  return -1;
+}
+
+# Start or stop the service, depending on $active. Set
+# links accordingly.  $force makes this function use
+# start/stop only, without considerations for restart.
+# Not to be called from parse/replace tables, due to last $force
+# param: use the following two functions instead.
+sub xst_service_sysv_set_status_do
+{
+  my ($priority, $service, $active, $force) = @_;
+  my ($arg, $status);
+
+  &xst_service_sysv_set_links ($priority, $service, $active);
+  
+  $status = &xst_service_sysv_get_status ($service);
+  if ($status && !$force)
+  {
+    # if it's already active and you want it active, restart.
+    $arg = $active? "restart" : "stop";
+  }
+  else
+  {
+    # normal operation.
+    $arg = $active? "start" : "stop";
+  }
+
+  return &xst_service_sysv_run_initd_script ($service, $arg);
+}
+
+sub xst_service_sysv_set_status
+{
+  my ($priority, $service, $active) = @_;
+
+  return &xst_service_sysv_set_status_do ($priority, $service, $active, 0);
+}
+
+sub xst_service_sysv_force_status
+{
+  my ($priority, $service, $active) = @_;
+
+  return &xst_service_sysv_set_status_do ($priority, $service, $active, 1);
+}
+
+sub xst_service_sysv_install_script
+{
+  my ($service, $file) = @_;
+  my ($res, $rcd_path, $initd_path);
+
+  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+
+  if (!copy ("$FILESDIR/$file", "$initd_path/$service"))
+  {
+      &xst_report ("file_copy_failed", "$FILESDIR/$file", "$initd_path/$service");
+      return -1;
+  }
+
+  chmod (0755, "$initd_path/$service");
+
+  return 0;
 }
 
 # THESE ARE THE FUNCTIONS WHICH EXTRACT THE CONFIGURATION FROM THE COMPUTER
