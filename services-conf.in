@@ -40,7 +40,7 @@ BEGIN {
 
 # --- Tool information --- #
 
-$name = "sysv";
+$name = "services";
 $version = "___version___";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0", "redhat-7.1",
               "redhat-7.2", "redhat-7.3", "redhat-8.0", "redhat-9",
@@ -53,7 +53,7 @@ $version = "___version___";
 
 $description =<<"end_of_description;";
        Configures which services are to be started or stopped at which runlevels
-       and with what priority. System V init script setup, in short.
+       and with what priority. System V init and file-rc script setup, in short.
 end_of_description;
 
 # --- XML parsing --- #
@@ -66,31 +66,78 @@ sub xml_parse
   # Walk the tree recursively and extract configuration parameters.
   while ($elem = shift @$tree)
   {
-    if   ($elem eq "sysv") { &xml_parse_sysv (shift @$tree, \%hash); }
-    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    if   ($elem eq "services") { &xml_parse_services (shift @$tree, \%hash); }
+    else {&gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   return (\%hash);
 }
 
-sub xml_parse_sysv
+sub xml_parse_services
 {
   my ($tree, $hash) = @_;
   my ($services, $elem);
+  my ($runlevel);
 	
   shift @$tree; #skip attributes
 
   while ($elem = shift @$tree)
   {
-    if ($elem eq "runlevel") { $$hash{"runlevel"} = &gst_xml_get_pcdata (shift @$tree); }
-	elsif ($elem eq "services") { push @$services, &xml_parse_services (shift @$tree); }
-	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    if ($elem eq "runlevels") { $runlevel = &xml_parse_runlevel_list (shift @$tree)}
+    elsif ($elem eq "services") { push @$services, &xml_parse_service_list (shift @$tree); }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"services"} = $services;
+  $$hash{"runlevel"} = $runlevel;
 }
 
-sub xml_parse_services
+sub xml_parse_runlevel_list
+{
+  my ($tree) = @_;
+  my ($runlevels, $elem, $runlevel);
+  my ($rl);
+
+  shift @$tree; #skip attributes
+
+  while ($elem = shift @$tree)
+  {
+    if ($elem eq "runlevel")
+    {
+      $rl = &xml_parse_runlevel (shift @$tree);
+      if ($rl ne undef)
+      {
+        $runlevel = $rl;
+      }
+    }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+
+  return $runlevel;
+}
+
+sub xml_parse_runlevel
+{
+  my ($tree) = @_;
+  my ($elem, $default, $runlevel);
+
+  shift @$tree; #skip attributes
+
+  while ($elem = shift @$tree)
+  {
+    if ($elem eq "default") {  $default = 1; shift @$tree }
+    elsif ($elem eq "number") { $runlevel = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "description") { shift @$tree; }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+
+  if ($default eq 1)
+  {
+    return $runlevel;
+  }
+}
+
+sub xml_parse_service_list
 {
   my ($tree) = @_;
   my ($hash, $service, $elem);
@@ -117,12 +164,12 @@ sub xml_parse_service
   while ($elem = shift @$tree)
   {
     if ($elem eq "actions") { push @$actions, &xml_parse_actions (shift @$tree); }
-	elsif ($elem eq "name") { $$hash{"name"} = &gst_xml_get_pcdata (shift @$tree); }
-	elsif ($elem eq "description") { $$hash{"description"} = &gst_xml_get_pcdata (shift @$tree); }
-	elsif ($elem eq "priority") { $$hash{"priority"} = &gst_xml_get_pcdata (shift @$tree); }
-	elsif ($elem eq "runlevels") { push @$runlevels, &xml_parse_runlevels (shift @$tree); }
-	elsif ($elem eq "script") { $$hash{"script"} = &gst_xml_get_pcdata (shift @$tree); }
-	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    elsif ($elem eq "name") { $$hash{"name"} = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "description") { $$hash{"description"} = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "priority") { $$hash{"priority"} = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "runlevels") { push @$runlevels, &xml_parse_runlevels (shift @$tree); }
+    elsif ($elem eq "script") { $$hash{"script"} = &gst_xml_get_pcdata (shift @$tree); }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
   
   $$hash{"actions"} = $actions unless $actions eq undef;
@@ -182,8 +229,8 @@ sub xml_parse_single_runlevel
   while ($elem = shift @$tree)
   {
     if ($elem eq "number") { $number = &gst_xml_get_pcdata (shift @$tree); }
-	elsif ($elem eq "action") { $action = &gst_xml_get_pcdata (shift @$tree); }
-	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  	elsif ($elem eq "action") { $action = &gst_xml_get_pcdata (shift @$tree); }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
   
   return { "number" => $number,
@@ -195,13 +242,42 @@ sub xml_print_services
 {
   my ($h) = @_;
 
-  &gst_xml_print_line ("<services>\n");
+  &gst_xml_print_line ("<services>");
   &gst_xml_enter ();
 
   &gst_xml_print_hash_hash ($h, "service");
 
   &gst_xml_leave ();
-  &gst_xml_print_line ("</services>\n");
+  &gst_xml_print_line ("</services>");
+}
+
+sub xml_print_runlevels
+{
+  my ($h, $default) = @_;
+  &gst_xml_print_line ("<runlevels>");
+  &gst_xml_enter ();
+
+  foreach $i (sort keys %$h)
+  {
+    &gst_xml_print_line ("<runlevel>");
+    &gst_xml_enter ();
+
+    &gst_xml_print_pcdata ("number", $i);
+    &gst_xml_print_pcdata ("description", $$h{$i});
+
+    if ($i eq $default)
+    {
+      # It's the default runlevel
+      &gst_xml_print_pcdata ("default", "1");
+    }
+      
+    &gst_xml_leave ();
+    &gst_xml_print_line ("</runlevel>");
+  }
+  
+  &gst_xml_leave ();
+  &gst_xml_print_line ("</runlevels>");
+  &gst_xml_print_vspace ();
 }
 
 sub xml_print
@@ -209,7 +285,10 @@ sub xml_print
   my ($h) = @_;
 
   &gst_xml_print_begin ();
-  &gst_xml_print_structure ($$h{"runlevel"}, "runlevel");
+  &gst_xml_print_comment ("These are the runlevels available in the system");
+  &xml_print_runlevels ($$h{"runlevels"}, $$h{"runlevel"});
+  
+  &gst_xml_print_comment ("These are the services");
   &xml_print_services ($$h{"services"});
   &gst_xml_print_end ();
 }
@@ -220,6 +299,8 @@ sub xml_print
 sub get
 {
   my %hash;
+
+  $hash{"runlevels"} = &gst_service_get_verbose_runlevels ();
 
   $hash{"services"} = &gst_service_get_services ();
   $hash{"runlevel"} = &gst_service_sysv_get_default_runlevel ();
@@ -232,7 +313,7 @@ sub set
 {
   my %hash;
 	
-  $hash = xml_parse ();
+  $hash = &xml_parse ();
   &gst_report_end ();
 	
   if ($hash)

@@ -1,3 +1,11 @@
+2003-08-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* Makefile.am: removed some unused backends from installing, removed
+	  runlevel-conf.in and added services-conf.in
+	* services.pl.in: some changes to make it more services oriented
+	* services-conf.in: added
+	* runlevel-conf.in: removed
+
 2003-08-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* boot-grub.pl.in, boot.pl.in: reverted again the path finding stuff, 
