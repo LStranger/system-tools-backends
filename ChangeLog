@@ -1,3 +1,9 @@
+2004-06-27  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* service.pl.in: sexy improvements for suse, for time and network
+	  to take advantage of them
+	* time-conf.in: use those improvements
+
 2004-06-17  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* partition.pl.in: really return the partition table

@@ -123,11 +123,12 @@ sub gst_service_sysv_get_runlevels
        "conectiva-10"   => [3, 5],
 
        "debian-2.2"     => [2, 3],
-       "debian-3.0"   => [2, 3],
+       "debian-3.0"     => [2, 3],
        "debian-sarge"   => [2, 3],
 
        "suse-7.0"       => [3, 5],
        "suse-9.0"       => [3, 5],
+       "suse-9.1"       => [3, 5],
 
        "turbolinux-7.0" => [3, 5],
 
@@ -1558,6 +1559,7 @@ sub gst_service_get_status
        "fedora-1"     => \&gst_service_redhat_get_status,
 
        "suse-9.0"     => \&gst_service_suse_get_status,
+       "suse-9.1"     => \&gst_service_suse_get_status,
 
        "gentoo"       => \&gst_service_gentoo_get_status,
 
@@ -1773,7 +1775,7 @@ sub gst_service_installed
   my ($type);
   $type = &gst_get_init_type ();
 
-  return &gst_service_sysv_installed ($service) if (($type eq "sysv") || ($type eq "file-rc"));
+  return &gst_service_sysv_installed ($service) if (($type eq "sysv") || ($type eq "file-rc") || ($type eq "suse"));
   return &gst_service_bsd_installed ($service) if ($type eq "bsd");
   return &gst_service_gentoo_installed ($service) if ($type eq "gentoo");
   return &gst_service_rcng_installed ($service) if ($type eq "rcng");
@@ -1830,5 +1832,56 @@ sub gst_service_gentoo_set_status
   {
     &gst_file_run ("rc-update del $script default");
     &gst_file_run ("/etc/init.d/$script stop") if ($force_now == 1);
+  }
+}
+
+sub gst_service_suse_set_status
+{
+  my ($script, $active) = @_;
+  my (@runlevels, $rllist);
+  my ($rcd_path, $initd_path);
+  my ($rl);
+
+  ($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
+  @runlevels = &gst_service_sysv_get_runlevels ();
+
+  if ($active)
+  {
+    $rllist = join ",", @runlevels;
+    &gst_file_run ("insserv $script,start=$rllist");
+    &gst_service_run_script ($script, "start");
+  }
+  else
+  {
+    # to remove a service from a few runlevels we need to run
+    # insserv -r and then insserv blah,start=x,y,z
+    foreach $link (<$rcd_path/rc[0-9S].d/S[0-9][0-9]$script>)
+    {
+      $link =~ s/$rcd_path\///;
+      $link =~ /rc([0-9S])\.d\/S[0-9][0-9].*/;
+      $rllist .= "$1,";
+    }
+
+    foreach $link (<$rcd_path/boot.d/S[0-9][0-9]$service>)
+    {
+      $rllist .= "B,";
+    }
+
+    # remove the default runlevels from the list
+    foreach $runlevel (@runlevels)
+    {
+      $rllist =~ s/$runlevel,//;
+    }
+
+    $rllist =~ s/,$//;
+
+    &gst_file_run ("insserv -r $script");
+
+    if ($rllist ne "")
+    {
+      &gst_file_run ("insserv $script,start=$rllist");
+    }
+
+    &gst_service_run_script ($script, "stop");
   }
 }

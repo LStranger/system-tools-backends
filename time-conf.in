@@ -575,14 +575,14 @@ sub conf_get_parse_table
            LOCAL_TIME    => "/etc/localtime"
          },
          table =>
-             [
-              [ "local_time",   \&time_get_local_time ],
-              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
-              [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&gst_service_sysv_get_status, "xntpd" ],
-              [ "ntpinstalled", \&gst_service_sysv_installed, "xntpd" ],
-              ]
-                },
+         [
+          [ "local_time",   \&time_get_local_time ],
+          [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+          [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+          [ "sync_active",  \&gst_service_get_status, "xntpd" ],
+          [ "ntpinstalled", \&gst_service_installed,  "xntpd" ],
+         ]
+       },
 
        "pld-1.0" =>
        {
@@ -790,13 +790,13 @@ sub conf_get_replace_table
            LOCAL_TIME    => "/etc/localtime"
          },
          table =>
-             [
-              [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
-              [ "local_time",   \&time_set_local_time ],
-              [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&gst_service_sysv_set_status, 90, "xntpd", "%sync_active%" ],
-              ]
-                },
+         [
+          [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+          [ "local_time",   \&time_set_local_time ],
+          [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+          [ "sync_active",  \&gst_service_suse_set_status, "xntpd" ],
+         ]
+       },
 
        "pld-1.0" =>
        {
