@@ -1,3 +1,8 @@
+2001-06-26  Tambet Ingo  <tambet@ximian.com>
+
+	* xml.pl.in (xst_xml_get_text): ref safe now. Don't return 'ARRAY'
+	if it's reference to array, send reference.
+
 2001-06-22  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (parse_modeline): Implement. Doesn't work right yet.

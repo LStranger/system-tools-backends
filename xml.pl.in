@@ -469,7 +469,10 @@ sub xst_xml_get_text
   my $retval;
 
   $retval = &xst_xml_get_pcdata ($tree);
-  $retval =~ tr/\n\r\t\f/    /;
+  my $type = ref ($retval);
+
+  if (!$type) { $retval =~ tr/\n\r\t\f/    /; }  
+
   return $retval;
 }
 
