@@ -28,6 +28,7 @@
 # /etc/passwd
 # /etc/group
 # /etc/shadow
+# /etc/login.defs
 
 # NIS support will come later.
 
@@ -106,6 +107,7 @@ $progress_max = 3;
 # They are tried in array order. First found = used.
 
 @passwd_names = ( "/etc/passwd" );
+@login_defs_names = ( "/etc/login.defs" );
 
 
 # --- Internal configuration variables --- #
@@ -114,19 +116,39 @@ $progress_max = 3;
 
 %users_hash = ();
 @users = ();
+%login_defs = ();
 
 # --- Confignuration manipulation --- #
 
+sub read_login_defs
+{
+  local *FILE;
+	my @line;
+	
+  *FILE = be_open_read_from_names(@login_defs_names);
+  if (not *FILE) { return; }  # We didn't find it.
+	
+	while (<FILE>)
+	{
+	  next if &be_is_line_comment_start ($_);
+	  chomp;
+		@line = split (/[ \t]+/, $_);
+		$login_defs{$line[0]} = $line[1];
+	}
+	
+	close (FILE);
+}
+		
 sub read_passwd
 {
-  my *FILE;
-  my @line;
+  local *FILE;
+	my @line;
 	my $i = 0;
 
   # Find the file.
 
-  *FILE = open_read_from_names(@passwd_names);
-  if (not FILE) { return; }  # We didn't find it.
+  *FILE = be_open_read_from_names(@passwd_names);
+  if (not *FILE) { return; }  # We didn't find it.
 
   # Parse the file.
 
@@ -136,175 +158,79 @@ sub read_passwd
     @line = split ':';
 		$users_hash{$line[0]} = $i;
 		$i ++;
-    push (@users, @line);
+    push (@users, [@line]);
   }
+	
+	close (FILE);
 }
+
+sub write_passwd
+{
+}
+
 
 # --- XML printing --- #
 
-
 sub xml_print
 {
+  my $key;
+
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
-  print "<!DOCTYPE time []>\n\n";
-  print "<time>\n";
-  be_xml_enter ();
+  print "<!DOCTYPE users []>\n\n";
+  print "<users>\n";
+  &be_xml_enter ();
 
-  be_xml_vspace ();
-  be_xml_indent (); print "<!-- Configuration starts here -->\n";
-  be_xml_vspace ();
+  &be_xml_vspace ();
+  &be_xml_indent (); print "<!-- login.defs configuration starts here -->\n";
+  &be_xml_vspace ();
 
-  be_xml_indent (); print "<year>$cf_year</year>\n";
-  be_xml_indent (); print "<month>$cf_month</month>\n";
-  be_xml_indent (); print "<monthday>$cf_mday</monthday>\n";
-  
-  be_xml_vspace ();
-  
-  be_xml_indent (); print "<hour>$cf_hour</hour>\n";
-  be_xml_indent (); print "<minute>$cf_minute</minute>\n";
-  be_xml_indent (); print "<second>$cf_second</second>\n";
-
-  be_xml_vspace ();
-  be_xml_indent (); print "<timezone>$cf_timezone</timezone>\n";
-  be_xml_vspace ();
-  
-  be_xml_vspace ();
-  be_xml_indent (); print "<synchronization active='", be_print_boolean_yesno($cf_sync_active), "'>\n";
-  
-  be_xml_enter ();
-  
-  for $server (@cf_servers)
-  {
-    be_xml_indent (); print "<server>$server</server>\n";
-  }
-  
-  be_xml_leave ();
-  
-  be_xml_indent (); print "</synchronization>\n";
-  be_xml_vspace ();
-  
-  be_xml_indent (); print "<!-- End of configuration -->\n";
-  be_xml_vspace ();
-
-  be_xml_leave ();
-  print "</time>\n";
+  &be_xml_indent (); print "<login_defs>\n";
+	&be_xml_enter ();
+	foreach $key (keys %login_defs)
+	{
+	  &be_xml_indent (); print "<var name=\"" . $key . "\" value=\"" . $login_defs{$key} . "\"/>\n";
+	}
+	&be_xml_leave ();
+	&be_xml_indent (); print "</login_defs>\n";
+	&be_xml_vspace ();
+  &be_xml_indent (); print "<!-- Now the users -->\n";
+  &be_xml_vspace ();
+	
+	&be_xml_leave ();
+  print "</users>\n";
 }
 
 
 # --- Get (read) config --- #
-
-
-sub get_time
-{
-  my $datetext;
-  
-  $datetext = `date +%Y.%m.%d.%H:%M.%S.%z`;
-  
-  ($cf_year, $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_second, $cf_timezone) =
-    ($datetext =~ /^([0-9]+).([0-9]+).([0-9]+).([0-9]+):([0-9]+).([0-9]+).([-+0-9]+)/);
-
-  if ($cf_timezone =~ /\+.*/) { $cf_timezone =~ tr/+/-/; }
-  else { $cf_timezone =~ tr/-/+/; }
-
-  if ($cf_timezone =~ /^(\+|-)0+$/) { $cf_timezone = "0000"; }  # GMT, eh?
-
-  # TODO: We should fall back to internal Perl functions here.
-}
-
-
-sub check_servers
-{
-  if (-f "/etc/rc.d/init.d/xntpd")
-  {
-    if (!system "/etc/rc.d/init.d/xntpd status >/dev/null 2>/dev/null")
-    {
-      $cf_sync_active = 1;
-      if ($be_verbose) { print STDERR "Found XNTPD enabled.\n"; }
-    }
-    elsif ($be_verbose)
-    {
-      $cf_sync_active = 0;
-      print STDERR "Found XNTPD disabled.\n";
-    }
-  }
-  elsif ($be_verbose)
-  {
-    print STDERR "Warning: Could not find a way to check XNTPD status.\n";
-  }
-}
-
 
 sub get
 {
   if ($be_progress) { $| = 1; print $progress_max . "\n"; }
 
   if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
-  if ($be_verbose) { print STDERR "Getting time, date and timezone.\n"; }
+  if ($be_verbose) { print STDERR "Getting user database.\n"; }
 
-  read_ntp_conf (); be_print_progress ();
-  get_time (); be_print_progress ();
-  check_servers (); be_print_progress ();
+  &read_login_defs ();
+  &read_passwd (); &be_print_progress ();
 
   if ($be_verbose) { print STDERR "Printing XML.\n"; }
   if ($be_progress) { print "\n"; }
-  xml_print ();
+  &xml_print ();
 }
-
-
-# --- Set (write) config --- #
-
-
-sub set_time
-{
-  system sprintf("date %02d%02d%02d%02d%04d.%02d >/dev/null 2>/dev/null",
-                 $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_year, $cf_second);
-}
-
-
-sub restart_servers
-{
-  if (-f "/etc/rc.d/init.d/xntpd")
-  {
-    if ($cf_sync_active)
-    {
-      if (system "/etc/rc.d/init.d/xntpd restart >/dev/null 2>/dev/null")
-      {
-        if ($be_verbose) { print STDERR "Warning: XNTPD restart failed.\n"; }
-      }
-      elsif ($be_verbose)
-      {
-        print STDERR "XNTPD restarted with new configuration.\n";
-      }
-    }
-    else
-    {
-      system "/etc/rc.d/init.d/xntpd stop >/dev/null 2>/dev/null";
-      if ($be_verbose) { print STDERR "XNTPD stopped.\n"; }
-    }
-  }
-  elsif ($be_verbose)
-  {
-    print STDERR "Warning: Could not find a way to restart XNTPD service.\n";
-  }
-}
-
 
 sub set
 {
   if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
 
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-  be_xml_parse ();
+  &xml_parse ();
 
-  write_ntp_conf ();
-  write_ntp_step_tickers ();
-  write_localtime ();
+  &write_passwd ();
 
   if ($be_do_immediate)
   {
     if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
-    set_time;
-    restart_servers;
+		# dunno if do_immediate is relevant in this type of backend
   }
 }
 
@@ -314,8 +240,8 @@ sub set
 
 sub filter
 {
-  be_xml_parse ();
-  xml_print ();
+  &xml_parse ();
+  &xml_print ();
 }
 
 
@@ -348,7 +274,6 @@ while (@ARGV)
 
     shift @ARGV;  # For the argument.
   }
-  elsif ($ARGV[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
   elsif ($ARGV[0] eq "--verbose" || $ARGV[0] eq "-v") { $be_verbose = 1; }
   elsif ($ARGV[0] eq "--progress")                    { $be_progress = 1; }
   else
@@ -363,9 +288,9 @@ while (@ARGV)
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { get; }
-elsif ($be_operation eq "set")    { set; }
-elsif ($be_operation eq "filter") { filter; }
+if    ($be_operation eq "get")    { &get; }
+elsif ($be_operation eq "set")    { &set; }
+elsif ($be_operation eq "filter") { &filter; }
 else
 {
   print STDERR "Error: No operation specified.\n\n";

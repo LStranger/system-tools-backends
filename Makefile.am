@@ -5,7 +5,8 @@ memory-conf \
 nameresolution-conf \
 networking-conf \
 shares-conf \
-time-conf
+time-conf \
+users2-conf
 ##users-conf
 
 

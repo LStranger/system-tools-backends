@@ -255,7 +255,7 @@ sub be_push_unique
 
 sub be_is_line_comment_start
   {
-    if ($_[0] =~ /^\#/) { return(1); }
+    if (($_[0] =~ /^\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return(1); }
     return(0);
   }
 
