@@ -148,10 +148,11 @@ sub xst_parse_line_first
   my ($file) = @_;
   my ($fd, $res);
 
-  $fd = be_open_read_from_names ($file);
+  $fd = &be_open_read_from_names ($file);
   return undef if !$fd;
 
   chomp ($res = <$fd>);
+  close $fd;
   return $res;
 }
 
@@ -190,6 +191,8 @@ sub xst_parse_chat
 	   }
 	 }
     }
+
+    close $fd;
   }
 
   # Oops: not found.

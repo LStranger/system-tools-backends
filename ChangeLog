@@ -1,7 +1,9 @@
 2001-02-04  Hans Petter Jansson  <hpj@ximian.com>
 
 	* parse.pl.in (xst_parse_line_first): Stopped from losing return value.
+	  Added & prefix to function call. Close file when done.
 	* parse.pl.in (xst_parse_chat): Prevented $found from being global.
+	  Close file when done.
 
 2001-01-31  Tambet Ingo  <tambet@ximian.com>
 
