@@ -573,7 +573,7 @@ sub xst_service_sysv_add_link
   my ($runlevel, $action, $priority, $service) = @_;
   my ($prio) = sprintf ("%0.2d",$priority);
 
-  symlink ("$reltative_path/$service", "$rcd_path/rc$runlevel.d/$action$prio$service");
+  symlink ("$relative_path/$service", "$rcd_path/rc$runlevel.d/$action$prio$service");
   
   &xst_report_enter ();
   &xst_report ("service_sysv_add_link", "$rcd_path/rc$runlevel.d/$action$prio$service");
