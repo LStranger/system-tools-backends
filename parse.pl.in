@@ -66,12 +66,12 @@ sub xst_parse_split
     chomp;
     s/^[ \t]+//;
     next if (/^\#/ || /^$/);
-    @line = split ($re);
+    @line = split ($re, $_, 2);
 
     if (shift (@line) eq $key)
     {
       if ($all) {
-        push @res, @line;
+        push @res, $line[0];
       }
       else
       {
@@ -87,7 +87,7 @@ sub xst_parse_split
 }
 
 # This gives meaning to the $all flag of xst_parse_split, and returns a reference to the array, which
-# is what we want. (ie search a.com b.com c.com)
+# is what we want. (ie search a.com\nsearch b.com\nsearch c.com)
 sub xst_parse_split_all
 {
   my @a = &xst_parse_split (@_, 1);

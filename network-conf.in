@@ -168,8 +168,10 @@ sub xml_parse_network
     if    ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &be_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &be_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "workgroup")       { $$hash{"workgroup"} = &be_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "description")     { $$hash{"description"} = &be_xml_get_text ($$tree[1]); }
     elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &be_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "description")     { $$hash{"description"} = &be_xml_get_text ($$tree[1]); }
+    elsif ($$tree[0] eq "auto")            { $$hash{"auto"} = &be_xml_get_text ($$tree[1]); }
+    elsif ($$tree[0] eq "forward")         { $$hash{"forward"} = &be_xml_get_text ($$tree[1]); }
     elsif ($$tree[0] eq "hostmatch")       { $$hash{"hostmatch"} = &be_xml_get_text ($$tree[1]); }
     elsif ($$tree[0] eq "order")           { push (@order, &be_xml_get_word ($$tree[1])); }
     elsif ($$tree[0] eq "searchdomain")    { push (@searchdomain, &be_xml_get_word ($$tree[1])); }

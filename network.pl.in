@@ -27,6 +27,7 @@
 
 require "___scriptsdir___/be.pl";
 require "___scriptsdir___/parse.pl";
+require "___scriptsdir___/replace.pl";
 
 sub xst_network_active_interfaces_get
 {
@@ -131,7 +132,7 @@ sub xst_network_interfaces_get
   my ($dist, $value, $file, $proc);
   my ($i, $j);
   
-  $dist = &xst_map_dist (%dist_cmp);
+  $dist = &be_map_dist (%dist_cmp);
   
   %fn = %{$ {$dist_attrib{$dist}}{"fn"}};
   $proc = $ {$dist_attrib{$dist}}{"ifaces_get"};
@@ -193,7 +194,7 @@ sub xst_network_conf_get
 
   my ($dist, $hash);
 
-  $dist = &xst_map_dist (%dist_cmp);
+  $dist = &be_map_dist (%dist_cmp);
   return undef if ($dist eq undef); # fixme: warn the user
 
   $hash = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
@@ -201,9 +202,13 @@ sub xst_network_conf_get
   return $hash;
 }
 
+sub xst_network_interfaces_set
+{
+}
+
 sub xst_network_conf_set
 {
-  my $hash = $_[0];
+  my $values_hash = $_[0];
   
   my %dist_attrib =
 	 (
@@ -225,7 +230,7 @@ sub xst_network_conf_set
 			    [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, " ", " " ],
 			    [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, " " ],
 			    [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, " ", "," ],
-			    [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, " " ],
+			    [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, " ", "on", "off" ],
 			    [ statichost,    \&xst_replace_join_hash,        HOSTS, " ", " " ],
 			    [ workgroup,     \&xst_replace_ini,              SMB_CONF, "global", "workgroup" ],     
 			    [ description,   \&xst_replace_ini,              SMB_CONF, "global", "server string" ],
@@ -244,11 +249,11 @@ sub xst_network_conf_set
 
   my ($dist, $res);
   
-  $dist = &xst_map_dist (%dist_cmp);
+  $dist = &be_map_dist (%dist_cmp);
   return if ($dist eq undef); # fixme: warn the user
 	 
   # maybe report if there was a problem
   $res = &xst_replace_from_table ($ {$dist_attrib{$dist}}{"fn"},
-						    $ {$dist_attrib{$dist}}{"table"});
+						    $ {$dist_attrib{$dist}}{"table"}, $values_hash);
   return;
 }

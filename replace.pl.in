@@ -32,7 +32,7 @@ require "___scriptsdir___/be.pl";
 
 sub xst_replace_from_table
 {
-  my ($fn, $table) = @_;
+  my ($fn, $table, $values_hash) = @_;
   my ($key, $proc, @param);
   my ($i, @cp, $res, $res2);
 
@@ -42,7 +42,7 @@ sub xst_replace_from_table
     $key = shift (@cp);
     $proc = shift (@cp);
     $cp[0] = $$fn{$cp[0]};
-    push (@cp, $key);
+    push (@cp, $$values_hash{$key});
 
     $res = -1 if &$proc (@cp);
   }
@@ -50,41 +50,200 @@ sub xst_replace_from_table
   return $res;
 }
 
+# Wacky function that tries to create a field separator from a regular expression.
+# Doesn't work with all possible regular expressions: just with the ones we are working with.
+sub regexp_to_separator
+{
+  $_ = $_[0];
+
+  s/\[([^^])([^\]])[^\]]*\]/\1/g;
+  s/\+//g;
+  s/[^\*]\*//g;
+
+  return $_;
+}
+
+sub is_array_ref
+{
+  my $val;
+
+  return 1 if (ref ($val) eq "ARRAY");
+  return 0 if (ref ($val) eq undef);
+
+  print STDERR "error: We shouldn't be here!\n";
+
+  return 0;
+}
+
+sub set_value
+{
+  my ($key, $val, $re) = @_;
+  
+  return $key . &regexp_to_separator ($re) . $val;
+}
+
 # Edit a $file, wich is assumed to have a column-based format, with $re matching field separators
-# and one record per line. Search for $key, and if $arr is false, replace its value with $value,
-# else all the values for $key occurrences will be substituted with an element for $value, and
-# exceeding or missing $key lines will be replaced or added accordingly.
+# and one record per line. Search for lines with the corresponding $key.
+# The last arguments can be any number of standard strings.
 sub xst_replace_split
 {
-  my ($file, $key, $re, $arr, $value) = @_;
+  my ($file, $key, $re, @value) = @_;
   my ($fd, @line, @res);
-  my $buff;
+  my $buff, $i;
+  my $pre_space, $post_comment;
+  my $line_key, $val;
 
   $buff = &be_buffer_load ($file);
   return -1 if $buff eq undef;
   
-  foreach $_ (@$buff)
+  foreach $i (@$buff)
   {
-    chomp;
-    s/^[ \t]+//;
-    next if (/^\#/ || /^$/);
-    @line = split ($re);
-
-    if (shift (@line) eq $key)
+    $pre_space = $post_comment = "";
+    
+    chomp $i;
+    $pre_space = $1 if $i =~ s/^([ \t]+)//;
+    $post_comment = $1 if $i =~ s/(\#.*)//;
+    
+    if ($i ne "")
     {
-	 if ($all) {
-	   push @res, $line[0];
-	 }
-	 else
+	 @line = split ($re, $i, 2);
+	 $line_key = shift (@line);
+
+	 # found the key?
+	 if ($line_key eq $key)
 	 {
-	   close $fd;
-	   return $line[0];
+	   if ($#value < 0)
+	   {
+		$i = "";
+		next;
+	   }
+	   
+	   $val = shift (@value);
+	   $i = &set_value ($key, $val, $re);
 	 }
     }
+    $i = $pre_space . $i . $post_comment . "\n";
   }
 
-  close $fd;
-  return @res if ($all);
-  return undef;
+  foreach $i (@values)
+  {
+    push @$buff, &set_value ($key, $i, $re);
+  }
+
+  &be_buffer_clean ($buff);
+
+  return 0;
+}
+
+sub xst_replace_sh
+{
+  my ($file, $key, $value) = @_;
+
+  return &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);
+}
+
+sub xst_replace_sh_bool
+{
+  my ($file, $key, $value) = @_;
+  my $i;
+
+  $value = ($value == 1)? "yes": "no";
+  
+  return &xst_replace_sh ($file, $key, $value);
+}
+
+sub xst_replace_join_all
+{
+  my ($file, $key, $re, $value) = @_;
+  my @a;
+
+  return &xst_replace_split ($file, $key, $re, @$value);
+}
+
+sub xst_replace_join_first_array
+{
+  my ($file, $key, $re1, $re2, $value) = @_;
+
+  return &xst_replace_split ($file, $key, $re1, join (&regexp_to_separator ($re2), @$value));
+}
+
+sub xst_replace_join_first_str
+{
+  my ($file, $key, $re, $value) = @_;
+
+  return &xst_replace_split ($file, $key, $re, $value);
+}
+
+sub xst_replace_join_first_bool
+{
+  my ($file, $key, $re, $val_on, $val_off, $value) = @_;
+
+  # Fixme: on and off should be a parameter.
+  $value = ($value == 1)? $val_on: $val_off;
+  
+  return &xst_replace_split ($file, $key, $re, $value);
+}
+
+sub xst_replace_ini
+{
+  my ($file, $key, $section, $var, $value) = @_;
+  my ($fd, @line, @res);
+  my $buff, $i, $found_flag;
+  my $pre_space, $post_comment, $sec_save;
+  my $line_key, $val;
+
+  $buff = &be_buffer_load ($file);
+  return -1 if $buff eq undef;
+
+  &be_buffer_join_lines ($buff);
+  
+  foreach $i (@$buff)
+  {
+    $pre_space = $post_comment = "";
+    
+    chomp $i;
+    $i =~ s/^([ \t]+)//;
+    $pre_space = $1;
+    $i =~ s/([\#;].*)//;
+    $post_comment = $1;
+    
+    if ($i ne "")
+    {
+	 if ($i =~ /\[[ \t]*$section[ \t]*\]/i)
+	 {
+	   s/(\[[ \t]*$section[ \t]*\][ \t]*)//i;
+	   $sec_save = $1;
+	   $found_flag = 1;
+	 }
+
+	 if ($found_flag)
+	 {
+	   if ($i =~ /\[[ \t]*[^ \t\]]+[ \t]*\]/)
+	   {
+		$i = "$var = $value\n$i";
+		$found_flag = 2;
+	   }
+
+	   if ($found_flag && $i =~ /^$var[ \t]*=/i)
+	   {
+		$i =~ s/^($var[ \t]*=[ \t]*).*/\1$value/i;
+		$found_flag = 2;
+	   }
+	 }
+    }
+
+    if ($found_flag && $sec_save ne "")
+    {
+	 $i = $sec_save . $i;
+	 $sec_save = "";
+    }
+    
+    $i = $pre_space . $i . $post_comment . "\n";
+    last if $found_flag == 2;
+  }
+
+  &be_buffer_clean ($buff);
+
+  return 0;
 }
 

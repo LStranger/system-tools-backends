@@ -878,6 +878,33 @@ sub be_buffer_save
   return 0;
 }
 
+# Erase all empty string elements from the $buffer.
+sub be_buffer_clean
+{
+  my $buffer = $_[0];
+  my $i;
+
+  for ($i = 0; $i <= $#$buffer; $i++)
+  {
+    splice (@$buffer, $i, 1) if ($$buffer[$i] eq "");
+  }
+}
+
+# Join those lines in the buffer that end with \.
+sub be_buffer_join_lines
+{
+  my $buffer = $_[0];
+  my $i;
+
+  for ($i = 0; $i <= $#$buffer; $i++)
+  {
+    while ($$buffer[$i] =~ /\\\n/)
+    {
+	 $$buffer[$i] .= $$buffer[$i + 1];
+	 splice (@$buffer, $i + 1, 1);
+    }
+  }
+}
 
 sub be_create_path
   {

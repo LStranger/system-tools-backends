@@ -1,10 +1,21 @@
+2001-02-06  Arturo Espinosa  <arturo@ximian.com>
+
+	* be.pl.in: be_buffer_clean, be_buffer_join_lines: new functions to
+	  help with in-line editting.
+	* network-conf.in: support for "auto" and "description" tags when
+	  parsing: forgot these.
+	* network.pl.in: xst_map_dist -> be_map_dist, pass the hash with
+	  the configuration to the replace_with_table function.
+	* replace.pl.in: Lots of code, for writing configuration. Partialy
+	  tested, but hash replacing is missing still.
+
 2001-02-05  Tambet Ingo  <tambet@ximian.com>
 
 	* Makefile.am (backends): Added boot-conf into build
 
 	* boot-conf.in: New file.
 
-2001-02-04  Arturo Espinosa  <arturo@ximian.com>
+2001-02-05  Arturo Espinosa  <arturo@ximian.com>
 
 	* be.pl.in: (be_buffer_{load,save}): load a file into an array buffer
 	and save it back.
