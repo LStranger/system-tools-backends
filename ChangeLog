@@ -1,3 +1,7 @@
+2003-08-25  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* Makefile.am: fixed, now it passes distcheck
+
 2003-08-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* boot-grub.pl.in: (gst_boot_grub_edit_entry): removed, no longer

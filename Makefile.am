@@ -1,21 +1,21 @@
 SUBDIRS = files
 
 BACKENDSBODY = \
-#	dhcpd-conf.in \
-#	disks-conf.in \
-#	memory-conf.in \
+	dhcpd-conf.in \
+	disks-conf.in \
+	memory-conf.in \
 	network-conf.in \
 	services-conf.in \
-#	shares-conf.in \
+	shares-conf.in \
 	time-conf.in \
 	users-conf.in \
-	boot-conf.in 
-#	print-conf.in \
-#	mouse-conf.in \
-#	internetsharing-conf.in \
-#	package-conf.in \
-#	display-conf.in \
-#	font-conf.in
+	boot-conf.in \
+	print-conf.in \
+	mouse-conf.in \
+	internetsharing-conf.in \
+	package-conf.in \
+	display-conf.in \
+	font-conf.in
 
 PERLBODY = \
 	boot.pl.in      \
