@@ -69,7 +69,7 @@ $version = "@VERSION@";
               "debian-2.2", "debian-3.0", "debian-sarge",
               "suse-7.0", "suse-9.0", "turbolinux-7.0",
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0", "slackware-9.1.0", "slackware-10.0.0",
-              "gentoo", "pld-1.0", "pld-1.1", "pld-1.99", "fedora-1",
+              "gentoo", "pld-1.0", "pld-1.1", "pld-1.99", "fedora-1", "fedora-2",
               "freebsd-5" );
 
 $description =<<"end_of_description;";
@@ -470,6 +470,7 @@ sub conf_get_parse_table
    "pld-1.1"         => "pld-1.0",
    "pld-1.99"        => "pld-1.0",
    "fedora-1"        => "redhat-7.0",
+   "fedora-2"        => "redhat-7.0",
 
    "freebsd-5"       => "freebsd-5"
    );
@@ -691,6 +692,7 @@ sub conf_get_replace_table
    "pld-1.1"         => "pld-1.0",
    "pld-1.99"        => "pld-1.0",
    "fedora-1"        => "redhat-7.0",
+   "fedora-2"        => "redhat-7.0",
 
    "freebsd-5"       => "freebsd-5"
    );

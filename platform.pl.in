@@ -76,6 +76,7 @@ $PLATFORM_INFO = {
 	"pld-1.1"         => "PLD 1.1 Ra",
 	"pld-1.99"        => "PLD 1.99 Ac-pre",
   "fedora-1"        => "Fedora Core 1 (Yarrow)"
+  "fedora-1"        => "Fedora Core 2 (Tettnang)"
 };
   
 sub check_lsb
