@@ -5,6 +5,7 @@ autom4te*.cache
 boot-conf
 boot-grub.pl
 boot-lilo.pl
+boot-yaboot.pl
 boot.pl
 config.log
 config.status
@@ -20,6 +21,7 @@ font-conf
 font.pl
 general.pl
 gettext.pl
+hardware-conf
 internetsharing-conf
 intltool-*
 ishare.pl
@@ -35,14 +37,17 @@ partition.pl
 platform.pl
 print-conf
 print.pl
+removable-media.pl
 replace.pl
 report.pl
 rhprinterdb2gstxml.pl
 runlevel-conf
 service-list.pl
 service.pl
+services-conf
 share.pl
 shares-conf
+system-tools-backends.pc
 time-conf
 tokenizer.pl
 users-conf
