@@ -10,9 +10,9 @@
 2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_quote): return() -> return, makes code look
-	more uniform.
-	(xst_xml_get_word): Missing semicolon added.
-	(xst_xml_get_text): Missing semicolon added.
+	  more uniform.
+	  (xst_xml_get_word): Missing semicolon added.
+	  (xst_xml_get_text): Missing semicolon added.
 
 2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
