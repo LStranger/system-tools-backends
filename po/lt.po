@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-12-30 14:21+0200\n"
-"PO-Revision-Date: 2004-12-30 17:05+0200\n"
+"POT-Creation-Date: 2005-01-31 15:45+0200\n"
+"PO-Revision-Date: 2005-01-31 15:58+0200\n"
 "Last-Translator: Žygimantas Beručka <uid0@akl.lt>\n"
 "Language-Team: Lithuanian <komp_lt@konferencijos.lt>\n"
 "MIME-Version: 1.0\n"
@@ -41,8 +41,7 @@ msgstr "web serveris"
 #: service-list.pl.in:38 service-list.pl.in:70
 msgid ""
 "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
-msgstr ""
-"Apache yra WWW serveris.  Jis naudojamas pateikti HTML byloms ir CGI"
+msgstr "Apache yra WWW serveris.  Jis naudojamas pateikti HTML byloms ir CGI"
 
 #: service-list.pl.in:39
 msgid "Run missed scheduled jobs at startup"
@@ -75,8 +74,8 @@ msgid ""
 "run, and runs batch commands when the load average is low enough."
 msgstr ""
 "Paleidžia komandas suplanuotas „at“ komandos, laiku nurodytu, kai buvo "
-"paleista „at“ komanda ir paleidžia sugrupuotas komandas, kai apkrovos "
-"lygis yra pakankamai mažas."
+"paleista „at“ komanda ir paleidžia sugrupuotas komandas, kai apkrovos lygis "
+"yra pakankamai mažas."
 
 #: service-list.pl.in:42
 msgid "Audio mixer"
@@ -113,9 +112,9 @@ msgid ""
 "dropped.  This is the tcp version. You must enable xinetd to use this "
 "service."
 msgstr ""
-"xinetd vidinė tarnyba generuojanti simbolius. xinetd vidinė tarnyba, "
-"kuri pastoviai generuoja simbolius kol jungtis yra nutraukiama. Čia yra "
-"tcp versija. Norėdami naudoti šią tarnybą, Jūs turite įjungti xinetd."
+"xinetd vidinė tarnyba generuojanti simbolius. xinetd vidinė tarnyba, kuri "
+"pastoviai generuoja simbolius kol jungtis yra nutraukiama. Čia yra tcp "
+"versija. Norėdami naudoti šią tarnybą, Jūs turite įjungti xinetd."
 
 #: service-list.pl.in:46
 msgid ""
@@ -124,9 +123,9 @@ msgid ""
 "dropped.  This is the udp version. You must enable xinetd to use this "
 "service."
 msgstr ""
-"xinetd vidinė tarnyba generuojanti simbolius. xinetd vidinė tarnyba, "
-"kuri pastoviai generuoja simbolius kol jungtis yra nutraukiama. čia yra "
-"udp versija. Norėdami naudoti šią tarnybą, Jūs turite įjungti xinetd."
+"xinetd vidinė tarnyba generuojanti simbolius. xinetd vidinė tarnyba, kuri "
+"pastoviai generuoja simbolius kol jungtis yra nutraukiama. čia yra udp "
+"versija. Norėdami naudoti šią tarnybą, Jūs turite įjungti xinetd."
 
 #: service-list.pl.in:47
 msgid "CPU frequency monitor"
@@ -167,8 +166,8 @@ msgstr "Common Unix Printing System"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr "Spausdinimo sistema paremta Interneto spausdinimo protokolu (versija "
-"1.1)"
+msgstr ""
+"Spausdinimo sistema paremta Interneto spausdinimo protokolu (versija 1.1)"
 
 #: service-list.pl.in:52
 msgid ""
@@ -462,6 +461,8 @@ msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
+"named (BIND) yra „Sričių vardų serveris“ (DNS), kuris naudojamas versti "
+"kompiuterių vardams į IP adresus."
 
 #: service-list.pl.in:90
 msgid ""
@@ -499,11 +500,12 @@ msgstr ""
 
 #: service-list.pl.in:94
 msgid "Name service cache daemon"
-msgstr ""
+msgstr "Vardų paslaugos kešavimo demonas"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
 msgstr ""
+"Demonas suteikiantis kešą dažniausiai naudojamoms vardų paslaugos užklausoms."
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
@@ -522,8 +524,8 @@ msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
 msgstr ""
-"Patikrina laiką Tinklo laiko protokolo (ntp) serveriuose ir pagal jį "
-"nustato sistemos laiką."
+"Patikrina laiką Tinklo laiko protokolo (ntp) serveriuose ir pagal jį nustato "
+"sistemos laiką."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -554,7 +556,7 @@ msgstr "IPsec tunelio įgyvendinimas"
 
 #: service-list.pl.in:103
 msgid "DARPA port to RPC program number mapper"
-msgstr ""
+msgstr "DARPA port to RPC program number mapper"
 
 #: service-list.pl.in:103
 msgid ""
@@ -563,8 +565,8 @@ msgid ""
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
 "portmapper tvarko RPC prisijungimus, kurie yra naudojami tokių protokolų "
-"kaip NFS ir NIS. portmap serveris turi būti paleistas kompiuteriuose, "
-"kurios atlieka serverių, protokolams, kurie naudoja RPC mechanizmą, vaidmenį."
+"kaip NFS ir NIS. portmap serveris turi būti paleistas kompiuteriuose, kurios "
+"atlieka serverių, protokolams, kurie naudoja RPC mechanizmą, vaidmenį."
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
@@ -579,6 +581,8 @@ msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
 msgstr ""
+"Point-to-Point protokolas (PPP) įgalina siųsti duomenis naudojantis "
+"serijiniais point-to-point saitais."
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
@@ -589,6 +593,8 @@ msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
 msgstr ""
+"Išsaugo ir atkuria sistemos „entropijos baseiną“, taip pagerinant "
+"atsitiktinių skaičių generavimą."
 
 #: service-list.pl.in:109
 msgid ""
@@ -597,6 +603,10 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
+"Šis scenarijus priskiria „raw“ įrenginius blokiniams įrenginiams (tokiems kaip "
+"kietojo disko skirsniams). Jis naudojamas tokių programų kaip Oracle. Jūs "
+"galite nurodyti „raw“ įrenginio priskyrimą blokiniam įrenginiui paredagavę "
+"bylą /etc/sysconfig/rawdevices."
 
 #: service-list.pl.in:110
 msgid ""
@@ -605,10 +615,10 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
-"Čia yra demonas, kuriam yra paskirta užduotis periodiškai jungtis prie "
-"Red Hat Tinklo serverių ieškant atnaujinimų, perspėjimų, bei atlikti "
-"sistemos stebėjimo užduotis, atsižvelgiant į paslaugų lygį, kuris yra "
-"užsakytas šiam serveriui."
+"Čia yra demonas, kuriam yra paskirta užduotis periodiškai jungtis prie Red "
+"Hat Tinklo serverių ieškant atnaujinimų, perspėjimų, bei atlikti sistemos "
+"stebėjimo užduotis, atsižvelgiant į paslaugų lygį, kuris yra užsakytas šiam "
+"serveriui."
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
@@ -632,8 +642,8 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
-"Samba programų rinkinys, tai kolekcija programų įgyvendinančių Server Message "
-"Block protokolo palaikymą UNIX sistemose."
+"Samba programų rinkinys, tai kolekcija programų įgyvendinančių Server "
+"Message Block protokolo palaikymą UNIX sistemose."
 
 #: service-list.pl.in:114
 msgid ""
@@ -765,15 +775,14 @@ msgid "kernel random number source devices"
 msgstr "branduolio atsitiktinių skaičių šaltinio įrenginiai"
 
 #: service-list.pl.in:129
-#, fuzzy
 msgid ""
 "The  random  number  generator  gathers environmental noise from device "
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
 "Atsitiktinių skaičių generatorius surenka aplinkos triukšmą iš įrenginių "
-"tvarkyklių ir kitų šaltinių į entropijos baseiną. Iš šio entropijos "
-"baseino yra kuriami atsitiktiniai skaičiai."
+"tvarkyklių ir kitų šaltinių į taip vadinamą „entropijos baseiną“. Iš šio "
+"„entropijos baseino“ yra kuriami atsitiktiniai skaičiai."
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -794,6 +803,7 @@ msgstr "Web paremtas administravimo įrankių rinkinys"
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
 msgstr ""
+"Vardų paslaugos perjungimo demonas skirtas vardų gavimui iš NT serverių"
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
@@ -907,10 +917,10 @@ msgstr "Priėjimas prie juostinių įrenginių"
 msgid "Be able to get administrator privileges"
 msgstr "Gali gauti administratoriaus privilegijas"
 
-#: users-conf.in:458
+#: users-conf.in:459
 msgid "Default"
 msgstr "Įprastas"
 
-#: users-conf.in:459
+#: users-conf.in:460
 msgid "Default profile"
 msgstr "Įprastas profilis"
