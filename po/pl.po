@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-04-22 11:36+0200\n"
+"POT-Creation-Date: 2004-05-14 15:59+0200\n"
 "PO-Revision-Date: 2002-05-29 18:42+0200\n"
 "Last-Translator: GNOME PL Team <translators@gnome.pl>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -22,13 +22,16 @@ msgstr ""
 #. service => [long_name, description]
 #: service-list.pl.in:36
 msgid "ACPI event handler"
-msgstr ""
+msgstr "Obsługa zdarzeń ACPI"
 
 #: service-list.pl.in:36
 msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
+"Powiadamia programy przestrzeni użytkownika o zdarzeniach ACPI: uruchamia "
+"odpowiednie polecenia w odpowiedzi na zdarzenia ACPI takie jak przyciski "
+"zasilania."
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
@@ -114,6 +117,9 @@ msgid ""
 "dropped.  This is the tcp version. You must enable xinetd to use this "
 "service."
 msgstr ""
+"Wewnętrzna usługa xinetd generująca znaki. Wewnętrzna usługa xinetd, która "
+"bez przerwy generuje znaki do czasu zakończenia połączenia. To jest wersja "
+"tcp. Należy włączyć xinetd aby móc użyć tej usługi."
 
 #: service-list.pl.in:46
 msgid ""
@@ -122,6 +128,9 @@ msgid ""
 "dropped.  This is the udp version. You must enable xinetd to use this "
 "service."
 msgstr ""
+"Wewnętrzna usługa xinetd generująca znaki. Wewnętrzna usługa xinetd, która "
+"bez przerwy generuje znaki do czasu zakończenia połączenia. To jest wersja "
+"udp. Należy włączyć xinetd aby móc użyć tej usługi."
 
 #: service-list.pl.in:47
 msgid "CPU frequency monitor"
@@ -133,14 +142,17 @@ msgid ""
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
 msgstr ""
+"cpufreqd jest używany do monitorowania stanu baterii i dopasowywania "
+"częstotliwości pracy zegara procesora w celu oszczędności energii i "
+"zapewnienia optymalnej wydajności"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
-msgstr ""
+msgstr "demon uruchamiający zaplanowane polecenia"
 
 #: service-list.pl.in:49
 msgid "Run scheduled jobs"
-msgstr ""
+msgstr "Uruchom zaplanowane zadania"
 
 #: service-list.pl.in:49
 msgid ""
@@ -148,14 +160,19 @@ msgid ""
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
 msgstr ""
+"cron jest standardowym programem UNIX'a, który okresowo uruchamia "
+"zdefiniowane przez użytkownika programy. vixie cron dodaje nowe możliwości "
+"do podstawowego UNIX'owego cron'a, włączając w to lepsze zabezpieczenia i "
+"opcje konfiguracji."
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
-msgstr ""
+msgstr "Powszechny System Druku Unix'a (CUPS)"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
 msgstr ""
+"System wydruku bazujący na internetowym protokole wydruku (IPP) w wersji 1.1"
 
 #: service-list.pl.in:52
 msgid ""
@@ -163,6 +180,9 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"Wewnętrzna usługa xinetd pobierająca bieżący czas systemowy i wyświetlająca "
+"go w postaci: \"Śro Lis 13 22:30:27 EST 2002\". To jest wersja tcp. Należy "
+"włączyć xinetd aby móc użyć tej usługi."
 
 #: service-list.pl.in:53
 msgid ""
@@ -170,6 +190,9 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"Wewnętrzna usługa xinetd pobierająca bieżący czas systemowy i wyświetlająca "
+"go w postaci: \"Śro Lis 13 22:30:27 EST 2002\". To jest wersja udp. Należy "
+"włączyć xinetd aby móc użyć tej usługi."
 
 #: service-list.pl.in:54 service-list.pl.in:55
 msgid "Dynamic DNS Client"
@@ -208,9 +231,8 @@ msgid "The Enlightened Sound Daemon"
 msgstr ""
 
 #: service-list.pl.in:60
-#, fuzzy
 msgid "Exim SMTP Server"
-msgstr "Serwery czasu"
+msgstr "Serwery SMTP Exim"
 
 #: service-list.pl.in:61
 msgid "file alteration monitor"
@@ -264,9 +286,8 @@ msgid ""
 msgstr ""
 
 #: service-list.pl.in:68
-#, fuzzy
 msgid "Set hard disk parameters"
-msgstr "Inne parametry:"
+msgstr "Ustawia parametry dysku twardego"
 
 #: service-list.pl.in:68
 msgid ""
@@ -340,9 +361,8 @@ msgid ""
 msgstr ""
 
 #: service-list.pl.in:78
-#, fuzzy
 msgid "Kernel Log Daemon"
-msgstr "Obraz jądra"
+msgstr "Demon dziennika jądra"
 
 #: service-list.pl.in:78
 msgid ""
@@ -371,9 +391,8 @@ msgid ""
 msgstr ""
 
 #: service-list.pl.in:84
-#, fuzzy
 msgid "Create devices"
-msgstr "Urządzenie bezprzewodowe:"
+msgstr "Tworzenie urządzeń"
 
 #: service-list.pl.in:84
 msgid ""
@@ -406,9 +425,8 @@ msgid "MySQL, a SQL-based relational database daemon"
 msgstr ""
 
 #: service-list.pl.in:89
-#, fuzzy
 msgid "dns server"
-msgstr "Serwer WI_NS:"
+msgstr "serwer dns"
 
 #: service-list.pl.in:89
 msgid ""
@@ -482,9 +500,8 @@ msgid "HTTP caching proxy"
 msgstr ""
 
 #: service-list.pl.in:100
-#, fuzzy
 msgid "PCMCIA Services"
-msgstr "Usługi"
+msgstr "Usługi PCMCIA"
 
 #: service-list.pl.in:101
 msgid "Caching-Only DNS Server"
@@ -685,9 +702,8 @@ msgid ""
 msgstr ""
 
 #: service-list.pl.in:132
-#, fuzzy
 msgid "Web-based administration toolkit"
-msgstr "Zdalna administracja"
+msgstr "Zestaw narzędzi administracyjnych bazujących na WWW"
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
@@ -729,35 +745,30 @@ msgid ""
 "can be started, among other things."
 msgstr ""
 
-#: service.pl.in:182 service.pl.in:187
-#, fuzzy
+#: service.pl.in:191 service.pl.in:196
 msgid "Halting the system"
-msgstr "System _operacyjny"
+msgstr "Zatrzymywanie systemu"
 
-#: service.pl.in:183 service.pl.in:189
-#, fuzzy
+#: service.pl.in:192 service.pl.in:198
 msgid "Text mode"
-msgstr "Tekst"
+msgstr "Tryb tekstowy"
 
-#: service.pl.in:184 service.pl.in:188 service.pl.in:197
+#: service.pl.in:193 service.pl.in:197 service.pl.in:206
 msgid "Graphical mode"
-msgstr ""
+msgstr "Tryb graficzny"
 
-#: service.pl.in:185 service.pl.in:190
-#, fuzzy
+#: service.pl.in:194 service.pl.in:199
 msgid "Rebooting the system"
-msgstr "System _operacyjny"
+msgstr "Ponowne uruchamianie systemu"
 
-#: service.pl.in:192
+#: service.pl.in:201
 msgid "Starts all system neccesary services"
 msgstr ""
 
-#: service.pl.in:193
-#, fuzzy
+#: service.pl.in:202
 msgid "Default runlevel"
-msgstr "Domyślna po_włoka:"
+msgstr "Domyślny poziom uruchamiania"
 
-#: service.pl.in:194
-#, fuzzy
+#: service.pl.in:203
 msgid "Networkless runlevel"
-msgstr "Profile sieciowe"
+msgstr "Poziom uruchamiana bez sieci"
