@@ -182,6 +182,20 @@ sub xst_xml_print_scalars
   }
 }
 
+# Print the @$array using <$key>val</$key> foreach val in the array.
+sub xst_xml_print_array
+{
+  my ($array, $key) = @_;
+  my ($i, $val);
+
+  &xst_xml_print_vspace ();
+  foreach $i (@$array)
+  {
+    $val = &xst_xml_quote ($i);
+    &xst_xml_print_line ("<$key>$val</$key>\n");
+  }
+}
+
 # Pass a hash and the keys whose items are arrays. Print <key>val</key> foreach val
 # in the array at hash{key}
 sub xst_xml_print_arrays
@@ -191,20 +205,13 @@ sub xst_xml_print_arrays
   
   foreach $i (sort @array_keys)
   {
-    if (exists $$h{$i})
-    {
-      &xst_xml_print_vspace ();
-      foreach $j (@{$$h{$i}})
-      {
-        $val = &xst_xml_quote ($j);
-        &xst_xml_print_line ("<$i>$val</$i>\n");
-      }
-    }
+    &xst_xml_print_array ($$h{$i}, $i) if (exists $$h{$i})
   }
 }
 
 # Pass a hash, create a parent tag $tag and print <key>val</key> for every
-# value pair in the hash.
+# value pair in the hash. If hash refs are found, these are recursively
+# printed with this same function. Array refs are printed with print_array.
 sub xst_xml_print_hash
 {
   my ($hash, $tag) = @_;
@@ -216,13 +223,20 @@ sub xst_xml_print_hash
   
   foreach $j (sort keys (%$hash))
   {
-    $val = &xst_xml_quote ($$hash{$j});
-    &xst_xml_print_line ("<$j>$val</$j>\n");
+    $val = $$hash{$j};
+       if (ref $val eq "ARRAY") { &xst_xml_print_array ($val, $j); }
+    elsif (ref $val eq "HASH")  { &xst_xml_print_hash  ($val, $j); }
+    else
+    {
+      $val = &xst_xml_quote ($val);
+      &xst_xml_print_line ("<$j>$val</$j>\n");
+    }
   }
   
   &xst_xml_leave ();
   &xst_xml_print_line ("</$tag>\n");
 }
+
 
 sub xst_xml_print_hash_hash
 {
@@ -234,6 +248,7 @@ sub xst_xml_print_hash_hash
     &xst_xml_print_hash ($$h{$i}, $tag);
   } 
 }
+
 
 sub xst_xml_container_enter # (name)
 {
@@ -247,6 +262,7 @@ sub xst_xml_container_enter # (name)
   &xst_xml_enter();
 }
 
+
 sub xst_xml_container_leave
 {
   ## checks if there is a start tag
@@ -258,6 +274,7 @@ sub xst_xml_container_leave
     &xst_xml_print_line ("</$current_container>");
   }
 }
+
 
 sub xst_xml_print_container # (name, @strings)
 {

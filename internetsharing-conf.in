@@ -145,8 +145,8 @@ sub xml_print
   my ($h) = @_;
 
   &xst_xml_print_begin ();
-  &xst_xml_print_hash      ($$h{"fwrules"}, "fwrules");
-  &xst_xml_print_hash      ($$h{"dhcp"},    "dhcp");
+  &xst_xml_print_hash ($$h{"fwrules"}, "fwrules");
+  &xst_xml_print_hash ($$h{"dhcp"},    "dhcp");
   &xst_xml_print_hash_hash ($$h{"interface"}, "interface");
   &xst_xml_print_end ();
 }

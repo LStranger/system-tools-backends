@@ -1,5 +1,10 @@
 2001-08-06  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* xml.pl.in (xst_xml_print_array): Another print
+	utility function.
+	(xst_xml_print_hash): Be recursive. Print hash refs
+	with this same function and array refs with print_array.
+
 	* internetsharing-conf.in (xml_parse_fwrules): landev
 	tag support, to set which devices are attached to lans
 	we want to masquerade to the exterior.
