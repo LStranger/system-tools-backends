@@ -1293,3 +1293,21 @@ sub xst_parse_pump_get_iface_kw_not
   return 0 if &xst_parse_pump_get_iface_option_ref ($file, $iface, $key) != -1;
   return 1;
 }
+
+# Read a variable out of an XML document. The varpath is the dot-separated path to the
+# XML tag. If the name of a property is passed, that property of the leaf tag is read,
+# otherwise the tag's PCDATA.
+sub xst_parse_xml
+{
+  my ($file, $varpath, $property) = @_;
+  my ($tree, @path);
+
+  $tree = &xst_xml_scan ($file);
+  @path = split /./, $varpath;
+
+  for $elem (@path)
+  {
+    
+  }
+  
+}

@@ -1,3 +1,7 @@
+2001-07-06  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_xml): Begin XML config parser.
+
 2001-07-06  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_address_lookup_call): A

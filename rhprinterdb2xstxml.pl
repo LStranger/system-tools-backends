@@ -28,7 +28,6 @@ sub xml_quote
   my $joined = 0;
   my @xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"', "&amp;", '&' );
 
-  
   my @clist = split (//, $in);
   
   while (@clist)
