@@ -1,3 +1,23 @@
+2001-03-06  Arturo Espinosa  <arturo@ximian.com>
+
+	* network-conf.in: moved xml_print stuff to xml.pl.in. Removed
+	  stale set_immediate code.
+	* parse.pl.in: xst_parse_replace files. Now it is possible to
+	  pass a reference to an array with several files to be replaced
+	  from the fn hash. Check time-conf.in (conf_get_parse_table) for
+	  an example.
+	  (xst_parse_chomp_line_std, xst_parse_chomp_line_hash_comment):
+	  line reading routines. The latter remove hash comments.
+	  (xst_parse_split): now receives a ref to a sub for the line
+	  reading sub, with xst_parse_chomp_line_std as default.
+	  (xst_parse_*): pass the line_read_proc param all around.
+	* replace.pl.in (xst_replace_from_table): same as xst_parse_replace.
+	* time-conf.in: an almost complete rewrite. XML structure changed a
+	  bit.
+	* xml.pl.in: moved the xst_xml_print* subs here. Renamed xml_print_hash
+	  to xst_xml_print_hash_hash, and created new xst_xml_print_hash,
+	  which does what its name says.
+	
 2001-03-05  Hans Petter Jansson  <hpj@ximian.com>
 
 	* file.pl.in (xst_file_get_debug_path): Implement.

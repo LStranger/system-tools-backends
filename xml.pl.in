@@ -284,4 +284,72 @@ sub xst_xml_get_text
   return $retval
 }
 
+# XML printing helpers.
+
+# Pass a hash and the keys whose items are scalars. Print <key>val</key>.
+sub xst_xml_print_scalars
+{
+  my ($h, @scalar_keys) = @_;
+  my $i, $val;
+
+  while ($i = shift @scalar_keys)
+  {
+    $val = &xst_xml_quote ($$h{$i});
+    &xst_xml_print ("<$i>$val</$i>\n") if exists $$h{$i};
+  }
+}
+
+# Pass a hash and the keys whose items are arrays. Print <key>val</key> foreach val
+# in the array at hash{key}
+sub xst_xml_print_arrays
+{
+  my ($h, @array_keys) = @_;
+  my $i, $j, $val;
+  
+  foreach $i (@array_keys)
+  {
+    if (exists $$h{$i})
+    {
+      &xst_xml_vspace ();
+      foreach $j (@{$$h{$i}})
+      {
+        $val = &xst_xml_quote ($j);
+        &xst_xml_print ("<$i>$val</$i>\n");
+      }
+    }
+  }
+}
+
+# Pass a hash, create a parent tag $tag and print <key>val</key> for every
+# value pair in the hash.
+sub xst_xml_print_hash
+{
+  my ($hash, $tag) = @_;
+  my $j, $val;
+  
+  &xst_xml_vspace ();
+  &xst_xml_print ("<$tag>\n");
+  &xst_xml_enter ();
+  
+  foreach $j (keys (%$hash))
+  {
+    $val = &xst_xml_quote ($$hash{$j});
+    &xst_xml_print ("<$j>$val</$j>\n");
+  }
+  
+  &xst_xml_leave ();
+  &xst_xml_print ("</$tag>\n");
+}
+
+sub xst_xml_print_hash_hash
+{
+  my ($h, $tag) = @_;
+  my $i;
+  
+  foreach $i (keys %$h)
+  {
+    &xst_xml_print_hash ($$h{$i}, $tag);
+  } 
+}
+
 1;

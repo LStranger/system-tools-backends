@@ -49,6 +49,28 @@ sub xst_parse_replace_hash_values
   }
 }
 
+sub xst_parse_replace_files
+{
+  my ($values, $fn_hash) = @_;
+  my @ret;
+
+  $values = [$values] if !ref $values;
+
+  foreach $i (@$values)
+  {
+    if (exists $$fn_hash{$i})
+    {
+      push @ret, $$fn_hash{$i};
+    }
+    else
+    {
+      push @ret, $i;
+    }
+  }
+
+  return @ret;
+}
+
 sub xst_parse_from_table
 {
   my ($fn, $table) = @_;
@@ -61,7 +83,7 @@ sub xst_parse_from_table
     @cp = @$i;
     $key = shift (@cp);
     $proc = shift (@cp);
-    $cp[0] = $$fn{$cp[0]};
+    unshift @cp, &xst_parse_replace_files (shift (@cp), $fn);
 
     &xst_parse_replace_hash_values (\@cp, \%hash);
     $hash{$key} = &$proc (@cp) if ($hash{$key} eq undef);
@@ -75,23 +97,57 @@ sub xst_parse_from_table
   return \%hash;
 }
 
+sub xst_parse_chomp_line_std
+{
+  my ($line) = @_;
+
+  chomp $line;
+  $line =~ s/^[ \t]+//;
+  $line =~ s/[ \t]+$//;
+
+  return $line;
+}
+
+sub xst_parse_chomp_line_hash_comment
+{
+  my ($line) = @_;
+
+  $line = &xst_parse_chomp_line_std ($line);
+
+  # This will put escaped hashes out of danger.
+  $line =~ s/([\"\'][^\#]*)\#([^\"\']*[\"\'])/\1__hash__\2/g;
+  $line =~ s/\\\#/__hash__/g;
+
+  # Nuke everything after a hash.
+  $line =~ s/\#.*//;
+
+  # Let escaped hashes come back home.
+  $line =~ s/__hash__/\#/g;
+
+  # Bye bye trailing spaces.
+  $line =~ s/[ \t]+$//;
+  
+  return $line;
+}
+
 # Parse a $file, wich is assumed to have a column-based format, with $re matching field separators
 # and one record per line. Search for $key, and return either a scalar with the first ocurrence,
 # or an array with all the found ocurrences.
 sub xst_parse_split
 {
-  my ($file, $key, $re, $all) = @_;
+  my ($file, $key, $re, $all, $line_read_proc) = @_;
   my ($fd, @line, @res);
 
+  $proc = $line_read_proc? $line_read_proc : \&xst_parse_chomp_line_std;
+  
   $fd = &xst_open_read_from_names ($file);
   $all = 0 if !$fd;
   
-  while (<$fd>)
+  while ($line = <$fd>)
   {
-    chomp;
-    s/^[ \t]+//;
-    next if (/^\#/ || /^$/);
-    @line = split ($re, $_, 2);
+    $line = &$proc ($line);
+    next if $line eq "";
+    @line = split ($re, $line, 2);
 
     if (shift (@line) eq $key)
     {
@@ -115,29 +171,37 @@ sub xst_parse_split
 # is what we want. (ie search a.com\nsearch b.com\nsearch c.com)
 sub xst_parse_split_all
 {
-  my ($file, $key, $re) = @_;
+  my ($file, $key, $re, $line_read_proc) = @_;
   my @a;
 
-  @a = &xst_parse_split ($file, $key, $re, 1);
+  @a = &xst_parse_split ($file, $key, $re, 1, $line_read_proc);
 
   return \@a;
+}
+
+# Same, but use the hash_comment routine for line analysis.
+sub xst_parse_split_all_hash_comment
+{
+  my ($file, $key, $re) = @_;
+
+  return &xst_parse_split_all ($file, $key, $re, \&xst_parse_chomp_line_hash_comment);
 }
 
 # Same, but for $all = 0. (ie nameserver 10.0.0.1)
 sub xst_parse_split_first_str
 {
-  my ($file, $key, $re) = @_;
+  my ($file, $key, $re, $line_read_proc) = @_;
 
-  return &xst_parse_split ($file, $key, $re, 0);
+  return &xst_parse_split ($file, $key, $re, 0, $line_read_proc);
 }
 
 # Interpret the result as a boolean. (ie multi on)
 sub xst_parse_split_first_bool
 {
-  my ($file, $key, $re) = @_;
+  my ($file, $key, $re, $line_read_proc) = @_;
   my $ret;
 
-  $ret = &xst_parse_split_first_str ($file, $key, $re);
+  $ret = &xst_parse_split_first_str ($file, $key, $re, $line_read_proc);
 
   return undef if ($ret eq undef);
   return (&xst_read_boolean ($ret)? 1: 0);
@@ -146,10 +210,10 @@ sub xst_parse_split_first_bool
 # After getting the first field, split the result with $sep matching separators. (ie order hosts,bind)
 sub xst_parse_split_first_array
 {
-  my ($file, $key, $re, $sep) = @_;
+  my ($file, $key, $re, $sep, $line_read_proc) = @_;
   my @ret;
   
-  @ret = split ($sep, &xst_parse_split ($file, $key, $re, 0));
+  @ret = split ($sep, &xst_parse_split ($file, $key, $re, 0, $line_read_proc));
 
   return \@ret;
 }
@@ -160,7 +224,10 @@ sub xst_parse_sh
   my ($file, $key) = @_;
   my $ret;
 
-  $ret = &xst_parse_split_first_str ($file, $key, "[ \t]*=[ \t]*");
+  $ret = &xst_parse_split_first_str ($file, $key, "[ \t]*=[ \t]*",
+                                     \&xst_parse_chomp_line_hash_comment);
+
+  # Quote shell special chars.
   $ret =~ s/\\\"/\\_/g;
   $ret =~ s/\"//g;
   $ret =~ s/\\_/\"/g;

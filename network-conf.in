@@ -207,37 +207,6 @@ sub xml_parse_dialing
 
 # --- XML printing --- #
 
-sub xml_print_scalars
-{
-  my ($h, @scalar_keys) = @_;
-  my $i, $val;
-
-  while ($i = shift @scalar_keys)
-  {
-    $val = &xst_xml_quote ($$h{$i});
-    &xst_xml_print ("<$i>$val</$i>\n") if exists $$h{$i};
-  }
-}
-
-sub xml_print_arrays
-{
-  my ($h, @array_keys) = @_;
-  my $i, $j, $val;
-  
-  foreach $i (@array_keys)
-  {
-    if (exists $$h{$i})
-    {
-      &xst_xml_vspace ();
-      foreach $j (@{$$h{$i}})
-      {
-        $val = &xst_xml_quote ($j);
-        &xst_xml_print ("<$i>$val</$i>\n");
-      }
-    }
-  }
-}
-
 sub xml_print_statichost
 {
   my ($h) = $_[0];
@@ -261,29 +230,6 @@ sub xml_print_statichost
   }
 }
 
-sub xml_print_hash
-{
-  my ($h, $tag) = @_;
-  my $hash, $i, $j, $val;
-  
-  foreach $i (keys %$h)
-  { 
-    $hash = $$h{$i};
-    &xst_xml_vspace ();
-    &xst_xml_print ("<$tag>\n");
-    &xst_xml_enter ();
-    
-    foreach $j (keys (%$hash))
-    {
-      $val = &xst_xml_quote ($$hash{$j});
-      &xst_xml_print ("<$j>$val</$j>\n");
-    }
-    
-    &xst_xml_leave ();
-    &xst_xml_print ("</$tag>\n");
-  } 
-}
-
 sub xml_print
 {
   my $h = $_[0];
@@ -301,12 +247,12 @@ sub xml_print
 
   # Hostname, domain, search domains, nameservers.
 
-  &xml_print_scalars ($h, @scalar_keys);
-  &xml_print_arrays ($h, @array_keys);
+  &xst_xml_print_scalars ($h, @scalar_keys);
+  &xst_xml_print_arrays ($h, @array_keys);
   &xml_print_statichost ($h);
 
-  &xml_print_hash ($$h{"interface"}, "interface");
-  &xml_print_hash ($$h{"dialing"}, "dialing");
+  &xst_xml_print_hash_hash ($$h{"interface"}, "interface");
+  &xst_xml_print_hash_hash ($$h{"dialing"}, "dialing");
   
   &xst_xml_leave ();
   &xst_xml_vspace ();
@@ -329,38 +275,6 @@ sub get
 
   &xst_end();
   &xml_print ($hash);
-}
-
-
-# --- Set (write) config --- #
-
-sub set_immediate
-{
-  # Set hostname via utility, in case the config files aren't enough.
-
-  if ($cf_hostname ne "")
-  {
-    if (&xst_run("hostname $cf_hostname >/dev/null 2>/dev/null"))
-    {
-      &xst_report_warning(3, "Failed to set runtime hostname");
-    }
-    else
-    {
-      &xst_report_info(1, "Runtime hostname set");
-    }
-  }
-  else
-  {
-    &xst_report_warning(4, "No hostname specified; runtime hostname not set");
-  }
-
-  # Reload SMB configuration.
-  
-  &xst_service_restart(80, "-D", "samba", "smb", "smbd");
-
-  # Activate or deactivate network interfaces
-
-  &set_active_interfaces ();
 }
 
 

@@ -47,6 +47,7 @@ sub xst_replace_from_table
     if (exists $$values_hash{$key})
     {
       $proc = shift (@cp);
+      unshift @cp, &xst_parse_replace_files (shift (@cp), $fn);
       $cp[0] = $$fn{$cp[0]} if $cp[0] ne undef;
       push (@cp, $$values_hash{$key});
 	 

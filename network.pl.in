@@ -185,7 +185,7 @@ sub xst_network_conf_get
   %dist_attrib = &xst_network_get_parse_table ();
 
   $hash = &xst_parse_from_table ($dist_attrib{"fn"},
-						   $dist_attrib{"table"});
+                                 $dist_attrib{"table"});
   return $hash;
 }
 
