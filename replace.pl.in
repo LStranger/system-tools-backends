@@ -1223,4 +1223,40 @@ sub xst_replace_pump_iface_kw_not
   return &xst_replace_pump_iface_kw ($file, $iface, $key, !$value);
 }
 
+sub xst_replace_xml_pcdata
+{
+  my ($file, $varpath, $data) = @_;
+  my ($model, $branch, $fd);
 
+  $model  = &xst_xml_model_scan ($file);
+  $branch = &xst_xml_model_ensure ($model, $varpath);
+
+  &xst_xml_model_set_pcdata ($branch, $data);
+
+  $fd = &xst_file_open_write_from_names ($file);
+  if ($fd == -1) { return -1; }
+
+  print $fd &xst_xml_model_print ($model);
+  close $fd;
+
+  return 0;
+}
+
+sub xst_replace_xml_attribute
+{
+  my ($file, $varpath, $attr, $value) = @_;
+  my ($model, $branch, $fd);
+
+  $model  = &xst_xml_model_scan ($file);
+  $branch = &xst_xml_model_ensure ($model, $varpath);
+
+  &xst_xml_model_set_attribute ($branch, $attr, $value);
+
+  $fd = &xst_file_open_write_from_names ($file);
+  if ($fd == -1) { return -1; }
+
+  print $fd &xst_xml_model_print ($model);
+  close $fd;
+
+  return 0;
+}

@@ -38,7 +38,6 @@ sub xst_print_conf_get
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"printers_get"};
   @printers = &$proc ();
-#  $key = 0;
 
   foreach $i (@printers)
   {
@@ -100,8 +99,6 @@ sub xst_print_conf_set
       $ {$dist_attrib{"fn"}}{$j} = $value;
     }
 
-    print "Doing replace for $i.\n";
-
     my $tmpres = &xst_replace_from_table ($dist_attrib {"fn"},
                                           $dist_attrib {"table"},
                                           $$values_hash {$i},
@@ -113,7 +110,7 @@ sub xst_print_conf_set
   return $res;
 }
 
-sub xst_print_printers_get
+sub xst_print_printers_get_rh70
 {
   my @printers;
 
@@ -134,7 +131,7 @@ sub xst_print_get_printer_parse_table
   (
     "redhat-7.0" =>
 	  {
-      printers_get => \&xst_print_printers_get,
+      printers_get => \&xst_print_printers_get_rh70,
 	    fn =>
 	    {
         PRINTCAP   => "/etc/printcap",
@@ -189,7 +186,7 @@ sub xst_print_get_printer_replace_table
   (
     "redhat-7.0" =>
 	  {
-      printers_get   => \&xst_print_printers_get,
+      printers_get   => \&xst_print_printers_get_rh70,
       printer_remove => \&xst_replace_printcap_remove_printer,
 	    fn =>
 	    {

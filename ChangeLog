@@ -1,3 +1,13 @@
+2001-07-16  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_xml_children): Implement.
+
+	* print.pl.in (xst_print_printers_get): Rename to
+	  xst_print_printers_get_rh70. Update tables to use this.
+
+	* replace.pl.in (xst_replace_xml_pcdata): Implement.
+	  (xst_replace_xml_attribute): Implement.
+
 Sat Jul 14 11:54:50 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* file.pl.in (xst_file_run): Escape ($) in system call, heheh.
