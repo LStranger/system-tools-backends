@@ -38,6 +38,68 @@ require "$SCRIPTSDIR/file.pl$DOTIN";
 require "$SCRIPTSDIR/report.pl$DOTIN";
 require "$SCRIPTSDIR/service-list.pl$DOTIN";
 
+sub xst_service_sysv_installed
+{
+  my ($service) = @_;
+  my ($res, $rcd_path, $initd_path);
+
+  &xst_report_enter ();
+  
+  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+
+  $res = 1;
+  if (! -f "$initd_path/$service")
+  {
+    $res = 0;
+    &xst_report ("service_sysv_not_found", $service);
+  }
+
+  &xst_report_leave ();
+  return $res;
+}
+
+
+# Return 1 or 0: is the service running?
+# Depends on the rc script to support the "status" arg.
+# Maybe we should do something more portable.
+sub xst_service_sysv_get_status
+{
+  my ($service) = @_;
+  my ($rc_path, $initd_path, $res);
+  my ($pid);
+
+  &xst_report_enter ();
+
+  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
+  # FIXME: portable to other UNIXES?
+  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
+  chomp $pid;
+
+  if ($pid)
+  {
+    $res = 1;
+    &xst_report ("service_status_running", $service);
+  }
+  else
+  {
+    $res = 0;
+    &xst_report ("service_status_stopped", $service);
+  }
+    
+#  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+#  $res = 0;
+#  
+#  if (-f "$initd_path/$service")
+#  {
+#    $res = &xst_file_run ("$initd_path/$service status")? 0 : 1;
+#    &xst_report ("service_status_running", $service) if $res;
+#    &xst_report ("service_status_stopped", $service) if !$res;
+#  }
+
+  &xst_report_leave ();
+  return $res;
+}
+
 
 # Where is the SysV subsystem installed?
 sub xst_service_sysv_get_paths
