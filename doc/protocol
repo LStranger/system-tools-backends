@@ -2,6 +2,20 @@ A DESCRIPTION OF THE REPORT/DIRECTIVE SYSTEM.
 Arturo Espinosa <arturo@ximian.com>
 
 
+Contents:
+
+- The report line format.
+
+- How backends work on interactive mode
+-- Directive line format
+-- And so the directive starts running.
+
+- An Example
+
+- How the XST frontends take advantage of the report lines.
+
+
+
 - The report line format.
 
 
@@ -204,3 +218,98 @@ stdin. Stuff between [] are comments on what's hapenning:
 < end
 [ The end directive! The code for this directive makes the backend close
   all files and finish gracefully. End of the life of the backend.]
+
+
+- How the XST frontends take advantage of the report lines.
+
+
+I'll explain this by example.  The case is the boot tool, where the user will
+be warned if the /etc/lilo.conf file doesn't exist.
+
+At the backend, add a report entry at report.pl.in:xst_report_message.
+I'll code a function where you can merge your own report entries with the
+default ones and unclutter that hash declaration, but this is the way to
+do it at the moment.
+
+In our example, the entry is:
+
+"boot_conf_read_failed" => ["error", _("Failed to open boot configuration file [%s].")],
+
+
+Then call &xst_report ("my_error", ...) where the error happens or
+where/when you want the report to occur. In our case:
+
+backend/boot.pl.in:xst_boot_parse_global_kw
+.
+.
+  $fd = &xst_file_open_read_from_names ($file);
+  if (! $fd)
+  {
+    &xst_report ("boot_conf_read_failed", $file);
+    return undef;
+  }
+.
+.
+
+Now to the frontend: we need to call xst_tool_add_report_hooks (too,
+table). This table looks like this, from our example:
+
+src/boot/main.c:main
+
+XstReportHookEntry report_hooks[] = {
+	{ "boot_conf_read_failed",         \\ Report minor we're binding.
+          callbacks_conf_read_failed_hook, \\ hook function
+	  XST_REPORT_HOOK_LOAD,            \\ When to check for this hook.
+          FALSE, NULL },                   \\ Repeat?, user data.
+
+	{ NULL, NULL, -1, FALSE, NULL }   \\ Terminating record
+};
+
+So we're binding to the report we just created in report.pl.in, and
+src/boot/callbacks.c:callbacks_conf_read_failed_hook will be called with
+(tool, rline, NULL) as arguments. rline is the instance of the report that
+was catched, where the string array args is probably the most interesting
+part.
+
+The "When to check for this hook" can be either XST_REPORT_HOOK_LOAD, SAVE
+or LOADSAVE. Maybe we should change this to a direct mapping (GET, SET,
+GETSET), but for some strange reason, LOAD == GET and SAVE == LOAD. This
+means that XST_REPORT_HOOK_SAVE hooks will only be called when a
+"set" type directive is requested from the backend.
+
+The repeat field (set to FALSE) tells if the hook should be called every
+time (when TRUE) the report with the defined minor is catched, or only
+once (when FALSE).
+
+The user data is for convenience, but we're not using it because the tool
+structure, passed as the first argument, already contains the stuff we
+need.
+
+And finally our hook function:
+
+gboolean
+callbacks_conf_read_failed_hook (XstTool *tool, XstReportLine *rline,
+gpointer data)
+{
+	GtkWidget *dialog;
+	gchar *txt;
+
+	txt = g_strdup_printf (_("The file `%s'' is missing or could not
+be read:\n"
+				 "The configuration will show empty."),
+                                 rline->argv[0]);
+	
+	dialog = gnome_error_dialog_parented (txt, GTK_WINDOW
+(tool->main_dialog));
+	gnome_dialog_run_and_close (GNOME_DIALOG (dialog));
+
+	g_free (txt);
+
+	/* Handled, don't go looking for more hooks to run */
+	return TRUE;
+}
+
+Yeah, the return value is important: it tells the hook caller if it should
+continue searching for more hooks bound to the given minor or not.
+
+That's all! It's really more simple that it seems. :)

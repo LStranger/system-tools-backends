@@ -1,3 +1,8 @@
+Wed Aug 22 22:03:46 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* protocol (Contents): Added text on using report lines using the
+	XST frontend common code.
+
 2001-08-17  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* protocol (all): Updated to new version that transmits the major.
