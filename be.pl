@@ -5,7 +5,10 @@
 #
 # Copyright (C) 2000 Helix Code, Inc.
 #
-# Author: Hr. Hans Petter Jansson <hpj@helixcode.com>
+# Authors: Hans Petter Jansson <hpj@helixcode.com>
+#          Arturo Espinosa <arturo@helixcode.com>
+#          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
+#          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
