@@ -1,3 +1,11 @@
+2001-10-05  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_version): Fixed hacky way to find X binary, save it
+	in main hash to cache it.
+	(x_get_active_screen): Much more robust, should work now in any
+	case (X4, X3 with or without ServerLayout).
+	(x_probe): Oops, forgot to uncomment this!
+
 2001-10-03  Tambet Ingo  <tambet@ximian.com>
 
 	* users-conf.in (logindefs_add_defaults): Return the hash we fill :)
