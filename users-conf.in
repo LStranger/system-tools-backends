@@ -1312,7 +1312,32 @@ sub xml_parse_group
 	$copy = [@line];
 	$$groups_hash{sprintf ("%06d", $line[0])} = $copy;
 	push (@$groups, $copy);
-}	
+}
+
+sub xml_parse_profile_groups
+{
+  my ($tree) = @_;
+  my ($arr);
+
+  shift @$tree; # Skip attributes.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "group")
+    {
+      push @$arr, $$tree[1][2];
+    }
+    else
+    {
+      &gst_report ("xml_unexp_tag", $$tree[0]);
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return $arr;
+}
 
 sub xml_parse_profile
 {
@@ -1328,6 +1353,10 @@ sub xml_parse_profile
 		{
 		  $profile{$$tree[0]} = $$tree[1][2];
 		}
+    elsif ($$tree[0] eq "groups")
+    {
+      $profile{$$tree[0]} = &xml_parse_profile_groups ($$tree[1]);
+    }
 		elsif ($$tree[0] ne "files") # files tag is ignored for parsing. # FIXME!
     {
 		  &gst_report ("xml_unexp_tag", $$tree[0]);
