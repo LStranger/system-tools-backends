@@ -1,3 +1,9 @@
+2003-10-09  Gerhard Mourani  <gmourani@openna.com>
+
+	* network-conf.in, network.pl.in, package-conf.in, platform.pl.in,
+	  print.pl.in, service.pl.in, services-conf.in, shares-conf.in,
+	  time-conf.in, users-conf.in: added OpenNA support
+
 2003-10-08  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* xml.pl.in: (gst_xml_read_stdin) improved xml reading

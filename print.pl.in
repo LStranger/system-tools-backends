@@ -144,6 +144,7 @@ sub gst_print_get_printer_parse_table
 	(
 	  "redhat-7.0" => "redhat-7.0",
 	  "redhat-7.1" => "redhat-7.1",
+	  "openna-1.0" => "redhat-7.0",
     "debian-2.2" => "redhat-7.0",
 		"debian-woody" => "redhat-7.0"
   );
@@ -244,6 +245,7 @@ sub gst_print_get_printer_replace_table
 	(
 	  "redhat-7.0" => "redhat-7.0",
 	  "redhat-7.1" => "redhat-7.1",
+	  "openna-1.0" => "redhat-7.0",
     "debian-2.2" => "redhat-7.0",
 		"debian-woody" => "redhat-7.0"
   );

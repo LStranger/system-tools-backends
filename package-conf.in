@@ -138,6 +138,7 @@ sub get_package
   my %dist_map =
   (
     "redhat"   => "$cmd_map{rpm}",
+    "openna"   => "$cmd_map{rpm}",
     "mandrake" => "$cmd_map{rpm}",
     "suse"     => "$cmd_map{rpm}",
     "debian"   => "$cmd_map{deb}",

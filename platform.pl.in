@@ -51,6 +51,7 @@ $PLATFORM_INFO = {
   "redhat-7.3"      => "Red Hat Linux 7.3 Valhalla",
   "redhat-8.0"      => "Red Hat Linux 8.0 Psyche",
   "redhat-9"        => "Red Hat Linux 9.0 Shrike",
+  "openna-1.0"      => "OpenNA Linux 1.0 VSLC",
   "mandrake-7.1"    => "Linux Mandrake 7.1",
   "mandrake-7.2"    => "Linux Mandrake 7.2 Odyssey",
   "mandrake-8.0"    => "Linux Mandrake 8.0 Traktopel",
@@ -121,6 +122,21 @@ sub check_redhat
   return -1;
 }
 
+sub check_openna
+{
+  open OPENNA, "$gst_prefix/etc/openna-release" or return -1;
+  while (<OPENNA>)
+  {
+    chomp;
+    if (/^OpenNA*/)
+    {
+      close OPENNA;
+      return "openna-$1";
+    }
+  }
+  close OPENNA;
+  return -1;
+}
 
 sub check_caldera
 {
@@ -305,8 +321,8 @@ sub gst_platform_guess
   my %check = (
     # Red Hat check must run after Mandrake
     "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, 
-                 \&check_mandrake, \&check_linuxppc, \&check_redhat,  \&check_turbolinux,
-                 \&check_slackware, \&check_gentoo,  \&check_pld ],
+                 \&check_mandrake, \&check_linuxppc, \&check_redhat,  \&check_openna,
+                 \&check_turbolinux, \&check_slackware, \&check_gentoo,  \&check_pld ],
     "FreeBSD" => [ \&check_freebsd ],
     "SunOS"    => [ \&check_solaris ]
                );

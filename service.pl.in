@@ -58,6 +58,7 @@ sub gst_service_sysv_get_paths
        "redhat-7.3"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        "redhat-8.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        "redhat-9"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "openna-1.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
        "mandrake-7.1" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
        "mandrake-7.2" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
@@ -97,6 +98,7 @@ sub gst_service_sysv_get_runlevels
        "redhat-7.3"     => [3, 5],
        "redhat-8.0"     => [3, 5],
        "redhat-9"       => [3, 5],
+       "openna-1.0"     => [3, 5],
 
        "mandrake-7.1"   => [3, 5],
        "mandrake-7.2"   => [3, 5],
@@ -135,6 +137,7 @@ sub gst_service_get_verbose_runlevels
      "redhat-7.3"     => "redhat-5.2",
      "redhat-8.0"     => "redhat-5.2",
      "redhat-9"       => "redhat-5.2",
+     "openna-1.0"     => "redhat-5.2",
      
      "mandrake-7.1"   => "redhat-5.2",
      "mandrake-7.2"   => "redhat-5.2",
