@@ -773,6 +773,7 @@ sub xst_network_get_pap_passwd
   return $passwd;
 }
 
+# These functions do not honour the file nor call directives.
 sub xst_network_get_ppp_options_re
 {
   my ($file, $re) = @_;
@@ -799,6 +800,7 @@ sub xst_network_set_ppp_options_re
 {
   my ($file, $re, $value) = @_;
   my ($buff, $line, $replaced, $ret);
+  my ($pre_space, $post_comment);
 
   &xst_report_enter ();
   &xst_report ("network_set_ppp_option", &xst_replace_regexp_to_separator ($re), $file);
@@ -807,11 +809,18 @@ sub xst_network_set_ppp_options_re
 
   foreach $line (@$buff)
   {
+    $pre_space = $post_comment = "";
+    chomp $line;
+    $pre_space = $1 if $line =~ s/^([ \t]+)//;
+    $post_comment = $1 if $line =~ s/([ \t]*\#.*)//;
+    
     if ($line =~ /$re/)
     {
       $line = "$value\n";
       $replaced = 1;
     }
+
+    $line = $pre_space . $line . $post_comment . "\n";
   }
 
   push @$buff, "$value\n" if !$replaced;
@@ -871,6 +880,7 @@ sub xst_network_set_ppp_options_unsup
 {
   my ($file, $value) = @_;
   my ($buff, $line, $re, $ret);
+  my ($pre_space, $post_comment);
   my @known_options = ("usepeerdns", "mtu", "mru", "user", "/dev/[^ \t]+", "[0-9]+",
                        "defaultroute", "debug", "persist", "escape", "crtscts", "connect",
                        "remotename", "hide-password", "noauth", "noipdefault", "ipparam");
@@ -884,11 +894,16 @@ sub xst_network_set_ppp_options_unsup
 
   GET_LINE: foreach $line (@$buff)
   {
+    $pre_space = $post_comment = "";
+    chomp $line;
+    $pre_space = $1 if $line =~ s/^([ \t]+)//;
+    $post_comment = $1 if $line =~ s/([ \t]*\#.*)//;
+
     foreach $re (@known_options)
     {
       next GET_LINE if $line =~ /^$re/;
     }
-    $line = "";
+    $line = $pre_space . $post_comment;
   }
   
   push @$buff, $value . "\n";
@@ -1991,6 +2006,7 @@ sub xst_network_get_interface_replace_table
 #          [ "network",            \&xst_parse_trivial,                   0 ], # not supported.
 #          [ "gateway",            \&xst_parse_sh,      IFCFG, GATEWAY ], # not supported
            [ "remote_address",     \&xst_network_suse70_set_ifconfig_arg,   [IFCFG, IFACE], pointopoint ],
+           [ "update_dns",
 # dynamic virtual interface stuff will be added later.
       ]
     }
