@@ -1,15 +1,15 @@
 # Czech translation of gnome-system-tools backends.
 # Copyright (C) 2003 gnome-setup-tools' COPYRIGHT HOLDER
-# Copyright (C) 2003, 2004 Miloslav Trmac <mitr@volny.cz>
+# Copyright (C) 2003, 2004, 2005 Miloslav Trmac <mitr@volny.cz>
 # This file is distributed under the same license as the gnome-setup-tools package.
-# Miloslav Trmac <mitr@volny.cz>, 2003, 2004.
+# Miloslav Trmac <mitr@volny.cz>, 2003, 2004, 2005.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: gnome-setup-tools VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-01-02 12:32+0100\n"
-"PO-Revision-Date: 2005-01-02 15:11+0100\n"
+"POT-Creation-Date: 2005-02-06 15:18+0100\n"
+"PO-Revision-Date: 2005-02-06 17:03+0100\n"
 "Last-Translator: Miloslav Trmac <mitr@volny.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -893,8 +893,8 @@ msgid "Access to floppy drives"
 msgstr "Přístup k disketovým mechanikám"
 
 #: users-conf.in:186
-msgid "Mount removable devices automatically"
-msgstr "Automaticky připojovat výměnná zařízení"
+msgid "Enable access to external storage devices automatically"
+msgstr "Automaticky povolit přístup k externím úložným zařízením"
 
 #: users-conf.in:187
 msgid "Access to tape drives"
@@ -904,10 +904,10 @@ msgstr "Přístup k páskovým mechanikám"
 msgid "Be able to get administrator privileges"
 msgstr "Moci získat oprávnění správce"
 
-#: users-conf.in:458
+#: users-conf.in:491
 msgid "Default"
 msgstr "Implicitní"
 
-#: users-conf.in:459
+#: users-conf.in:492
 msgid "Default profile"
 msgstr "Implicitní profil"
