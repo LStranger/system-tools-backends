@@ -51,7 +51,7 @@ sub xst_debug_close_all
     @files = keys %xst_debug_fd_hash;
     foreach $file (@files)
     {
-        close $xst_debug_fd_hash{$file};
+        &xst_file_close ($xst_debug_fd_hash{$file});
         delete $xst_debug_fd_hash{$file};
     }
 }

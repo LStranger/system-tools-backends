@@ -453,9 +453,17 @@ sub xst_file_run_backtick
 
   $fd = &xst_file_run_pipe_read ($cmd);
   $res = join ('', <$fd>);
-  close $fd;
+  &xst_file_close ($fd);
 
   return $res;
+}
+
+
+sub xst_file_close
+{
+  my ($fd) = @_;
+
+  close $fd if (ref \$fd eq "GLOB");
 }
 
 
@@ -536,7 +544,7 @@ sub xst_file_buffer_save
     }
   }
 
-  close $fd;
+  &xst_file_close ($fd);
 
   &xst_report_leave ();
   

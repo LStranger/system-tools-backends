@@ -308,7 +308,7 @@ sub get_fdisk
 
       }
     }
-    close($fd);
+    &xst_file_close ($fd);
 
     &xst_report ("disks_size_query", $dev);
 
@@ -349,7 +349,7 @@ sub get_swap_size
         $size = sprintf("%.1fMB", $_ / 1024);		#size from Kb to Mb
       }
     }
-    close $fd;
+    &xst_file_close ($fd);
   }
 
   return $size;

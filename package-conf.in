@@ -153,7 +153,7 @@ sub get_package
       "dist"     => $dist,
     };
   }
-  close ($fd);
+  &xst_file_close ($fd);
 }
 
 sub get

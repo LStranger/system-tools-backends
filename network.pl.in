@@ -164,7 +164,7 @@ sub xst_network_ping_broadcast_call
       $hosts{$1} = 1 ;
     }
   }
-  close $fd;
+  &xst_file_close ($fd);
 
   return join (':', keys (%hosts));
 }
@@ -375,7 +375,7 @@ sub xst_network_active_interfaces_get_info
       $ {$ifaces{$dev}}{"bcast"}   = $1 if /bcast:([^ \t]+)/i;
     }
   }
-  close $fd;
+  &xst_file_close ($fd);
 
   &xst_report_leave ();
   return \%ifaces;
@@ -401,7 +401,7 @@ sub xst_network_active_interfaces_get
     push @ret, $_;
   }
 
-  close $fd;
+  &xst_file_close ($fd);
 
   &xst_report_leave ();
   return @ret;
@@ -518,7 +518,7 @@ sub xst_network_suse70_ifaces_get_existing
     }
   }
 
-  close $fd;
+  &xst_file_close ($fd);
   return @ret;
 }
 
@@ -967,7 +967,7 @@ sub xst_network_route_set_default_gw
       last;
     }
   }
-  close $fd;
+  &xst_file_close ($fd);
 
   if (($curr_gateway    ne $gateway) ||
       ($curr_gatewaydev ne $gatewaydev))

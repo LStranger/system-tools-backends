@@ -347,7 +347,7 @@ sub xst_replace_line_first
   return -1 if !$fd;
 
   print $fd $value;
-  close $fd;
+  &xst_file_close ($fd);
   
   return 0;
 }

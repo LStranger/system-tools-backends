@@ -51,7 +51,7 @@ sub xst_filesys_ext2_device_to_label  # device
   return undef if $fd eq undef;
   $label = <$fd>;
   chomp $label;
-  close ($fd);
+  &xst_file_close ($fd);
 
   return $label;
 }
@@ -657,7 +657,7 @@ sub xst_filesys_fstab_parse  # filename
     &xst_filesys_table_add ($table, $fsi);
   }
 
-  close $fd;
+  &xst_file_close ($fd);
   return $table;
 }
 
@@ -764,7 +764,7 @@ sub xst_filesys_mtab_parse  # filename
     &xst_filesys_table_add ($table, $fsi);
   }
 
-  close $fd;
+  &xst_file_close ($fd);
   return $table;
 }
 
@@ -909,10 +909,10 @@ sub xst_filesys_fstab_add_entry     # filename, filesys_info
   return undef if !$outfd;
 
   while (<$infd>) { print $outfd $_; }
-  close $infd;
+  &xst_file_close ($infd);
 
   print $outfd &xst_filesys_info_print_entry ($info) . "\n";
-  close $outfd;
+  &xst_file_close ($outfd);
 }
 
 sub xst_filesys_fstab_update_entry  # filename, filesys_info
@@ -942,8 +942,8 @@ sub xst_filesys_fstab_update_entry  # filename, filesys_info
     }
   }
 
-  close $infd;
-  close $outfd;
+  &xst_file_close ($infd);
+  &xst_file_close ($outfd);
 }
 
 sub xst_filesys_fstab_remove_entry  # filename, filesys_info
@@ -966,8 +966,8 @@ sub xst_filesys_fstab_remove_entry  # filename, filesys_info
     }
   }
 
-  close $infd;
-  close $outfd;
+  &xst_file_close ($infd);
+  &xst_file_close ($outfd);
 }
 
 # Replace instances in fstab-style file.

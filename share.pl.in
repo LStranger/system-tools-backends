@@ -649,10 +649,10 @@ sub xst_share_nfs_exports_add_entry
   return undef if !$outfd;
 
   while (<$infd>) { print $outfd $_; }
-  close $infd;
+  &xst_file_close ($infd);
 
   print $outfd &xst_share_nfs_info_print_entry ($info) . "\n";
-  close $outfd;
+  &xst_file_close ($outfd);
 }
 
 sub xst_share_nfs_exports_update_entry  # filename, filesys_info
@@ -680,8 +680,8 @@ sub xst_share_nfs_exports_update_entry  # filename, filesys_info
     }
   }
 
-  close $infd;
-  close $outfd;
+  &xst_file_close ($infd);
+  &xst_file_close ($outfd);
 }
 
 sub xst_share_nfs_exports_remove_entry
@@ -703,8 +703,8 @@ sub xst_share_nfs_exports_remove_entry
     }
   }
 
-  close $infd;
-  close $outfd;
+  &xst_file_close ($infd);
+  &xst_file_close ($outfd);
 }
 
 sub xst_share_nfs_exports_get_entry_line_point

@@ -36,7 +36,7 @@ sub xst_ishare_get_linux22_forward_support_active
   $val = <$fd>;
   chomp $val;
   $$hash{"active"} = ($val == 1)? 1: 0;
-  close $fd;
+  &xst_file_close ($fd);
 }
   
 
@@ -74,7 +74,7 @@ sub xst_ishare_fwrules_get_ipchains
         }
       }
       
-      close $fd;
+      &xst_file_close ($fd);
     }
   }
 
@@ -93,7 +93,7 @@ sub xst_ishare_ipchains_save
   
   $fd = &xst_file_run_pipe_read ("ipchains-save");
   @buff = (<$fd>);
-  close $fd;
+  &xst_file_close ($fd);
 
   foreach $line (@buff)
   {

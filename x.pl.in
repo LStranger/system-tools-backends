@@ -1170,8 +1170,8 @@ sub x_config_set
     print $outfd $_;
   }
 
-  close ($infd);
-  close ($outfd);
+  &xst_file_close ($infd);
+  &xst_file_close ($outfd);
 }
 
 #-------------------------------------------------------

@@ -585,7 +585,7 @@ sub get_network_interfaces
 	  }
   }
 
-  close $fd;
+  &xst_file_close ($fd);
 }
 
 # Find the record in the io ports list that contains a given I/O

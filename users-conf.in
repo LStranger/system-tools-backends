@@ -263,7 +263,7 @@ sub read_login_defs
     @line = split (/[ \t]+/, $_);
     $login_defs{$login_defs_prop_map{$line[0]}} = $line[1];
   }
-  close ($ifh);
+  &xst_file_close ($ifh);
 
   $$hash{"login_defs"} = \%login_defs;
 }
@@ -302,7 +302,7 @@ sub read_passwd_shadow
     push (@users, $copy);
     $i ++;
   }
-  close ($ifh);
+  &xst_file_close ($ifh);
 	
   # Find the shadow file.
 
@@ -324,7 +324,7 @@ sub read_passwd_shadow
       @{$tmphash{$login}}[$passwd_pos] = $passwd;
     }
 
-    close ($ifh);
+    &xst_file_close ($ifh);
   }
 
   $$hash{"users"}      = \@users;
@@ -363,7 +363,7 @@ sub read_group
     push (@groups, $copy);
     $i ++;
   }
-  close ($ifh);
+  &xst_file_close ($ifh);
 
   $$hash{"groups"}      = \@groups;
   $$hash{"groups_hash"} = \%groups_hash;
@@ -396,7 +396,7 @@ sub read_shells
     chomp;
     push (@shells, $_) if (stat ($_) ne "");
   }
-  close ($ifh);
+  &xst_file_close ($ifh);
 
   $$hash{"shells"} = \@shells;
 }

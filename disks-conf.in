@@ -572,14 +572,14 @@ sub get_fdisk
                           $bootable, 1);
       }
     }
-    close($fd);
+    &xst_file_close ($fd);
 
     &xst_report ("disks_size_query", $dev);
 
     $fd = &xst_file_run_pipe_read ("fdisk -s $de");
     ($size) = (<$fd> =~ /([0-9]+)/);
     if ($size ne "") { &update_disk_size($dev, $size); }
-    close ($fd);
+    &xst_file_close ($fd);
     
     &xst_print_progress();
   }

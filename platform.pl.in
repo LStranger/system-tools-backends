@@ -188,7 +188,7 @@ sub check_solaris
   $fd = &xst_file_run_pipe_read ("uname -r");
   return -1 if $fd eq undef;
   chomp ($dist = <$fd>);
-  close $fd;
+  &xst_file_close ($fd);
 
   if ($dist =~ /^5\.(\d)/) { return "solaris-2.$1" }
   else { if ($dist =~ /^([78])\.\d/) { return "solaris-$1.0" } }

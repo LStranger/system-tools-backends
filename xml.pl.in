@@ -454,7 +454,7 @@ sub xst_xml_read_compressed_file
   $fd = &xst_file_run_pipe_read ("gunzip -c $file");
   return undef if $fd eq undef;
   $doc .= $i while ($i = <$fd>);
-  close $fd;
+  &xst_file_close ($fd);
 
   if (length ($doc) < 4)  # Allow for one blank line from gzip, '\n\r'.
   {
@@ -605,7 +605,7 @@ sub xst_xml_model_save
   if ($fd == -1) { return -1; }
 
   print $fd &xst_xml_model_print ($model);
-  close $fd;
+  &xst_file_close ($fd);
 
   return 0;
 }

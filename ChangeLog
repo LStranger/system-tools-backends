@@ -1,3 +1,11 @@
+2001-08-13  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* file.pl.in (xst_file_close): New abstraction for close.
+	I got some errors for doing close undef (although perl -d has
+	no trouble with that expression), so we're using this now, for
+	simplicity.
+	* *.in: changed all calls to close $var to &xst_file_close ($var).
+
 2001-08-13  Tambet Ingo  <tambet@ximian.com>
 
 	* configure.in: Fixed capitalization.

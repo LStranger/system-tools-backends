@@ -76,12 +76,12 @@ sub xst_boot_parse_global_kw
 
     if ($key eq $_)
     {
-      close $fd;
+      &xst_file_close ($fd);
       return 1;
     }
   }
 
-  close $fd;
+  &xst_file_close ($fd);
   return undef;
 }
 
@@ -108,12 +108,12 @@ sub xst_boot_parse_global
 
     if (shift (@line) eq $key)
     {
-      close $fd;
+      &xst_file_close ($fd);
       return $line[0];
     }
   }
 
-  close $fd;
+  &xst_file_close ($fd);
   return undef;
 }
 
@@ -171,7 +171,7 @@ sub xst_boot_parse_images
     $images[$found]{$key} = $val;
   }
 
-  close $fd;
+  &xst_file_close ($fd);
   return \@images;
 }
 

@@ -315,7 +315,7 @@ sub xst_process_kill
 {
   my ($proc) = @_;
   
-  close $$proc{"fd"};
+  &xst_file_close ($$proc{"fd"});
   kill 2, $$proc{"pid"};
   waitpid ($$proc{"pid"}, undef);
 }
