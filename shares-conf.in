@@ -1459,6 +1459,7 @@ sub get_host_mounts
     open(MOUNTS_HD, "$showmount_tool --directories --no-headers $host 2>/dev/null |");
     while (<MOUNTS_HD>)
     {
+      if (/[Dd]irectories.*:/) { next; }
       push(@cf_shares_list, $host);                          # Host
       push(@cf_shares_list, ($_ =~ /[ \t]*([^ \t\n\r]+)/));  # Path
       push(@cf_shares_list, "");                             # Comment
