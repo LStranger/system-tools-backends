@@ -40,6 +40,7 @@ $xst_operation = "";  # Major operation user wants to perform - [get | set | fil
 
 $xst_prefix = "";
 $xst_verbose = 0;
+$xst_do_report = 0;
 $xst_debug = 0;
 $xst_do_immediate = 1;
 
@@ -202,9 +203,17 @@ sub xst_init
     }
     elsif ($args[0] eq "--platform")                    { $xst_dist = $args[1]; shift @args; }
     elsif ($args[0] eq "--disable-immediate")           { $xst_do_immediate = 0; }
-    elsif ($args[0] eq "--verbose" || $args[0] eq "-v") { $xst_verbose = 1; }
+    elsif ($args[0] eq "--verbose" || $args[0] eq "-v")
+    {
+      $xst_do_verbose = 1;
+      &xst_report_set_threshold (99);
+    }
     elsif ($args[0] eq "--progress")                    { $xst_progress = 1; }
-    elsif ($args[0] eq "--report")                      { &xst_report_set_threshold (99); }
+    elsif ($args[0] eq "--report")
+    {
+      &xst_do_report = 1;
+      &xst_report_set_threshold (99);
+    }
     elsif ($args[0] eq "--debug")                       { $xst_debug = 1; }
     else
     {

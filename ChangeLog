@@ -1,3 +1,12 @@
+2001-03-28  Hans Petter Jansson  <hpj@ximian.com>
+
+	* general.pl.in: Honour --verbose flag like --report.
+
+	* report.pl.in (xst_report): --verbose output is human-readable. Make sure
+	  verbose output gets printed independently of report - they're two
+	  different requestable output log formats.
+	  (xst_report_message): Trivial re-indent of table.
+
 2001-03-28  Arturo Espinosa  <arturo@ximian.com>
 
 	* network.pl.in: smbuse, a feature that reports if
