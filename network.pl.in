@@ -37,7 +37,10 @@ sub xst_network_active_interfaces_get
   local *IFCONFIG;
   my $dev;
   my $interface;
+  my $tool_ifconfig;
   my @ret = ();
+
+  $tool_ifconfig = &be_locate_tool ("ifconfig");
   
   open IFCONFIG, "$tool_ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
     open IFCONFIG, "$tool_ifconfig | sed 's/:* .*//;/^\$/D' |";
@@ -98,7 +101,7 @@ sub xst_network_interfaces_get
   %dist_attrib = &xst_network_get_interfaces_parse_table ();
 
   %fn = %{$dist_attrib{"fn"}};
-  $proc = $ {$dist_attrib{"ifaces_get"}};
+  $proc = $dist_attrib{"ifaces_get"};
   @ifaces = &$proc ();
   foreach $i (@ifaces)
   {
@@ -121,73 +124,109 @@ sub xst_network_conf_get
   my %dist_attrib;
   my $hash;
 
-  %dist_attrib = &xst_network_get_replace_table ();
+  %dist_attrib = &xst_network_get_parse_table ();
 
-  $hash = &xst_parse_from_table ($dist_attrib{$dist}{"fn"},
-						   $dist_attrib{$dist}{"table"});
+  $hash = &xst_parse_from_table ($dist_attrib{"fn"},
+						   $dist_attrib{"table"});
   return $hash;
 }
 
-sub xst_network_interface_active_set
+sub xst_network_rh62_interface_set
 {
+  my ($dev, $enabled) = @_;
+  my @ifaces, $i, $dev;
+
+  return -1 if &be_run ("ifdown $dev");
+  
+  if ($enabled)
+  {
+    return -1 if &be_run ("ifup $dev");
+  }
+
+  return 0;
 }
 
 sub xst_network_interfaces_set
 {
-  my $value_hash = $_[0];
-
-  my %dist_cmp = (
-			   "^redhat.*" => "redhat62"
-			   );
-  my (%hash, %fn, @ifaces);
-  my ($dist, $value, $file, $proc);
+  my $values_hash = $_[0]; 
+  my (%dist_attrib, @ifaces, %fn);
+  my ($value, $proc);
   my ($i, $j);
+  my ($tmp, $res);
 
-  return 0;
-  
-  $dist = &xst_map_dist (%dist_cmp);
-  
-  %fn = %{$ {$dist_attrib{$dist}}{"fn"}};
-  $proc = $ {$dist_attrib{$dist}}{"ifaces_get"};
-  @ifaces = &$proc ();
+  %dist_attrib = &xst_network_get_interface_replace_table ();
+
+  # Disable all running interfaces. fixme: this is ugly: should only
+  # down those that have been changed, downed or deleted.
+  $proc = $dist_attrib{"iface_set"};
+  @ifaces = &xst_network_active_interfaces_get ();
   foreach $i (@ifaces)
+  {
+    return -1 if &$proc ($i, 0);
+  }
+
+  %fn = %{$dist_attrib{"fn"}};
+  foreach $i (keys %$values_hash)
   {
     foreach $j (keys (%fn))
     {
 	 $value = $fn{$j};
 	 $value =~ s/\#iface\#/$i/;
-	 $ {$ {$dist_attrib{$dist}}{"fn"}}{$j} = $value;
+	 $ {$dist_attrib{"fn"}}{$j} = $value;
     }
     
-    $hash{$i} = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
-							    $ {$dist_attrib{$dist}}{"table"});
+    $tmp = &xst_replace_from_table ($dist_attrib{"fn"},
+							 $dist_attrib{"table"}, $$values_hash {$i});
+    if (!$tmp) # if success saving the settings for the interface, set up immediatly.
+    {
+	 $tmp = &$proc ($ {$$values_hash{$i}}{"dev"}, 1) if ($ {$$values_hash{$i}}{"enabled"});
+    }
+    
+    $res = $tmp if !$res;
   }
 
-  return \%hash;
+  return $res;
 }
 
 sub xst_network_conf_set
 {
   my $values_hash = $_[0];
+  my %dist_attrib;
   
-  # mapping from regular expression, which will be compared to the string
-  # "$xst_dist,$xst_dist_version,$xst_system" to a string, which will be used as
-  # a the key of the dist_attrib field to use.
-  my %dist_cmp = (
-			   "^redhat.*" => "redhat62"
-			   );
+  %dist_attrib = &xst_network_get_replace_table ();
 
-  my ($dist, $res);
-  
-  $dist = &xst_map_dist (%dist_cmp);
-  return if ($dist eq undef); # fixme: warn the user
-	 
-  # maybe report if there was a problem
-  $res = &xst_replace_from_table ($ {$dist_attrib{$dist}}{"fn"},
-						    $ {$dist_attrib{$dist}}{"table"}, $values_hash);
-  return;
+  $res = &xst_replace_from_table ($dist_attrib{"fn"},
+						    $dist_attrib{"table"}, $values_hash);
+  return $res;
 }
 
+sub xst_network_rh62_parse_bootproto
+{
+  my $ret;
+  my %rh62_to_proto_name =
+	 (
+	  "bootp" => "bootp",
+	  "dhcp" => "dhcp",
+	  "none" => "none"
+	  );
+
+  $ret = &xst_parse_sh (@_);
+
+  return $rh62_to_proto_name{$ret};
+}
+
+sub xst_network_rh62_replace_bootproto
+{
+  my ($file, $key, $value) = @_;
+  my %proto_name_to_rh62 =
+	 (
+	  "bootp" => "bootp",
+	  "dhcp" => "dhcp",
+	  "none" => "none"
+	  );
+
+  return &xst_parse_sh ($file, $key, $proto_name_to_rh62{$value});
+}  
 
 # xst_ensure_local_host_entry (<hostname>)
 #
@@ -247,7 +286,6 @@ sub xst_ensure_local_host_entry
   close OUTFILE;
 }
 
-
 sub xst_network_get_parse_table
 {
   my %dist_map =
@@ -291,13 +329,70 @@ sub xst_network_get_parse_table
     }
   );
 
-  my $table = $dist_map{$xst_dist};
-  if ($table) { return $dist_tables{$table}; }
+  my $dist = $dist_map{$be_dist};
+  return %{$dist_tables{$dist}} if $dist;
 
   # FIXME: This is a fatal error, and should make us bail.
   return undef;
 }
 
+sub xst_network_get_interfaces_parse_table
+{
+  my %dist_map =
+	 (
+	  "redhat-6.0" => "redhat-6.2",
+	  "redhat-6.1" => "redhat-6.2",
+	  "redhat-6.2" => "redhat-6.2"
+	  );
+  
+  my %dist_tables =
+	 (
+	  "redhat-6.2" =>
+	  {
+	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
+	    fn =>
+	    {
+		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+		 CHAT => "/etc/sysconfig/network-scripts/chat-#iface#",
+		 IFACE => "#iface#" },
+	    table =>
+		   [
+		    [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
+		    [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
+		    [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
+		    [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
+		    [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
+		    [ bootproto,          \&xst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
+		    [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
+		    [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
+		    [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
+		    [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
+		    [ disconnect_timeout, \&xst_parse_sh,      IFCFG, DISCONNECTTIMEOUT ],
+		    [ retry_timeout,      \&xst_parse_sh,      IFCFG, RETRYTIMEOUT ],
+		    [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
+		    [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
+		    [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
+		    [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
+		    [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
+		    [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+		    [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
+		    [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
+		    [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
+		    [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+		    [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
+		    [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+		    [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
+		    [ enabled,            \&xst_network_interface_active, IFACE ]
+		    ]
+			 }
+	  );
+
+  my $dist = $dist_map{$be_dist};
+  return %{$dist_tables{$dist}} if $dist;
+
+  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
+}
 
 sub xst_network_get_replace_table
 {
@@ -342,14 +437,14 @@ sub xst_network_get_replace_table
     }
   );
 
-  my $table = $dist_map{$xst_dist};
-  if ($table) { return $dist_tables{$table}; }
+  my $dist = $dist_map{$be_dist};
+  return %{$dist_tables{$dist}} if $dist;
 
   # FIXME: This is a fatal error, and should make us bail.
   return undef;
 }
 
-sub xst_network_get_interfaces_parse_table
+sub xst_network_get_interface_replace_table
 {
   my %dist_map =
   (
@@ -359,108 +454,48 @@ sub xst_network_get_interfaces_parse_table
   );
 
   my %dist_tables =
-  (
-    "redhat-6.2" =>
-    {
-      ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
-      fn =>
-      {
-        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#",
-        IFACE => "#iface#"
-      },
-      table =>
-      [
-        [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
-        [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
-        [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
-        [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
-        [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
-        [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
-        [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
-        [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
-        [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
-        [ disconnect_timeout, \&xst_parse_sh,      IFCFG, DISCONNECTTIMEOUT ],
-        [ retry_timeout,      \&xst_parse_sh,      IFCFG, RETRYTIMEOUT ],
-        [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
-        [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
-        [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
-        [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
-        [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
-        [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
-        [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
-        [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
-        [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
-        [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
-        [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
-        [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
-        [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
-        [ enabled,            \&xst_network_interface_active, IFACE ]
-      ]
-    }
-  );
-
-  my $table = $dist_map{$xst_dist};
-  if ($table) { return %{$dist_tables{$table}}; }
-
-  # FIXME: This is a fatal error, and should make us bail.
-  return undef;
-}
-
-
-sub xst_network_get_interfaces_replace_table
-{
-  my %dist_map =
-  (
-    "redhat-6.0" => "redhat-6.2",
-    "redhat-6.1" => "redhat-6.2",
-    "redhat-6.2" => "redhat-6.2"
-  );
-
-  my %dist_tables =
-  (
-    "redhat-6.2" =>
-    {
-      ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
-      fn =>
-      {
-        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
-        IFACE => "#iface#"
-      },
-      table =>
-      [
-        [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
-        [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
-        [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
-        [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
-        [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
-        [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
-        [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
-        [ remote_address,     \&xst_replace_sh,      IFCFG, REMIP ],
-        [ login,              \&xst_replace_sh,      IFCFG, PAPNAME ],
-        [ disconnect_timeout, \&xst_replace_sh,      IFCFG, DISCONNECTTIMEOUT ],
-        [ retry_timeout,      \&xst_replace_sh,      IFCFG, RETRYTIMEOUT ],
-        [ serial_port,        \&xst_replace_sh,      IFCFG, MODEMPORT ],
-        [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
-        [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
-        [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
-        [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
-        [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
-        [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
-        [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
-        [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],
-        [ serial_escapechars, \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
-        [ serial_defabort,    \&xst_replace_sh_bool, IFCFG, DEFABORT ],
-        [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
-        [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
-        [ enabled,            \&xst_network_interface_active_set, IFACE ]
-      ]
-    }
-  );
-
-  my $table = $dist_map{$xst_dist};
-  if ($table) { return $dist_tables{$table}; }
+	 (
+	  "redhat-6.2" =>
+	  {
+	    iface_set => \&xst_network_rh62_interface_set,
+	    fn =>
+	    {
+		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+		 CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
+		 IFACE => "#iface#" },
+	    table =>
+		   [
+		    [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
+		    [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
+		    [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
+		    [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
+		    [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
+		    [ bootproto,          \&xst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
+		    [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
+		    [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
+		    [ remote_address,     \&xst_replace_sh,      IFCFG, REMIP ],
+		    [ login,              \&xst_replace_sh,      IFCFG, PAPNAME ],
+		    [ disconnect_timeout, \&xst_replace_sh,      IFCFG, DISCONNECTTIMEOUT ],
+		    [ retry_timeout,      \&xst_replace_sh,      IFCFG, RETRYTIMEOUT ],
+		    [ serial_port,        \&xst_replace_sh,      IFCFG, MODEMPORT ],
+		    [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
+		    [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
+		    [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
+		    [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
+		    [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
+		    [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
+		    [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
+		    [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],
+		    [ serial_escapechars, \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+		    [ serial_defabort,    \&xst_replace_sh_bool, IFCFG, DEFABORT ],
+		    [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+		    [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+		    ]
+			 }
+	  );
+  
+  my $dist = $dist_map{$be_dist};
+  return %{$dist_tables{$dist}} if $dist;
 
   # FIXME: This is a fatal error, and should make us bail.
   return undef;

@@ -61,12 +61,6 @@ end_of_description;
 $progress_max = 10;
 
 
-# Find the tools
-# FIXME: Should not be done here.
-
-$tool_ifconfig = &xst_locate_tool ("ifconfig");
-$tool_ifup = &xst_locate_tool ("ifup");
-
 # --- Configuration file manipulation --- #
 
 # --- Name resolution utilities --- #
@@ -407,55 +401,6 @@ sub get
 
 # --- Set (write) config --- #
 
-
-sub set_interface_up
-{
-  my $dev = $_[0];
-
-  # RedHat
-
-  system ("$tool_ifup $dev");
-}
-
-sub set_interface_down
-{
-  my $dev = $_[0];
-
-  system ("$tool_ifconfig $dev down");
-}
-
-sub set_active_interfaces
-{
-  my (%ifaces, %interface, $elem);
-  
-  open IFCONFIG, "ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
-	 open IFCONFIG, "ifconfig | sed 's/:* .*//;/^\$/D' |";
-  # another possibility, instead of sed: awk '/^[a-z]/{print $1}'
-
-  while (<IFCONFIG>)
-  {
-    chomp;
-    $ifaces{$_} = 1;
-  }
-
-  close IFCONFIG;
-
-  foreach $elem (keys (%{$cf_nw_interfaces}))
-  {
-    %interface = %{$ { $cf_nw_interfaces}{$elem}};
-    if ($ifaces{$elem} && ! $$interface{"enabled"})
-    {
-	 &set_interface_down ($elem);
-	 next;
-    }
-
-    if (!$ifaces{$elem} && $$interface{"enabled"})
-    {
-	 &set_interface_up ($elem);
-    }
-  }
-}
-
 sub set_immediate
 {
   # Set hostname via utility, in case the config files aren't enough.
@@ -486,27 +431,6 @@ sub set_immediate
 }
 
 
-# sub &set_local_host_entry
-# {
-#   # Temporary solution to find IP address. Ideally we want to define the
-#   # hostname for all IPs we have.
-# 
-#   my $ip = `ifconfig eth0 2>/dev/null`;
-#   if ($ip eq "") { $ip = `ifconfig ppp0 2>/dev/null`; }
-# 
-#   $ip =~ /^.*addr:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/m;
-#   $ip = $1;
-# 
-#   if ($ip eq "")
-#   {
-#     &xst_report_warning(01, "Couldn't find a configured network device");
-#     return(0);
-#   }
-# 
-#   &xst_ensure_local_host_entry ($ip, $cf_hostname);
-# }
-
-
 sub set
 {
   my $hash;
@@ -514,16 +438,9 @@ sub set
   &xst_begin ();
   $hash = &xml_parse ();
 
+  # check the success result of this.
   &xst_network_conf_set ($hash);
-#  &xst_ensure_local_host_entry ($$hash{"hostname"});
-
-  # network interface configuring
- # &set_interfaces (); &xst_progress (90);
-
-#  if ($xst_do_immediate)
-#  {
-#    &set_immediate;
-#  }
+#  &be_ensure_local_host_entry ($$hash{"hostname"});
 
   &xst_end ();
 }

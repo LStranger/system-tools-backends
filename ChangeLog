@@ -1,3 +1,10 @@
+2001-02-09  Arturo Espinosa <arturo@ximian.com>
+
+	* network-conf.in: removed a bunch of set_* functions, whose functionality
+	  already is in network.pl.in.
+	* network.pl.in: almost finished, lots of bug fixes. added bootproto support.
+	* replace.pl.in: xst_replace_chat implemented.
+	
 2001-02-08  Hans Petter Jansson  <hpj@ximian.com>
 
 	* shares-conf.in: Added missing dependency on service.pl.

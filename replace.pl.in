@@ -46,7 +46,7 @@ sub xst_replace_from_table
     if (exists $$values_hash{$key})
     {
 	 $proc = shift (@cp);
-	 $cp[0] = $$fn{$cp[0]};
+	 $cp[0] = $$fn{$cp[0]} if $cp[0] ne undef;
 	 push (@cp, $$values_hash{$key});
 	 
 	 $res = -1 if &$proc (@cp);
@@ -221,7 +221,51 @@ sub xst_replace_join_hash
 
 sub xst_replace_chat
 {
+  my ($file, $re, $value) = @_;
+  my $buff, $i, $bak, $found, $substr;
+
+  $buff = &be_buffer_load ($file);
+
+  SCAN: foreach $i (@$buff)
+  {
+    $bak = "";
+    $found = "";
+    chomp $i;
+
+    while ($i ne "")
+    {
+	 # If it uses quotes. FIXME: Assuming they surround the whole string.
+	 if ($i =~ /^\'/)
+	 {
+	   $i =~ s/\'([^\']*)\' ?//;
+	   $found = $1;
+	 }
+	 else
+	 {
+	   $i =~ s/([^ \t]*) ?//;
+	   $found = $1;
+	 }
+	 
+	 # If it looks like what we're looking for,
+	 # substitute what is in parens with value.
+	 if ($found =~ /$re/i)
+	 {
+	   $substr = $1;
+	   $found =~ s/$substr/$value/i;
+	   $i = $bak . "\'$found\' " . $i . "\n";
+	   last SCAN;
+	 }
+
+	 $bak .= "\'$found\'";
+	 $bak .= " " if $bak ne "";
+    }
+    
+    $i = $bak . "\n";
+  }
+
+  return &be_buffer_save ($buff, $file);
 }
+
 
 sub xst_replace_ini
 {
