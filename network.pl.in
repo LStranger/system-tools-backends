@@ -1511,16 +1511,22 @@ sub xst_network_set_ppp_options_unsup
 
 sub xst_network_rh62_parse_bootproto
 {
-  my $ret;
+  my ($file, $key) = @_;
   my %rh62_to_proto_name =
 	 (
 	  "bootp" => "bootp",
 	  "dhcp"  => "dhcp",
 	  "none"  => "none"
 	  );
+  my $ret;
 
-  $ret = &xst_parse_sh (@_);
-
+  $ret = &xst_parse_sh ($file, $iface);
+  
+  if (!exists $rh62_to_proto_name{$ret})
+  {
+    &xst_report ("network_bootproto_unsup", $file, $ret);
+    $ret = "none";
+  }
   return $rh62_to_proto_name{$ret};
 }
 
@@ -1606,17 +1612,21 @@ sub xst_network_deb22_replace_bootproto
 sub xst_network_suse70_parse_bootproto
 {
   my ($file, $iface) = @_;
-  my ($ret, $val);
+  my ($ret);
   my %suse70_to_proto_name =
 	 (
 	  "bootp"      => "bootp",
-	  "dhcpclient" => "dhcp",
+	  "dhcpclient" => "dhcp"
 	  );
 
-  $val = &xst_network_suse70_parse_iface_sh ($file, $iface, "IFCONFIG");
-  $ret = $suse70_to_proto_name {$val};
-  return $ret if $ret ne undef;
-  return "none";
+  $ret = &xst_network_suse70_parse_iface_sh ($file, $iface, "IFCONFIG");
+  if (!exists $suse70_to_proto_name {$ret})
+  {
+    &xst_report ("network_bootproto_unsup", $iface, $ret);
+    return "none";
+  }
+  
+  return $suse70_to_proto_name {$ret};
 }
 
 sub xst_network_suse70_replace_bootproto
