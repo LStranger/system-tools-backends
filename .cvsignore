@@ -1,6 +1,7 @@
 *.tar.gz
 Makefile
 Makefile.in
+ABOUT-NLS
 config.log
 aclocal.m4
 config.cache
