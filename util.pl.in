@@ -278,4 +278,100 @@ sub xst_ip_calc_broadcast
   return join ('.', @ip_reg1);
 }
 
+# Forks a process, running $proc with @args in the child, and
+# printing the returned value of $proc in the pipe. Parent
+# returns a structure with useful data about the process.
+sub xst_process_fork
+{
+  my ($proc, @args) = @_;
+  my $pid;
+  local *PARENT_RDR;
+  local *CHILD_WTR;
+  
+  pipe (PARENT_RDR, CHILD_WTR);
+  
+  $pid = fork ();
+  if ($pid)
+  {
+    # Parent
+    close CHILD_WTR;
+    return {"pid" => $pid, "fd" => *PARENT_RDR, "fileno" => fileno (*PARENT_RDR)};
+  }
+  else
+  {
+    my $str;
+    close PARENT_RDR;
+    # Child
+    $str = &$proc (@args);
+    print CHILD_WTR $str;
+    close CHILD_WTR;
+    exit (0);
+  }
+}
+
+
+# Close pipe, kill process, wait for it to finish.
+sub xst_process_kill
+{
+  my ($proc) = @_;
+  
+  close $$proc{"fd"};
+  kill 2, $$proc{"pid"};
+  waitpid ($$proc{"pid"}, undef);
+}
+
+
+# Populate a bitmap of the used file descriptors.
+sub xst_process_list_build_fd_bitmap
+{
+  my ($procs) = @_;
+  my ($bits, $proc);
+  
+  foreach $proc (@$procs)
+  {
+    vec ($bits, $$proc{"fileno"}, 1) = 1;
+  }
+  
+  return $bits;
+}
+
+
+# Receives a seconds timeout (may be float) and a ref to
+# a list of processes (each returned by xst_fork_process), and
+# set the "ready" key to true in all the procs that are ready
+# to return values, false otherwise. Returns time left before
+# timeout.
+sub xst_process_list_check_ready
+{
+  my ($timeout, $procs) = @_;
+  my ($bits, $bitsleft, $bitsready, $timestamp, $timeleft);
+
+  $bits = &xst_process_list_build_fd_bitmap ($procs);
+  
+  # Check with timeout which descriptors are ready with info.
+  $timeout = undef if $timeout == 0;
+  $timeleft = $timeout;
+  $bitsleft = $bits;
+  while (($timeout eq undef) || ($timeleft > 0))
+  {
+    $timestamp = time;
+    select ($bitsleft, undef, undef, $timeleft);
+    $timeleft -= time - $timestamp if $timeout ne undef;
+    
+    $bitsready |= $bitsleft;
+    $bitsleft = $bits & (~$bitsready);
+    last if $bitsready eq $bits;
+  }
+  $bits = $bitsready;
+
+  # For every process, set "ready" key to 1/0 depending on
+  # its file descriptor bit.
+  foreach $proc (@$procs)
+  {
+    $$proc{"ready"} = (ord ($bits) & (1 << $$proc{"fileno"}))? 1 : 0;
+  }
+
+  return $timeleft;
+}
+  
 1;

@@ -1,3 +1,39 @@
+2001-07-06  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_address_lookup_call): A
+	function to be called by xst_process_fork.
+	(xst_network_lookup_address_start): Now calls
+	xst_process_fork.
+	(xst_network_lookup_address_collect): Now calls
+	xst_process_list_check_ready and inspects "ready" key.
+	(xst_network_active_interfaces_get_info): Run ifconfig,
+	getting addr, bcast and mask info for all ifaces in a hash.
+
+	* util.pl.in (xst_process_fork): Do a pipe, fork
+	a process where the child executes a given function,
+	return process info (pid, fd) in the parent.
+	(xst_process_kill): Kill process, close pipe.
+	(xst_process_list_check_ready): With a timeout, do
+	a select over all of the pipe fd's of a list of procs.
+
+2001-07-05  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_ipv4_str2vec): Routines
+	for ipv4 mannipulations.
+	(xst_network_ipv4_vec2str): Converse.
+	(xst_network_ipv4_calc_subnet_vec): Subnet, bitmap.
+	(xst_network_ipv4_calc_subnet): Returns str version.
+	(xst_network_ipv4_calc_bcast_vec): Broadcast, bitmap.
+	(xst_network_ipv4_calc_bcast): And the str version.
+	(xst_network_active_interfaces_get): Why am I using sed
+	here? Changed to s///.
+	(xst_network_lookup_address_start): Does all the forking
+	and returns ref to proc list.
+	(xst_network_lookup_address_collect): Collects all the
+	info from the proclist available before timeout.
+	(xst_network_lookup_address): Split this function in
+	these two processes.
+
 2001-07-04  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_lookup_address): Modified
