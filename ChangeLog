@@ -1,4 +1,9 @@
-2001-04-30  Hans Petter Jansson  <hpj@ximian.com>
+2001-05-04  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in (read_exports): Parse NFS exports without options correctly.
+	  (print_xml): Print a default name for unnamed shares.
+
+2001-05-04  Hans Petter Jansson  <hpj@ximian.com>
 
 	* shares-conf.in (write_fstab): Don't leave unaccounted-for shares lying
 	  around.

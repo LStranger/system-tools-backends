@@ -1089,7 +1089,8 @@ sub read_exports
 
     for $client (@line)
     {
-      ($spec, $options) = ($client =~ /^([^\(]+)\(([^\)]+)/);
+      ($spec) = ($client =~ /^([^\(]+)/);
+      ($options) = ($client =~ /\(([^\)]+)/);
       push @$clients, $spec;                        # Spec
       if ($options =~ /rw/) { push @$clients, 1; }  # Writeable
       else                  { push @$clients, 0; }  # Writeable
@@ -1527,6 +1528,8 @@ sub xml_print
       }
       elsif ($shares[0] eq "nfs")
       {
+        &xst_xml_print_line ("<name>none</name>");
+
         my $clients = $shares[2];
         while (@$clients)
         {
