@@ -1,6 +1,11 @@
 2001-04-17  Arturo Espinosa  <arturo@ximian.com>
 
 	* file.pl.in: changed wrong report keys.
+	* network-conf.in: smbuse and smbinstalled support.
+	* network.pl.in: ditto.
+	* service.pl.in (xst_service_sysv_installed): tells if certain service
+	  is installed, by looking for the sysv script. Maybe should use rpm or
+	  dpkg for this.
 	
 2001-04-14  Chema Celorio  <chema@celorio.com>
 

@@ -65,6 +65,28 @@ sub xst_service_sysv_get_runlevels
   return @{$dist_map{$xst_dist}};
 }
 
+
+sub xst_service_sysv_installed
+{
+  my ($service) = @_;
+  my $res;
+
+  &xst_report_enter ();
+  
+  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+
+  $res = 1;
+  if (! -f "$initd_path/$service")
+  {
+    $res = 0;
+    &xst_report ("service_sysv_not_found", $service);
+  }
+
+  &xst_report_leave ();
+  return $res;
+}
+
+
 # Return 1 or 0: is the service running?
 # Depends on the rc script to support the "status" arg.
 # Maybe we should do something more portable.
@@ -80,13 +102,9 @@ sub xst_service_sysv_get_status
   
   if (-f "$initd_path/$service")
   {
-    $res = !&xst_file_run ("$initd_path/$service status");
+    $res = &xst_file_run ("$initd_path/$service status")? 0 : 1;
     &xst_report ("service_status_running", $service) if $res;
     &xst_report ("service_status_stopped", $service) if !$res;
-  }
-  else
-  {
-    &xst_report ("service_sysv_not_found", $service);
   }
 
   &xst_report_leave ();
