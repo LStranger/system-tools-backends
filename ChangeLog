@@ -1,3 +1,8 @@
+2005-02-05  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* users-conf.in: made a string more user-frienly (Ole Laursen's
+	suggestion). Fixes #166330
+
 2005-02-02  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* network.pl.in: Only add an empty ppp0 interface if it wasn't added

@@ -183,7 +183,7 @@ for ($i = 0; $groups_prop_array[$i] ne ""; $i += 2)
   "dip"       => _("Connect to Internet through modem devices"),
   "fax"       => _("Send and receive faxes"),
   "floppy"    => _("Access to floppy drives"),
-  "plugdev"   => _("Mount removable devices automatically"),
+  "plugdev"   => _("Enable access to external storage devices automatically"),
   "tape"      => _("Access to tape drives"),
   "wheel"     => _("Be able to get administrator privileges"),
 );
