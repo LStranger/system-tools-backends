@@ -1186,8 +1186,38 @@ sub xml_parse_toplevel
 
   while (@$tree)
   {
-    if ($$tree[0] eq "import") { &xml_parse_import($$tree[1]); }
-    elsif ($$tree[0] eq "export") { &xml_parse_export($$tree[1]); }
+    if    ($$tree[0] eq "imports") { &xml_parse_imports ($$tree[1]); }
+    elsif ($$tree[0] eq "exports") { &xml_parse_exports ($$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+sub xml_parse_imports
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "import") { &xml_parse_import ($$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+sub xml_parse_exports
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "export") { &xml_parse_export ($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -1409,6 +1439,9 @@ sub xml_print
   &xst_xml_print_line ("<!-- Imports, listed and potentials -->\n");
   &xst_xml_print_vspace ();
 
+  &xst_xml_print_line ("<imports>");
+  &xst_xml_enter ();
+
   my @shares = @cf_shares_list;
 
   while (@shares)
@@ -1455,10 +1488,16 @@ sub xml_print
     shift @shares;
   }
 
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</imports>");
+
   &xst_xml_print_vspace ();
   &xst_xml_print_line ("<!-- Exports -->\n");
   &xst_xml_print_vspace ();
   
+  &xst_xml_print_line ("<exports>");
+  &xst_xml_enter ();
+
   my @shares = @cf_exports_list;
   
   while (@shares)
@@ -1509,6 +1548,9 @@ sub xml_print
     
   }
   
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</exports>");
+
   &xst_xml_print_vspace ();
   &xst_xml_print_line ("<!-- End of configuration -->\n");
   &xst_xml_print_vspace ();

@@ -1,5 +1,9 @@
 2001-04-02  Hans Petter Jansson  <hpj@ximian.com>
 
+	* shares-conf.in: Generate/parse XML suitable for displaying in e-tables.
+
+2001-04-02  Hans Petter Jansson  <hpj@ximian.com>
+
 	* shares-conf.in: Fixed broken report calls.
 
 2001-04-02  Kenneth Christiansen  <kenneth@gnu.org>
