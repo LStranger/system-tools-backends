@@ -1259,29 +1259,44 @@ sub gst_service_rcng_set_status
   my ($default_rcconf) = "/etc/defaults/rc.conf";
   my ($rcconf) = "/etc/rc.conf";
 
-  $fd = &gst_file_run_pipe_read ("/etc/rc.d/$service rcvar");
-
-  while (<$fd>)
+  if (&gst_file_exists ("/etc/rc.d/$service"))
   {
-    if (/^\$(.*)=.*$/)
-    {
-      # to avoid cluttering rc.conf with duplicate data,
-      # we first look in the defaults/rc.conf for the key
-      $key = $1;
-      $res = &gst_parse_sh_bool ($default_rcconf, $key);
+    $fd = &gst_file_run_pipe_read ("/etc/rc.d/$service rcvar");
 
-      if ($res == $action)
+    while (<$fd>)
+    {
+      if (/^\$(.*)=.*$/)
       {
-        &gst_replace_sh ($rcconf, $key);
-      }
-      else
-      {
-        &gst_replace_sh_bool ($rcconf, $key, "YES", "NO", $action);
+        # to avoid cluttering rc.conf with duplicated data,
+        # we first look in the defaults/rc.conf for the key
+        $key = $1;
+        $res = &gst_parse_sh_bool ($default_rcconf, $key);
+
+        if ($res == $action)
+        {
+          &gst_replace_sh ($rcconf, $key);
+        }
+        else
+        {
+          &gst_replace_sh_bool ($rcconf, $key, "YES", "NO", $action);
+        }
       }
     }
-  }
 
-  &gst_file_close ($fd);
+    &gst_file_close ($fd);
+  }
+  elsif (&gst_file_exists ("/usr/local/etc/rc.d/$service.sh"))
+  {
+    if ($action)
+    {
+      gst_file_copy ("/usr/local/etc/rc.d/$service.sh.sample",
+                     "/usr/local/etc/rc.d/$service.sh");
+    }
+    else
+    {
+      gst_file_remove ("/usr/local/etc/rc.d/$service.sh");
+    }
+  }
 }
 
 sub gst_service_rcng_set_services
@@ -1385,8 +1400,13 @@ sub gst_service_rcng_get_status
   my ($service) = @_;
 
   $line = gst_file_run_backtick ("/etc/rc.d/$service forcestatus");
-
   return 1 if ($line =~ /pid [0-9]*/);
+
+  # hacky as hell, we need to check services in /usr/local/etc/rc.d
+  # and there's no standard way to check they're running
+  return 1 if (-f "/var/run/$service.pid");
+
+  # we give up, the service isn't running
   return 0;
 }
 
@@ -1615,6 +1635,7 @@ sub gst_service_rcng_installed
   my ($service) = @_;
 
   return 1 if ( -f "/etc/rc.d/$service");
+  return 1 if ( -f "/usr/local/etc/rc.d/$service.sh.sample");
   return 0;
 }
 

@@ -295,7 +295,7 @@ sub check_freebsd
   foreach (@output)
   {
     chomp;
-    if (/^FreeBSD\s(\S+)\.\S+.*/)
+    if (/^FreeBSD\s([0-9]+)\.\S+.*/)
     {
       return "freebsd-$1";
     }

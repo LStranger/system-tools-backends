@@ -250,18 +250,29 @@ sub gst_parse_chomp_line_std
 sub gst_parse_process_sh_line
 {
   my ($line) = @_;
+  my ($pline);
 
   # This will put escaped hashes out of danger.
-  $line =~ s/([\"\'][^\#]*)\#([^\"\']*[\"\'])/$1__hash__$2/g;
-  $line =~ s/\\\#/\\__hash__/g;
+  # But only inside valid quotes!
+  while ($line =~ /([^\"\']*[\"\'][^\#\"\']*)(\#?)([^\"\']*[\"\'])/g)
+  {
+      $pline .= $1;
+      $pline .= "__hash__" if ($2 ne undef);
+      $pline .= $3;
+  }
+
+  # The line may not match the regexp above,
+  $pline = $line if ($pline eq undef);
+
+  $pline =~ s/\\\#/\\__hash__/g;
 
   # Nuke everything after a hash and bye bye trailing spaces.
-  $line =~ s/[ \t]*\#.*//;
+  $pline =~ s/[ \t]*\#.*//;
 
   # Let escaped hashes come back home.
-  $line =~ s/__hash__/\#/g;
+  $pline =~ s/__hash__/\#/g;
 
-  return $line;
+  return $pline;
 }
 
 # Same as gst_parse_chomp_line_std, but apply
@@ -276,7 +287,6 @@ sub gst_parse_chomp_line_hash_comment
   return -1 if $line == -1;
 
   $line = &gst_parse_process_sh_line ($$line);
-
   return \$line;
 }
 
@@ -306,16 +316,17 @@ sub gst_parse_split_ref
 
   &gst_report_enter ();
   &gst_report ("parse_split", $key, $file);
-  
+
   $proc = $line_read_proc? $line_read_proc : \&gst_parse_chomp_line_std;
   
   $fd = &gst_file_open_read_from_names ($file);
   $all = 0 if !$fd;
-  
+
   while (($line = &$proc ($fd)) != -1)
   {
     $line = $$line;
     next if $line eq "";
+
     @line = split ($re, $line, 2);
 
     if (shift (@line) =~ "^$key\$")
@@ -550,7 +561,7 @@ sub gst_parse_sh
   return &gst_parse_shell_unescape ($ret);
 }
 
-# Same, but interpret the returing value as a bool. (ie NETWORKING=yes)
+# Same, but interpret the returning value as a bool. (ie NETWORKING=yes)
 sub gst_parse_sh_bool
 {
   my ($file, $key) = @_;
@@ -632,6 +643,7 @@ sub gst_parse_sh_re
   my $ret;
 
   $ret = &gst_parse_sh ($file, $key);
+
   $ret =~ /$re/i;
   return $1;
 }
@@ -1562,5 +1574,36 @@ sub gst_parse_wireless_opts
   }
 
   &gst_file_close ($fd);
+  return $val;
+}
+
+# function for parsing /etc/start_if.$iface files in FreeBSD
+sub gst_parse_startif
+{
+  my ($file, $regex) = @_;
+  my ($fd, $line, $val);
+
+  $fd  = &gst_file_open_read_from_names ($file);
+  $val = undef;
+
+  return undef if ($fd eq undef);
+
+  while (<$fd>)
+  {
+    # ignore comments
+    next if (/^\#/);
+                 
+    if (/$regex/)
+    {
+      $val = $1;
+    }
+  }
+
+  # remove double quote
+  if ($val =~ /\"(.*)\"/)
+  {
+    $val = $1;
+  }
+
   return $val;
 }

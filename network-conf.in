@@ -73,7 +73,7 @@ $version = "@VERSION@";
               "debian-2.2", "debian-3.0", "debian-sarge",              
               "suse-7.0", "turbolinux-7.0", "fedora-1",
               "pld-1.0", "pld-1.1", "pld-1.99",
-              "slackware-9.1.0", "gentoo");
+              "slackware-9.1.0", "gentoo", "freebsd-5");
 
 $description =<<"end_of_description;";
        Configures all network parameters and interfaces.
@@ -154,6 +154,7 @@ sub xml_parse_network
     elsif ($elem eq "smbinstalled")  { shift @$tree; }
     elsif ($elem eq "smartdhcpcd")   { shift @$tree; }
     elsif ($elem eq "gwdevunsup")    { shift @$tree; }
+    elsif ($elem eq "wireless_device") { shift @$tree; }
     elsif ($elem eq "profiledb")     { &xml_parse_profiledb (shift @$tree, $hash); }
     else                             { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
@@ -432,7 +433,7 @@ sub list_ifaces
   {
     push @arr, $$ifaces{$iface};
   }
-  
+
   &gst_report_end ();
   &gst_xml_print_begin ("network-ifaces");
   &gst_xml_print_structure (\@arr, "interface");
@@ -476,7 +477,7 @@ $directives = {
   "set"                => [ \&set,          [], "" ],
   "filter"             => [ \&filter,       [], "" ],
   "list_ifaces"        => [ \&list_ifaces,  [],
-                      "List interfaces and active/inactive status." ],
+                            "List interfaces and active/inactive status." ],
   "enable_iface"       => [ \&enable_iface, [ "interface", "enabled" ],
                             "Immediatly enable or disable a given interface. " .
                             "interface is the file tag value, enabled is 1 or 0." ],

@@ -1,3 +1,16 @@
+2004-05-04  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* service.pl.in: made it to look too in /usr/local/etc/rc.d for
+	  starting/stopping/searching services
+	* platform.pl.in: parsing improvements in the freebsd function
+	* parse.pl.in (gst_parse_process_sh_line): parsing improvements,
+	  it now only replaces hashes inside valid double quotes
+	  (gst_parse_startif): added, for parsing /etc/start_if.$iface
+	  in FreeBSD
+	* network-conf.in, network.pl.in: added partial network support
+	  for FreeBSD, only the PPP stuff is missing, the rest seems quite
+	  stable
+
 2004-05-02  Carlos García Campos <elkalmail@yahoo.es>
 
 	* disks-conf.in: mounts as user who launched the frontend when it's

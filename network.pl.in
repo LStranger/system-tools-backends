@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-# Common stuff for the ximian-setup-tools backends.
+# Common network stuff for the ximian-setup-tools backends.
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
@@ -42,8 +42,7 @@ require "$SCRIPTSDIR/service.pl$DOTIN";
 require "$SCRIPTSDIR/util.pl$DOTIN";
 require "$SCRIPTSDIR/xml.pl$DOTIN";
 
-# Returns an array with the wireless devices found
-sub gst_network_get_wireless_ifaces
+sub gst_network_get_linux_wireless_ifaces
 {
   my ($fd, $line);
   my (@ifaces);
@@ -63,6 +62,42 @@ sub gst_network_get_wireless_ifaces
 
   &gst_report_leave ();
   return \@ifaces;
+}
+
+sub gst_network_get_freebsd_wireless_ifaces
+{
+  my ($fd, $line, $iface);
+  my (@ifaces);
+
+  $fd = &gst_file_run_pipe_read ("ifconfig");
+  return @ifaces if $fd eq undef;
+
+  while (<$fd>)
+  {
+    if (/^([a-zA-Z]+[0-9]+):/)
+    {
+      $iface = $1;
+    }
+
+    if (/media:.*wireless.*/i)
+    {
+      push @ifaces, $iface;
+    }
+  }
+
+  &gst_file_close ($fd);
+  &gst_report_leave ();
+
+  return \@ifaces;
+}
+
+# Returns an array with the wireless devices found
+sub gst_network_get_wireless_ifaces
+{
+  my ($plat) = $$tool{"system"};
+    
+  return &gst_network_get_linux_wireless_ifaces   if ($plat eq "Linux");
+  return &gst_network_get_freebsd_wireless_ifaces if ($plat eq "FreeBSD");
 }
 
 # Tries to detect modem in a closed list of devices
@@ -106,8 +141,9 @@ sub gst_network_get_interface_name
     $ifaces = {
       "Modem"    => "tun",
       "Ethernet" => "dc",
-      "Parallel" => "lp"
-      # FIXME: missing infrared
+      "Parallel" => "plip",
+      # FIXME: is this the irlan interface name?
+      "Infrared" => "irlan"
     };
   }
 
@@ -227,7 +263,8 @@ sub gst_network_get_broadcast_ping_cmd
        "pld-1.99"     => "redhat-6.2",
        "fedora-1"     => "redhat-6.2",
        "slackware-9.1.0" => "redhat-6.2",
-       "gentoo"       => "debian-2.2"
+       "gentoo"       => "debian-2.2",
+       "freebsd-5"    => "debian-2.2"
        );
 
   return $cmd_map{$dist_map{$gst_dist}};
@@ -465,8 +502,48 @@ sub gst_network_dialing_get
   return \%ret;
 }
 
-# FIXME: this depends a lot on ifconfig's output.
-sub gst_network_interfaces_get_info
+sub gst_network_freebsd_interfaces_get_info
+{
+  my ($dev, %ifaces, $fd);
+
+  &gst_report_enter ();
+  &gst_report ("network_iface_active_get");
+
+  $fd = &gst_file_run_pipe_read ("ifconfig");
+  return {} if $fd eq undef;
+  
+  while (<$fd>)
+  {
+    chomp;
+    if (/^([^ \t:]+):.*(<.*>)/)
+    {
+      $dev = $1;
+      $ {$ifaces{$dev}}{"dev"}    = $dev;
+      $ {$ifaces{$dev}}{"active"} = 1 if ($2 =~ /[<,]UP[,>]/);
+    }
+    
+    s/^[ \t]+//;
+    if ($dev)
+    {
+      $ {$ifaces{$dev}}{"hwaddr"}  = $1 if /ether[ \t]+([^ \t]+)/i;
+      $ {$ifaces{$dev}}{"addr"}    = $1 if /inet[ \t]+([^ \t]+)/i;
+      $ {$ifaces{$dev}}{"mask"}    = $1 if /netmask[ \t]+([^ \t]+)/i;
+      $ {$ifaces{$dev}}{"bcast"}   = $1 if /broadcast[ \t]+([^ \t]+)/i;
+    }
+  }
+  
+  &gst_file_close ($fd);
+
+  foreach $dev (keys %ifaces)
+  {
+    $ {$ifaces{$dev}}{"active"} = 0 if $ {$ifaces{$dev}}{"addr"} eq undef;
+  }
+  
+  &gst_report_leave ();
+  return \%ifaces;
+}
+
+sub gst_network_linux_interfaces_get_info
 {
   my ($dev, %ifaces, $fd);
 
@@ -508,6 +585,11 @@ sub gst_network_interfaces_get_info
   return \%ifaces;
 }
 
+sub gst_network_interfaces_get_info
+{
+  return &gst_network_linux_interfaces_get_info   if ($$tool{"system"} eq "Linux");
+  return &gst_network_freebsd_interfaces_get_info if ($$tool{"system"} eq "FreeBSD");
+}
 
 sub gst_network_active_interfaces_get
 {
@@ -531,6 +613,31 @@ sub gst_network_active_interfaces_get
   &gst_file_close ($fd);
 
   &gst_report_leave ();
+  return @ret;
+}
+
+sub gst_network_freebsd5_active_interfaces_get
+{
+  my ($fd, @ret);
+
+  &gst_report_enter ();
+  &gst_report ("network_iface_active_get");
+
+  $fd = &gst_file_run_pipe_read ("ifconfig");
+  return undef if ($fd eq undef);
+
+  while (<$fd>)
+  {
+    chomp;
+    if (/^([\w\d]*):.*[<,]UP[,>]/)
+    {
+      push @ret, $1;
+    }
+  }
+
+  &gst_file_close ($fd);
+  &gst_report_leave ();
+
   return @ret;
 }
 
@@ -720,6 +827,25 @@ sub gst_network_gentoo_ifaces_get_existing
   {
     $ppp =~ s#^/etc/conf.d/net\.##;
     push @ret, $ppp if ($ppp =~ /^ppp[0-9]$/);
+  }
+
+  return @ret;
+}
+
+sub gst_network_freebsd_ifaces_get_existing
+{
+  my $file = "/etc/rc.conf";
+  my ($fd, $i, @ret);
+
+  $fd = &gst_file_open_read_from_names ($file);
+  return @ret if !$fd;
+
+  while ($i = <$fd>)
+  {
+    if ($i =~ /^ifconfig_(.*)[ \t]*=/)
+    {
+      push @ret, $1;
+    }
   }
 
   return @ret;
@@ -1288,7 +1414,8 @@ sub gst_network_get_file
     "pld-1.99"     => \&gst_network_pld10_get_file,
     "fedora-1"     => \&gst_network_rh72_get_file,
     "slackware-9.1.0" => \&gst_network_deb22_get_file,
-    "gentoo"       => \&gst_network_deb22_get_file
+    "gentoo"       => \&gst_network_deb22_get_file,
+    "freebsd-5"    => \&gst_network_deb22_get_file,
 	  );
 
   $proc = $dist_map{$gst_dist};
@@ -1595,6 +1722,58 @@ sub gst_network_gentoo_interface_activate
   }
 }
 
+sub gst_network_freebsd_interface_activate_by_dev
+{
+  my ($hash, $enabled) = @_;
+  my ($dev)     = $$hash{"file"};
+  my ($startif) = "/etc/start_if.$dev";
+  my ($file)    = "/etc/rc.conf";
+  my ($command, $dhcp_flags, $defaultroute, $fd);
+
+  if ($enabled)
+  {
+    # Run the /etc/start_if.$dev commands
+    $fd = &gst_file_open_read_from_names ($startif);
+
+    while (<$fd>)
+    {
+      `$_`;
+    }
+
+    &gst_file_close ($fd);
+    $command = &gst_parse_sh ($file, "ifconfig_$dev");
+
+    # Bring up the interface
+    if ($command =~ /DHCP/i)
+    {
+      $dhcp_flags = &gst_parse_sh ($file, "dhcp_flags");
+      &gst_file_run ("dhclient $dhcp_flags $dev");
+    }
+    else
+    {
+      &gst_file_run ("ifconfig $dev $command");
+    }
+
+    # Add the default route
+    $default_route = &gst_parse_sh ($file, "defaultrouter");
+    &gst_file_run ("route add default $default_route") if ($default_route !~ /^no$/i);
+  }
+  else
+  {
+    &gst_file_run ("ifconfig $dev down");
+  }
+}
+
+sub gst_network_freebsd_interface_activate
+{
+  my ($hash, $old_hash, $enabled, $force) =@_;
+
+  if ($force || &gst_network_interface_changed ($hash, $old_hash))
+  {
+    &gst_network_freebsd_interface_activate_by_dev ($hash, $enabled);
+  }
+}
+
 sub gst_network_remove_pap_entry
 {
   my ($file, $login) = @_;
@@ -1761,6 +1940,19 @@ sub gst_network_gentoo_interface_delete
     $netconf = "/etc/conf.d/net";
     &gst_replace_sh ($netconf, "iface_$dev", "");
   }
+}
+
+sub gst_network_freebsd_interface_delete
+{
+  my ($old_hash) = @_;
+  my ($dev)      = $$old_hash{"dev"};
+  my ($startif)  = "/etc/start_if.$file";
+  my ($file)     = "/etc/rc.conf";
+
+  &gst_file_run ("ifconfig $dev down");
+
+  &gst_replace_sh  ($file, "ifconfig_$dev", "");
+  &gst_file_remove ($startif);
 }
 
 sub gst_network_interface_changed
@@ -2247,11 +2439,11 @@ sub gst_network_pld10_replace_bootproto
   return &gst_replace_sh ($file, $key, $proto_name_to_pld10{$value});
 }
 
-sub gst_network_gentoo_parse_bootproto
+sub gst_network_parse_bootproto
 {
-  my ($file, $dev) = @_;
+  my ($file, $key) = @_;
 
-  return "dhcp" if (&gst_parse_sh ($file, "iface_$dev") eq "dhcp");
+  return "dhcp" if (&gst_parse_sh ($file, $key) =~ /dhcp/i);
   return "none";
 }
 
@@ -2265,6 +2457,14 @@ sub gst_network_gentoo_replace_bootproto
 
   # replace with a fake IP address, I know it's a hack
   return &gst_replace_split ($file, "iface_$dev", "[ \t]*=[ \t]*", "\"0.0.0.0\"");
+}
+
+sub gst_network_freebsd5_replace_bootproto
+{
+  my ($file, $dev, $value) = @_;
+
+  return &gst_replace_sh ($file, "ifconfig_$dev", "dhcp") if ($value ne "none");
+  return &gst_replace_sh ($file, "ifconfig_$dev", "");
 }
 
 sub gst_network_pump_iface_supported
@@ -2500,6 +2700,45 @@ sub gst_network_slackware91_set_auto
   }
 }
 
+# finds out if a interface is active at boot time
+sub gst_network_freebsd5_get_auto
+{
+  my ($file, $defaults_file, $iface) = @_;
+  my ($val);
+
+  $val = &gst_parse_sh ($file,          "network_interfaces");
+  $val = &gst_parse_sh ($defaults_file, "network_interfaces") if ($val eq undef);
+
+  return 1 if ($val eq "auto");
+  return 1 if ($val =~ /$iface/);
+  return 0;
+}
+
+sub gst_network_freebsd5_set_auto
+{
+  my ($file, $iface, $active) = @_;
+  my ($val);
+
+  $val  = &gst_parse_sh ($file, "network_interfaces");
+  $val = &gst_file_run_backtick ("ifconfig -l") if ($val =~ /auto/);
+  $val .= " ";
+
+  if ($active && ($val !~ /$iface /))
+  {
+    $val .= $iface;
+  }
+  elsif (!$active && ($val =~ /$iface /))
+  {
+    $val =~ s/$iface //;
+  }
+
+  # Trim the string
+  $val =~ s/^[ \t]*//;
+  $val =~ s/[ \t]*$//;
+
+  &gst_replace_sh ($file, "network_interfaces", $val);
+}
+
 # Return IP address or netmask, depending on $what
 sub gst_network_pld10_get_ipaddr
 {
@@ -2576,18 +2815,19 @@ sub gst_network_pld10_set_ipaddr
 }
 
 # FIXME: this function isn't IPv6-aware
-sub gst_network_slackware91_get_gateway
+# it checks if a IP address is in the same network than another
+sub gst_network_is_ip_in_same_network
 {
-  my ($file, $address, $netmask) = @_;
-  my ($gateway, $i);
+  my ($address1, $address2, $netmask) = @_;
   my (@add1, @add2, @mask);
+  my ($i);
 
-  return undef if ($address eq undef);
+  return 0 if (($address1 eq undef) ||
+               ($address2 eq undef) ||
+               ($netmask  eq undef));
 
-  $gateway = gst_parse_sh ($file, "GATEWAY");
-
-  @add1 = split (/\./, $address);
-  @add2 = split (/\./, $gateway);
+  @add1 = split (/\./, $address1);
+  @add2 = split (/\./, $address2);
   @mask = split (/\./, $netmask);
 
   for ($i = 0; $i < 4; $i++)
@@ -2596,24 +2836,49 @@ sub gst_network_slackware91_get_gateway
     $add2[$i] += 0;
     $mask[$i] += 0;
 
-    return undef if (($add1[$i] & $mask[$i]) != ($add2[$i] & $mask[$i]));
+    return 0 if (($add1[$i] & $mask[$i]) != ($add2[$i] & $mask[$i]));
   }
 
-  return $gateway;
+  return 1;
 }
 
-sub gst_network_slackware91_get_gateway_dev
+# function that gets a gateway device from the gateway address
+sub gst_network_get_gateway_dev_from_address
 {
-  my ($file, $interface) = @_;
-  my ($address, $netmask);
+  my ($interface, $gateway) = @_;
+  my ($address, $netmask, $key);
 
-  foreach $key (keys %$interface) {
+  foreach $key (keys %$interface)
+  {
     $address = $$interface{$key}{"address"};
     $netmask = $$interface{$key}{"netmask"};
 
-    return $key if (&gst_network_slackware91_get_gateway ($file, $address, $netmask) ne undef);
+    return $key if (&gst_network_is_ip_in_same_network ($address, $gateway, $netmask));
   }
 
+  return undef;
+}
+
+sub gst_network_get_plip_gateway
+{
+  my ($file, $key, $remote_address) = @_;
+  my ($gateway);
+
+  $gateway = &gst_parse_sh ($file, $key);
+
+  return $gateway if ($gateway eq $remote_address);
+}
+
+sub gst_network_get_gateway
+{
+  my ($file, $key, $address, $netmask) = @_;
+  my ($gateway);
+
+  return undef if ($address eq undef);
+
+  $gateway = &gst_parse_sh ($file, $key);
+
+  return $gateway if &gst_network_is_ip_in_same_network ($address, $gateway, $netmask);
   return undef;
 }
 
@@ -2654,6 +2919,23 @@ sub gst_network_gentoo_create_files
   chmod 0755, "$gst_prefix/$init";
 }
 
+# we need this function because essid can be multiword, and thus it can't be in rc.conf
+sub gst_network_freebsd5_replace_essid
+{
+  my ($file, $startif, $iface, $essid) = @_;
+
+  if ($essid =~ /[ \t]/)
+  {
+    # It's multiword
+    &gst_file_buffer_save ("ifconfig $iface ssid \"$essid\"", $startif);
+    &gst_replace_sh_re ($file, "ifconfig_$iface", "ssid[ \t]+([^ \t]*)", "");
+  }
+  else
+  {
+    &gst_replace_sh_re ($file, "ifconfig_$iface", "ssid[ \t]+([^ \t]*)", " ssid $essid");
+  }
+}
+
 # Set dist_map for your distro to "" if you don't want
 # loopback ensuring. See suse-7.0 entry for example.
 sub gst_network_ensure_loopback_interface
@@ -2687,7 +2969,8 @@ sub gst_network_ensure_loopback_interface
     "pld-1.99"     => "lo",
     "fedora-1"     => "",
     "slackware-9.1.0" => "",
-    "gentoo"       => ""
+    "gentoo"       => "",
+    "freebsd-5"    => "",
 	  );
 
   $dev = $dist_map {$gst_dist};
@@ -2791,13 +3074,14 @@ sub gst_network_get_parse_table
     "debian-3.0"   => "debian-2.2",
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
-	  "turbolinux-7.0"   => "redhat-7.0",
-    "pld-1.0"      =>  "pld-1.0",
-    "pld-1.1"      =>  "pld-1.0",
-    "pld-1.99"     =>  "pld-1.0",
-    "fedora-1"     =>  "redhat-7.2",
+	  "turbolinux-7.0"  => "redhat-7.0",
+    "pld-1.0"      => "pld-1.0",
+    "pld-1.1"      => "pld-1.0",
+    "pld-1.99"     => "pld-1.0",
+    "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0",
-    "gentoo"       =>  "gentoo"
+    "gentoo"       => "gentoo",
+    "freebsd-5"    => "freebsd-5"
 	  );
 
   my %dist_tables =
@@ -3059,7 +3343,7 @@ sub gst_network_get_parse_table
        [ "dialinstalled", \&gst_parse_trivial, 1 ],
        [ "interface",     \&gst_network_interfaces_get ],
        [ "gateway",       \&gst_parse_sh,                RC_INET_CONF, GATEWAY ],
-       [ "gatewaydev",    \&gst_network_slackware91_get_gateway_dev, RC_INET_CONF, "%interface%" ],
+       [ "gatewaydev",    \&gst_network_get_gateway_dev_from_address,  "%interface%", "%gateway%" ],
       ]
     },
 
@@ -3092,6 +3376,35 @@ sub gst_network_get_parse_table
        [ "gatewaydev",    \&gst_parse_sh_re,                         NET, gateway, "^(.*)\/" ],
        [ "gateway",       \&gst_parse_sh_re,                         NET, gateway, "^.*\/([0-9\.]*)\$" ],
        [ "interface",     \&gst_network_interfaces_get ],
+       ]
+     },
+
+    "freebsd-5" =>
+    {
+      fn =>
+      {
+        RC_CONF     => "/etc/rc.conf",
+        RESOLV_CONF => "/etc/resolv.conf",
+        HOSTS       => "/etc/hosts",
+        SMB_CONF    => "/usr/local/etc/smb.conf"
+      },
+      table =>
+      [
+       [ "hostname",      \&gst_parse_sh_re,                          RC_CONF, hostname, "^([^\.]*)\." ],
+       [ "domain",        \&gst_parse_sh_re,                          RC_CONF, hostname, "\.([^\.]*)\$" ],
+       [ "nameserver",    \&gst_parse_split_all_unique_hash_comment,  RESOLV_CONF,  "nameserver", "[ \t]+" ],
+       [ "searchdomain",  \&gst_parse_split_first_array_unique,       RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+       [ "statichost",    \&gst_parse_split_hash,                     HOSTS,        "[ \t]+", "[ \t]+" ],
+       [ "workgroup",     \&gst_parse_ini,                            SMB_CONF,     "global", "workgroup" ],
+       [ "smbdesc",       \&gst_network_rh_get_smb_desc,              SMB_CONF,     "global", "server string", "%hostname%" ],
+       [ "winsserver",    \&gst_parse_ini,                            SMB_CONF,     "global", "wins server" ],
+       [ "winsuse",       \&gst_parse_ini_bool,                       SMB_CONF,     "global", "wins support" ],
+       [ "dialinstalled", \&gst_parse_trivial, 1 ],
+       [ "smbinstalled",  \&gst_service_installed,                    "samba" ],
+       [ "smbuse",        \&gst_service_rcng_get_status,              "smbd" ],
+       [ "interface",     \&gst_network_interfaces_get ],
+       [ "gateway",       \&gst_parse_sh,                             RC_CONF, defaultrouter ],
+       [ "gatewaydev",    \&gst_network_get_gateway_dev_from_address, "%interface%", "%gateway%" ],
        ]
      }
    );
@@ -3132,7 +3445,8 @@ sub gst_network_get_interface_parse_table
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0",
-    "gentoo"       => "gentoo"
+    "gentoo"       => "gentoo",
+    "freebsd-5"    => "freebsd-5",
 	  );
   
   my %dist_tables =
@@ -3553,7 +3867,7 @@ sub gst_network_get_interface_parse_table
        [ "dev",                \&gst_parse_trivial,                  IFACE ],
        [ "address",            \&gst_parse_rcinet1conf,              [RC_INET_CONF, IFACE], IPADDR ],
        [ "netmask",            \&gst_parse_rcinet1conf,              [RC_INET_CONF, IFACE], NETMASK ],
-       [ "gateway",            \&gst_network_slackware91_get_gateway, RC_INET_CONF, "%address%", "%netmask%" ],
+       [ "gateway",            \&gst_network_get_gateway,            RC_INET_CONF, GATEWAY, "%address%", "%netmask%" ],
        [ "auto",               \&gst_network_slackware91_get_auto,   [RC_INET, RC_LOCAL, IFACE]],
        [ "bootproto",          \&gst_network_slackware91_parse_bootproto, [RC_INET_CONF, IFACE]],
        [ "essid",              \&gst_parse_wireless_opts,            [ WIRELESS, IFACE], \&gst_network_get_wireless_ifaces, ESSID ],
@@ -3602,7 +3916,7 @@ sub gst_network_get_interface_parse_table
        [ "remote_address",     \&gst_parse_sh_re,                    NET, "iface_%dev%", "dest_address[ \t]+([0-9\.]*)" ],
        [ "gateway",            \&gst_parse_sh_re,                    NET, "gateway", "%dev%/([0-9\.\:]*)" ],
        [ "enabled",            \&gst_network_interface_active,       IFACE, \&gst_network_active_interfaces_get ],
-       [ "bootproto",          \&gst_network_gentoo_parse_bootproto, [ NET, IFACE ]],
+       [ "bootproto",          \&gst_network_parse_bootproto,        NET, "iface_%dev%" ],
        [ "essid",              \&gst_parse_wireless_opts,            [ WIRELESS, IFACE], \&gst_network_get_wireless_ifaces, ESSID ],
        # modem stuff
        [ "update_dns",         \&gst_parse_sh_bool,                  PPPNET, PEERDNS ],
@@ -3621,6 +3935,39 @@ sub gst_network_get_interface_parse_table
        [ "external_line",      \&gst_parse_sh_re,                    PPPNET, NUMBER, "^([0-9]*)w" ],
        [ "phone_number",       \&gst_parse_sh_re,                    PPPNET, NUMBER, "w?([0-9]*)\$" ],
        [ "volume",             \&gst_parse_sh_re,                    PPPNET, INITSTRING, "^at.*[ml]([0-3])" ],
+      ]
+    },
+
+    "freebsd-5" =>
+    {
+      ifaces_get => \&gst_network_freebsd_ifaces_get_existing,
+      fn =>
+      {
+        RC_CONF         => "/etc/rc.conf",
+        RC_CONF_DEFAULT => "/etc/defaults/rc.conf",
+        STARTIF         => "/etc/start_if.#iface#",
+        IFACE           => "#iface#",
+      },
+      table =>
+      [
+       [ "auto",               \&gst_network_freebsd5_get_auto,      [RC_CONF, RC_CONF_DEFAULT, IFACE ]],
+       [ "user",               \&gst_parse_trivial,                  0 ], # not supported.
+       [ "dev",                \&gst_parse_trivial,                  IFACE ],
+       # we need to double check these values both in the start_if and in the rc.conf files, in this order
+       [ "address",            \&gst_parse_startif,                  STARTIF, "inet[ \t]+([0-9\.]+)" ],
+       [ "address",            \&gst_parse_sh_re,                    RC_CONF, "ifconfig_%dev%", "inet[ \t]+([0-9\.]+)" ],
+       [ "netmask",            \&gst_parse_startif,                  STARTIF, "netmask[ \t]+([0-9\.]+)" ],
+       [ "netmask",            \&gst_parse_sh_re,                    RC_CONF, "ifconfig_%dev%", "netmask[ \t]+([0-9\.]+)" ],
+       [ "remote_address",     \&gst_parse_startif,                  STARTIF, "dest_address[ \t]+([0-9\.]+)" ],
+       [ "remote_address",     \&gst_parse_sh_re,                    RC_CONF, "ifconfig_%dev%", "dest_address[ \t]+([0-9\.]+)" ],
+       [ "essid",              \&gst_parse_startif,                  STARTIF, "ssid[ \t]+(\".*\"|[^\"][^ ]+)" ],
+       [ "essid",              \&gst_parse_sh_re,                    RC_CONF, "ifconfig_%dev%", "ssid[ \t]+([^ ]*)" ],
+       # this is for plip interfaces
+       [ "gateway",            \&gst_network_get_plip_gateway,       RC_CONF, "defaultrouter", "%remote_address%" ],
+       [ "gateway",            \&gst_network_get_gateway,            RC_CONF, "defaultrouter", "%address%", "%netmask%" ],
+       [ "enabled",            \&gst_network_interface_active,       IFACE, \&gst_network_freebsd5_active_interfaces_get ],
+       [ "bootproto",          \&gst_network_parse_bootproto,        RC_CONF, "ifconfig_%dev%" ],
+       # FIXME: missing modem stuff
       ]
     }
 	  );
@@ -3660,7 +4007,8 @@ sub gst_network_get_replace_table
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0",
-    "gentoo"       => "gentoo"
+    "gentoo"       => "gentoo",
+    "freebsd-5"    => "freebsd-5",
 	  );
 
   my %dist_tables =
@@ -3949,6 +4297,33 @@ sub gst_network_get_replace_table
        [ "gateway",       \&gst_replace_sh_re,            NET, gateway, "\/[0-9\.]*\$", "/%gateway%" ],
        [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ]
       ]
+    },
+
+    "freebsd-5" =>
+    {
+      fn =>
+      {
+        RC_CONF     => "/etc/rc.conf",
+        RESOLV_CONF => "/etc/resolv.conf",
+        HOSTS       => "/etc/hosts",
+        SMB_CONF    => "/usr/local/etc/smb.conf"
+      },
+      table =>
+      [
+       [ "hostname",      \&gst_replace_sh,               RC_CONF, "hostname", "%hostname%.%domain%" ],
+       [ "hostname",      \&gst_network_run_hostname,     "%hostname%.%domain%" ],
+       [ "domain",        \&gst_replace_join_first_str,   RESOLV_CONF, "domain",     "[ \t]+" ],
+       [ "nameserver",    \&gst_replace_join_all,         RESOLV_CONF, "nameserver", "[ \t]+" ],
+       [ "searchdomain",  \&gst_replace_join_first_array, RESOLV_CONF, "search",     "[ \t]+", "[ \t]+" ],
+       [ "statichost",    \&gst_replace_join_hash,        HOSTS, "[ \t]+", "[ \t]+" ],
+       [ "workgroup",     \&gst_replace_ini,              SMB_CONF,     "global", "workgroup" ],
+       [ "smbdesc",       \&gst_replace_ini,              SMB_CONF,     "global", "server string", "%hostname%" ],
+       [ "winsserver",    \&gst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+       [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
+       [ "smbuse",        \&gst_service_rcng_set_status,  "samba" ],
+       [ "gateway",       \&gst_replace_sh,               RC_CONF, "defaultrouter" ],
+       [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ]
+       ]
     }
 	  );
   
@@ -3987,7 +4362,8 @@ sub gst_network_get_interface_replace_table
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0",
-    "gentoo"       => "gentoo"
+    "gentoo"       => "gentoo",
+    "freebsd-5"    => "freebsd-5"
 	  );
 
   my %dist_tables =
@@ -4450,6 +4826,29 @@ sub gst_network_get_interface_replace_table
       [ "external_line",      \&gst_replace_sh,                       PPPNET, NUMBER, "%external_line%W%phone_number%" ],
       [ "volume",             \&gst_network_set_modem_volume_string,  PPPNET, INITSTRING ],
      ]
+    },
+
+    "freebsd-5" =>
+    {
+      iface_set    => \&gst_network_freebsd_interface_activate,
+      iface_delete => \&gst_network_freebsd_interface_delete,
+      ifaces_get   => \&gst_network_freebsd_ifaces_get_existing,
+      fn =>
+      {
+        RC_CONF         => "/etc/rc.conf",
+        STARTIF         => "/etc/start_if.#iface#",
+        IFACE           => "#iface#",
+      },
+      table =>
+      [
+       [ "auto",           \&gst_network_freebsd5_set_auto,          [ RC_CONF, IFACE ]],
+       [ "bootproto",      \&gst_network_freebsd5_replace_bootproto, [ RC_CONF, IFACE ]],
+       [ "address",        \&gst_replace_sh_re,    RC_CONF, "ifconfig_%dev%", "inet[ \t]+([0-9\.]+)", "inet %address%" ],
+       [ "netmask",        \&gst_replace_sh_re,    RC_CONF, "ifconfig_%dev%", "netmask[ \t]+([0-9\.]+)", " netmask %netmask%" ],
+       [ "remote_address", \&gst_replace_sh_re,    RC_CONF, "ifconfig_%dev%", "dest_address[ \t]+([0-9\.]+)", " dest_address %remote_address%" ],
+       [ "essid",          \&gst_network_freebsd5_replace_essid,     [ RC_CONF, STARTIF, IFACE ]],
+       # FIXME: missing modem stuff
+      ]
     }
   );
   
