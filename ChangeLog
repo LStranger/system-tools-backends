@@ -1,5 +1,9 @@
 2004-04-14  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* service-list.pl.in: added a couple of forbidden services
+
+2004-04-14  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* disks-conf.in (get_dev_speed) (dev_speed): made it not to block
 	  UI when getting the device speed
 
