@@ -1,8 +1,15 @@
 2001-07-13  Hans Petter Jansson  <hpj@ximian.com>
 
+	* xml.pl.in (xst_xml_model_get_pcdata): Implement.
+	  (xst_xml_model_set_pcdata): Implement.
+	  (xst_xml_model_get_attribute): Implement.
+	  (xst_xml_model_set_attribute): Implement.
+
+2001-07-13  Hans Petter Jansson  <hpj@ximian.com>
+
 	* xml.pl.in (xst_xml_model_add): Implement.
 	  (xst_xml_model_ensure): Implement.
-		(xst_xml_model_remove): Implement.
+	  (xst_xml_model_remove): Implement.
 
 2001-07-13  Tambet Ingo  <tambet@ximian.com>
 

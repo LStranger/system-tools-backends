@@ -784,7 +784,7 @@ sub xst_xml_model_ensure
 sub xst_xml_model_remove
 {
   my ($model, $varpath, $tag) = @_;
-  my ($branch);
+  my ($branch, $i);
 
   @path = split /\//, $addpath;
   $branch = &xst_xml_model_find ($model, $varpath);
@@ -803,6 +803,47 @@ sub xst_xml_model_remove
   }
 
   return -1;
+}
+
+sub xst_xml_model_get_pcdata
+{
+  my ($branch) = @_;
+  my ($i);
+
+  for ($i = 1; $i < @$branch; $i += 2)
+  {
+    if ($$branch [$i] == 0)
+    {
+      my $retval = &xst_xml_unquote ($$branch [$i + 1]);
+      return ($retval);
+    }
+  }
+
+  return "";
+}
+
+sub xst_xml_model_set_pcdata
+{
+  my ($branch, $pcdata) = @_;
+
+  @$branch = (@$branch [0]);
+
+  $$branch [1] = 0;
+  $$branch [2] = &xst_xml_quote ($pcdata);
+}
+
+sub xst_xml_model_get_attribute
+{
+  my ($branch, $attr) = @_;
+
+  return $$branch[0]->{$attr};
+}
+
+sub xst_xml_model_set_attribute
+{
+  my ($branch, $attr, $value) = @_;
+
+  return $$branch[0]->{$attr} = $value;
 }
 
 1;

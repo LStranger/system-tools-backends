@@ -1307,8 +1307,8 @@ sub xst_parse_xml
 
   if ($branch)
   {
-    return &xst_xml_get_attribute ($branch, $property) if $property ne "";
-    return &xst_xml_get_pcdata ($branch);
+    return &xst_xml_model_get_attribute ($branch, $property) if $property ne "";
+    return &xst_xml_model_get_pcdata ($branch);
   }
 
   return undef;
