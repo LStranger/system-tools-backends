@@ -1,3 +1,18 @@
+2001-11-14  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_interfaces_parse_table): If
+	interface has no NAME variable, use the IFACE: that's the new
+	Red Hat 7.2 way.
+
+	* users-conf.in: Added redhat-7.2 as a supported platform.
+
+2001-11-13  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* platform.pl.in: Added redhat-7.2 platform info.
+
+	* service.pl.in (xst_service_sysv_get_runlevels): Added redhat-7.2.
+	(xst_service_sysv_get_paths): same.
+
 Mon Nov  5 22:03:17 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_get_interface_replace_table):

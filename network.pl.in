@@ -2264,6 +2264,7 @@ sub xst_network_get_interfaces_parse_table
            [ "auto",               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
            [ "user",               \&xst_parse_sh_bool, IFCFG, USERCTL ],
            [ "name",               \&xst_parse_sh,      IFCFG, NAME ],
+           [ "name",               \&xst_parse_trivial, IFACE ],
            [ "dev",                \&xst_parse_sh,      IFCFG, DEVICE ],
            [ "address",            \&xst_parse_sh,      IFCFG, IPADDR ],
            [ "netmask",            \&xst_parse_sh,      IFCFG, NETMASK ],

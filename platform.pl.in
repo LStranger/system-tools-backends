@@ -46,6 +46,7 @@ $PLATFORM_INFO = {
   "redhat-6.2"     => "Red Hat Linux 6.2 Zoot",
   "redhat-7.0"     => "Red Hat Linux 7.0 Guinness",
   "redhat-7.1"     => "Red Hat Linux 7.1 Seawolf",
+  "redhat-7.2"     => "Red Hat Linux 7.2 Enigma",
   "mandrake-7.1"   => "Linux Mandrake 7.1",
   "mandrake-7.2"   => "Linux Mandrake 7.2 Odyssey",
   "mandrake-8.0"   => "Linux Mandrake 8.0 Traktopel",
