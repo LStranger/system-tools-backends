@@ -1,5 +1,13 @@
 2001-08-03  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* internetsharing-conf.in (xst_ishare_fwrules_get_ipchains): Get
+	ipchains-related information.
+	(xst_ishare_dhcp_mdk72_get): New. Used mdk72 because that's our base
+	platform.
+	(xst_ishare_get_linux22_support): Check for kernel support.
+	(xst_ishare_get_linux22_support_active): Check if kernel support is active.
+	Added mdk 7.2 as supported platform.
+
 	* file.pl.in (xst_file_run_pipe_read): New utility to run commands
 	that will be piped for reading.
 	(xst_file_run): use xst_file_get_cmd_path now.
