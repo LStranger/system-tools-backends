@@ -1,3 +1,8 @@
+2004-12-10  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* parse.pl.in, time-conf.in: handled parsing/replacing of parameters
+	after the ntp server name
+
 2004-12-06  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* users-conf.in: added "plugdev" group to the descriptions list

@@ -388,7 +388,7 @@ sub gst_parse_split_all_unique_hash_comment
   my ($arr, @res);
   my (%hash, $i);
 
-  $arr =  &gst_parse_split_all ($file, $key, $re, \&gst_parse_chomp_line_hash_comment);
+  $arr = &gst_parse_split_all ($file, $key, $re, \&gst_parse_chomp_line_hash_comment);
 
   foreach $i (@$arr)
   {
@@ -398,6 +398,22 @@ sub gst_parse_split_all_unique_hash_comment
   }
 
   return \@res;
+}
+
+sub gst_parse_split_all_array_with_pos
+{
+  my ($file, $key, $pos, $re, $sep, $line_read_proc) = @_;
+  my ($arr, @s, @ret, $i);
+
+  $arr = &gst_parse_split_all ($file, $key, $re, $line_read_proc);
+
+  foreach $i (@$arr)
+  {
+    @s = split ($sep, $i);
+    push @ret, @s[0];
+  }
+
+  return \@ret;
 }
 
 # Same, but for $all = 0. (ie nameserver 10.0.0.1)
