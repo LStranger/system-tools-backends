@@ -180,7 +180,7 @@ sub xst_replace_split
     $pre_space = $post_comment = "";
     
     chomp $i;
-    $pre_space = $1 if $i =~ s/^([ \t]+)//;
+    $pre_space    = $1 if $i =~ s/^([ \t]+)//;
     $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
     
     if ($i ne "")

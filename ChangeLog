@@ -1,3 +1,7 @@
+2002-01-02  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* replace.pl.in (xst_replace_split): minor indentation.
+
 2002-01-02  Tambet Ingo  <tambet@ximian.com>
 
 	* xml.pl.in (xst_xml_scan_make_kid_array): Single quote (') can be used
