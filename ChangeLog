@@ -1,3 +1,8 @@
+2001-05-23  Arturo Espinosa <arturo@ximian.com>
+
+  * network.pl.in (xst_network_debian_woody_set_auto): Fixed
+	invariant bug in while loop (bug 2714 fixed).
+
 2001-05-23  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_set_global): Quote globals with spaces

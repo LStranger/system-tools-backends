@@ -1110,6 +1110,8 @@ sub xst_network_debian_woody_set_auto
     last if $$buff[$line_no] =~ s/[ \t]$iface$//;
     # I'm including the hash here, although the man page says it's not supported.
     last if $$buff[$line_no] =~ s/[ \t]$iface([\# \t])/\1/;
+		
+		$line_no ++;
   }
 
   if ($found == -1)
