@@ -41,6 +41,7 @@ EXTRA_DIST = \
 	users-conf.in \
 	boot-conf.in \
 	print-conf.in \
+	mouse-conf.in \
 	guess_system.sh
 
 CLEANFILES = $(backends) $(perl_libs)

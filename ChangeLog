@@ -10,6 +10,7 @@
 2001-04-26  Chema Celorio  <chema@celorio.com>
 
 	* Makefile.am (EXTRA_DIST): add print-conf.in to pass distcheck
+	(EXTRA_DIST): added mouse-conf.in
 
 2001-04-26  Arturo Espinosa Aldama  <arturo@ximian.com>
 
