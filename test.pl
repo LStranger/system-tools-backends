@@ -4,6 +4,7 @@ require "media.pl";
 require "network.pl";
 require "parse.pl";
 require "debug.pl";
+require "filesys.pl";
 
 
 @platforms = ( "redhat-6.2", "redhat-7.0" );
@@ -92,11 +93,14 @@ sub test_interfaces
 
 # ---
 
-@arr = &xst_parse_fstab ("/etc/fstab");
+#$arr = &xst_filesys_parse_fstab ("/etc/fstab");
+$arr = &xst_filesys_parse_mtab ("/etc/mtab");
 
-print @arr[0] . "\n";
+# print @arr[0] . "\n";
 
-&xst_debug_print_struct (@arr);
+# &xst_filesys_table_remove ($arr, &xst_filesys_table_find ($arr, "point", "/"));
+# &xst_filesys_table_remove ($arr, &xst_filesys_table_find ($arr, "point", "/mnt/floppy"));
+&xst_debug_print_struct ($arr);
 
 # &test_interfaces();
 # &test_media();

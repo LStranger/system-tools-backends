@@ -1,3 +1,8 @@
+2001-05-08  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in (set_immediate): Use smbmount directly and don't rely on
+	  fstab entry.
+
 2001-05-08  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network-conf.in (xml_print): Oops: print dialinstalled

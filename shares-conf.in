@@ -1889,10 +1889,12 @@ sub set_immediate
   my $exportfs_tool;
   my $mount_tool;
   my $umount_tool;
+  my $smbmount_tool;
 
   $exportfs_tool = &xst_file_locate_tool("exportfs");
   $mount_tool = &xst_file_locate_tool("mount");
   $umount_tool = &xst_file_locate_tool("umount");
+  $smbmount_tool = &xst_file_locate_tool("smbmount");
 
   # Update exports.
 
@@ -1928,7 +1930,14 @@ sub set_immediate
         if ($shares[3])
         {
           &xst_report ("compat", "Mounting $shares[8]");
-          system "$mount_tool $shares[8] >/dev/null 2>/dev/null";
+          if ($shares[5] eq "smb")
+          {
+            system "$smbmount_tool //$shares[0]/$shares[1] $shares[8] -o password=$shares[7],username=$shares[6]";
+          }
+          else
+          {
+            system "$mount_tool $shares[8] >/dev/null 2>/dev/null";
+          }
         }
         else
         {
