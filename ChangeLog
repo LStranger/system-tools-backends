@@ -1,5 +1,11 @@
 2003-12-31  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* services-conf.in, service.pl.in: made the throw_service
+	  directive more generic, it now allows bsd and sysv services
+	  to be thrown
+
+2003-12-31  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* service-list.pl.in: added a forbidden service for slack
 	* service.pl.in: made it to parse /etc/rc.inet2 too
 

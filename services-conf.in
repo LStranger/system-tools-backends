@@ -337,12 +337,10 @@ sub filter
 sub throw_service
 {
   my ($tool, $service, $parameter) = @_;
-  my ($rcd_path, $initd_path, $relative_path) = &gst_service_sysv_get_paths ();
 
-  gst_file_run ("$initd_path/$service $parameter >/dev/null 2>/dev/null");
+  &gst_service_run_script ($service, $parameter);
   &gst_report_end ();
 
-  #FIXME: we could return if the call has successed of failed
   &gst_xml_print_begin ("throw_service");
   &gst_xml_print_end ("throw_service");
 }

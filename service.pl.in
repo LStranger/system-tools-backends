@@ -410,46 +410,6 @@ sub gst_service_sysv_set_links
   }
 }
 
-# Run the init.d script for the corresponding service, with
-# arg, which can be "stop", "start" or "restart".
-sub gst_service_sysv_run_initd_script
-{
-  my ($service, $arg) = @_;
-  my ($rc_path, $initd_path);
-  my $str;
-  my %map =
-      ("restart" => "restarted",
-       "stop" => "stopped",
-       "start" => "started");
-
-  &gst_report_enter ();
-  
-  if (!exists $map{$arg})
-  {
-    &gst_report ("service_sysv_op_unk", $arg);
-    &gst_report_leave ();
-    return -1;
-  }
-
-  $str = $map{$arg};
-
-  ($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
-
-  if (-f "$initd_path/$service")
-  {
-    if (!&gst_file_run ("$initd_path/$service $arg"))
-    {
-      &gst_report ("service_sysv_op_success", $service, $str);
-      &gst_report_leave ();
-      return 0;
-    }
-  }
-  
-  &gst_report ("service_sysv_op_failed", $service, $str);
-  &gst_report_leave ();
-  return -1;
-}
-
 # Start or stop the service, depending on $active. Set
 # links accordingly.  $force makes this function use
 # start/stop only, without considerations for restart.
@@ -1163,4 +1123,83 @@ sub gst_service_get_status
   return undef if ($proc eq undef);
 
   return &$proc ($service);
+}
+
+# Functions to run a service
+sub gst_service_sysv_run_initd_script
+{
+  my ($service, $arg) = @_;
+  my ($rc_path, $initd_path);
+  my $str;
+  my %map =
+      ("restart" => "restarted",
+       "stop" => "stopped",
+       "start" => "started");
+
+  &gst_report_enter ();
+  
+  if (!exists $map{$arg})
+  {
+    &gst_report ("service_sysv_op_unk", $arg);
+    &gst_report_leave ();
+    return -1;
+  }
+
+  $str = $map{$arg};
+
+  ($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
+
+  if (-f "$initd_path/$service")
+  {
+    if (!&gst_file_run ("$initd_path/$service $arg"))
+    {
+      &gst_report ("service_sysv_op_success", $service, $str);
+      &gst_report_leave ();
+      return 0;
+    }
+  }
+  
+  &gst_report ("service_sysv_op_failed", $service, $str);
+  &gst_report_leave ();
+  return -1;
+}
+
+sub gst_service_bsd_run_script
+{
+  my ($service, $arg) = @_;
+  my ($chmod) = 0;
+
+  return if (!&gst_file_exists ($service));
+
+  # if it's not executable then chmod it
+  if (!((stat ($service))[2] & (S_IXUSR || S_IXGRP || S_IXOTH)))
+  {
+    $chmod = 1;
+    &gst_file_run ("chmod ugo+x $service");
+  }
+  
+  &gst_file_run ("$service $arg");
+
+  # return it to it's normal state
+  if ($chmod)
+  {
+    &gst_file_run ("chmod ugo-x $service");
+  }
+}
+
+sub gst_service_run_script
+{
+  my ($service, $arg) = @_;
+  my ($proc, $type);
+  my %map =
+      (
+       "sysv"   => \&gst_service_sysv_run_initd_script,
+       "bsd"    => \&gst_service_bsd_run_script
+      );
+
+  $type = &gst_get_init_type ();
+
+  $proc = $map {$type};
+
+  &$proc ($service, $arg);
 }
