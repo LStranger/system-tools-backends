@@ -1,5 +1,13 @@
 2001-04-14  Chema Celorio  <chema@celorio.com>
 
+	* time-conf.in (conf_get_replace_table): typo . duh !
+
+	* network-conf.in: ditto
+	
+	* users-conf.in: add Mandrake 7.2
+
+2001-04-14  Chema Celorio  <chema@celorio.com>
+
 	* time-conf.in: add Mandrake 7.2
 	(conf_get_replace_table): link mdk 7.2 to rh 6.2
 	(conf_get_parse_table): ditto.

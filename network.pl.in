@@ -250,11 +250,12 @@ sub xst_network_get_file
 
   my %dist_map =
 	 (
-	  "redhat-6.0" => \&xst_network_rh62_get_file,
-	  "redhat-6.1" => \&xst_network_rh62_get_file,
-	  "redhat-6.2" => \&xst_network_rh62_get_file,
-	  "redhat-7.0" => \&xst_network_rh62_get_file,
-    "debian-2.2" => \&xst_network_deb22_get_file
+	  "redhat-6.0"   => \&xst_network_rh62_get_file,
+	  "redhat-6.1"   => \&xst_network_rh62_get_file,
+	  "redhat-6.2"   => \&xst_network_rh62_get_file,
+	  "redhat-7.0"   => \&xst_network_rh62_get_file,
+	  "mandrake-7.2" => \&xst_network_rh62_get_file,
+    "debian-2.2"   => \&xst_network_deb22_get_file
 	  );
 
   $proc = $dist_map{$xst_dist};
@@ -795,11 +796,12 @@ sub xst_network_ensure_loopback_interface
   my $dev;
   my %dist_map =
 	 (
-	  "redhat-6.0" => "lo",
-	  "redhat-6.1" => "lo",
-	  "redhat-6.2" => "lo",
-	  "redhat-7.0" => "lo",
-	  "debian-2.2" => "lo"
+	  "redhat-6.0"   => "lo",
+	  "redhat-6.1"   => "lo",
+	  "redhat-6.2"   => "lo",
+	  "redhat-7.0"   => "lo",
+	  "mandrake-7.2" => "lo",
+	  "debian-2.2"   => "lo"
 	  );
 
   $dev = $dist_map {$xst_dist};
@@ -881,11 +883,12 @@ sub xst_network_get_parse_table
 {
   my %dist_map =
 	 (
-	  "redhat-6.0" => "redhat-6.2",
-	  "redhat-6.1" => "redhat-6.2",
-	  "redhat-6.2" => "redhat-6.2",
-	  "redhat-7.0" => "redhat-6.2",
-    "debian-2.2" => "debian-2.2"
+	  "redhat-6.0"   => "redhat-6.2",
+	  "redhat-6.1"   => "redhat-6.2",
+	  "redhat-6.2"   => "redhat-6.2",
+	  "redhat-7.0"   => "redhat-6.2",
+	  "mandrake-7.2" => "redhat-6.2",
+    "debian-2.2"   => "debian-2.2"
 	  );
 
   my %dist_tables =
@@ -966,11 +969,12 @@ sub xst_network_get_interfaces_parse_table
 {
   my %dist_map =
 	 (
-	  "redhat-6.0" => "redhat-6.2",
-	  "redhat-6.1" => "redhat-6.2",
-	  "redhat-6.2" => "redhat-6.2",
-	  "redhat-7.0" => "redhat-6.2",
-    "debian-2.2" => "debian-2.2"
+	  "redhat-6.0"   => "redhat-6.2",
+	  "redhat-6.1"   => "redhat-6.2",
+	  "redhat-6.2"   => "redhat-6.2",
+	  "redhat-7.0"   => "redhat-6.2",
+	  "mandrake-7.2" => "redhat-6.2",
+    "debian-2.2"   => "debian-2.2"
 	  );
   
   my %dist_tables =
@@ -1080,11 +1084,12 @@ sub xst_network_get_replace_table
 {
   my %dist_map =
 	 (
-	  "redhat-6.0" => "redhat-6.2",
-	  "redhat-6.1" => "redhat-6.2",
-	  "redhat-6.2" => "redhat-6.2",
-	  "redhat-7.0" => "redhat-6.2",
-    "debian-2.2" => "debian-2.2"
+	  "redhat-6.0"   => "redhat-6.2",
+	  "redhat-6.1"   => "redhat-6.2",
+	  "redhat-6.2"   => "redhat-6.2",
+	  "redhat-7.0"   => "redhat-6.2",
+	  "mandrake-7.2" => "redhat-6.2",
+    "debian-2.2"   => "debian-2.2"
 	  );
 
   my %dist_tables =
@@ -1170,11 +1175,12 @@ sub xst_network_get_interface_replace_table
 {
   my %dist_map =
 	 (
-	  "redhat-6.0" => "redhat-6.2",
-	  "redhat-6.1" => "redhat-6.2",
-	  "redhat-6.2" => "redhat-6.2",
-	  "redhat-7.0" => "redhat-6.2",
-    "debian-2.2" => "debian-2.2"
+	  "redhat-6.0"   => "redhat-6.2",
+	  "redhat-6.1"   => "redhat-6.2",
+	  "redhat-6.2"   => "redhat-6.2",
+	  "redhat-7.0"   => "redhat-6.2",
+	  "mandrake-7.2" => "redhat-6.2",
+    "debian-2.2"   => "debian-2.2"
 	  );
 
   my %dist_tables =
