@@ -10,18 +10,31 @@ boot-conf
 
 perl_libs = \
 be.pl \
-network.pl \
-media.pl \
 parse.pl \
-replace.pl
+replace.pl \
+file.pl \
+general.pl \
+platform.pl \
+report.pl \
+xml.pl \
+service.pl \
+util.pl \
+network.pl \
+media.pl
 
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh
 
 EXTRA_DIST = \
-be.pl.in \
-network.pl.in \
 parse.pl.in \
 replace.pl.in \
+file.pl.in \
+general.pl.in \
+platform.pl.in \
+report.pl.in \
+xml.pl.in \
+service.pl.in \
+util.pl.in \
+network.pl.in \
 disks-conf.in \
 memory-conf.in \
 nameresolution-conf.in \

@@ -42,8 +42,10 @@
 # ifconfig: check current interfaces and activate/deactivate.
 
 
-
-require "___scriptsdir___/be.pl";
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/util.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/network.pl";
 
 
@@ -60,6 +62,7 @@ $progress_max = 10;
 
 
 # Find the tools
+# FIXME: Should not be done here.
 
 $tool_ifconfig = &be_locate_tool ("ifconfig");
 $tool_ifup = &be_locate_tool ("ifup");

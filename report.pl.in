@@ -1,0 +1,141 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
+
+# Functions for on-the-fly commentary on a tool's work.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+require "___scriptsdir___/general.pl";
+
+
+# --- Progress printing --- #
+
+
+$be_progress_current = 0;  # Compat with old $progress_max use.
+$be_progress_last_percentage = 0;
+
+
+sub be_progress
+{
+  $prc = @_[0];
+
+  if ($prc < $be_progress_last_percentage)
+  {
+    # Don't go backwards.
+    $prc = $be_progress_last_percentage;
+  }
+
+  if ($prc >= 100)
+  {
+    # Don't go above 99%.
+    $prc = 99;
+  }
+
+  if ($be_progress) { printf "%03d percent done.\n", $prc; }
+
+  $be_progress_last_percentage = $prc;
+}
+
+
+sub be_progress_begin { &be_progress (0); }
+
+
+sub be_progress_end { &be_progress (99); }
+
+
+sub be_print_progress  # Compat with old $progress_max use.
+{
+  my $prc;
+
+  $be_progress_current++;
+  &be_progress (($be_progress_current * 100) / $progress_max);
+}
+
+
+# --- Report printing --- #
+
+
+sub be_report
+{
+  if ($be_reporting)
+  {
+    printf "%1d%02d %s.\n", @_[0], @_[1], @_[2];
+  }
+}
+
+
+sub be_report_begin
+{
+  &be_report (1, 00, "Start of work report");
+}
+
+
+sub be_report_end
+{
+  &be_report (1, 01, "End of work report");
+  if ($be_reporting) { print "\n"; }
+}
+
+
+sub be_report_info
+{
+  if ($be_verbose)
+  {
+    printf STDERR "%s.\n", @_[1];
+  }
+
+  &be_report (2, @_[0], @_[1]);
+}
+
+
+sub be_report_warning
+{
+  if ($be_verbose)
+  {
+    printf STDERR "Warning: %s.\n", @_[1];
+  }
+
+  &be_report (3, @_[0], @_[1]);
+}
+
+
+sub be_report_error
+{
+  if ($be_verbose)
+  {
+    printf STDERR "Error: %s.\n", @_[1];
+  }
+
+  &be_report (4, @_[0], @_[1]);
+}
+
+
+sub be_report_fatal
+{
+  if ($be_verbose)
+  {
+    printf STDERR "Fatal error: %s.\n", @_[1];
+  }
+
+  &be_report (5, @_[0], @_[1]);
+}
+
+1;

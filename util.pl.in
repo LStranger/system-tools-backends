@@ -1,0 +1,233 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
+
+# Utility functions.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#          Arturo Espinosa <arturo@ximian.com>
+#          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
+#          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+# --- Utilities for strings, arrays and other data structures --- #
+
+
+# Boolean <-> strings conversion.
+
+sub be_read_boolean
+{
+  if ($_[0] eq "true" ||
+      $_[0] eq "yes" ||
+      $_[0] eq "on")
+  {
+    return 1;
+  }
+
+  return 0;
+}
+
+
+sub be_print_boolean_yesno
+{
+  if ($_[0] == 1) { return "yes"; }
+  return "no";
+}
+
+
+sub be_print_boolean_truefalse
+{
+  if ($_[0] == 1) { return "true"; }
+  return "false";
+}
+
+
+sub be_print_boolean_onoff
+{
+  if ($_[0] == 1) { return "on"; }
+  return "off";
+}
+
+
+# Pushes a list to an array, only if it's not already in there.
+# I'm sure there's a smarter way to do this. Should only be used for small
+# lists, as it's O(N^2). Larger lists with unique members should use a hash.
+
+sub be_push_unique
+{
+  my $arr = $_[0];
+  my $found;
+  my $i;
+
+  # Go through all elements in pushed list.
+
+  for ($i = 1; $_[$i]; $i++)
+  {
+    # Compare against all elements in destination array.
+	
+    $found = "";
+    for $elem (@$arr)
+    {
+      if ($elem eq $_[$i]) { $found = $elem; last; }
+    }
+	
+    if ($found eq "") { push (@$arr, $_[$i]); }
+  }
+}
+
+
+sub be_ignore_line
+{
+  if (($_[0] =~ /^\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return 1; }
+  return 0;
+}
+
+
+# &be_item_is_in_list
+#
+# Given:
+#   * A scalar value.
+#   * An array.
+# this function will return 1 if the scalar value is in the array, 0 otherwise.
+
+sub be_item_is_in_list
+{
+  my $value = shift @_;
+
+  foreach my $item (@_)
+  {
+    if ($value eq $item) { return 1; }
+  }
+
+  return 0;
+}
+
+
+# &be_get_key_for_subkeys
+#
+# Given:
+#   * A hash-table with its values containing references to other hash-tables,
+#     which are called "sub-hash-tables".
+#   * A list of possible keys (stored as strings), called the "match_list".
+# this method will look through the "sub-keys" (the keys of each
+# sub-hash-table) seeing if one of them matches up with an item in the
+# match_list.  If so, the key will be returned.
+
+sub be_get_key_for_subkeys
+{
+  my %hash = %{$_[0]};
+  my @match_list = @{$_[1]};
+
+  foreach $key (keys (%hash))
+  {
+    my %subhash = %{$hash{$key}};
+    foreach $item (@match_list)
+    {
+      if ($subhash{$item} ne "") { return $key; }
+    }
+  }
+
+  return "";
+}
+
+
+# &be_get_key_for_subkey_and_subvalues
+#
+# Given:
+#   * A hash-table with its values containing references to other hash-tables,
+#     which are called "sub-hash-tables".  These sub-hash-tables contain
+#     "sub-keys" with associated "sub-values".
+#   * A sub-key, called the "match_key".
+#   * A list of possible sub-values, called the "match_list".
+# this function will look through each sub-hash-table looking for an entry
+# whose:
+#   * sub-key equals match_key.
+#   * sub-key associated sub-value is contained in the match_list.
+
+sub be_get_key_for_subkey_and_subvalues
+{
+  my %hash = %{$_[0]};
+  my $key;
+  my $match_key = $_[1];
+  my @match_list = @{$_[2]};
+
+  foreach $key (keys (%hash))
+  {
+    my %subhash = %{$hash{$key}};
+    my $subvalue = $subhash{$match_key};
+
+    if ($subvalue eq "") { next; }
+
+    foreach $item (@match_list)
+    {
+      if ($item eq $subvalue) { return $key; }
+    }
+  }
+
+  return "";
+}
+
+
+# --- IP calculation --- #
+
+
+# &be_ip_calc_network (<IP>, <netmask>)
+#
+# Calculates the network address and returns it as a string.
+
+sub be_ip_calc_network
+{
+  my @ip_reg1;
+  my @ip_reg2;
+
+  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+
+  @ip_reg1[0] = (@ip_reg1[0] * 1) & (@ip_reg2[0] * 1);
+  @ip_reg1[1] = (@ip_reg1[1] * 1) & (@ip_reg2[1] * 1);
+  @ip_reg1[2] = (@ip_reg1[2] * 1) & (@ip_reg2[2] * 1);
+  @ip_reg1[3] = (@ip_reg1[3] * 1) & (@ip_reg2[3] * 1);
+
+  return join ('.', @ip_reg1);
+}
+
+
+# &be_ip_calc_network (<IP>, <netmask>)
+#
+# Calculates the broadcast address and returns it as a string.
+
+sub be_ip_calc_broadcast
+{
+  my @ip_reg1;
+  my @ip_reg2;
+  
+  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+ 
+  @ip_reg1 = ($cf_hostip =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+
+  @ip_reg1[0] = (@ip_reg1[0] * 1) | (~(@ip_reg2[0] * 1) & 255);
+  @ip_reg1[1] = (@ip_reg1[1] * 1) | (~(@ip_reg2[1] * 1) & 255);
+  @ip_reg1[2] = (@ip_reg1[2] * 1) | (~(@ip_reg2[2] * 1) & 255);
+  @ip_reg1[3] = (@ip_reg1[3] * 1) | (~(@ip_reg2[3] * 1) & 255);
+  
+  return join ('.', @ip_reg1);
+}
+
+1;

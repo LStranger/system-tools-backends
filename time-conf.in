@@ -37,7 +37,10 @@
 
 
 
-require "___scriptsdir___/be.pl";
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/util.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/xml.pl";
 
 
 # --- Tool information --- #

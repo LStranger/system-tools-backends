@@ -41,3 +41,22 @@ sub xst_removable_media_get_list
   
   return @devices;
 }
+
+
+# xst_removable_media_xml_print
+#
+# Given a media hash-list, prints the removables inside a <removables> tag
+# pair, using current indent levels.
+
+sub xst_removable_media_xml_print
+{
+  &be_xml_vspace ();
+  &be_xml_print ("<removables>\n");
+  &be_xml_enter ();
+
+  
+
+  &be_xml_leave ();
+  &be_xml_print ("</removables>\n");
+  &be_xml_vspace ();
+}

@@ -1,0 +1,408 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
+
+# Functions for file manipulation. Find, open, read, write, backup, etc.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#          Arturo Espinosa <arturo@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/report.pl";
+
+
+# --- File operations --- #
+
+
+# be_rotate_backups
+#
+# Given a name (full path) to a file, rotates its backups (up to 9), called
+# name.xstsave.[1-9]. 9 is the oldest backup (which will be rotated out), and
+# 1 is the most recent backup, which will be created on a call to this
+# function.
+
+sub be_rotate_backups
+{
+  my ($name, $i);
+
+  $name = @_[0];
+
+  for ($i = 8; $i; $i--)
+  {
+    if (stat ("$name.xstsave.$i"))
+    {
+      be_run ("cp $name.xstsave.$i $name.xstsave." . ($i+1));
+    }
+  }
+
+  be_run ("cp $name $name.xstsave.1");
+}
+
+
+sub be_open_read_from_names
+{
+  local *FILE;
+  my $fname = "";
+    
+  foreach $name (@_)
+  {
+    if (open (FILE, "$be_prefix/$name"))
+    {
+      # FIXME: Remove debug.
+      print STDERR "be_open_read_from_names:$name\n" if $be_verbose;
+      $fname = $name;
+      last;
+    }
+  }
+  
+  (my $fullname = "$be_prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
+
+  if ($fname eq "") 
+  { 
+    &be_report_warning (99, "Could not read \[@_\]");
+    return;
+  }
+
+  &be_report_info (99, "Reading options from \[$fullname\]");
+  return *FILE;
+}
+
+
+sub be_open_write_from_names
+{
+  local *FILE;
+  my $name;
+  my $fullname;
+    
+  # Find out where it lives.
+    
+  for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+    
+  if ($name eq "")
+  {
+    # If we couldn't locate the file, and have no prefix, give up.
+	
+    # If we have a prefix, but couldn't locate the file relative to '/',
+    # take the first name in the array and let that be created in $prefix.
+	
+    if ($be_prefix eq "")
+    {
+      &be_report_warning (98, "No file to replace: \[@_\]");
+      return (0);
+    }
+    else
+    {
+      $name = $_[0];
+      (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
+      &be_report_warning (97, "Could not find \[@_\]. Writing to \[$fullname\]");
+    }
+  }
+  else
+  {
+    (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
+    &be_report_info (98, "Found \[$name\]. Writing to \[$fullname\]");
+  }
+    
+  ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+  &be_create_path ($name);
+    
+  # Make a backup if the file already exists - if the user specified a prefix,
+  # it might not.
+    
+  if (stat ($name))
+  {
+    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+    # to specify a $name list somehow, in the future.
+
+    &be_rotate_backups ($name);
+  }
+
+  # Truncate and return filehandle.
+
+  if (!open (FILE, ">$name"))
+  {
+    &be_report_error (99, "Failed to write to \[$name\]");
+    return;
+  }
+
+  return *FILE;
+}
+
+
+sub be_open_filter_write_from_names
+{
+  local *INFILE;
+  local *OUTFILE;
+  my ($name, $elem);
+    
+  # Find out where it lives.
+    
+  for $elem (@_) { if (stat ($elem) ne "") { $name = $elem; last; } }
+    
+  if ($name eq "")
+  {
+    # If we couldn't locate the file, and have no prefix, give up.
+	
+    # If we have a prefix, but couldn't locate the file relative to '/',
+    # take the first name in the array and let that be created in $prefix.
+	
+    if ($prefix eq "")
+    {
+      &be_report_warning (98, "No file to patch: \[@_\]");
+      return(0, 0);
+    }
+    else
+    {
+      $name = $_[0];
+      (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
+      &be_report_warning (97, "Could not find \[@_\]. Patching \[$fullname\]");
+    }
+  }
+  else
+  {
+    (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
+    &be_report_info (98, "Found \[$name\]. Patching \[$fullname\]");
+  }
+    
+  ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
+  &be_create_path ($name);
+
+  # Make a backup if the file already exists - if the user specified a prefix,
+  # it might not.
+    
+  if (stat ($name))
+  {
+    # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+    # to specify a $name list somehow, in the future.
+	
+    &be_rotate_backups ($name);
+  }
+    
+  # Return filehandles. Backup file is used as filter input. It might be
+  # invalid, in which case the caller should just write to OUTFILE without
+  # bothering with INFILE filtering.
+    
+  open (INFILE, "$name.xstsave.1");
+    
+  if (!open (OUTFILE, ">$name"))
+  {
+    &be_report_error (99, "Failed to write to \[$name\]");
+    return;
+  }
+    
+  return (*INFILE, *OUTFILE);
+}
+
+
+# Open $file and put it into @buffer, for in-line editting.
+# \%buffer on success, undef on error.
+
+sub be_buffer_load
+{
+  my $file = $_[0];
+  my @buffer;
+  my $fd;
+  
+  $fd = &be_open_read_from_names ($file);
+  return undef if !$fd;
+
+  @buffer = (<$fd>);
+
+  return \@buffer;
+}
+
+
+# Take a $buffer and save it in $file. -1 is error, 0 success.
+
+sub be_buffer_save
+{
+  my ($buffer, $file) = @_;
+  my $fd, $i;
+
+  # FIXME: Remove debug.
+
+  print STDERR "\nfile:$file\n";
+  
+  foreach $i (@$buffer)
+  {
+    print STDERR "|" . $i;
+  }
+
+  $fd = &be_open_write_from_names ($file);
+  return -1 if !$fd;
+
+  # FIXME: Remove debug.
+
+  foreach $i (@$buffer)
+  {
+    print $fd $i;
+  }
+
+  close $fd;
+
+  return 0;
+}
+
+
+# Erase all empty string elements from the $buffer.
+
+sub be_buffer_clean
+{
+  my $buffer = $_[0];
+  my $i;
+
+  for ($i = 0; $i <= $#$buffer; $i++)
+  {
+    splice (@$buffer, $i, 1) if $$buffer[$i] eq "";
+  }
+}
+
+
+sub be_buffer_join_lines
+{
+  my $buffer = $_[0];
+  my $i;
+
+  for ($i = 0; $i <= $#$buffer; $i++)
+  {
+    while ($$buffer[$i] =~ /\\$/)
+    {
+      chomp $$buffer[$i];
+      chop $$buffer[$i];
+      $$buffer[$i] .= $$buffer[$i + 1];
+      splice (@$buffer, $i + 1, 1);
+    }
+  }
+}
+
+
+sub be_create_path
+{
+  my $path;
+  
+  $path = $_[0];
+  my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
+    
+  for ($path = ""; @pelem; shift @pelem)
+  {
+    if ($pelem[1] ne "")
+    {
+      $path = "$path$pelem[0]";
+      mkdir($path, 0770);
+      $path = "$path/";
+    }
+  }
+}
+
+
+# --- Command-line utilities --- #
+
+
+# &be_run (<command line>)
+#
+# Assumes the first word on the command line is the command-line utility
+# to run, and tries to locate it, replacing it with its full path. The path
+# is cached in a hash, to avoid searching for it repeatedly. Output
+# redirection is appended, to make the utility perfectly silent. The
+# preprocessed command line is run, and its exit value is returned.
+#
+# Example: "mkswap /dev/hda3" -> "/sbin/mkswap /dev/hda3 >/dev/null 2>/dev/null".
+
+sub be_run
+{
+  my ($tool_name, $tool_path, @argline);
+
+  ($tool_name, @argline) = split(/ /, @_[0]);
+
+  $tool_path = &be_locate_tool ($tool_name);
+  if ($tool_path eq "")
+  {
+    # Not found at all.
+    return;
+  }
+
+  return (system ("$tool_path @argline 2>/dev/null >/dev/null"));
+}
+
+
+# &be_locate_tool
+#
+# Tries to locate a command-line utility from a set of built-in paths
+# and a set of user paths (found in the environment). The path (or a negative
+# entry) is cached in a hash, to avoid searching for it repeatedly.
+
+@be_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin",
+                      "/usr/bin", "/usr/local/bin" );
+
+%be_tool_paths = {};
+
+sub be_locate_tool
+{
+  my $found = "";
+  my @user_paths;
+
+  $found = %be_tool_paths->{$_[0]};
+  if ($found eq "0")
+  {
+    # Negative cache hit. At this point, the failure has already been reported
+    # once.
+    return "";
+  }
+
+  if ($found eq "")
+  {
+    # Nothing found in cache. Look for real.
+
+    # Extract user paths to try.
+
+    @user_paths = ($ENV{PATH} =~ /([^:]+):/mg);
+
+    # Try user paths.
+
+    for $path (@user_paths)
+    {
+      if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
+    }
+
+    # Try builtin paths.
+
+    for $path (@be_builtin_paths)
+    {
+      if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
+    }
+
+    # Report success/failure and update cache.
+
+    if ($found)
+    {
+      %be_tool_paths->{$_[0]} = $found;
+      &be_report_info (97, "Found $_[0] tool");
+    }
+    else
+    {
+      %be_tool_paths->{$_[0]} = "0";
+      &be_report_warning (96, "Couldn't find $_[0] tool");
+    }
+  }
+  
+  return($found);
+}
+
+1;

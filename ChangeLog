@@ -1,5 +1,23 @@
 2001-02-07  Hans Petter Jansson  <hpj@ximian.com>
 
+	* be.pl.in: Refactored into obsoletion.
+
+	* file.pl.in, general.pl.in, platform.pl.in, report.pl.in,
+	  service.pl.in, util.pl.in, xml.pl.in: Added.
+
+	* boot-conf.in, disks-conf.in, memory-conf.in,
+	  network-conf.in, shares-conf.in, time-conf.in, users-conf.in,
+	  media.pl.in, network.pl.in, parse.pl.in, replace.pl.in:
+	  Removed dependency on be.pl. Added new dependencies.
+
+	* Makefile.am: Removed be.pl from distribution (but not
+	  build). Added new targets.
+
+	* removable-media.pl.in: Added an XML skeleton. This file will
+	  go away later, though.
+
+2001-02-07  Hans Petter Jansson  <hpj@ximian.com>
+
 	* network.pl.in: Separated the parse/replace tables from the rest
 	  of the code. They are now returned by get_table functions that
 	  pick the table depending on the platform.

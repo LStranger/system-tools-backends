@@ -25,7 +25,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-require "___scriptsdir___/be.pl";
+
+require "___scriptsdir___/util.pl";
+require "___scriptsdir___/file.pl";
+
 
 # General rules: all replacing is in-line. Respect unsupported values, and even comments.
 # Return 0 if success, and -1 for failure.

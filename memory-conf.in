@@ -36,8 +36,11 @@
 # --- Common stuff --- #
 
 
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/util.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/xml.pl";
 
-require "___scriptsdir___/be.pl";
 
 $DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
 

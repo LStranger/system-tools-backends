@@ -25,9 +25,12 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
-require "___scriptsdir___/be.pl";
+
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/file.pl";
 require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
+
 
 sub xst_network_active_interfaces_get
 {
@@ -37,7 +40,7 @@ sub xst_network_active_interfaces_get
   my @ret = ();
   
   open IFCONFIG, "$tool_ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
-	 open IFCONFIG, "$tool_ifconfig | sed 's/:* .*//;/^\$/D' |";
+    open IFCONFIG, "$tool_ifconfig | sed 's/:* .*//;/^\$/D' |";
   
   while (<IFCONFIG>)
   {
@@ -72,12 +75,12 @@ sub xst_network_sysconfig_ifaces_get_existing
   {
     foreach $i (readdir (IFACE_DIR))
     {
-	 if ($i =~ /ifcfg-[a-z0-9]+$/)
-	 {
-	   $name = $i;
-	   $name =~ s/ifcfg-//;
-	   push @ret, $name;
-	 }
+      if ($i =~ /ifcfg-[a-z0-9]+$/)
+      {
+        $name = $i;
+        $name =~ s/ifcfg-//;
+        push @ret, $name;
+      }
     }
 
     closedir (IFACE_DIR);
@@ -184,6 +187,66 @@ sub xst_network_conf_set
 						    $ {$dist_attrib{$dist}}{"table"}, $values_hash);
   return;
 }
+
+
+# be_ensure_local_host_entry (<hostname>)
+#
+# Given a hostname, add the hostname as an alias for the loopback IP, in the
+# /etc/hosts database. This is required for tools like nmblookup to work on
+# a computer with no reverse name or DNS. The name is added as the first alias,
+# which usually means it'll be returned by a lookup on the loopback IP.
+
+sub be_ensure_local_host_entry
+{
+  my $local_ip = "127.0.0.1";
+  my $local_hostname = @_[0];
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
+  my $written = 0;
+
+  if ($local_hostname eq "") { return; }
+
+  # Find the file.
+
+  ($ifh, $ofh) = &be_open_filter_write_from_names (@hosts_names);
+  if (!$ofh) { return; }  # We didn't find it.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift @line; }  # Leading whitespace. He.
+
+    if ($line[0] ne "" && (not &be_ignore_line ($line[0])) &&
+#       ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) &&
+        $line[0] eq $local_ip)
+    {
+      # Found $local_ip. Add $local_hostname to beginning of list,
+      # and remove any other occurrences.
+
+      shift @line;
+
+      printf OUTFILE ("%-16s %s", $local_ip, $local_hostname);
+      for $alias (@line)
+      {
+        if ($alias ne $local_hostname) { print OUTFILE " $alias"; }
+      }
+      print OUTFILE "\n";
+
+      $written = 1;
+    }
+    else { print OUTFILE; }
+  }
+
+  # If the IP wasn't present, add the entry at the end.
+
+  if (!$written) { printf OUTFILE ("%-16s %s\n", $local_ip, $local_hostname); }
+  close INFILE;
+  close OUTFILE;
+}
+
 
 sub xst_network_get_parse_table
 {
@@ -402,3 +465,5 @@ sub xst_network_get_interfaces_replace_table
   # FIXME: This is a fatal error, and should make us bail.
   return undef;
 }
+
+1;
