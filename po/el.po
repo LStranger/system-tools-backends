@@ -1,20 +1,24 @@
 # translation of el.po to 
 # translation of el.po to
+# translation of el.po to
 # This file is distributed under the same license as the PACKAGE package.
 # Copyright (C) 2005 THE PACKAGE'S COPYRIGHT HOLDER.
 # Kostas Papadimas <pkst@gnome.org>, 2004.
+# Nikos Charonitakis <charosn@her.forthnet.gr>, 2005.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: el\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-02-11 12:51+0200\n"
-"PO-Revision-Date: 2005-02-11 12:56+0200\n"
-"Last-Translator: Kostas Papadimas <pkst@gnome.org>\n"
-"Language-Team:  <nls@tux.hellug.gr>\n"
+"POT-Creation-Date: 2005-03-16 00:26+0200\n"
+"PO-Revision-Date: 2005-03-16 01:00+0200\n"
+"Last-Translator: Nikos Charonitakis <charosn@her.forthnet.gr>\n"
+"Language-Team:  <team@gnome.gr>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.9.1\n"
+"Plural-Forms:  nplurals=2; plural=(n != 1);\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -28,7 +32,7 @@ msgid ""
 "response to ACPI events such as power buttons."
 msgstr ""
 "Ειδοποιεί για γεγονότα ACPI τα  user-space προγράμματα: εκτελεί τυχαίες "
-"εντολές σε απάντηση σε γεγονότα ACPI όπως  power buttons."
+"εντολές σε απάντηση σε γεγονότα ACPI όπως power buttons."
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
@@ -39,8 +43,7 @@ msgid "web server"
 msgstr "εξυπηρετητής ιστού"
 
 #: service-list.pl.in:38 service-list.pl.in:70
-msgid ""
-"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+msgid "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr ""
 "Ο Apache είναι ένας εξυπηρετητής του Παγκόσμιου Ιστού. Χρησιμοποείται για να "
 "εξυπηρετεί αρχεία HTML και CGI."
@@ -142,8 +145,8 @@ msgid ""
 "providing optimal performance"
 msgstr ""
 "H cpufreqd χρησιμοποιείται για να παρακολουθεί την κατάσταση της μπαταρίας "
-"και να προσαρμόζει ανάλογα την συχνότητα της CPU ώστε να προστατεύει την "
-"ισχύ της μπαταρίας και επαρκή ισχύ επεξεργαστή."
+"και να προσαρμόζει ανάλογα την συχνότητα της CPU ώστε να εξοικονομεί  "
+"ενέργεια παρέχοντας ταυτόχρονα ικανοποιητικές επιδόσεις"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -161,7 +164,7 @@ msgid ""
 msgstr ""
 "Το cron είναι ένα κοινό πρόγραμμα UNIX που εκτελεί σε προγραμματισμένες "
 "περιόδους προγράμματα που έχουν καθοριστεί από τον χρήστη. Το vixie cron "
-"προσθέτει περισσότερες λειτουργίες στο βασικό  UNIX cron,  όπως μεγαλ΄θτερη "
+"προσθέτει περισσότερες λειτουργίες στο βασικό  UNIX cron, όπως μεγαλύτερη "
 "ασφάλεια και πιο ισχυρές επιλογές παραμετροποίησης."
 
 #: service-list.pl.in:50 service-list.pl.in:51
@@ -170,8 +173,7 @@ msgstr "Common Unix Printing System"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr ""
-"Σύστημα εκτυπώσεων βασισμένο στο  Internet Printing Protocol, version  1.1"
+msgstr "Σύστημα εκτυπώσεων βασισμένο στο  Internet Printing Protocol, version  1.1"
 
 #: service-list.pl.in:52
 msgid ""
@@ -179,9 +181,9 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
 msgstr ""
-"Μια εσωτερική υπηρεσία xinetd που λαμβάνει την τρέχουσα ώρα του συσήματος "
-"και την εκτυπώνει στην μορφή 'Τετ Νοε 13 22:30:27 EST 2002'. Αυτή είναι η "
-"έκδοση  tcp. Θα πρέπει να ενεργοποιήσετε το xinetd για χρησιμοποιήσετε αυτή "
+"Μια εσωτερική υπηρεσία xinetd που λαμβάνει την τρέχουσα ώρα του συστήματος "
+"και την εκτυπώνει στην μορφή 'Τετ Νοε 13 22:30:27 EST 2002'.  Αυτή είναι η "
+"έκδοση tcp. Θα πρέπει να ενεργοποιήσετε το xinetd για χρησιμοποιήσετε αυτή "
 "την υπηρεσία."
 
 #: service-list.pl.in:53
@@ -190,7 +192,7 @@ msgid ""
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
-"Μια εσωτερική υπηρεσία xinetd που λαμβάνει την τρέχουσα ώρα του συσήματος "
+"Μια εσωτερική υπηρεσία xinetd που λαμβάνει την τρέχουσα ώρα του συστήματος "
 "και την εκτυπώνει στην μορφή 'Τετ Νοε 13 22:30:27 EST 2002'. Αυτή είναι η "
 "έκδοση udp. Θα πρέπει να ενεργοποιήσετε το xinetd για χρησιμοποιήσετε αυτή "
 "την υπηρεσία."
@@ -217,7 +219,7 @@ msgid ""
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
 "Μια εσωτερική υπηρεσία xinetd που κάνει echo χαρακτήρες πίσω στους πελάτες "
-"'. Αυτή είναι η έκδοση  tcp. Θα πρέπει να ενεργοποιήσετε το xinetd για "
+".  Αυτή είναι η έκδοση  tcp. Θα πρέπει να ενεργοποιήσετε το xinetd για "
 "χρησιμοποιήσετε αυτή την υπηρεσία."
 
 #: service-list.pl.in:58
@@ -226,7 +228,7 @@ msgid ""
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
 "Μια εσωτερική υπηρεσία xinetd που κάνει echo χαρακτήρες πίσω στους πελάτες "
-"'. Αυτή είναι η έκδοση udp. Θα πρέπει να ενεργοποιήσετε το xinetd για "
+" . Αυτή είναι η έκδοση udp. Θα πρέπει να ενεργοποιήσετε το xinetd για "
 "χρησιμοποιήσετε αυτή την υπηρεσία."
 
 #: service-list.pl.in:59
@@ -247,12 +249,11 @@ msgstr "παρακολούθηση αλλαγής αρχείου"
 
 #: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
-msgstr ""
-"Το Firstboot είναι ένα πρόγραμμα σε στυλ βοηθού που τρέχει την πρώτη φορά"
+msgstr "Το Firstboot είναι ένα πρόγραμμα σε στυλ βοηθού που τρέχει την πρώτη φορά"
 
 #: service-list.pl.in:63
 msgid "Text-to-speech system"
-msgstr "Σύστημα κειμένου σε ομιλία"
+msgstr "Σύστημα από κείμενο σε ομιλία"
 
 #: service-list.pl.in:63
 msgid "Festival is a general purpose text-to-speech system"
@@ -361,7 +362,7 @@ msgstr "The Internet Key Exchange protocol openbsd implementation"
 
 #: service-list.pl.in:75
 msgid "start and stop ISDN services"
-msgstr "εκκίνηση και τερματισμός υπηρεσίες ISDN "
+msgstr "εκκίνηση και τερματισμός υπηρεσίες ISDN"
 
 #: service-list.pl.in:76
 msgid "Check and fix joystick device nodes"
@@ -375,7 +376,7 @@ msgid ""
 msgstr ""
 "Εκτελεί το joystick-device-check.  Το joystick-device-check είναι ένα "
 "πρόγραμμα που επιβεβαιώνει ότι οι  /dev/js* device nodes είναι σωστές για "
-"την έκδοση πυρήναπου χρησιμοποιείτε."
+"την έκδοση πυρήνα που χρησιμοποιείτε."
 
 #: service-list.pl.in:77
 msgid ""
@@ -384,7 +385,7 @@ msgid ""
 "leave this enabled for most machines."
 msgstr ""
 "Αυτό το πακέτο φορτώνει το επιλεγμένο χάρτη πληκτρολογίου όπως αυτός έχει "
-"καθοριστεί στο /etc/sysconfig/ πληκτρολόγιο. Αυτό μπορεί να επιλεχθεί με την "
+"καθοριστεί στο /etc/sysconfig/keyboard. Αυτό μπορεί να επιλεχθεί με την "
 "χρήση της εφαρμογής kbdconfig. Θα πρέπει να το έχετε ενεργό για τα "
 "περισσότερα μηχανήματα."
 
@@ -393,15 +394,13 @@ msgid "Kernel Log Daemon"
 msgstr "Kernel Log Daemon"
 
 #: service-list.pl.in:78
-msgid ""
-"klogd is a system daemon which intercepts and logs Linux kernel messages."
+msgid "klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr ""
 "Το klogd είναι ένας daemon συστήματος που παρεμβάλεται και καταγράφει τα "
-"μυνήματα του πυρήνα Linux."
+"μηνύματα του πυρήνα Linux."
 
 #: service-list.pl.in:79
-msgid ""
-"This runs the hardware probe, and optionally configures changed hardware."
+msgid "This runs the hardware probe, and optionally configures changed hardware."
 msgstr ""
 "Αυτό εκτελεί τον εντοπισμό υλικού, και ρυθμίζει αν το θέλετε τις αλλαγές στο "
 "υλικό."
@@ -412,7 +411,7 @@ msgid ""
 "many commonly used remote controls"
 msgstr ""
 "Το LIRC είναι ένα πακέτο που σας επιτρέπει να αποκωδικοποίησετε και να "
-"στείλετε υπέρυθρα σήματα από τα περισσότερα τηλεχειριστήρια."
+"στείλετε υπέρυθρα σήματα από τα περισσότερα τηλεχειριστήρια"
 
 #: service-list.pl.in:82
 msgid "Starts misc programs that should be started"
@@ -437,7 +436,7 @@ msgid ""
 "in the kernel"
 msgstr ""
 "Δέσμη ενεργειών που θα δημιουργήσει τις συσκευές στο /dev που "
-"χρησιμοποιούνται στην διεαπφή με τους drivers στο πυρήνα"
+"χρησιμοποιούνται στην διεαπφή με τους drivers στον πυρήνα"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -489,7 +488,7 @@ msgid ""
 "time."
 msgstr ""
 "Ενεργοποιεί/Απενεργοποιεί όλες τις διεπαφές δικτύου που έχουν ρυθμιστεί να "
-"ξεκινούν στο  boot."
+"ξεκινούν στο boot."
 
 #: service-list.pl.in:92
 msgid ""
@@ -515,8 +514,7 @@ msgstr "Name service cache daemon"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
-msgstr ""
-"Ένας Daemon που παρέχει μια cache για τις πιο κοινές αιτήσεις ονοματοδοσίας."
+msgstr "Ένας Daemon που παρέχει μια cache για τις πιο κοινές αιτήσεις ονοματοδοσίας."
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
@@ -579,7 +577,7 @@ msgstr ""
 "Ο portmapper διαχειρίζεται συνδέσεις RPC, που χρησιμοποιούνται από "
 "πρωτόκολλα όπως το NFS και το NIS. Ο εξυπηρετητής portmap πρέπει να τρέχει "
 "σε μηχανήματα που ενεργούν ως εξυπηρετητές για πρωτόκολλα που χρησιμοποιούν "
-"το μηχανισμό RPC. "
+"το μηχανισμό RPC."
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
@@ -655,7 +653,7 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
-"Η σουΐτα λογισμικού Samba είναι μια στλλογή προγραμμάτων που παρέχει το "
+"Η σουΐτα λογισμικού Samba είναι μια συλλογή προγραμμάτων που παρέχει το "
 "πρωτόκολλο Server Message Block για συστήματα UNIX."
 
 #: service-list.pl.in:114
@@ -773,7 +771,7 @@ msgstr ""
 "ώρα και ημερομηνία αναγνώσιμη από το μηχάνημα. Η υπηρεσία ώρας στέλνει τον "
 "χρόνο καταμετρημένο σε δευτερόλεπτα από τα μεσάνυχτα της  1ης Ιανουαρίου "
 "1900. Αυτή είναι η έκδοση tcp. Θα πρέπει να ενεργοποιήσετε το xinetd για να "
-"χρησιμοποιήσετε ατή την υπηρεσία."
+"χρησιμοποιήσετε αυτή την υπηρεσία."
 
 #: service-list.pl.in:128
 msgid ""
@@ -786,7 +784,7 @@ msgstr ""
 "ώρα και ημερομηνία αναγνώσιμη από το μηχάνημα. Η υπηρεσία ώρας στέλνει τον "
 "χρόνο καταμετρημένο σε δευτερόλεπτα από τα μεσάνυχτα της  1ης Ιανουαρίου "
 "1900. Αυτή είναι η έκδοση udp. Θα πρέπει να ενεργοποιήσετε το xinetd για να "
-"χρησιμοποιήσετε ατή την υπηρεσία."
+"χρησιμοποιήσετε αυτή την υπηρεσία."
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
@@ -799,7 +797,7 @@ msgid ""
 "random numbers are created."
 msgstr ""
 "Ο   random  number  generator  συλλέγει περιβαντολογικό θόρυβο από device "
-"drivers και άλλες πηγές σε μια δεξαμενή εντροπίας. Από αυτή την δεξαμενή "
+"drivers και άλλες πηγές σε μια δεξαμενή εντροπίας. Από αυτήν τη δεξαμενή "
 "εντροπίας δημιουργούνται τυχαίοι αριθμοί."
 
 #: service-list.pl.in:131
@@ -821,8 +819,7 @@ msgstr "Web-based Εργαλειοθήκη διαχείρισης "
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
-msgstr ""
-"Name Service Switch daemon για την επίλυση ονομάτων από εξυπηρετητές NT."
+msgstr "Name Service Switch daemon για την επίλυση ονομάτων από εξυπηρετητές NT"
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
@@ -833,7 +830,7 @@ msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
-"Επιτρέπει στους χρήστες να εκτελούν εφαρμογές Windows(tm) με το να κλανουν "
+"Επιτρέπει στους χρήστες να εκτελούν εφαρμογές Windows(tm) με το να κάνουν "
 "κλικ πάνω τους (η με πληκτρολόγηση  ./file.exe)"
 
 #: service-list.pl.in:135
@@ -864,35 +861,35 @@ msgid ""
 "can be started, among other things."
 msgstr ""
 "Το xinetd είναι ένας πανίσχυρος αντικαταστάτης του inetd. Το xinetd έχει "
-"μηχανισμούς ελέγχου πρόσβασης, εκτεταμλένες δυνατότητες καταγραφής, την "
+"μηχανισμούς ελέγχου πρόσβασης, εκτεταμένες δυνατότητες καταγραφής, την "
 "ικανότητα έγκαιρης διαθεσιμότητας υπηρεσιών, και οριοθέτησης στον αριθμό των "
 "εξυπηρετητών που μπορεί να εκκινήσουν, ανάμεσα σε άλλα πράγματα."
 
-#: service.pl.in:226 service.pl.in:231
+#: service.pl.in:229 service.pl.in:234
 msgid "Halting the system"
 msgstr "Τερματισμός το συστήματος"
 
-#: service.pl.in:227 service.pl.in:233
+#: service.pl.in:230 service.pl.in:236
 msgid "Text mode"
 msgstr "Λειτουργία κειμένου"
 
-#: service.pl.in:228 service.pl.in:232 service.pl.in:241
+#: service.pl.in:231 service.pl.in:235 service.pl.in:244
 msgid "Graphical mode"
 msgstr "Γραφική λειτουργία"
 
-#: service.pl.in:229 service.pl.in:234
+#: service.pl.in:232 service.pl.in:237
 msgid "Rebooting the system"
 msgstr "Επανεκκίνηση του συστήματος"
 
-#: service.pl.in:236
+#: service.pl.in:239
 msgid "Starts all system neccesary services"
 msgstr "Εκκινεί όλες τις απαραίτητες υπηρεσίες του συστήματος"
 
-#: service.pl.in:237
+#: service.pl.in:240
 msgid "Default runlevel"
 msgstr "Προεπιλεγμένο runlevel"
 
-#: service.pl.in:238
+#: service.pl.in:241
 msgid "Networkless runlevel"
 msgstr "Runlevel χωρίς δίκτυο"
 
@@ -910,7 +907,7 @@ msgstr "Πρόσβαση σε οδηγούς CD-ROM"
 
 #: users-conf.in:182
 msgid "Access to modem devices"
-msgstr "Πρόσβαση σε συκευές μόντεμ"
+msgstr "Πρόσβαση σε συσκευές μόντεμ"
 
 #: users-conf.in:183
 msgid "Connect to Internet through modem devices"
@@ -922,7 +919,7 @@ msgstr "Αποστολή και λήψη φαξ"
 
 #: users-conf.in:185
 msgid "Access to floppy drives"
-msgstr "Πρόσβαση σε οδηφούς δισκέτας"
+msgstr "Πρόσβαση σε οδηγούς δισκέτας"
 
 #: users-conf.in:186
 msgid "Enable access to external storage devices automatically"
@@ -930,17 +927,17 @@ msgstr "Αυτόματη ενεργοποίηση πρόσβασης σε εξω
 
 #: users-conf.in:187
 msgid "Access to tape drives"
-msgstr "Πρόσβαση σε  tape drives"
+msgstr "Πρόσβαση σε tape drives"
 
 #: users-conf.in:188
 msgid "Be able to get administrator privileges"
 msgstr "Δυνατότητα απόκτησης προνομίων διαχειριστή"
 
-#: users-conf.in:491
+#: users-conf.in:492
 msgid "Default"
 msgstr "Προεπιλεγμένο"
 
-#: users-conf.in:492
+#: users-conf.in:493
 msgid "Default profile"
 msgstr "Προεπιλεγμένο προφίλ"
 
