@@ -1,3 +1,36 @@
+2001-06-15  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* general.pl.in: Deprecated some globals that come now inside a hash
+	structure. Those that are in a more general use should be passed to
+	this hash in a future "no globals!" crusade.
+	(xst_print_usage_synopsis): Prints the synopsis, adding get, set
+	and filter functions only if they are present in the directives.
+	(xst_print_usage_generic): The more explanatory text, with the
+	same rationale as above. Added explanations for the new -i and -d args.
+	(xst_print_usage): Simplified. May exit if requested.
+	(xst_print_version): Use new hash structure to get info. May exit
+	if requested.
+	(xst_set_operation): Use new structure.
+	(xst_set_with_param): Helper.
+	(xst_set_op_directive): Sets the directive, taken from cmd arg.
+	(xst_set_prefix): Sets the prefix.
+	(xst_set_dist): And the distro.
+	(xst_set_location): The location here.
+	(xst_merge_std_directives): Adds the directives supported by all
+	backends: end and interface. interface reveals the supported
+	directives in an XML format to the frontend.
+	(xst_init): Lots of cleanup, the new structure, and a little change
+	in the order of the startup sequence.
+	(xst_print_interface_comment): Print the directive comment in XML.
+	(xst_print_interface): Print the interface XML, based on the directives hash.
+	(xst_run_directive): The directives engine. Checks the number of
+	params passed and calls the corresponding function.
+	
+	See the documentation on the new stuff here.
+
+	(xst_run): The function that makes the backend enter interactive
+	mode, or executes a directive, if given with -d at the prompt.
+	
 2001-06-14  Hans Petter Jansson  <hpj@ximian.com>
 
 	* parse.pl.in (xst_parse_cap_line_clean): Implement.

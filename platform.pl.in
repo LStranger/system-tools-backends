@@ -197,20 +197,12 @@ sub check_solaris
 
 sub xst_platform_guess
 {
+  my ($tool) = @_;
   my $dir = "___scriptsdir___";
   
   if (! -f "$dir/system.guess")
   {
     system ("$dir/guess_system.sh 2> /dev/null > $dir/system.guess");
-
-    # FIXME: is this check for success correct? Taken from perlfunc.
-    # NOTE: Don't need this check anymore. The system checks below are enough.
-    #
-    # if ($? >> 8)
-    # {
-    #   &xst_report ("Couldn't guess system.");
-    #   return;
-    # }
   }
 
   if (-f "$dir/system.guess")
@@ -222,52 +214,40 @@ sub xst_platform_guess
     open FILE, "$dir/guess_system.sh 2>/dev/null |";
   }
 
-  chomp ($xst_system = <FILE>);
+  chomp ($$tool{"system"} = <FILE>);
   close FILE;
 
   # set $xst_dist and $xst_dist_version
   
-  if ($xst_system =~ /linux/)
-  {
+  my %check = (
     # Red Hat check must run after Mandrake
-    my @checks = (\&check_lsb, \&check_debian, \&check_caldera, \&check_suse, 
-                  \&check_mandrake, \&check_linuxppc, \&check_redhat, \&check_turbolinux);
-    my ($check, $dist);
+    "linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, 
+                 \&check_mandrake, \&check_linuxppc, \&check_redhat,  \&check_turbolinux],
+    # Isn't just "freebsd" enough?
+    "freebsdelf" => [ \&check_freebsd ],
+    "solaris"    => [ \&check_solaris ]
+               );
+  my $plat;
 
-    foreach $check (@checks)
+  foreach $plat (keys %check)
+  {
+    if ($$tool{"system"} =~ /$plat/)
     {
-      $dist = &$check ();
-      if ($dist != -1)
+      my ($check, $dist);
+      
+      foreach $check (@{$check{$plat}})
       {
-        $xst_dist = $dist;
-        return;
+        $dist = &$check ();
+        if ($dist != -1)
+        {
+          $$tool{"platform"} = $xst_dist = $dist;
+          return;
+        }
       }
     }
   }
 
-  if ($xst_system =~ /freebsdelf/)
-  {
-    my $dist;
-
-    $dist = &check_freebsd ();
-    if ($dist != -1) {
-      $xst_dist = $dist;
-      return;
-    }
-  }
-
-  if ($xst_system =~ /solaris/)
-  {
-    my $dist;
-
-    $dist = &check_solaris ();
-    if ($dist != -1) {
-      $xst_dist = $dist;
-      return;
-  }
-  }
-
-  $xst_dist = "unknown";
+  $$tool{"platform"} = $xst_dist = "unknown";
 }
 
 
@@ -278,9 +258,9 @@ sub xst_platform_guess
 
 sub xst_platform_ensure_supported
 {
-  my @supported = @_;
+  my ($tool, @supported) = @_;
 
-  for $platform (@supported)
+  foreach $platform (@supported)
   {
     if ($platform eq $xst_dist)
     {

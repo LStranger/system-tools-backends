@@ -46,9 +46,13 @@ my @xst_xml_stack;
 
 sub xst_xml_print_begin
 {
+  my ($name) = @_;
+
+  $name = $xst_name if !$name;
+  
   &xst_xml_print_string ("<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n");
-  &xst_xml_print_string ("<!DOCTYPE $xst_name []>\n\n");
-  &xst_xml_print_string ("<$xst_name>\n");
+  &xst_xml_print_string ("<!DOCTYPE $name []>\n\n");
+  &xst_xml_print_string ("<$name>\n");
 
   &xst_xml_enter ();
 
@@ -60,13 +64,17 @@ sub xst_xml_print_begin
 
 sub xst_xml_print_end
 {
+  my ($name) = @_;
+
+  $name = $xst_name if !$name;
+  
   &xst_xml_print_vspace ();
   &xst_xml_print_line ("<!-- End of configuration -->\n");
   &xst_xml_print_vspace ();
 
   &xst_xml_leave ();
 
-  &xst_xml_print_string ("</$xst_name>\n");
+  &xst_xml_print_string ("</$name>\n");
 }
 
 
@@ -90,19 +98,13 @@ sub xst_xml_print_string
 
 sub xst_xml_format_indent
 {
-  my $i;
-  my $indent_string;
-
-  for ($i = 0; $i < $xst_indent_level; $i++) { $indent_string .= " "; }
   $xst_have_vspace = 0;
-  return $indent_string;
+  return " " x $xst_indent_level;
 }
 
 sub xst_xml_print_indent
 {
-  my $indent = xst_xml_format_indent;
-
-  &xst_xml_print_string($indent);
+  &xst_xml_print_string(&xst_xml_format_indent ());
 }
 
 sub xst_xml_print_vspace
@@ -233,19 +235,19 @@ sub xst_xml_container_enter # (name)
   ## so it is global
   push @xst_xml_stack, $container;
 
-  xst_xml_print_line ("<$container>");
-  xst_xml_enter();
+  &xst_xml_print_line ("<$container>");
+  &xst_xml_enter();
 }
 
 sub xst_xml_container_leave
 {
   ## checks if there is a start tag
-  if ($#xst_xml_stack >= 0) { 
-    my $current_container = $xst_xml_stack[$#xst_xml_stack];
-    pop @xst_xml_stack; 
+  if ($#xst_xml_stack >= 0)
+  { 
+    my $current_container = pop @xst_xml_stack;
 
-    xst_xml_leave();
-    xst_xml_print_line ("</$current_container>");
+    &xst_xml_leave ();
+    &xst_xml_print_line ("</$current_container>");
   }
 }
 
@@ -254,11 +256,11 @@ sub xst_xml_print_container # (name, @strings)
   my ($name, @strings) = @_;
 
   if (@strings) {
-    xst_xml_container_enter ($name);
+    &xst_xml_container_enter ($name);
     foreach $tag (@strings) {
-      xst_xml_print_line "$tag";
+      &xst_xml_print_line ("$tag");
     }
-    xst_xml_container_leave;
+    &xst_xml_container_leave ();
   }
 } 
 

@@ -857,12 +857,20 @@ while (@ARGV)
 
 # Do our thing.
 
-if    ($xst_operation eq "get")    { &get; }
-elsif ($xst_operation eq "set")    { &set; }
-elsif ($xst_operation eq "filter") { &filter; }
-else
-  {
-    print STDERR "Error: No operation specified.\n\n";
-    print STDERR $Usage; exit(1);
-  }
+&xst_init ($name, $version, $description, @ARGV);
+&xst_platform_ensure_supported (@platforms);
 
+# Do our thing.
+
+# get, set and filter are special cases that don't need more parameters than a ref to their function.
+# Read general.pl.in:xst_run_directive to know about the format of this hash.
+
+$directives = {
+  "get"    => [ \&get,    [], "" ],
+  "set"    => [ \&set,    [], "" ],
+  "filter" => [ \&filter, [], "" ]
+    };
+
+$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
+&xst_platform_ensure_supported ($tool, @platforms);
+&xst_run ($tool);

@@ -195,8 +195,6 @@ sub get
 {
   my $hash;
 
-  &xst_begin ();
-  
   $hash = &conf_get ();
 
   &xst_end();
@@ -208,7 +206,6 @@ sub set
 {
   my $hash;
 
-  &xst_begin ();
   $hash = &xml_parse ();
 
   &conf_set ($hash);
@@ -224,7 +221,6 @@ sub filter
 {
   my $hash;
 
-  &xst_begin ();
   $hash = &xml_parse ();
   &xst_end();
   &xml_print ($hash);
@@ -233,14 +229,18 @@ sub filter
 
 # --- Main --- #
 
-&xst_init($name, $version, $description, @ARGV);
-&xst_platform_ensure_supported (@platforms);
+# get, set and filter are special cases that don't need more parameters than a ref to their function.
+# Read general.pl.in:xst_run_directive to know about the format of this hash.
 
-# Do our thing.
+$directives = {
+  "get"    => [ \&get,    [], "" ],
+  "set"    => [ \&set,    [], "" ],
+  "filter" => [ \&filter, [], "" ]
+    };
 
-if    ($xst_operation eq "get")    { &get; }
-elsif ($xst_operation eq "set")    { &set; }
-elsif ($xst_operation eq "filter") { &filter; }
+$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
+&xst_platform_ensure_supported ($tool, @platforms);
+&xst_run ($tool);
 
 # Portable code.
 
