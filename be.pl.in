@@ -2147,7 +2147,7 @@ sub check_caldera
     chomp;
     if (/^OpenLinux-(.*)-.*/)
     {
-      $be_dist = 'caldera-$1';
+      $be_dist = "caldera-$1";
       close INSTALLED;
       return 1;
     }
@@ -2164,7 +2164,7 @@ sub check_suse
     chomp;
     if (/^VERSION\s*=\s*(\S+)/)
     {
-      $be_dist = 'suse-$1';
+      $be_dist = "suse-$1";
       close RELEASE;
       return 1;
     }
@@ -2181,7 +2181,7 @@ sub check_mandrake
     chomp;
     if (/^Linux Mandrake release (\S+)/)
     {
-      $be_dist = 'mandrake-$1';
+      $be_dist = "mandrake-$1";
       close MANDRAKE;
       return 1;
     }
@@ -2198,7 +2198,7 @@ sub check_turbolinux
     chomp;
     if (/release\s([0-9.]+)\s.*/)
     {
-      $be_dist = 'turbolinux-$1';
+      $be_dist = "turbolinux-$1";
       close RELEASE;
       return 1;
     }
@@ -2215,7 +2215,7 @@ sub check_linuxppc
     chomp;
     if (/^LinuxPPC\s+(\S+)/)
     {
-      $be_dist = 'linuxppc-$1';
+      $be_dist = "linuxppc-$1";
       close RELEASE;
       return 1;
     }
