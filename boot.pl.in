@@ -290,6 +290,7 @@ sub xst_boot_conf_replace_image
     }
 
     elsif ($i ne "") # Delete unknown "junk"... yes, we are cruel!
+                     # We can do that cause on reading we include all lines, no matter what.
     {
       $i = "";
       next;
@@ -366,12 +367,17 @@ sub xst_boot_conf_set
 	    fn => {
 		 LILO_CONF => "/etc/lilo.conf"},
 	    table => [
-                [ prompt,  \&xst_boot_set_global_kw, LILO_CONF, prompt ],
-                [ root,    \&xst_boot_set_global, LILO_CONF, root ],
-                [ delay,   \&xst_boot_set_global, LILO_CONF, delay ],
-                [ timeout, \&xst_boot_set_global, LILO_CONF, timeout ],
-                [ default, \&xst_boot_set_global, LILO_CONF, default ],
-                [ images,  \&xst_boot_conf_set_images, LILO_CONF, image ],
+                [ 'prompt',  \&xst_boot_set_global_kw, LILO_CONF, 'prompt' ],
+                [ 'lba32',   \&xst_boot_set_global_kw, LILO_CONF, 'lba32' ],
+                [ 'root',    \&xst_boot_set_global, LILO_CONF, 'root' ],
+                [ 'delay',   \&xst_boot_set_global, LILO_CONF, 'delay' ],
+                [ 'timeout', \&xst_boot_set_global, LILO_CONF, 'timeout' ],
+                [ 'default', \&xst_boot_set_global, LILO_CONF, 'default' ],
+                [ 'append',  \&xst_boot_set_global, LILO_CONF, 'append' ],
+                [ 'boot',    \&xst_boot_set_global, LILO_CONF, 'boot' ],
+                [ 'map',     \&xst_boot_set_global, LILO_CONF, 'map' ],
+                [ 'install', \&xst_boot_set_global, LILO_CONF, 'install' ],
+                [ 'images',  \&xst_boot_conf_set_images, LILO_CONF, 'image' ],
 			    ] 
 				 }
 	  );

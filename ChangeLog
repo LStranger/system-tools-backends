@@ -1,3 +1,7 @@
+2001-02-22  Tambet Ingo  <tambet@ximian.com>
+
+	* boot.pl.in (xst_boot_conf_set): Added some more known tags.
+
 2001-02-22  Hans Petter Jansson  <hpj@ximian.com>
 
 	* report.pl.in (xst_report): Re-enable report printing. It works.

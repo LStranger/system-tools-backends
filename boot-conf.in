@@ -94,11 +94,16 @@ sub xml_parse_boot
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "timeout") { $$hash{"timeout"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "default") { $$hash{"default"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "prompt") { $$hash{"prompt"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "delay") { $$hash{"delay"} = &xst_xml_get_word ($$tree[1]); }
+    if    ($$tree[0] eq "prompt") { $$hash{"prompt"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "lba32") { $$hash{"lba32"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "root") { $$hash{"root"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "delay") { $$hash{"delay"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "timeout") { $$hash{"timeout"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "default") { $$hash{"default"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "append") { $$hash{"append"} = &xst_xml_get_text ($$tree[1]); }
+    elsif ($$tree[0] eq "boot") { $$hash{"boot"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "map") { $$hash{"map"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "install") { $$hash{"install"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "entry") { &xml_parse_image ($$tree[1], \@images); }
 
     shift @$tree;
@@ -126,8 +131,6 @@ sub xml_parse_image
   }
 
   push @$image, \%hash;
-#  $dev = $hash{"label"};
-#  $$image{$dev} = \%hash;
 }
 		   
 
@@ -149,7 +152,7 @@ sub xml_print_globals
 {
   my $h = $_[0];
   my @tags = ('boot', 'default', 'delay', 'install', 'map', 'message', 'timeout', 'verbose',
-              'append');
+              'append', 'root');
   
   my $i, $val;
 
