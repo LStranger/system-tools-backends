@@ -1,5 +1,11 @@
 2001-09-21  Tambet Ingo  <tambet@ximian.com>
 
+	* x.pl.in (x_probe_scan): Return array.
+
+	* util.pl.in (xst_process_list_check_ready): Don't force second
+	argument to array. Make an array of it if needed.
+	(xst_process_fork): Taught to deal with arrays also.
+
 	* x.pl.in (x_probe_run): Fork new X processes to avoid lockups.
 	(x_probe_collect): Implement.
 	(x_probe_scan): Implement.

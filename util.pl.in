@@ -309,7 +309,18 @@ sub xst_process_fork
     close PARENT_RDR;
     # Child
     $str = &$proc (@args);
-    print CHILD_WTR $str;
+    my $type = ref ($str);
+
+    if (!$type)
+    {
+      print CHILD_WTR $str;
+    }
+
+    elsif ($type eq 'ARRAY')
+    {
+      print CHILD_WTR "$_\n" foreach (@$str);
+    }
+
     close CHILD_WTR;
     exit (0);
   }
@@ -352,6 +363,7 @@ sub xst_process_list_check_ready
   my ($timeout, $procs) = @_;
   my ($bits, $bitsleft, $bitsready, $timestamp, $timeleft);
 
+  $procs = [ $procs ] if ref ($procs) ne 'ARRAY';
   $bits = &xst_process_list_build_fd_bitmap ($procs);
   
   # Check with timeout which descriptors are ready with info.
