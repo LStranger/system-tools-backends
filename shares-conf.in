@@ -92,8 +92,6 @@ sub xml_parse
   $tree = &gst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
-  # This is the top level - find and enter the "network" tag.
-
   while (@$tree)
   {
     if ($$tree[0] eq "shares") { &xml_parse_shares ($$tree[1], $config); }
@@ -115,8 +113,12 @@ sub xml_parse_shares
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "imports") { &xml_parse_imports ($$tree[1], $config); }
-    elsif ($$tree[0] eq "exports") { &xml_parse_exports ($$tree[1], $config); }
+    if    ($$tree[0] eq "imports")    { &xml_parse_imports ($$tree[1], $config); }
+    elsif ($$tree[0] eq "exports")    { &xml_parse_exports ($$tree[1], $config); }
+    elsif ($$tree[0] eq "workgroup")  { $$config{"smb_config"}{"workgroup"}  = $$tree[1][2]; }
+    elsif ($$tree[0] eq "winsuse")    { $$config{"smb_config"}{"winsuse"}    = $$tree[1][2]; }
+    elsif ($$tree[0] eq "winsserver") { $$config{"smb_config"}{"winsserver"} = $$tree[1][2]; }
+    elsif ($$tree[0] eq "smbdesc")    { $$config{"smb_config"}{"smbdesc"}    = $$tree[1][2]; }
     shift @$tree;
     shift @$tree;
   }
@@ -672,10 +674,14 @@ sub set
 
 #  &gst_filesys_fstab_replace     (&distro_file ("fstab"),    $fs_new_shares);
 
+  &gst_replace_ini ($smb_conf, "global", "workgroup",     $$config{"smb_config"}{"workgroup"});
+  &gst_replace_ini ($smb_conf, "global", "server string", $$config{"smb_config"}{"smbdesc"});
+  &gst_replace_ini ($smb_conf, "global", "wins server",   $$config{"smb_config"}{"winsserver"});
+  &gst_replace_ini_bool ($smb_conf, "global", "wins support", $$config{"smb_config"}{"winsuse"});
+
   &gst_share_replace_smb_conf    ($smb_conf, $$config{"smb_exports"});
   &gst_share_replace_nfs_exports ($exports,  $$config{"nfs_exports"});
 
-  
 #  &gst_filesys_mount_sync_all (&distro_file ("fstab"), &distro_file ("mtab"), $$config{"imports"});
 
   &gst_report_end ();

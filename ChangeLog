@@ -1,5 +1,9 @@
 2005-01-11  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* shares-conf.in: made it to save general SMB config
+
+2005-01-11  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* shares-conf.in: added SMB general config to the XML
 
 2005-01-10  Carlos Garnacho Parro  <carlosg@gnome.org>
