@@ -1,3 +1,7 @@
+2001-04-03  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in (read_fstab): Fix detection of username for SMB imports.
+
 2001-04-03  Ravi Pratap  <ravi@che.iitm.ac.in>
 
 	* .cvsignore : add mouse-conf.in
