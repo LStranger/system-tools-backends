@@ -1,3 +1,8 @@
+2005-02-08  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* configure.in: small fix to make it compile separatedly, now that the
+	backend is divided from the frontend
+
 2005-02-05  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* users-conf.in: made a string more user-frienly (Ole Laursen's
