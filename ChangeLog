@@ -1,5 +1,10 @@
 2001-06-06  Hans Petter Jansson  <hpj@ximian.com>
 
+	* shares-conf.in (xml_print_import_smb): Don't print tags for user and
+	  password if they are empty/unknown.
+
+2001-06-06  Hans Petter Jansson  <hpj@ximian.com>
+
 	* shares-conf.in (xml_print_import_smb): Print <user> and <password> tags.
 	  Fixes bug #3222.
 

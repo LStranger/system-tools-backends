@@ -386,14 +386,20 @@ sub xml_print_import_nfs
 sub xml_print_import_smb
 {
   my ($fsinfo) = @_;
+  my ($user, $password);
+
+  $user     = &xst_filesys_info_get_option ($fsinfo, "username");
+  $user     = "" if ($user =~ /^ +$/);
+  $password = &xst_filesys_info_get_option ($fsinfo, "password");
+  $password = "" if ($password =~ /^ +$/);
 
   &xst_xml_print_vspace ();
   &xst_xml_print_line ("<import type='smb'>");
   &xst_xml_enter ();
 
   &xml_print_import_common ($fsinfo);
-  &xst_xml_print_pcdata ("user",     &xst_filesys_info_get_option ($fsinfo, "username"));
-  &xst_xml_print_pcdata ("password", &xst_filesys_info_get_option ($fsinfo, "password"));
+  if ($user ne "")     { &xst_xml_print_pcdata ("user",     $user); }
+  if ($password ne "") { &xst_xml_print_pcdata ("password", $password); }
 
   &xst_xml_leave ();
   &xst_xml_print_line ("</import>");
