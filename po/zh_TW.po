@@ -1,55 +1,60 @@
+# translation of setup-tools-backends.HEAD.po to 
 # traditional Chinese translation for setup-tools-backends.
-# Copyright (C) 2001, 02, 03, 04 Free Software Foundation, Inc.
+# Copyright (C) 2004 Free Software Foundation, Inc.
 # Chao-Hsiung Liao <pesder.liao@msa.hinet.net>, 2004.
+# Abel Cheung <maddog@linuxhall.org>, 2004
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends 0.92.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-09-09 06:11+0800\n"
-"PO-Revision-Date: 2004-09-09 06:12+0800\n"
+"POT-Creation-Date: 2004-09-12 20:23+0200\n"
+"PO-Revision-Date: 2004-09-29 14:29+0800\n"
 "Last-Translator: Chao-Hsiung Liao <pesder.liao@msa.hinet.net>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.3.1\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
 #: service-list.pl.in:36
 msgid "ACPI event handler"
-msgstr ""
+msgstr "ACPI 事件處理器"
 
 #: service-list.pl.in:36
 msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
+"通知使用者層程式有關 ACPI 的事件﹕會根據類似電源按鈕等不同的 ACPI 事件執行"
+"不同的指令。"
 
+# Using acronym is probably more readily recognized here -- Abel
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
-msgstr "進階 Linux 音效架構"
+msgstr "ALSA 音效架構"
 
 #: service-list.pl.in:38 service-list.pl.in:70
 msgid "web server"
 msgstr "網頁伺服器"
 
 #: service-list.pl.in:38 service-list.pl.in:70
-msgid ""
-"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
-msgstr "Apache 是一個世界性的網頁伺服器。它用來提供 HTML 檔案與 CGI。"
+msgid "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+msgstr "Apache 是一個網頁伺服器。它用來提供 HTML 檔案與 CGI。"
 
 #: service-list.pl.in:39
 msgid "Run missed scheduled jobs at startup"
-msgstr "啟動時執行遺漏的排程工作。"
+msgstr "啟動時執行遺漏的排程工作"
 
 #: service-list.pl.in:39
 msgid "Run cron jobs that were left out due to downtime"
-msgstr "執行因為停止時間而遺漏的 cron 工作"
+msgstr "執行因為關閉電腦而遺漏的 cron 工作"
 
 #: service-list.pl.in:40
 msgid "Automatic power management daemon"
-msgstr "自動電源管理伺服程式"
+msgstr "自動電源管理 (APM) 伺服程式"
 
 #: service-list.pl.in:40
 msgid ""
@@ -61,7 +66,7 @@ msgstr ""
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
-msgstr "在指定的時刻執行命令"
+msgstr "在指定的時間執行命令"
 
 #: service-list.pl.in:41
 msgid ""
@@ -71,11 +76,11 @@ msgstr "依指定的時間、指令執行排程的指令，當平均負載夠低
 
 #: service-list.pl.in:42
 msgid "Audio mixer"
-msgstr ""
+msgstr "混音器"
 
 #: service-list.pl.in:42
 msgid "This program adjusts the settings of an audio mixing device"
-msgstr ""
+msgstr "這個程式可以調整混音裝置的設定值"
 
 #: service-list.pl.in:43
 msgid "BinFormat Support"
@@ -87,13 +92,13 @@ msgstr "支援在 Linux 上執行非 ELF 的二元檔"
 
 #: service-list.pl.in:44
 msgid "Boot messages recorder"
-msgstr ""
+msgstr "開機訊息紀錄器"
 
 #: service-list.pl.in:44
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
-msgstr ""
+msgstr "在背景中執行並複製所有本來送到 /dev/console 的字句作為紀錄檔"
 
 #: service-list.pl.in:45
 msgid ""
@@ -102,7 +107,7 @@ msgid ""
 "dropped.  This is the tcp version. You must enable xinetd to use this "
 "service."
 msgstr ""
-"xinetd 內部服務可以產生字元。xinetd內部服務會持續產生字元，直到失去連線為止。"
+"其中一個 xinetd 內部服務，可以產生字元。它會持續產生字元，直到中斷連線為止。"
 "這是 tcp 版本，您必須啟用 xinetd 以使用這個服務。"
 
 #: service-list.pl.in:46
@@ -112,12 +117,12 @@ msgid ""
 "dropped.  This is the udp version. You must enable xinetd to use this "
 "service."
 msgstr ""
-"xinetd 內部服務可以產生字元。xinetd內部服務會持續產生字元，直到失去連線為止。"
+"其中一個 xinetd 內部服務，可以產生字元。它會持續產生字元，直到中斷連線為止。"
 "這是 udp 版本，您必須啟用 xinetd 以使用這個服務。"
 
 #: service-list.pl.in:47
 msgid "CPU frequency monitor"
-msgstr ""
+msgstr "CPU 頻率監視器"
 
 #: service-list.pl.in:47
 msgid ""
@@ -125,6 +130,8 @@ msgid ""
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
 msgstr ""
+"cpufreqd 是用來監控電池的狀態並據以調整 CPU 的頻率，藉此保持電池的電力並提供"
+"最佳的效能。"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -143,13 +150,14 @@ msgstr ""
 "cron 是 UNIX 用來在一段排程的時間執行使用者指定程式的標準程式。vixie cron 在"
 "基本 UNIX cron 上加入許多功能，包括更好的安全性及功能更強的組態選項。"
 
+# Same as ALSA above -- Abel
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
-msgstr "通用 Unix 列印系統"
+msgstr "CUPS 列印系統"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr ""
+msgstr "基於網路列印通訊協定 (IPP) 1.1 版的列印系統"
 
 #: service-list.pl.in:52
 msgid ""
@@ -204,17 +212,17 @@ msgstr ""
 "以使用這個服務。"
 
 #: service-list.pl.in:59
-#, fuzzy
 msgid "Sound mixing server"
-msgstr "dns 伺服器"
+msgstr "混音伺服器"
 
+# Same as ALSA/CUPS above -- Abel
 #: service-list.pl.in:59
 msgid "The Enlightened Sound Daemon"
-msgstr ""
+msgstr "ESD 音效伺服程式"
 
 #: service-list.pl.in:60
 msgid "Exim SMTP Server"
-msgstr "Exim SMTP 伺服器"
+msgstr "Exim SMTP 郵件伺服器"
 
 #: service-list.pl.in:61
 msgid "file alteration monitor"
@@ -226,11 +234,11 @@ msgstr "Firstboot 是在初次開機時會執行的精靈式程式。"
 
 #: service-list.pl.in:63
 msgid "Text-to-speech system"
-msgstr ""
+msgstr "合成語音系統"
 
 #: service-list.pl.in:63
 msgid "Festival is a general purpose text-to-speech system"
-msgstr ""
+msgstr "Festival 是一個作一般用途的合成語音系統"
 
 #: service-list.pl.in:64
 msgid "Mail Fetcher"
@@ -238,7 +246,7 @@ msgstr "郵件擷取程式"
 
 #: service-list.pl.in:64
 msgid "A Mail Fetcher from external Servers"
-msgstr "外部伺服器的郵件擷取程式"
+msgstr "從外部伺服器擷取郵件的程式"
 
 #: service-list.pl.in:65
 msgid "IPv6 Tunnel Broker"
@@ -248,17 +256,20 @@ msgstr "IPv6 通道管理程式"
 msgid "A IPv6 Dynamic Tunnel Broker"
 msgstr "IPv6 動態通道管理程式"
 
+# Alter description so that Chinese can readily understand it -- Abel
 #: service-list.pl.in:66
 msgid "GNOME Display Manager"
-msgstr "GNOME 顯示管理程式"
+msgstr "GDM 圖型介面登入程式"
 
+# Alter description so that Chinese can readily understand it.
+# Besides, gdm doesn't only operate for GNOME. -- Abel
 #: service-list.pl.in:66
 msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
-msgstr "gdm 提供 GNOME 中的“登入:”功能。"
+msgstr "gdm 為用戶進入桌面環境前提供登入功能。"
 
 #: service-list.pl.in:67
 msgid "console mouse support"
-msgstr "主控台滑鼠支援"
+msgstr "文字模式滑鼠支援"
 
 #: service-list.pl.in:67
 msgid ""
@@ -267,22 +278,21 @@ msgid ""
 "includes support for pop-up menus on the console."
 msgstr ""
 "GPM 可以為 Midnight Commander 這類以文字模式為基礎的 Linux 應用程式加上滑鼠支"
-"援。它也允許以滑鼠進行主控台的剪下-貼上操作，並且包含支援主控台中的彈出式選"
-"單。"
+"援。它也允許以滑鼠進行主控台的剪貼操作，並且支援主控台中顯示的彈出式選單。"
 
 #: service-list.pl.in:68
 msgid "Set hard disk parameters"
-msgstr ""
+msgstr "設定硬碟參數"
 
 #: service-list.pl.in:68
 msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
-msgstr ""
+msgstr "提供介面給各式 Linux ATA/IDE 裝置驅動程式子系統所支援的硬碟。"
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
-msgstr ""
+msgstr "Linux HotPlug 支援"
 
 #: service-list.pl.in:69
 msgid ""
@@ -290,16 +300,19 @@ msgid ""
 "software when some significant (usually hardware-related) events take place. "
 "An example is when a USB or Cardbus device has just been plugged in."
 msgstr ""
+"hotplug 是核心用來通知使用者模式的軟體有某些重大事件 (通常是硬體方面) 發生的"
+"程式，例如當 USB 或 Cardbus 裝置插入的時候。"
 
+# Also changing description -- Abel
 #: service-list.pl.in:71
 msgid "internet superserver"
-msgstr "internet superserver"
+msgstr "inetd 超級伺服器"
 
 #: service-list.pl.in:71
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
-msgstr "inetd 可以執行一個伺服程式來註銷其他伺服程式，因而減少系統的負載。"
+msgstr "inetd 這個伺服程式可以執行其他伺服程式，因而減少系統的負載。"
 
 #: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
@@ -309,19 +322,21 @@ msgstr "IPv4 封包過濾器及 NAT 管理工具"
 msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
-msgstr "Iptables 是用來設定、維持和檢查 Linux 核心中的 IP 封包過濾規則表格。"
+msgstr "Iptables 是用來設定、維持和檢查 Linux 核心中的 IP 封包過濾規則。"
 
 #: service-list.pl.in:73
 msgid "IrDA stack for Linux"
 msgstr "Linux IrDA 堆疊"
 
+# Probably nobody would understand if protocol name is translated -- Abel
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol"
-msgstr "網際網路金鑰交換協定"
+msgstr "IKE (Internet Key Exchange) 協定"
 
+# Probably nobody would understand if protocol name is translated -- Abel
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol openbsd implementation"
-msgstr "網際網路金鑰交換協定 openbsd 實作"
+msgstr "IKE (Internet Key Exchange) 協定 openbsd 實作"
 
 #: service-list.pl.in:75
 msgid "start and stop ISDN services"
@@ -329,7 +344,7 @@ msgstr "啟動與停止 ISDN 服務"
 
 #: service-list.pl.in:76
 msgid "Check and fix joystick device nodes"
-msgstr ""
+msgstr "檢查並修正搖桿裝置檔案"
 
 #: service-list.pl.in:76
 msgid ""
@@ -337,6 +352,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
+"執行 joystick-device-check。joystick-device-check 是一個用來確認 /dev/js* "
+"裝置檔案與使用中的核心版本是否正確的程式。"
 
 #: service-list.pl.in:77
 msgid ""
@@ -348,47 +365,44 @@ msgstr ""
 "kbdcohfig 公用程式來選擇它。在大多數機器中您應該啟用它。"
 
 #: service-list.pl.in:78
-#, fuzzy
 msgid "Kernel Log Daemon"
-msgstr "現代的記錄伺服程式"
+msgstr "核心紀錄伺服程式"
 
 #: service-list.pl.in:78
-msgid ""
-"klogd is a system daemon which intercepts and logs Linux kernel messages."
+msgid "klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr "klogd 是一個系統伺服程式，可以攔截並記錄 Linux 核心的訊息。"
 
 #: service-list.pl.in:79
-msgid ""
-"This runs the hardware probe, and optionally configures changed hardware."
-msgstr "這會執行硬體的偵測，並且可以設定變更的硬體。"
+msgid "This runs the hardware probe, and optionally configures changed hardware."
+msgstr "它會偵測硬體，並且可以選擇設定變更過的硬體。"
 
 #: service-list.pl.in:80 service-list.pl.in:81
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
-msgstr "LIRC 是一個讓您可以解碼並傳送許多常見遙控器的紅外線信號的套件"
+msgstr "LIRC 讓您可以解碼並傳送許多常見遙控器的紅外線信號"
 
 #: service-list.pl.in:82
 msgid "Starts misc programs that should be started"
-msgstr ""
+msgstr "啟動其它應該啟動的程式"
 
 #: service-list.pl.in:83
 msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
-"lpd 是 lpr 正常運作所需的列印伺服程式。它基本上是一個用來協調列印工作至印表機"
-"的伺服器。"
+"lpd 是 lpr 正常運作所需的列印伺服程式。它基本上是一個用來協調列印工作，並將之"
+"送至印表機的伺服程式。"
 
 #: service-list.pl.in:84
 msgid "Create devices"
-msgstr ""
+msgstr "建立裝置"
 
 #: service-list.pl.in:84
 msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
-msgstr ""
+msgstr "命令稿會在 /dev 下建立和核心裡驅動程式溝通所使用的裝置"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -396,11 +410,11 @@ msgstr "Syslog 代替品"
 
 #: service-list.pl.in:85
 msgid "Modern logging daemon"
-msgstr "現代的記錄伺服程式"
+msgstr "較新式的系統紀錄伺服程式"
 
 #: service-list.pl.in:86
 msgid "Load kernel modules"
-msgstr ""
+msgstr "載入核心模組"
 
 #: service-list.pl.in:87
 msgid "tools for managing Linux kernel modules"
@@ -412,7 +426,7 @@ msgstr "資料庫伺服器"
 
 #: service-list.pl.in:88
 msgid "MySQL, a SQL-based relational database daemon"
-msgstr ""
+msgstr "MySQL，基於 SQL 的相關資料庫伺服程式"
 
 #: service-list.pl.in:89
 msgid "dns server"
@@ -422,15 +436,14 @@ msgstr "dns 伺服器"
 msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
-msgstr ""
-"named (BIND) 是一種網域名稱伺服器 (DNS)，用來把主機名稱解析為 IP 位址。"
+msgstr "named (BIND) 是一種網域名稱伺服器 (DNS)，用來把主機名稱解析為 IP 位址。"
 
 #: service-list.pl.in:90
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
-"掛載與卸載所有的網路檔案系統 (NFS)、SMB (Lan 管理者/Windows) 和 NCP "
+"掛載與卸載所有的網路檔案系統 (NFS)、SMB (Lan Manager/Windows) 和 NCP "
 "(NetWare) 掛載點。"
 
 #: service-list.pl.in:91
@@ -457,43 +470,41 @@ msgstr ""
 "功能。"
 
 #: service-list.pl.in:94
-#, fuzzy
 msgid "Name service cache daemon"
-msgstr "OpenSSH 伺服器伺服程式"
+msgstr "名稱服務快取伺服程式"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
-msgstr ""
+msgstr "提供多數一般名稱服務要求快取的伺服程式。"
 
 #: service-list.pl.in:95
-#, fuzzy
 msgid "Network Time Protocol daemon"
-msgstr "點對點通訊協定伺服程式"
+msgstr "網路時間通訊協定 (NTP) 伺服程式"
 
+# such english description is bull shit. What is NTPv4? -- Abel
 #: service-list.pl.in:95
 msgid "ntpd is the NTPv4 daemon."
-msgstr "ntpd 是一個 NTPv4 伺服程式。"
+msgstr "ntpd 是一個可以令不同主機的系統時間同步的伺服程式。"
 
 #: service-list.pl.in:96 service-list.pl.in:97
 msgid "Update the system time over the network"
-msgstr ""
+msgstr "透過網路更新系統時間"
 
 #: service-list.pl.in:96 service-list.pl.in:97
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
-msgstr ""
+msgstr "從網路時間通訊協定 (ntp) 伺服器檢查時間並據以調整系統時間。"
 
 #: service-list.pl.in:98
-#, fuzzy
 msgid "Network Time Protocol (NTP) server"
-msgstr "簡易網路管理通訊協定(SNMP)伺服程式"
+msgstr "網路時間通訊協定 (NTP) 伺服器"
 
 #: service-list.pl.in:98
 msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
-msgstr ""
+msgstr "與網路時間伺服器同步，來設定並維護系統時間的伺服程式"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
@@ -511,7 +522,9 @@ msgstr "只供快取的 DNS 伺服器"
 msgid "IPsec tunnel implementation"
 msgstr "IPsec 通道實作"
 
+# ??? -- Abel
 #: service-list.pl.in:103
+#, fuzzy
 msgid "DARPA port to RPC program number mapper"
 msgstr "DARPA 轉移至 RPC 程式數字對映程式"
 
@@ -526,7 +539,7 @@ msgstr ""
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
-msgstr "郵件傳輸代理程式"
+msgstr "郵件傳輸代理程式 (MTA)"
 
 #: service-list.pl.in:106
 msgid "Point to Point Protocol daemon"
@@ -536,17 +549,19 @@ msgstr "點對點通訊協定伺服程式"
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
-msgstr "點對點通訊協定 (PPP) 提供了透過序列點對點連線傳送資料包的方法。"
+msgstr "點對點通訊協定 (PPP) 提供了透過點對點連線傳送資料包的方法。"
 
+# FIXME: I am not satisfied even I modified this. -- Abel 
 #: service-list.pl.in:107
+#, fuzzy
 msgid "Privacy enhancing HTTP Proxy"
-msgstr "強化隱私權的 HTTP 代理伺服器"
+msgstr "加強保護隱私的 HTTP 代理伺服器"
 
 #: service-list.pl.in:108
 msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
-msgstr "儲存與回存系統隨機計量池以用於較高品質的亂數數值的產生。"
+msgstr "儲存與回存系統隨機計量池，藉此產生較高品質的亂數。"
 
 #: service-list.pl.in:109
 msgid ""
@@ -566,57 +581,59 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
-"這是一個處理定期連線到 Red Hat Network 伺服器工作的伺服程式。它能檢查更新、通"
+"這是一個定期連線到 Red Hat Network 伺服器的伺服程式。它能檢查更新、通"
 "知，並且根據此伺服器簽訂的服務等級進行系統監控工作。"
 
+# direct translation is shit here, I will modify it -- Abel
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
-"rsync 伺服器是對 am ftp 伺服器很好的附加功能，因為它允許 crc 總和檢查碼等等。"
-"您必須啟用 xinetd 以使用這個服務。"
+"rsync 伺服器是 FTP 伺服器以外一個較佳的選擇，因為它有 crc 總和檢查碼等等的"
+"功能。您必須啟用 xinetd 以使用這個服務。"
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
-msgstr ""
+msgstr "較快、較靈活的 rcp 代替品"
 
 #: service-list.pl.in:113
 msgid "A Windows SMB/CIFS fileserver for UNIX"
-msgstr ""
+msgstr "在 UNIX 上使用的 Windows SMB/CIFS 檔案伺服器"
 
+# Again, modify a little bit for ease of understanding and translation -- Abel
 #: service-list.pl.in:113
 msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
+"Samba 軟體套件是一些實作 SMB (Server Message Block) 協定的程式，適用於 UNIX "
+"系統。"
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
-msgstr "saslauthd 是一個用來處理 cyrus-sasl 程式庫的純文字驗證的伺服器程序。"
+msgstr ""
+"saslauthd 是一個用來協助 cyrus-sasl 程式庫進行純文字驗證的伺服程式。"
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
-msgstr ""
-"Sendmail 是郵件傳輸程式，它是個可以把郵件從一台機器移至另一台機器的程式。"
+msgstr "Sendmail 是郵件傳輸程式，它是個可以把郵件從一台機器移至另一台機器的程式。"
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
-msgstr ""
-"一個內部 xinetd 服務，列出作用中的伺服器。您必須啟用 xinetd 以使用這個服務。"
+msgstr "一個內部 xinetd 服務，列出作用中的伺服器。您必須啟用 xinetd 以使用這個服務。"
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
-msgstr ""
-"一個內部 xinetd 服務，列出作用中的服務。您必須啟用 xinetd 以使用這個服務。"
+msgstr "一個內部 xinetd 服務，列出作用中的服務。您必須啟用 xinetd 以使用這個服務。"
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
@@ -642,11 +659,11 @@ msgstr "控制並監控使用 S.M.A.R.T. 的儲存系統"
 
 #: service-list.pl.in:121
 msgid "Perl-based spam filter using text analysis"
-msgstr "使用文字分析基於 Perl 的垃圾郵件過濾器"
+msgstr "使用文字分析來過濾垃圾郵件的 Perl 程式"
 
 #: service-list.pl.in:122
 msgid "Simple Network Management Protocol (SNMP) Daemon"
-msgstr "簡易網路管理通訊協定(SNMP)伺服程式"
+msgstr "SNMP 伺服程式"
 
 #: service-list.pl.in:123 service-list.pl.in:124
 msgid "OpenSSH SSH server"
@@ -660,19 +677,22 @@ msgstr "ssh 是用來登入遠端機器和在遠端機器上執行指令的程�
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
-msgstr "OpenSSH 伺服器伺服程式"
+msgstr "OpenSSH 伺服程式"
 
 #: service-list.pl.in:125
 msgid "Linux system logging utilities"
-msgstr "Linux 系統登入公用程式"
+msgstr "Linux 系統紀錄公用程式"
 
 #: service-list.pl.in:125
+
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
-msgstr "Sysklogd 提供兩個系統公用程式，可以提供系統的記錄與核心訊息的捕捉。"
+msgstr "Sysklogd 提供兩個系統公用程式，可以記錄系統訊息與捕捉核心訊息。"
 
+# ??? -- Abel
 #: service-list.pl.in:126
+#, fuzzy
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
@@ -680,7 +700,9 @@ msgstr ""
 "Syslog 相當便利因而許多伺服程式都用它來將訊息記錄為各式系統紀錄檔案。一直執"
 "行 syslog 會是個不錯的主意。"
 
+# FIXME: Try rewrite into fluent chinese sentence -- Abel
 #: service-list.pl.in:127
+#, fuzzy
 msgid ""
 "An RFC 868 time server. This protocol provides a site-independent, machine "
 "readable date and time. The Time service sends back to the originating "
@@ -691,7 +713,9 @@ msgstr ""
 "間服務會傳回原始來源自 1900 年一月一日午夜起算以秒為計的時間。這是 tcp 版本。"
 "您必須啟用 xinetd 以使用這個服務。"
 
+# FIXME: Try rewrite into fluent chinese sentence -- Abel
 #: service-list.pl.in:128
+#, fuzzy
 msgid ""
 "An RFC 868 time server. This protocol provides a site-independent, machine "
 "readable date and time. The Time service sends back to the originating "
@@ -733,7 +757,7 @@ msgstr "網頁式系統管理工具"
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
-msgstr ""
+msgstr "名稱服務切換伺服程式是用來解析 NT 伺服器的名稱"
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
@@ -744,29 +768,31 @@ msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
-"允許使用者以單擊 Windows(tm) 應用程式的方式(或輸入./file.exe)來執行它。"
+"允許使用者只按一下滑鼠 (或輸入 ./file.exe) 就可以執行 Windows™ 應用程式。"
 
 #: service-list.pl.in:135
-#, fuzzy
 msgid "X Display Manager"
-msgstr "GNOME 顯示管理程式"
+msgstr "XDM 圖型介面登入程式"
 
 #: service-list.pl.in:135
-#, fuzzy
 msgid "Provides the X equivalent of a \"login:\" prompt."
-msgstr "gdm 提供 GNOME 中的“登入:”功能。"
+msgstr "XDM 為用戶進入桌面環境前提供登入功能。"
 
 #: service-list.pl.in:136
 msgid "X font server"
 msgstr "X 字型伺服器"
 
+# FIXME: Word to word translation is not good here -- Abel
 #: service-list.pl.in:136
+#, fuzzy
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
 msgstr "Xfs 是 X Window 系統字型伺服器。它提供字型給 X Window 系統顯示伺服器。"
 
+# FIXME: Word to word translation is not good here -- Abel
 #: service-list.pl.in:137
+#, fuzzy
 msgid ""
 "xinetd is a powerful replacement for inetd. xinetd has access control "
 "machanisms, extensive logging capabilities, the ability to make services "
@@ -794,12 +820,13 @@ msgstr "重新啟動系統"
 
 #: service.pl.in:236
 msgid "Starts all system neccesary services"
-msgstr ""
+msgstr "啟動所有系統必需的服務"
 
 #: service.pl.in:237
 msgid "Default runlevel"
-msgstr ""
+msgstr "預設的 runlevel"
 
 #: service.pl.in:238
 msgid "Networkless runlevel"
-msgstr ""
+msgstr "沒有網路功能的 runlevel"
+
