@@ -1729,7 +1729,6 @@ sub gst_network_gentoo_interface_delete
   else
   {
     $netconf = "/etc/conf.d/net";
-    &gst_replace_sh ($netconf, "gateway", "") if ($gateway ne undef);
     &gst_replace_sh ($netconf, "iface_$dev", "");
   }
 }
@@ -3904,6 +3903,7 @@ sub gst_network_get_replace_table
       [
        [ "hostname",      \&gst_replace_line_first,       HOSTNAME ],
        [ "hostname",      \&gst_network_run_hostname ],
+       [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ],
        [ "domain",        \&gst_replace_line_first,       DOMAINNAME ],
        [ "domain",        \&gst_replace_join_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
        [ "nameserver",    \&gst_replace_join_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
@@ -3913,11 +3913,11 @@ sub gst_network_get_replace_table
        [ "smbdesc",       \&gst_replace_ini,              SMB_CONF,     "global", "server string", "%hostname%" ],
        [ "winsserver",    \&gst_replace_ini,              SMB_CONF,     "global", "wins server" ],
        [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
+       [ "smbuse",        \&gst_service_gentoo_set_status, "samba", 1 ],
        # first set the gateway to something like "eth0", then add the IP address like "eth0/1.1.1.1"
        [ "gatewaydev",    \&gst_replace_sh,               NET, gateway ],
        [ "gateway",       \&gst_replace_sh_re,            NET, gateway, "\/[0-9\.]*\$", "/%gateway%" ],
-       [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ],
-       [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
+       [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ]
       ]
     }
 	  );
@@ -4403,7 +4403,7 @@ sub gst_network_get_interface_replace_table
       [ "essid",              \&gst_replace_wireless_opts,            [ WIRELESS, IFACE ], \&gst_network_get_wireless_ifaces, ESSID ],
       # modem stuff
       [ "dev",                \&gst_network_check_iface,              [ IFACE, "ppp", \&gst_replace_sh, PPPNET, PEER ]],
-      [ "update_dns",         \&gst_replace_sh_bool,                  PPPNET, PEERDNS ],
+      [ "update_dns",         \&gst_network_check_iface,              [ IFACE, "ppp", \&gst_replace_sh_bool, PPPNET, PEERDNS ]],
       [ "mtu",                \&gst_replace_sh,                       PPPNET, MTU ],
       [ "mru",                \&gst_replace_sh,                       PPPNET, MRU ],
       [ "serial_port",        \&gst_replace_sh,                       PPPNET, MODEMPORT ],
