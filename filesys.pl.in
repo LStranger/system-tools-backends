@@ -105,6 +105,20 @@ sub xst_filesys_info_match  # filesys_info, device, label, uuid, network_host, n
   return 0;
 }
 
+sub xst_filesys_info_settings_to_options
+{
+  my ($info) = @_;
+
+  if (&xst_filesys_info_get_mounted ($info))
+  {
+    &xst_filesys_info_remove_option ($info, "noauto");
+  }
+  else
+  {
+    &xst_filesys_info_set_option ($info, "noauto", "");
+  }
+}
+
 sub xst_filesys_info_match_options  # filesys_info, filesys_info
 {
   my ($info_a, $info_b) = @_;
@@ -308,6 +322,10 @@ sub xst_filesys_info_set_option        # filesys_info, option, value
   $_[0]->{'options'}{$_[1]} = $_[2];
 }
 
+sub xst_filesys_info_remove_option     # filesys_info, option
+{
+  delete $_[0]->{'options'}{$_[1]};
+}
 
 # --- filesys_table; multiple instances of filesys_info --- #
 
