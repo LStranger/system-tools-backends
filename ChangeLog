@@ -1,3 +1,18 @@
+2001-03-15  Arturo Espinosa  <arturo@ximian.com>
+
+	* network-conf.in: Added supported platform "debian-2.2".
+	  Removed RH-dependent gateway and gateway_dev params.
+	* network.pl.in (xst_network_active_interfaces_get):
+	  improved ifconfig call and filter.
+	  (xst_network_debian_parse_bootproto): bootproto translation
+	  from interfaces file for a given iface in Debian.
+	  Added Debian parsing tables and general network replace
+	  table.
+	* parse.pl.in: Lots of stuff here. Basicly parsing functions
+	  for the Debian interfaces file.
+	* platform.pl.in (check_debian): changed quotes to double
+	  quotes. $xst_dist appeared as debian-$ver!
+	
 2001-03-15  Hans Petter Jansson  <hpj@ximian.com>
 
 	* test.pl: Added test skeleton.

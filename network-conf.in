@@ -57,7 +57,8 @@ require "___scriptsdir___/network.pl";
 
 $name = "network";
 $version = "0.1.0";
-@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0");
+@platforms = ("debian-2.2",
+              "redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0");
 
 $description =<<"end_of_description;";
        Configures all network parameters and interfaces.
@@ -106,8 +107,6 @@ sub xml_parse_network
        if ($$tree[0] eq "auto")            { $$hash{"auto"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "forward")         { $$hash{"forward"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "gateway")         { $$hash{"gateway"} = &xst_xml_get_pcdata ($$tree[1]); }
-    elsif ($$tree[0] eq "gateway_dev")     { $$hash{"gateway_dev"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "nameserver")      { push (@nameserver, &xst_xml_get_pcdata ($$tree[1])); }
     elsif ($$tree[0] eq "searchdomain")    { push (@searchdomain, &xst_xml_get_pcdata ($$tree[1])); }
@@ -234,7 +233,7 @@ sub xml_print
 {
   my $h = $_[0];
   my @scalar_keys =
-	 (auto, forward, hostname, gateway, gateway_dev, domain, domainname,
+	 (auto, forward, hostname, domain, domainname,
 	  hostmatch, workgroup, description, winsserver, winsuse);
   my @array_keys =
 	 (nameserver, searchdomain, order);

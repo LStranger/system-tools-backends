@@ -25,6 +25,7 @@
 
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
+require "___scriptsdir___/debug.pl";
 
 
 sub xst_parse_replace_hash_values
@@ -420,12 +421,177 @@ sub xst_parse_ini
 
 sub xst_parse_ini_bool
 {
-    my ($file, $section, $var) = @_;
-    my $ret;
-    
-    $ret = &xst_parse_ini ($file, $section, $var);
-
-    return undef if ($ret eq undef);
-    return (&xst_read_boolean ($ret)? 1: 0);
+  my ($file, $section, $var) = @_;
+  my $ret;
+  
+  $ret = &xst_parse_ini ($file, $section, $var);
+  
+  return undef if ($ret eq undef);
+  return (&xst_read_boolean ($ret)? 1: 0);
 }
 
+# Debian interfaces(5) states that files starting with # are comments.
+# Also, leading and trailing spaces are ignored.
+sub xst_parse_interfaces_line_clean
+{
+  $_ = $_[0];
+  
+  chomp;
+  s/^\#.*//;
+  s/^[ \t]+//;
+  s/[ \t]+$//;
+
+  return $_;
+}
+
+# interfaces(5) also states that \ line continuation is possible.
+sub xst_parse_interfaces_line_read
+{
+  my $fd = $_[0];
+  my $l;
+
+  $l = <$fd>;
+  return -1 if ($l eq undef);
+  
+  $l = &xst_parse_interfaces_line_clean ($l);
+  while ($l =~ /\\$/)
+  {
+    $l =~ s/\\$//;
+    $l .= &xst_parse_interfaces_line_clean (scalar <$fd>);
+  }
+
+  return $l;
+}
+
+# Read lines until a stanza, a line starting with iface is found.
+# Return ref to an array with the stanza params split.
+sub xst_parse_intefaces_get_next_stanza
+{
+  my $fd =  $_[0];
+
+  while (($_ = &xst_parse_interfaces_line_read ($fd)) != -1)
+  {
+    if (/^iface[ \t]/)
+    {
+      s/^iface[ \t]+//;
+      return [ split ("[ \t]+", $_) ];
+    }
+  }
+
+  return -1;
+}
+
+# Read lines until a line not recognized as a stanza is
+# found, and split in a "tuple" of key/value.
+sub xst_parse_interfaces_get_next_option
+{
+  my $fd =  $_[0];
+
+  while (($_ = &xst_parse_interfaces_line_read ($fd)) != -1)
+  {
+    next if /^$/;
+    
+    if (!/^iface[ \t]/)
+    {
+      return [ split ("[ \t]+", $_) ];
+    }
+    else
+    {
+      return -1;
+    }
+  }
+
+  return -1;
+}
+
+# Get all stanzas from file. Return array.
+sub xst_parse_interfaces_stanzas
+{
+  my ($file) = @_;
+  my ($fd, @res);
+
+  $fd = &xst_open_read_from_names ($file);
+  $res = undef;
+  
+  while (($_ = &xst_parse_interfaces_get_next_stanza ($fd)) != -1)
+  {
+    push @res, $_;
+  }
+
+  close $fd;
+
+  return @res;
+}
+
+# Find stanza for $iface in $file, and return
+# tuple for option with $key. Return -1 if unexisting.
+sub xst_parse_interfaces_option_tuple
+{
+  my ($file, $iface, $key) = @_;
+  my ($fd, $res);
+
+  $fd = &xst_open_read_from_names ($file);
+  $res = 0;
+
+  while (($stanza = &xst_parse_interfaces_get_next_stanza ($fd)) != -1)
+  {
+    if ($$stanza[0] eq $iface)
+    {
+      while (($tuple = &xst_parse_interfaces_get_next_option ($fd)) != -1)
+      {
+        return $tuple if ($$tuple[0] eq $key);
+      }
+
+      return -1;
+    }
+  }
+
+  return -1;
+}
+
+# Go get option $kw for $iface stanza. If found,
+# return 1 (true), else, false.
+sub xst_parse_interfaces_option_kw
+{
+  my ($file, $iface, $kw) = @_;
+  my $tuple;
+
+  $tuple = &xst_parse_interfaces_option_tuple ($file, $iface, $kw);
+
+  if ($tuple != -1)
+  {
+    if ($$tuple[1] ne "")
+    {
+      &xst_report_warning ("Keyword for interface $iface in $file had unexpected value");
+    }
+
+    return 1;
+  }
+
+  return 0;
+}
+
+# For such keywords as noauto, whose existence means
+# a false value.
+sub xst_parse_interfaces_option_kw_not
+{
+  my ($file, $iface, $kw) = @_;
+  
+  return !&xst_parse_interfaces_option_kw ($file, $iface, $kw);
+}
+
+# Go get option $key for $iface in $file and return value.
+sub xst_parse_interfaces_option_str
+{
+  my ($file, $iface, $key) = @_;
+  my $tuple;
+
+  $tuple = &xst_parse_interfaces_option_tuple ($file, $iface, $kw);
+
+  if ($tuple != -1)
+  {
+    return $$tuple[1];
+  }
+
+  return undef;
+}

@@ -33,7 +33,7 @@ sub check_debian
   open DEBIAN, "/etc/debian_version" or return 0;
   chomp ($ver = <DEBIAN>);
   close DEBIAN;
-  $xst_dist = 'debian-$ver';
+  $xst_dist = "debian-$ver";
   return 1;
 }
 
