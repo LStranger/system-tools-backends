@@ -1,5 +1,11 @@
 2003-03-12  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* time-conf.in, boot-conf.in, users-conf.in, platform.in:
+	  patch by Todd Kulesza <todd@dropline.net>, it adds support
+	  for Slackware 8.1 in time-admin, boot-admin and users-admin.
+
+2003-03-12  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* network-conf.in: now stores fine both IPv4 and IPv6 
 	  addresses in the /etc/hosts file
 

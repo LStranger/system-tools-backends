@@ -76,7 +76,7 @@ $version = "___version___";
 
               "suse-7.0", "turbolinux-7.0",
 
-              "slackware-8.0.0", "slackware-9.0",
+              "slackware-8.0.0", "slackware-8.1", "slackware-9.0",
 
               "freebsd-4", "freebsd-5");
 
@@ -237,6 +237,7 @@ my $logindefs_dist_map = {
   'suse-7.0'        => $rh_logindefs_defaults,
   'turbolinux-7.0'  => $rh_logindefs_defaults,
   'slackware-8.0.0' => $rh_logindefs_defaults,
+  'slackware-8.1'   => $rh_logindefs_defaults,
   'slackware-9.0'   => $rh_logindefs_defaults,
   'freebsd-4'       => $rh_logindefs_defaults,
   'freebsd-5'       => $rh_logindefs_defaults,

@@ -68,7 +68,7 @@ $version = "___version___";
               
               "suse-7.0", "turbolinux-7.0",
 
-              "slackware-9.0");
+              "slackware-8.1", "slackware-9.0");
 
 $description =<<"end_of_description;";
        Configures Boot manager (LILO and GRUB at the moment).

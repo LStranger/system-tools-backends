@@ -56,6 +56,7 @@ $PLATFORM_INFO = {
   "suse-7.0"        => "SuSE Linux 7.0",
   "turbolinux-7.0"  => "Turbolinux 7.0",
   "slackware-8.0.0" => "Slackware 8.0.0",
+  "slackware-8.1"   => "Slackware 8.1",
   "slackware-9.0"   => "Slackware 9.0",
   "freebsd-4"       => "FreeBSD 4",
   "freebsd-5"       => "FreeBSD 5",
