@@ -469,7 +469,7 @@ sub xst_replace_remove_ini_section
   my ($pre_space, $post_comment, $sec_save);
 
   &xst_report_enter ();
-#  &xst_report ("replace_ini", $var, $section, $file);
+  &xst_report ("replace_del_ini_sect", $section, $file);
 
   $buff = &xst_file_buffer_load ($file);
 
@@ -500,7 +500,14 @@ sub xst_replace_remove_ini_section
 
     if ($found_flag)
     {
-      $i = $post_comment . "\n";
+      if ($post_comment =~ /^[ \t]*$/)
+      {
+        $i = "";
+      }
+      else
+      {
+        $i = $post_comment . "\n";
+      }
     }
     else
     {
@@ -510,7 +517,7 @@ sub xst_replace_remove_ini_section
 
   &xst_file_buffer_clean ($buff);
   $ret = &xst_file_buffer_save ($buff, $file);
-#  &xst_report_leave ();
+  &xst_report_leave ();
   return $ret;
 }
 

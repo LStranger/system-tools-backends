@@ -192,6 +192,7 @@ sub xst_report
      "replace_line_first"       => ["info",  _("Replacing contents of file [%s].")],
      "replace_chat"             => ["info",  _("Replacing values in [%s].")],
      "replace_ini"              => ["info",  _("Replacing variable [%s] in section [%s] of [%s].")],
+     "replace_del_ini_sect"     => ["info",  _("Removing section [%s] from [%s].")],
      "replace_ifaces_str"       => ["info",  _("Replacing option [%s] from interface [%s].")],
      "replace_ifaces_kw"        => ["info",  _("Replacing keyword [%s] from interface [%s].")],
      

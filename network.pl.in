@@ -372,7 +372,8 @@ sub xst_network_dial2iface
   $dial = $$dial_hash{$name};
   if ($$dial{"xst_dev"} eq "")
   {
-    $$dial{"xst_dev"} = &xst_network_get_new_dialing_dev ($dial_hash, "ppp");
+    $$dial{"xst_dev"} = "ppp0";
+    # = &xst_network_get_new_dialing_dev ($dial_hash, "ppp");
   }
   else
   {
@@ -385,7 +386,7 @@ sub xst_network_dial2iface
     $iface{$i} = $$dial{$map{$i}} if exists $$dial{$map{$i}};
   }
 
-  $iface{"name"} = $iface{"wvsection"} = $name;
+  $iface{"file"} = $iface{"name"} = $iface{"wvsection"} = $name;
   
   return \%iface;
 }
@@ -432,25 +433,48 @@ sub xst_network_suse70_get_ppp
 
 sub xst_network_suse70_set_ppp
 {
-  my ($dial, $iface) = @_;
-  my ($d, $tmp, $wv, $i);
+  my ($wvfile, $dial, $iface) = @_;
+  my ($d, $i, @ppp_devs, $section);
 
   foreach $d (keys %$iface)
   {
     $i = $$iface{$d};
     if ($$i{"dev"} =~ /^ppp/)
     {
+      my ($tmp, $wv, $name);
+      
+      push @ppp_devs, $i;
+      
       # This takes care of connection name changes.
       $wv = $$i{"wv"};
+      $name = $$i{"name"};
 
-      $tmp = $$dial{$wv};
-      delete $$dial{$wv};
-      $$dial{$$i{"name"}} = $tmp;
+      if ($wv ne $name)
+      {
+        $tmp = $$dial{$wv};
+        delete $$dial{$wv};
+        $$tmp{"name"} = $name;
+        $$dial{$name} = $tmp;
+      }
       
       # Then merges interface with dialing.
       &xst_network_iface2dial ($dial, $i);
     }
   }
+
+  # Delete any wvdial sections that are no longer present as ifaces.
+  OUTER: foreach $d (keys %$dial)
+  {
+    foreach $i (@ppp_devs)
+    {
+      next OUTER if $ {$$iface{$i}}{"name"} eq $ {$$dial{$d}}{"name"};
+    }
+
+    $section = xst_network_dialing_get_section_name ($$dial{$d});
+    &xst_replace_remove_ini_section ($wvfile, $section);
+  }
+
+  return 0;
 }
 
 sub xst_network_suse70_ppp_iface_activate
@@ -489,6 +513,8 @@ sub xst_network_suse70_activate_ppp
     if ($$i{"dev"} =~ /^ppp/ && (! $$i{"enabled"}))
     {
       &xst_network_suse70_ppp_iface_activate ($$i{"name"}, 0);
+      # deleted, so interfaces_set doesn't handle them.
+      delete $$iface{$d};
     }
   }
 
@@ -498,8 +524,11 @@ sub xst_network_suse70_activate_ppp
     if ($$i{"dev"} =~ /^ppp/ && $$i{"enabled"})
     {
       &xst_network_suse70_ppp_iface_activate ($$i{"name"}, 1);
+      delete $$iface{$d};
     }
   }
+
+  return 0;
 }
 
 sub xst_network_interfaces_get
@@ -617,8 +646,23 @@ sub xst_network_run_hostname
   &xst_report_leave ();
 }
 
+sub xst_network_dialing_get_section_name
+{
+  my ($dial) = @_;
+  
+  my %type2title =
+	 (
+	  "dialer" => "Dialer ",
+	  "modem" => "Modem ",
+	  "unknown" => ""
+	  );
+
+  return $type2title{$$dial{"type"}} . $$dial{"name"};
+}
+
 sub xst_network_dialing_set
 {
+  my ($file, $old_hash, $values_hash) = @_;
   my %vars =
 	 (
 	  "inherits"       => "Inherits",
@@ -638,13 +682,7 @@ sub xst_network_dialing_set
     "set_default_gw" => "Check Def Route",
     "xst_dev"        => "XST Device"
 	  );
-  my %type2title =
-	 (
-	  "dialer" => "Dialer #i#",
-	  "modem" => "Modem #i#",
-	  "unknown" => "#i#"
-	  );
-  my ($file, $values_hash) = @_;
+
   my (%hash, $section);
   my $ret;
   my ($i, $j);
@@ -652,12 +690,22 @@ sub xst_network_dialing_set
   &xst_report_enter ();
   &xst_report ("network_dialing_set");
 
+  OUTER: foreach $i (keys %$old_hash)
+  {
+    foreach $j (keys %$values_hash)
+    {
+      next OUTER if ($j eq $i) && ($ {$$values_hash{$j}}{"type"} eq $ {$$old_hash{$i}}{"type"});
+    }
+
+    $section = xst_network_dialing_get_section_name ($$values_hash{$i});
+    $ret = -1 if &xst_replace_remove_ini_section ($file, $section);
+  }
+
   foreach $i (keys %$values_hash)
   {
     %hash = %{$$values_hash{$i}};
 
-    $section = $type2title{$hash{"type"}};
-    $section =~ s/\#i\#/$i/;
+    $section = xst_network_dialing_get_section_name ($hash{$i});
     delete $hash{"type"};
     delete $hash{"name"};
 
@@ -1879,10 +1927,7 @@ sub xst_network_get_replace_table
            [ "winsserver",    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
-           [ "interface",     \&xst_network_suse70_set_ppp,   "%dialing%" ],
-           [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
-# We're calling this sepparated cuz we are going to call wvdial to activate.           
-           [ "interface",     \&xst_network_suse70_activate_ppp ],
+           [ "dialing",       \&xst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
              },
@@ -1916,7 +1961,7 @@ sub xst_network_get_replace_table
            [ "winsserver",    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
            [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
            [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
-           [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
+           [ "dialing",       \&xst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
              },
@@ -1949,7 +1994,7 @@ sub xst_network_get_replace_table
            [ "winsserver",    \&xst_replace_ini,              SMB_CONF,    "global", "wins server" ],
            [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
            [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
-           [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
+           [ "dialing",       \&xst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
              },
@@ -1987,7 +2032,10 @@ sub xst_network_get_replace_table
         [ "winsserver",    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
         [ "winsuse",       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
         [ "smbuse",        \&xst_service_sysv_set_status,  20, "smb" ],
-        [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
+        [ "interface",     \&xst_network_suse70_set_ppp,   [WVDIAL, "%dialing%"] ],
+        [ "dialing",       \&xst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
+# We're calling this sepparated cuz we are going to call wvdial to activate.           
+        [ "interface",     \&xst_network_suse70_activate_ppp ],
         [ "interface",     \&xst_network_interfaces_set,	 OLD_HASH ],
 # I use "interface" here to force the execution of SUSECONFIG.
         [ "interface",     \&xst_file_run,                 SUSECONFIG ],

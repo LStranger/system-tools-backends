@@ -1,3 +1,11 @@
+2001-05-31  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* replace.pl.in (xst_replace_remove_ini_section): remove lines
+	if they're left empty. This is nicer.
+
+	* network.pl.in: Multiple fixes to new SuSE 70 ppp stuff. Did
+	some testing. Still one bug in output remaining.
+
 2001-05-30  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_iface2dial): To merge ppp interface
