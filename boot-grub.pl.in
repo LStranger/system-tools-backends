@@ -51,6 +51,7 @@ sub gst_boot_grub_get_config_file
   return "/etc/grub.conf" if -f "/etc/grub.conf";
   return "/boot/grub/menu.lst" if -f "/boot/grub/menu.lst";
   return "/boot/grub/grub.conf" if -f "/boot/grub/grub.conf";
+
   return undef;
 }
 
@@ -227,6 +228,13 @@ sub gst_boot_grub_entries_set
   return if (scalar @$entries <=0);
 
   $buff = &gst_file_buffer_load ($file);
+
+  if ($buff eq undef)
+  {
+    &gst_report ("boot_conf_read_failed", $file);
+    return undef;
+  }
+  
   &gst_file_buffer_join_lines ($buff);
 	
   $lineno = &gst_boot_grub_find_entry ($buff, 0);
@@ -419,7 +427,12 @@ sub gst_boot_grub_get_entries
     last if $fd;
   }
 
-  return undef if !$fd;
+  if (!$fd)
+  {
+    &gst_report ("boot_conf_read_failed", "/boot/grub/menu.lst");
+    return undef;
+  }
+  
   $buff = &gst_file_buffer_load_fd ($fd);
   $line_no = 0;
   
