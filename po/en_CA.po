@@ -1,15 +1,15 @@
 # English/Canada translation of setup-tools-backends.
-# Copyright (C) 2004 Adam Weinberger and the GNOME Foundation
+# Copyright (C) 2004-2005 Adam Weinberger and the GNOME Foundation
 # This file is distributed under the same license as the setup-tools-backends package.
-# Adam Weinberger <adamw@gnome.org>, 2004.
+# Adam Weinberger <adamw@gnome.org>, 2004, 2005.
 # 
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-12-28 05:45-0500\n"
-"PO-Revision-Date: 2004-12-28 16:51-0400\n"
+"POT-Creation-Date: 2005-02-06 18:30-0500\n"
+"PO-Revision-Date: 2005-02-06 16:51-0400\n"
 "Last-Translator: Adam Weinberger <adamw@gnome.org>\n"
 "Language-Team: English/Canada <adamw@FreeBSD.org>\n"
 "MIME-Version: 1.0\n"
@@ -901,8 +901,8 @@ msgid "Access to floppy drives"
 msgstr "Access to floppy drives"
 
 #: users-conf.in:186
-msgid "Mount removable devices automatically"
-msgstr "Mount removable devices automatically"
+msgid "Enable access to external storage devices automatically"
+msgstr "Enable access to external storage devices automatically"
 
 #: users-conf.in:187
 msgid "Access to tape drives"
@@ -912,10 +912,10 @@ msgstr "Access to tape drives"
 msgid "Be able to get administrator privileges"
 msgstr "Be able to get administrator privileges"
 
-#: users-conf.in:458
+#: users-conf.in:491
 msgid "Default"
 msgstr "Default"
 
-#: users-conf.in:459
+#: users-conf.in:492
 msgid "Default profile"
 msgstr "Default profile"
