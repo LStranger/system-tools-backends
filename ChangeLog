@@ -1,3 +1,8 @@
+2004-07-18  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* platform.pl.in: man, I'd swear that I tested the last commit. fixed
+	  brokenness
+
 2004-07-17  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network-conf.in, network.pl.in, platform.pl.in, service.pl.in,
