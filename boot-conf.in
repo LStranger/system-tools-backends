@@ -107,17 +107,10 @@ sub xml_parse_boot
   while (@$tree)
   {
     if    ($$tree[0] eq "prompt") { $$hash{"prompt"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "lba32") { $$hash{"lba32"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "root") { $$hash{"root"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "delay") { $$hash{"delay"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "timeout") { $$hash{"timeout"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "default") { $$hash{"default"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "append") { $$hash{"append"} = &xst_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "boot") { $$hash{"boot"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "map") { $$hash{"map"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "install") { $$hash{"install"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "keytable") { $$hash{"keytable"} = &xst_xml_get_word ($$tree[1]); }
-
     elsif ($$tree[0] eq "entry") { &xml_parse_image ($$tree[1], \@images); }
 
     shift @$tree;
@@ -231,6 +224,7 @@ sub set
 
   if ($hash)
   {
+    &xst_boot_conf_fix_xml ($hash);
     &xst_boot_conf_set ($hash);
     &xst_file_run ($tool_lilo);
   }

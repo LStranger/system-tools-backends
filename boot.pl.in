@@ -29,12 +29,42 @@ require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
 
+use strict;
+
+my @global_vars = qw (default prompt timeout append root);
+my @common_image_vars = qw (label);
+my @image_vars = (@common_image_vars, qw (image append root));
+my @other_vars = (@common_image_vars, qw (other table));
+
+
+sub xst_boot_known_var
+{
+  my $key = shift;
+  my $list = shift;
+  my $from_xml = shift;
+
+  if (ref ($list) ne "ARRAY")
+  {
+    # TODO: Give warning;
+    return 0;
+  }
+
+  $key = lc ($key);
+  
+  # Hard coded know variables which are not standard lilo.conf variables.
+  return 1 if ($key eq 'xstimagetype');
+  return 1 if ($key eq 'key' && !$from_xml); # 'key' is valid in xml only.
+  
+  return &xst_item_is_in_list ($key, @$list);
+}
 
 sub xst_boot_parse_global_kw
 {
   my ($file, $key) = @_;
   my $fd;
 
+  return undef unless &xst_boot_known_var ($key, \@global_vars, 0);
+  
   $fd = &xst_file_open_read_from_names ($file);
 
   while (<$fd>)
@@ -59,8 +89,10 @@ sub xst_boot_parse_global_kw
 sub xst_boot_parse_global
 {
   my ($file, $key) = @_;
-  my ($fd, @line, $re);
+  my ($fd, $line, $re);
 
+  return undef unless &xst_boot_known_var ($key, \@global_vars, 0);
+  
   $re = "[ \t]*=[ \t]*";
   $fd = &xst_file_open_read_from_names ($file);
 
@@ -72,7 +104,7 @@ sub xst_boot_parse_global
     
     next if ($line eq "");
     last if ($line =~ /^(image|other)/);
-    @line = split ($re, $line, 2);
+    my @line = split ($re, $line, 2);
 
     if (shift (@line) eq $key)
     {
@@ -85,14 +117,14 @@ sub xst_boot_parse_global
   return undef;
 }
 
-
+    
 sub xst_boot_parse_images
 {
-  my $file = $_[0];
-  my ($fd, @line, $found, $hash, @images);
-  my ($key, $val, $line);
+  my $file = shift;
+  my ($fd, $line, @images);
+  my ($line, $known_vars);
 
-  $found = -1;
+  my $found = -1;
   $fd = &xst_file_open_read_from_names ($file);
 
   while (($line = <$fd>))
@@ -100,12 +132,24 @@ sub xst_boot_parse_images
     chomp $line;
     $line =~ s/^[ \t]+//;
 
-    $found++ if ($line =~ /^(image|other)/);
+    if ($line =~ /^image/i)
+    {
+      $found++;
+      $known_vars = \@image_vars;
+      $images[$found]{'key'} = $found;
+    }
+    elsif ($line =~ /^other/i)
+    {
+      $found++;
+      $known_vars = \@other_vars;
+      $images[$found]{'key'} = $found;
+    }
+    
     next if $found < 0;
     
     if ($line =~ /^\#[ \t]*(\w+)/)
     {
-      next if $1 ne "XstPartitionType";
+      next if $1 ne "XstImageType";
 
       $line =~ s/^\#[ \t]*//;
     }
@@ -113,9 +157,13 @@ sub xst_boot_parse_images
     $line = &xst_parse_process_sh_line ($line);
     next if ($line =~ /^$/);
     
-    @line = split ("[ \t]*=[ \t]*", $line, 2);    
-    $key = $line[0];
-    $val = $line[1];
+    my @line = split ("[ \t]*=[ \t]*", $line, 2);    
+    my $key = shift @line;
+
+    # Only deal with known variables
+    next unless &xst_boot_known_var ($key, $known_vars, 0);
+    
+    my $val = shift @line;
     $val =~ s/^[ \t]+//;
     $val =~ s/\"//g;    
     $val =~ s/[ \t]+$//;
@@ -133,6 +181,8 @@ sub xst_boot_set_global_kw
   my ($file, $key) = @_;
   my ($buff, $i, $found);
   my $lineno = 0;
+
+  return 0 unless &xst_boot_known_var ($key, \@global_vars, 0);
   
   $buff = &xst_file_buffer_load ($file);
   $found = 0;
@@ -182,13 +232,15 @@ sub xst_boot_set_global
   my $quote = '"';
   my $lineno = 0;
 
+  return 0 unless &xst_boot_known_var ($key, \@global_vars, 0);
+  
   # quote globals with spaces if neccecary (append=mem=128 param2=122)
   if ($val =~ /^\S+\s+\S+/ && !($val =~ /^\".+\"/)) {
     $val = $quote . $val . $quote;
   }
 
   # Stupid, but neccecary hack, append lines ALWAYS need to be quoted.
-  $val = $quote . $val . $quote if $key =~ /image/;  
+  $val = $quote . $val . $quote if $key =~ /append/i;
   
   $buff = &xst_file_buffer_load ($file);
   $found = 0;
@@ -210,12 +262,12 @@ sub xst_boot_set_global
     if ($i =~ /^[ \t]*$key([ \t]*=[ \t]*)/)
     {
       $found++;
-      $op = $1;
+      my $op = $1;
 
       chomp $i;
       
-      $pre_space = $1 if $i =~ s/^([ \t]+)//;
-      $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
+      my $pre_space = $1 if $i =~ s/^([ \t]+)//;
+      my $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
 
       $i = $pre_space . $key . $op . $val . $post_comment . "\n";
       last;
@@ -245,6 +297,8 @@ sub xst_boot_del_global
   my ($file, $key) = @_;
   my ($buff, $i);
 
+  return 0 unless &xst_boot_known_var ($key, \@global_vars, 0);
+  
   $buff = &xst_file_buffer_load ($file);
 
   foreach $i (@$buff)
@@ -282,39 +336,6 @@ sub xst_boot_conf_find_image
 }
 
 
-# Returns 1 if $image is in the beginning of @buff. -1  if not.
-sub xst_boot_conf_is_image
-{
-  my ($image, @buff) = @_;
-  my ($key, $i, $label);
-
-  my $name = 'image' if exists $image->{'image'};
-  $name =    'other' if (!$name && exists $image->{'other'});
-
-  return -1 unless $name;
-
-  $key = $image->{$name};
-  $label = $image->{'label'};
-
-  $i = $buff[0];
-  # image line isn't the one we are looking for.
-  return -1 unless ($i =~ /^[ \t]*$name[ \t]*=[ \t]*$key\s+/);
-  
-  foreach $i (@buff)
-  {
-    # image line matched, now label matched too.
-    return 1 if ($i =~ /^[ \t]*label[ \t]*=[ \t]*$label\s+/);
-  }
-
-  # Couldn't find label line, let's try default one.
-  my $tmp_label = $1 if ($key =~ /\S+\/(\S+)$/);
-  return 1 if ($tmp_label =~ /$label/);
-
-  # Nope, not the one.
-  return -1;
-}
-
-
 # Deletes lines from $buff starting from $lineno till the next image
 # or till end of the file if no more images left.
 sub xst_boot_conf_delete_image
@@ -338,67 +359,70 @@ sub xst_boot_conf_delete_image
 sub xst_boot_conf_edit_image
 {
   my ($image, $buff, $lineno) = @_;
-  my ($i, $found, $line, $key);
-  my ($pre_space, $post_comment, $value);
 
+  my $known_vars = \@image_vars if (exists $image->{'image'});
+  $known_vars = \@other_vars if (!$known_vars && exists $image->{'other'});
+  return $buff unless $known_vars;
+  
   my $end = &xst_boot_conf_find_image ($buff, $lineno + 1);
   $end = scalar @$buff if ($end < 0);
 
   for ($lineno; $lineno < $end; $lineno++)
   {
-    $found = 0;
-    $line = \$$buff[$lineno];
-
-    $pre_space = $post_comment = "";
-    chomp $$line;
-    $pre_space = $1 if $$line =~ s/^([ \t]+)//;
-    $post_comment = $1 if $$line =~ s/([ \t]*[\#].*)//;
-    
-    foreach $key (keys %$image)
+    # Special case:
+    if ($$buff[$lineno] =~ /^[ \t]*(\#)[ \t]*XstImageType/i)
     {
-      # Something like 'label = linunx'
-      if ($$line =~ /^$key([ \t]*)=([ \t]*)(\S+)/)
-      {
-        $found++;
-        $value = $$image{$key};
-        $value = "\"$value\"" if ($value =~ /[ \t]/ && (! ($value =~ /^\".+\"$/)));
-        $value = "\"$value\"" if ($value =~ /\=/ && (!($value =~ /^\".+\"$/)));
+      $$buff[$lineno] =~ s/$1//;
+    }
+    
+    # Get the variable.
+    my $key = $1 if ($$buff[$lineno] =~ /^[ \t]*([\w\-]+)/);
+    next if ($key && (!&xst_boot_known_var ($key, $known_vars, 0)));    
+    next unless $key;
 
-        $$line = $pre_space . $key . $1 . "=" . $2 . $value . $post_comment . "\n";
-        $$line = "# " . $$line if $key eq "XstPartitionType";
-        delete $$image{$key};        
-      }
-      # Something like 'read-only' (ie keyword)
-      elsif ($$line =~ /^$key$/)
-      {
-        $found++;
-        $$line = $pre_space . $key . $post_comment . "\n";
-        delete $$image{$key};
-      }
-      last if $found;
+    unless (exists ($image->{$key}))
+    {
+      # Keyword is known, but isn't in image.
+      delete $$buff[$lineno];
+      next;
     }
 
-    $$line = "" if !$found;
+    # Read old value
+    my $old_val = $$buff[$lineno];
+    $old_val =~ s/^[ \t]*$key[ \t]*=[ \t]*//; #everything till value
+    $old_val =~ s/[ \t]*\#.*$//;              #post comment;
+    chomp $old_val;
+
+    if ($old_val)
+    {
+      # String.
+      my $val = $image->{$key};
+      $val = "\"$val\"" if ($val =~ /[ \t]/ && (! ($val =~ /^\".+\"$/)));
+      $val = "\"$val\"" if ($val =~ /\=/ && (!($val =~ /^\".+\"$/)));
+
+      $$buff[$lineno] =~ s/$old_val/$val/;
+      $$buff[$lineno] = "#" . $$buff[$lineno] if ($key =~ /XstImageType/i);
+    }
+    
+    delete $image->{$key};
   }
 
   # Add new fields.
-  foreach $key (keys %$image)
+  foreach my $key (keys %$image)
   {
-    $value = $$image{$key};
-    $value = "\"$value\"" if ($value =~ /[ \t]/ && (! ($value =~ /^\".+\"$/)));
-    $value = "\"$value\"" if ($value =~ /\=/ && (!($value =~ /^\".+\"$/)));
+    next unless &xst_boot_known_var ($key, $known_vars, 1);
     
-    $line = "";
-    $line = "# " if $key eq "XstPartitionType";
-    $line .= "\t$key";
-    
-    $line .= " = " . $value if $value;
-    $line .= "\n";
+    my $val = $image->{$key};
+    $val = "\"$val\"" if ($val =~ /[ \t]/ && (! ($val =~ /^\".+\"$/)));
+    $val = "\"$val\"" if ($val =~ /\=/ && (!($val =~ /^\".+\"$/)));
 
+    my $line = "\t$key";
+    $line .= " = $val" if $val;
+    $line .= "\n";
+    $line = "#" . $line if ($key =~ /XstImageType/i);
+    
     $$buff[$end -1] .= $line;
   }
-    
-  return $buff;
 }
 
 
@@ -406,14 +430,23 @@ sub xst_boot_conf_edit_image
 sub xst_boot_conf_add_image
 {
   my ($image, $buff) = @_;
-  my ($line, $key, $value);
+  my ($line, $key, $value, $known_vars);
 
   # Image line
-  $value = 0;
-  $value = 'image' if exists $$image{'image'};
-  $value = 'other' if exists $$image{'other'};
-
-  return if !$value;
+  if (exists $image->{'image'})
+  {
+    $known_vars = \@image_vars;
+    $value = 'image';
+  }
+  elsif (exists $image->{'other'})
+  {
+    $known_vars = \@other_vars;
+    $value = 'other';
+  }
+  else
+  {
+    return;
+  }
 
   $line = $value . " = " . $$image{$value} . "\n";
   push @$buff, $line;
@@ -422,12 +455,14 @@ sub xst_boot_conf_add_image
   # Parameters for image
   foreach $key (keys %$image)
   {
+    next unless &xst_boot_known_var ($key, $known_vars, 1);
+    
     $value = $$image{$key};
     $value = "\"$value\"" if ($value =~ /[ \t]/ && (!($value =~ /^\".+\"$/)));
     $value = "\"$value\"" if ($value =~ /\=/&& (!($value =~ /^\".+\"$/)));
 
     $line = "";
-    $line = "# " if $key eq "XstPartitionType";
+    $line = "# " if $key eq "XstImageType";
     $line .= "\t$key";
     
     $line .= " = " . $value if $value;
@@ -436,7 +471,6 @@ sub xst_boot_conf_add_image
     push @$buff, $line;
   }
 }
-
 
 sub xst_boot_conf_set_images
 {
@@ -448,22 +482,28 @@ sub xst_boot_conf_set_images
   $buff = &xst_file_buffer_load ($file);
   &xst_file_buffer_join_lines ($buff);
 
+  my $image_nr = -1;
   $lineno = &xst_boot_conf_find_image ($buff, 0);
   while ($lineno > 0)
   {
+    $image_nr++;
     $found = 0;
     foreach $image (@$images)
     {
       next unless $image;
-      
-      $found = &xst_boot_conf_is_image ($image, @$buff[$lineno .. $#$buff]);
-      if ($found > 0)
+
+      if (exists ($image->{'key'}))
       {
-        # Found image, change it if neccecary,
-        # remove %image from @images and find new image.
-        $buff = &xst_boot_conf_edit_image ($image, $buff, $lineno);
-        $image = undef;
-        last;
+        $found++ if $image->{'key'} == $image_nr;
+          
+        if ($found > 0)
+        {
+          # Found image, change it if neccecary,
+          # remove %image from @images and find new image.
+          &xst_boot_conf_edit_image ($image, $buff, $lineno);
+          $image = undef;
+          last;
+        }
       }
     }
 
@@ -536,31 +576,24 @@ sub xst_boot_conf_set
   );
   
   my %dist_tables =
-	 (
-	  "redhat-6.2" => {
-	    fn => {
-		 LILO_CONF => "/etc/lilo.conf"},
-	    table => [
-                [ 'prompt',   \&xst_boot_set_global_kw, LILO_CONF, 'prompt' ],
-                [ 'lba32',    \&xst_boot_set_global_kw, LILO_CONF, 'lba32' ],
-                [ 'root',     \&xst_boot_set_global, LILO_CONF, 'root' ],
-                [ 'delay',    \&xst_boot_set_global, LILO_CONF, 'delay' ],
-                [ 'timeout',  \&xst_boot_set_global, LILO_CONF, 'timeout' ],
-                [ 'default',  \&xst_boot_set_global, LILO_CONF, 'default' ],
-                [ 'append',   \&xst_boot_set_global, LILO_CONF, 'append' ],
-                [ 'boot',     \&xst_boot_set_global, LILO_CONF, 'boot' ],
-                [ 'map',      \&xst_boot_set_global, LILO_CONF, 'map' ],
-                [ 'install',  \&xst_boot_set_global, LILO_CONF, 'install' ],
-                [ 'keytable', \&xst_boot_set_global, LILO_CONF, 'keytable' ],
-                [ 'images',   \&xst_boot_conf_set_images, LILO_CONF, 'image' ],
-			    ] 
-				 }
-	  );
+      (
+       "redhat-6.2" => {
+         fn => { 'LILO_CONF' => "/etc/lilo.conf"},
+         table => [
+                   [ 'prompt',   \&xst_boot_set_global_kw,   'LILO_CONF', 'prompt' ],
+                   [ 'root',     \&xst_boot_set_global,      'LILO_CONF', 'root' ],
+                   [ 'timeout',  \&xst_boot_set_global,      'LILO_CONF', 'timeout' ],
+                   [ 'default',  \&xst_boot_set_global,      'LILO_CONF', 'default' ],
+                   [ 'append',   \&xst_boot_set_global,      'LILO_CONF', 'append' ],
+                   [ 'images',   \&xst_boot_conf_set_images, 'LILO_CONF', 'image' ],
+                   ] 
+                     }
+       );
 
-  my $table = $dist_map{$xst_dist};
+  my $table = $dist_map{$main::xst_dist};
   if (!$table)
   {
-      &xst_report ("platform_no_table", $xst_dist);
+      &xst_report ("platform_no_table", $main::xst_dist);
       return undef;
   }
   
@@ -591,31 +624,24 @@ sub xst_boot_conf_get
    );
   
   my %dist_tables =
-	 (
-	  "redhat-6.2" => {
-	    fn => {
-        LILO_CONF => "/etc/lilo.conf" },
-	    table => [
-                [ 'prompt',   \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
-                [ 'lba32',    \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],
-                [ 'root',     \&xst_boot_parse_global, LILO_CONF, 'root' ],
-                [ 'delay',    \&xst_boot_parse_global, LILO_CONF, 'delay' ],
-                [ 'timeout',  \&xst_boot_parse_global, LILO_CONF, 'timeout' ],
-                [ 'default',  \&xst_boot_parse_global, LILO_CONF, 'default' ],
-                [ 'append',   \&xst_boot_parse_global, LILO_CONF, 'append' ],
-                [ 'boot',     \&xst_boot_parse_global, LILO_CONF, 'boot' ],
-                [ 'map',      \&xst_boot_parse_global, LILO_CONF, 'map' ],
-                [ 'install',  \&xst_boot_parse_global, LILO_CONF, 'install' ],
-                [ 'keytable', \&xst_boot_parse_global, LILO_CONF, 'keytable' ],
-                [ 'images',   \&xst_boot_parse_images, LILO_CONF ],
-                ] 
-                  }
-    );
+      (
+       "redhat-6.2" => {
+         fn => { 'LILO_CONF' => "/etc/lilo.conf" },
+         table => [
+                   [ 'prompt',   \&xst_boot_parse_global_kw, 'LILO_CONF', 'prompt' ],
+                   [ 'root',     \&xst_boot_parse_global,    'LILO_CONF', 'root' ],
+                   [ 'timeout',  \&xst_boot_parse_global,    'LILO_CONF', 'timeout' ],
+                   [ 'default',  \&xst_boot_parse_global,    'LILO_CONF', 'default' ],
+                   [ 'append',   \&xst_boot_parse_global,    'LILO_CONF', 'append' ],
+                   [ 'images',   \&xst_boot_parse_images,    'LILO_CONF' ],
+                   ] 
+                     }
+       );
   
-  my $table = $dist_map{$xst_dist};
+  my $table = $dist_map{$main::xst_dist};
   if (!$table)
   {
-      &xst_report ("platform_no_table", $xst_dist);
+      &xst_report ("platform_no_table", $main::xst_dist);
       return undef;
   }
   
@@ -629,31 +655,89 @@ sub xst_boot_conf_get
 # The main reason for these functions is to add default values to xml so the
 # frontend doesn't have to know anything about lilo or its defaults.
 
+sub _lilo_fix_default
+{
+  my $hash = shift;
+
+  my $images = $hash->{'images'};
+  return unless $images;
+  
+  # 'default'
+  if (exists ($hash->{'default'}))
+  {
+    # Check if valid
+    my $found;
+    foreach my $image (@$images)
+    {
+      if ($hash->{'default'} eq $image->{'label'})
+      {
+        $found = 1;
+        last;
+      }
+    }
+    delete $hash->{'default'} unless $found;
+  }
+  
+  unless (exists ($hash->{'default'}))
+  {
+    # No 'default', let's add
+    foreach my $image (@$images)
+    {
+      if ($hash->{'key'} == 0)
+      {
+        $hash->{'default'} = $image->{'label'};
+        last;
+      }
+    }
+  }
+}
+
+# Internal. Should be run after _lilo_fix_images.
+sub _lilo_fix_globals
+{
+  my $hash = shift;
+  return unless $hash;
+
+  &_lilo_fix_default ($hash);
+}
+
+# Internal
+sub _lilo_fix_image
+{
+  my $image = shift;
+  return unless $image;
+
+  my $name = $image->{'image'} if exists $image->{'image'};
+  $name = $image->{'other'} if (!$name && exists $image->{'other'});
+    
+  # Remove images without image identifier 'image' or 'other'.
+  unless ($name) {
+    undef $image;
+    return;
+  }
+
+  # Add 'label' field which is optional in lilo.conf
+  unless (exists $image->{'label'})
+  {
+    $image->{'label'} = $1 if ($name =~ /\S+\/(\S+)$/);
+  }
+}
+
 # Internal
 sub _lilo_fix_images
 {
   my $hash = shift;
+  my $func = shift;
+
   return unless $hash;
+  return unless $func;
 
   my $images = $hash->{'images'};
   return unless $images;
 
   foreach my $image (@$images)
   {
-    my $name = $image->{'image'} if exists $image->{'image'};
-    $name = $image->{'other'} if (!$name && exists $image->{'other'});
-    
-    # Remove images without image identifier 'image' or 'other'.
-    unless ($name) {
-      undef $image;
-      next;
-    }
-
-    # Add 'label' field which is optional in lilo.conf
-    unless (exists $image->{'label'})
-    {
-      $image->{'label'} = $1 if ($name =~ /\S+\/(\S+)$/);
-    }
+    &$func ($image);
   }
 }
 
@@ -661,6 +745,27 @@ sub xst_boot_conf_fix
 {
   my $hash = shift;
   return unless $hash;
+  
+  &_lilo_fix_images ($hash, \&_lilo_fix_image);
+  &_lilo_fix_globals ($hash);
+}
 
-  &_lilo_fix_images ($hash);
+# Fix xml functions
+
+# Internal
+sub _lilo_fix_globals_xml
+{
+  my $hash = shift;
+  return unless $hash;
+
+  &_lilo_fix_default ($hash);
+}
+
+sub xst_boot_conf_fix_xml
+{
+  my $hash = shift;
+  return unless $hash;
+  
+  &_lilo_fix_images ($hash, \&_lilo_fix_image);
+  &_lilo_fix_globals_xml ($hash);
 }
