@@ -496,6 +496,8 @@ sub xst_run_directive
       
   $proc = $ {$$directives{$key}}[0];
   &$proc ($tool, @args);
+
+  &xst_xml_print_request_end ();
 }
 
 sub xst_run

@@ -62,6 +62,12 @@ sub xst_xml_print_begin
 }
 
 
+sub xst_xml_print_request_end
+{
+  &xst_xml_print_string ("<!-- XST: end of request -->\n");
+}
+
+
 sub xst_xml_print_end
 {
   my ($name) = @_;
@@ -323,27 +329,48 @@ sub xst_xml_scan_recurse
 }
 
 
+sub xst_xml_read_file
+{
+  my ($file) = @_;
+  my ($doc, $i);
+  local *INPUT_FILE;
+  
+  open INPUT_FILE, $file;
+  $doc .= $i while ($i = <INPUT_FILE>);
+  close INPUT_FILE;
+
+  return $doc;
+}
+
+
+sub xst_xml_read_stdin
+{
+  my ($i, $doc);
+  
+  while (! $i =~ /^<!-- XST: end of request -->$/)
+  {
+    $doc .= $i;
+    $i = <STDIN>;
+  }
+
+  return $doc;
+}
+
+
 sub xst_xml_scan  # (file) If no file specified, reads stdin.
 {
   my ($file) = @_;
-  my $doc; my @tree; my $i;
-  local *INPUT_FILE;
+  my ($doc, @tree);
+
+  $file = $xst_input_file if $file eq undef;
 
   if ($file)
   {
-    open INPUT_FILE, $file;
-    $doc .= $i while ($i = <INPUT_FILE>);
-    close INPUT_FILE;
-  }
-  elsif ($xst_input_file eq "") 
-  {
-    $doc .= $i while ($i = <STDIN>);
+    $doc = &xst_xml_read_file ($file);
   }
   else
   {
-    open INPUT_FILE, $xst_input_file;
-    $doc .= $i while ($i = <INPUT_FILE>);
-    close INPUT_FILE;
+    $doc = &xst_xml_read_stdin ();
   }
 
   &xst_debug_print_log_to_file ("in.xml", $doc);
