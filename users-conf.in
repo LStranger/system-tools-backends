@@ -99,7 +99,7 @@ $version = "0.1.0";
 
 $progress_max = 3;
 
-$DEBUG = 2; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
+$DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
 
 
 # --- System config file locations --- #
