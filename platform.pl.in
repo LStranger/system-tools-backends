@@ -57,6 +57,7 @@ $PLATFORM_INFO = {
   "mandrake-8.0"    => "Linux Mandrake 8.0 Traktopel",
   "mandrake-9.0"    => "Linux Mandrake 9.0 Dolphin",
   "mandrake-9.1"    => "Linux Mandrake 9.1 Bamboo",
+  "mandrake-9.2"    => "Linux Mandrake 9.2 FiveStar",
   "suse-7.0"        => "SuSE Linux 7.0",
   "turbolinux-7.0"  => "Turbolinux 7.0",
   "slackware-8.0.0" => "Slackware 8.0.0",

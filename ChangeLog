@@ -1,3 +1,7 @@
+2004-03-30  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* platform.pl.in: d'oh! added Mandrake 9.2 to $PLATFORM_INFO
+
 2004-03-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network.pl.in, network-conf.in: added initial support for gentoo
