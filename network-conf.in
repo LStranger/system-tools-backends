@@ -91,7 +91,7 @@ sub xml_parse
   my ($tree, %hash);
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan;
+  $tree = &xst_xml_scan ();
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "network" tag.

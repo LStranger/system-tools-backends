@@ -35,6 +35,11 @@ if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
     $DOTIN = ".in";
 }
 
+sub xst_max
+{
+  return ($_[0] > $_[1])? $_[0]: $_[1];
+}
+
 # Boolean <-> strings conversion.
 
 sub xst_util_read_boolean

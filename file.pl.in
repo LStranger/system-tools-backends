@@ -84,11 +84,7 @@ sub xst_file_get_cmd_path
   ($tool_name, @argline) = split("[ \t]+", $cmd);
 
   $tool_path = &xst_file_locate_tool ($tool_name);
-  if ($tool_path eq "")
-  {
-    # Not found at all.
-    return -1;
-  }
+  return -1 if ($tool_path eq "");
 
   $command = "$tool_path @argline";
   $command =~ s/\"/\\\"/g;
@@ -623,7 +619,7 @@ sub xst_file_rmtree
 
 sub xst_file_buffer_load
 {
-  my $file = $_[0];
+  my ($file) = @_;
   my @buffer;
   my $fd;
 
@@ -631,7 +627,7 @@ sub xst_file_buffer_load
   &xst_report ("file_buffer_load", $file);
 
   $fd = &xst_file_open_read_from_names ($file);
-  return unless $fd;
+  return undef unless $fd;
 
   @buffer = (<$fd>);
 
@@ -640,6 +636,21 @@ sub xst_file_buffer_load
   return \@buffer;
 }
 
+# Same with an already open fd.
+sub xst_file_buffer_load_fd
+{
+  my ($fd) = @_;
+  my (@buffer);
+  
+  &xst_report_enter ();
+  &xst_report ("file_buffer_load", $file);
+
+  @buffer = (<$fd>);
+
+  &xst_report_leave ();
+
+  return \@buffer;
+}
 
 # Take a $buffer and save it in $file. -1 is error, 0 success.
 
@@ -768,15 +779,25 @@ sub xst_file_run_bg
 
 sub xst_file_locate_tool
 {
+  my ($tool) = @_;
   my $found = "";
   my @user_paths;
 
   # We don't search absolute paths. Arturo.
-  return $_[0] if $_[0] =~ /^\//;
+  if ($tool =~ /^\//)
+  {
+    if (! (-x $tool))
+    {
+      &xst_report ("file_locate_tool_failed", $tool);
+      return "";
+    }
+    
+    return $tool;
+  }
 
   &xst_report_enter ();
   
-  $found = $xst_tool_paths{$_[0]};
+  $found = $xst_tool_paths{$tool};
   if ($found eq "0")
   {
     # Negative cache hit. At this point, the failure has already been reported
@@ -794,29 +815,29 @@ sub xst_file_locate_tool
 
     # Try user paths.
 
-    for $path (@user_paths)
+    foreach $path (@user_paths)
     {
-      if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
+      if (-x "$path/$tool") { $found = "$path/$tool"; last; }
     }
 
     # Try builtin paths.
 
-    for $path (@xst_builtin_paths)
+    foreach $path (@xst_builtin_paths)
     {
-      if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
+      if (-x "$path/$tool") { $found = "$path/$tool"; last; }
     }
 
     # Report success/failure and update cache.
 
     if ($found)
     {
-      $xst_tool_paths{$_[0]} = $found;
-      &xst_report ("file_locate_tool_success", $_[0]);
+      $xst_tool_paths{$tool} = $found;
+      &xst_report ("file_locate_tool_success", $tool);
     }
     else
     {
-      $xst_tool_paths{$_[0]} = "0";
-      &xst_report ("file_locate_tool_failed", $_[0]);
+      $xst_tool_paths{$tool} = "0";
+      &xst_report ("file_locate_tool_failed", $tool);
     }
   }
   

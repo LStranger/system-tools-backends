@@ -1,3 +1,65 @@
+2001-12-11  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* xml.pl.in (xst_xml_print_structure): minor naming change.
+
+	* util.pl.in (xst_max): can't believe I needed this.
+
+	* report.pl.in (xst_report_stderr): Helps to trap
+	errors easily with the debugger.
+
+	* network.pl.in (xst_network_interface_active): return
+	undef instead of 0 if failed. This allows fallback.
+	(xst_network_interfaces_get): Use parse_expand here too.
+	(xst_network_get_interfaces_parse_table): In all distros,
+	fallback to trivial 0 if interface_active fails. RedHat 7.2
+	fallbacks trying with DEV then IFACE before using trivial 0.
+	(xst_network_get_interface_replace_table): redhat-7.2: also
+	replace in network-scripts file. *sigh*
+
+	* network-conf.in (xml_parse): minor style change.
+
+	* file.pl.in: Random style adjustments.
+	(xst_file_buffer_load_fd): load from an already open fd.
+	(xst_file_locate_tool): report locate tool failed for
+	absolute paths too.
+
+	* boot-lilo.pl: New file with the lilo stuff. Lots of
+	renaming and style changes. Some bug fixes. Should migrate
+	the entry stuff to a table-oriented structure.
+
+	* boot.pl.in: Migrated lilo stuff to new boot-lilo.pl.in.
+	Some renaming of fix functions that apply to all cases, not
+	only lilo. Implemented grub replace functions. All tables
+	are now oriented to the KEY as the key, instead of the label.
+
+	* boot-grub.pl.in: Too many changes to mention. Replacing
+	function. For code efficiency, migrated all parsing
+	functions to read buffer then scan, instead of using
+	fd's. Several rounds of bug fixing and reshaping.
+
+	* boot-conf.in (xml_parse): modernized style of all
+	xml parse functions.
+	(xml_print): removed print_entries: we now use print
+	structure for this. Prompt is now a 1/0 boolean scalar.
+	Removed global kws: last global kw prompt is now a scalar.
+	
+	Some function renaming.
+
+	
+
+2001-12-04  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* Makefile.am (PERLBODY): Process boot-lilo too.
+
+	* boot-lilo.pl.in: Migrated functions from boot.pl.in.
+
+2001-11-30  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* boot-conf.in (xml_print): Oops: prompt not a scalar.
+
+	* file.pl.in (xst_file_buffer_load_fd): Same with an already
+	open fd.
+
 2001-12-10  Tambet Ingo  <tambet@ximian.com>
 
 	* general.pl.in (xst_directive_run): Fixed it so it handles

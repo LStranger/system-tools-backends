@@ -5,7 +5,8 @@
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
-# Authors: Tambet Ingo <tambet@ximian.com>
+# Authors: Tambet Ingo     <tambet@ximian.com>
+#          Arturo Espinosa <arturo@ximian.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -88,20 +89,18 @@ $tool_lilo = &xst_file_locate_tool ("lilo");
 
 sub xml_parse
 {
-  my ($tree, %hash);
+  my ($tree, %hash, $elem);
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan;
+  $tree = &xst_xml_scan ();
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "boot" tag.
 
-  while (@$tree)
+  while ($elem = shift @$tree)
   {
-    if ($$tree[0] eq "boot") { &xml_parse_boot ($$tree[1], \%hash); }
-
-    shift @$tree;
-    shift @$tree;
+    if ($elem eq "boot") { &xml_parse_boot (shift @$tree, \%hash); }
+    else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   return(\%hash);
@@ -110,23 +109,25 @@ sub xml_parse
 
 sub xml_parse_boot
 {
-  my $tree = $_[0];
-  my $hash = $_[1];
-  my @entries;
+  my ($tree, $hash) = @_;
+  my (@entries, $elem);
 
   shift @$tree;  # Skip attributes.
 
-  while (@$tree)
-  {
-    if    ($$tree[0] eq "prompt") { $$hash{"prompt"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "root") { $$hash{"root"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "timeout") { $$hash{"timeout"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "default") { $$hash{"default"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "append") { $$hash{"append"} = &xst_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "entry") { &xml_parse_entry ($$tree[1], \@entries); }
+  $$hash{"timeout"} = -1;
 
-    shift @$tree;
-    shift @$tree;
+  while ($elem = shift @$tree)
+  {
+    if    ($elem eq "prompt")    { $$hash{"prompt"}    = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "root")      { $$hash{"root"}      = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "timeout")   { $$hash{"timeout"}   = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "default")   { $$hash{"default"}   = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "append")    { $$hash{"append"}    = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "pixmap")    { $$hash{"pixmap"}    = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "pixmapsup") { $$hash{"pixmapsup"} = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "entry")     { &xml_parse_entry (shift @$tree, \@entries); }
+    elsif ($elem eq "partition") { shift @$tree; } # Just skip it.
+    else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"entry"} = \@entries unless scalar @entries == 0;
@@ -136,17 +137,13 @@ sub xml_parse_boot
 sub xml_parse_entry
 {
   my ($tree, $entries) = @_;
-  my %hash;
-  my $buf;
+  my (%hash, $buf);
 
   shift @$tree;
 
-  while (@$tree)
+  while ($elem = shift @$tree)
   {
-    $hash{$$tree[0]} = &xst_xml_get_text ($$tree[1]);
-
-    shift @$tree;
-    shift @$tree;
+    $hash{$elem} = &xst_xml_get_pcdata (shift @$tree);
   }
 
   push @$entries, \%hash;
@@ -154,66 +151,18 @@ sub xml_parse_entry
 		   
 
 # --- XML printing --- #
-sub xml_print_global_kws
-{
-  my $h = $_[0];
-  my @tags = sort ('prompt', 'lba32', 'compact', 'linear', 'lock');
-  my $i;
-
-  while ($i = shift @tags)
-  {
-    &xst_xml_print_line ("<$i/>\n") if exists $$h{$i};
-  }
-}
-
-
-sub xml_print_entries
-{
-  my ($h) = @_;
-  my ($i, $val, $array, $entry, %tmp);
-
-  $array = $$h{"entry"};
-
-  foreach $entry (@$array)
-  {
-    &xst_xml_print_vspace ();
-    &xst_xml_print_line ("<entry>\n");
-    &xst_xml_enter ();
-    %tmp = %$entry;
-        
-    &xst_xml_print_line ("<image>$tmp{image}</image>") if exists $tmp{"image"};
-    &xst_xml_print_line ("<other>$tmp{other}</other>") if exists $tmp{"other"};
-    delete $tmp{"image"};
-    delete $tmp{"other"};
-    
-    foreach $i (sort keys %tmp)
-    {
-      $val = &xst_xml_quote ($tmp{$i});
-
-      if ($val eq "") { &xst_xml_print_line ("<$i/>\n"); }
-      else { &xst_xml_print_line ("<$i>$val</$i>\n"); }
-    }
-    
-    &xst_xml_leave ();
-    &xst_xml_print_line ("</entry>\n");
-  }
-  
-  &xst_xml_print_vspace ();
-}
-
 
 sub xml_print
 {
   my ($h) = @_;
-  my @scalars = qw(default timeout prompt pixmap pixmapsup);
+  my @scalars = qw(default timeout pixmap pixmapsup prompt);
 
   &xst_xml_print_begin ();
 
   &xst_xml_print_hash_hash ($$h{"partition"}, "partition");
   &xst_xml_print_vspace ();
-  &xml_print_global_kws ($h);
   &xst_xml_print_scalars ($h, @scalars);
-  &xml_print_entries ($h);
+  &xst_xml_print_structure ($$h{"entry"}, "entry");
 
   &xst_xml_print_end ();
 }
@@ -222,8 +171,10 @@ sub xml_print
 # Top-level actions.
 sub get
 {
-  my $hash = &xst_boot_conf_get;
-  &xst_boot_conf_fix ($hash);
+  my ($hash);
+
+  $hash = &xst_boot_conf_get ();
+  &xst_boot_fix ($hash);
   
   &xst_report_end ();
   &xml_print ($hash);
@@ -233,11 +184,13 @@ sub get
 # --- Set (write) config --- #
 sub set
 {
-  my $hash = &xml_parse ();
+  my ($hash);
+
+  $hash = &xml_parse ();
 
   if ($hash)
   {
-    &xst_boot_conf_fix_xml ($hash);
+    &xst_boot_fix ($hash);
     &xst_boot_conf_set ($hash);
     &xst_file_run ($tool_lilo);
   }

@@ -57,7 +57,7 @@ sub xst_boot_grub_linux2grub
     return undef;
   }
   
-  $fd = &xst_file_open_read_from_names ("$device_map");
+  $fd = &xst_file_open_read_from_names ($device_map);
   $res = undef;
   
   while ($line = <$fd>)
@@ -87,7 +87,7 @@ sub xst_boot_grub_grub2linux
   
   ($drive, $part, @add) = split (',', $grubdev);
   
-  $dev = &xst_parse_split_first_str ("$device_map", "\\($drive\\)", "[ \t]+");
+  $dev = &xst_parse_split_first_str ($device_map, "\\($drive\\)", "[ \t]+");
 
   $dev .= $part + 1 if $part ne undef;
   return $dev;
@@ -120,14 +120,18 @@ sub xst_boot_grub_line_is_title
 
 sub xst_boot_grub_get_next_entry
 {
-  my ($fd) = @_;
+  my ($buff, $line_no) = @_;
   my ($line, $res);
 
-  while ($line = <$fd>)
+  while ($$line_no < scalar (@$buff))
   {
+    $line = $$buff[$$line_no];
+    
     $line = &xst_boot_grub_clean_line ($line);
     $res = &xst_boot_grub_line_is_title ($line);
     last if $res ne undef;
+    
+    $$line_no ++;
   }
   
   return $res;
@@ -135,89 +139,191 @@ sub xst_boot_grub_get_next_entry
 
 sub xst_boot_grub_search_entry
 {
-  my ($fd, $entry) = @_;
-  my ($title);
+  my ($buff, $line_no, $entry) = @_;
+  my ($key, $title);
 
-  while ($title = &xst_boot_grub_get_next_entry ($fd))
+  $key = 0;
+  while ($title = &xst_boot_grub_get_next_entry ($buff, $line_no))
   {
-    return 1 if $title eq $entry;
+    return $title if $key == $entry;
+    $key ++;
+    $$line_no ++;
   }
 
-  return 0;
+  return undef;
 }
 
 sub xst_boot_grub_get_entries
 {
   my ($grub_conf) = @_;
   my ($fd, $line, @res, $title, $i);
+  my ($buff, $line_no);
   
   $grub_conf = [$grub_conf] if (ref $grub_conf eq undef);
 
   foreach $i (@$grub_conf)
   {
-    $fd = &xst_file_open_read_from_names ("$i");
+    $fd = &xst_file_open_read_from_names ($i);
     last if $fd;
   }
 
   return undef if !$fd;
+  $buff = &xst_file_buffer_load_fd ($fd);
+  $line_no = 0;
   
-  push @res, $title while ($title = &xst_boot_grub_get_next_entry ($fd));
-  close $fd;
+  while ($title = &xst_boot_grub_get_next_entry ($buff, \$line_no))
+  {
+    push @res, $title;
+    $line_no ++;
+  }
 
   return @res;
+}
+
+sub xst_boot_grub_get_entries_fn
+{
+  my ($fn) = @_;
+
+  return &xst_boot_grub_get_entries ($$fn{"GRUB_CONF"});
+}
+
+sub xst_boot_grub_insert_entry
+{
+  my ($buff, $line_no, $title) = @_;
+
+  splice (@$buff, $line_no, 0, "title $title\n");
+}
+
+sub xst_boot_grub_remove_entry
+{
+  my ($buff, $line_no) = @_;
+
+  $$buff[$$line_no] = "";
+  $$line_no ++;
+
+  while (&xst_boot_grub_line_is_title ($$buff[$$line_no]) eq undef)
+  {
+    $$buff[$$line_no] = "" if (! ($$buff[$$line_no] =~ /^\#/));
+    $$line_no ++;
+  }
+}
+
+# @$entries must be sorted.
+sub xst_boot_grub_remove_entries
+{
+  my ($fn, $entries) = @_;
+  my ($grub_conf, $buff, $line_no);
+  my ($find, $curr);
+
+  return 0 if scalar (@$entries) == 0;
+
+  $grub_conf = $$fn{"GRUB_CONF"};
+  $buff = &xst_file_buffer_load ($grub_conf);
+  $buff = [] if $buff eq undef;
+  $line_no = 0;
+
+  $curr = 0;
+  $find = shift (@$entries);
+
+  while (&xst_boot_grub_get_next_entry ($buff, \$line_no))
+  {
+    if ($find == $curr)
+    {
+      &xst_boot_grub_remove_entry ($buff, \$line_no);
+      $find = shift (@$entries);
+      last if $find eq undef;
+    }
+    else
+    {
+      $line_no ++;
+    }
+    $curr ++;
+  }
+  
+  return &xst_file_buffer_save ($buff, $grub_conf);
+}
+
+sub xst_boot_grub_search_cmd
+{
+  my ($buff, $line_no, $cmd) = @_;
+  my ($line);
+
+  while ($$line_no < scalar (@$buff))
+  {
+    $line = $$buff[$$line_no];
+    
+    $line = &xst_boot_grub_clean_line ($line);
+    if ($line eq "")
+    {
+      $$line_no ++;
+      next;
+    }
+    
+    return 0 if &xst_boot_grub_line_is_title ($line) ne undef;
+    return 1 if ($line =~ /^$cmd[= \t]/);
+
+    $$line_no ++;
+  }
+
+  return 0;
 }
 
 sub xst_boot_grub_parse_cmd
 {
   my ($grub_conf, $cmd, $entry) = @_;
-  my ($line, $fd);
+  my ($line, $buff, $line_no);
 
-  $fd = &xst_file_open_read_from_names ("$grub_conf");
-  return undef if !$fd;
+  $buff = &xst_file_buffer_load ($grub_conf);
+  return undef if $buff eq undef;
+  $line_no = 0;
   
   if ($entry ne undef)
   {
-    return undef if not &xst_boot_grub_search_entry ($fd, $entry);
+    return undef if &xst_boot_grub_search_entry ($buff, \$line_no, $entry) eq undef;
+    $line_no ++;
   }
 
-  while ($line = <$fd>)
+  if (&xst_boot_grub_search_cmd ($buff, \$line_no, $cmd))
   {
-    $line = &xst_boot_grub_clean_line ($line);
-    next if $line eq "";
-    last if $line =~ /^title[= \t]/;
-
+    $line = &xst_boot_grub_clean_line ($$buff[$line_no]);
     if ($line =~ /^$cmd[= \t][ \t]*(.*)/)
     {
-      close $fd;
       return 1 if $1 eq "";
       return $1;
     }
   }
-  close $fd;
   
   return undef;
 }
 
-sub xst_boot_grub_parse_pixmap
+sub xst_boot_grub_insert_cmd
 {
-  my ($grub_conf, $device_map, $mtab) = @_;
-  my ($pixmap, $grubdev, $file, $dev, $root);
-  my ($mntopts, $res);
+  my ($buff, $line_no, $cmd, $value) = @_;
 
-  $pixmap = &xst_boot_grub_parse_cmd ($grub_conf, "splashimage");
+  splice (@$buff, $line_no, 0, "$cmd $value\n") unless $value eq undef;
+}
 
-  $pixmap =~ /^\(([^\)]+)\)(.*)/;
+sub xst_boot_grub_parse_file_cmd
+{
+  my ($grub_conf, $cmd, $device_map, $mtab, $entry) = @_;
+  my ($value, $mtopts, $grubdev, $file, $dev, $root);
+
+  $value = &xst_boot_grub_parse_cmd ($grub_conf, $cmd, $entry);
+  return undef if $value eq undef;
+
+  $value =~ /^\(([^\)]+)\)(.*)/;
   $grubdev = $1;
   $file = $2;
-  
+
   if ($grubdev eq undef)
   {
-    $file = $pixmap;
-    $root = &xst_boot_grub_parse_cmd ($grub_conf, "root");
+    $file = $value;
+    $root = &xst_boot_grub_parse_cmd ($grub_conf, "root", $entry);
     $root =~ /^\(([^\)]+)\)/;
     $grubdev = $1;
   }
-    
+
+  $file =~ s/[ \t].*//;
   $dev = &xst_boot_grub_grub2linux ($device_map, $grubdev);
   
   $mntopts = &xst_parse_split_first_array ($mtab, $dev, "[ \t]+", "[ \t]+");
@@ -228,24 +334,42 @@ sub xst_boot_grub_parse_pixmap
   return $res;
 }
 
+sub xst_boot_grub_parse_pixmap
+{
+  my ($grub_conf, $device_map, $mtab) = @_;
+  
+  return &xst_boot_grub_parse_file_cmd ($grub_conf, "splashimage", $device_map, $mtab);
+}
+
+sub xst_boot_grub_parse_image
+{
+  my ($grub_conf, $device_map, $mtab, $entry) = @_;
+
+  return &xst_boot_grub_parse_file_cmd ($grub_conf, "kernel", $device_map, $mtab, $entry);
+}
+
+sub xst_boot_grub_parse_other
+{
+  my ($grub_conf, $device_map, $mtab, $entry) = @_;
+
+  return &xst_boot_grub_parse_file_cmd ($grub_conf, "chainloader", $device_map, $mtab, $entry);
+}
+
 sub xst_boot_grub_parse_timeout
 {
   my ($grub_conf) = @_;
   my ($timeout);
 
   $timeout = &xst_boot_grub_parse_cmd ($grub_conf, "timeout");
-  return $timeout * 10 if $timeout ne undef;
-  return 0;
+  return undef if $timeout eq undef;
+  return $timeout * 10;
 }
 
 sub xst_boot_grub_parse_prompt
 {
   my ($grub_conf) = @_;
-  my ($timeout);
 
-  $timeout = &xst_boot_grub_parse_timeout ($grub_conf);
-  return 1 if $timeout;
-  return 0;
+  return (&xst_boot_grub_parse_cmd ($grub_conf, "hiddenmenu"))? 0: 1;
 }
 
 sub xst_boot_grub_parse_default
@@ -264,59 +388,12 @@ sub xst_boot_grub_parse_default
 
 sub xst_boot_grub_parse_root
 {
-  my ($grub_conf, $entry, $device_map) = @_;
-  my ($root);
-
-  $fd = &xst_file_open_read_from_names ("$grub_conf");
-  return undef if not &xst_boot_grub_search_entry ($fd, $entry);
-
-  while ($line = <$fd>)
-  {
-    $line = &xst_boot_grub_clean_line ($line);
-    next if $line =~ /^[ \t]*$/;
-    last if &xst_boot_grub_line_is_title ($line) ne undef;
-
-    if ($line =~ /^root \(([^\)]+)\)/)
-    {
-      $root = $1;
-      last;
-    }
-
-    if ($line =~ /^(kernel|chainload) \(([^\)]+)\)/)
-    {
-      $root = $2;
-    }
-  }
-
-  return &xst_boot_grub_grub2linux ($device_map, $root);
-}
-
-sub xst_boot_grub_parse_kernel_chainloader
-{
-  my ($grub_conf, $entry, $keyword) = @_;
-  my ($cmd);
-
-  $cmd = &xst_boot_grub_parse_cmd ($grub_conf, $keyword, $entry);
-  return undef if $cmd eq undef;
-
-  $cmd =~ s/^\([^\)]\)//;
-  $cmd =~ s/[ \t].*//;
-
-  return $cmd;
-}
-
-sub xst_boot_grub_parse_image
-{
   my ($grub_conf, $entry) = @_;
+  my ($value);
 
-  return &xst_boot_grub_parse_kernel_chainloader ($grub_conf, $entry, "kernel");
-}
-
-sub xst_boot_grub_parse_other
-{
-  my ($grub_conf, $entry) = @_;
-
-  return &xst_boot_grub_parse_kernel_chainloader ($grub_conf, $entry, "chainloader");
+  $value = &xst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
+  return $1 if ($value =~ /[ \t]root=([^ \t]+)/);
+  return undef;
 }
 
 sub xst_boot_grub_parse_append
@@ -328,6 +405,7 @@ sub xst_boot_grub_parse_append
   return undef if $cmd eq undef;
 
   $cmd =~ s/^[^ \t]+[ \t]+//;
+  $cmd =~ s/root=[^ \t]*[ \t]*//;
 
   return $cmd;
 }
@@ -335,29 +413,313 @@ sub xst_boot_grub_parse_append
 sub xst_boot_grub_parse_type
 {
   my ($grub_conf, $entry, $partition, $rootdev) = @_;
-  my ($line, $res);
+  my ($line, $res, $buff, $line_no);
 
-  $fd = &xst_file_open_read_from_names ("$grub_conf");
-  return undef if not &xst_boot_grub_search_entry ($fd, $entry);
+  $buff = &xst_file_buffer_load ($grub_conf);
+  return undef if $buff eq undef;
+  $line_no = 0;
+  return undef if &xst_boot_grub_search_entry ($buff, \$line_no, $entry) eq undef;
 
-  while ($line = <$fd>)
+  $line_no ++;
+  while ($line_no < scalar (@$buff))
   {
-    chomp $line;
+    $line = $$buff[$line_no];
+    
+    last if &xst_boot_grub_line_is_title ($line) ne undef;
+    
     if ($line =~ /^\#[ \t]*XstEntryType[ \t]+(.*)$/)
     {
       $res = $1;
       last;
     }
+
+    $line_no ++;
   }
-  close $fd;
 
   if ($res eq undef)
   {
     $rootdev =~ s/.*\///;
-    $res = $ {$$partition{$rootdev}}{"typestr"};
+    $res = $ {$$partition{$rootdev}}{"typestr"} if exists $$partition{$rootdev};
   }
   
   return $res;
+}
+
+# Watch it: this assumes that the entry exists.
+sub xst_boot_grub_replace_cmd_in_buff
+{
+  my ($buff, $cmd, $value, $entry) = @_;
+  my ($line, $line_no);
+  my ($pre, $post);
+
+  $line_no = 0;
+  
+  if ($entry ne undef)
+  {
+    # Watch it: this assumes that the entry exists.
+    &xst_boot_grub_search_entry ($buff, \$line_no, $entry);
+    $line_no ++;
+  }
+
+  if (&xst_boot_grub_search_cmd ($buff, \$line_no, $cmd))
+  {
+    if ($value eq undef)
+    {
+      $$buff[$line_no] = "";
+    }
+    else
+    {
+      $line = $$buff[$line_no];
+      
+      $line =~ s/^([ \t]+)//;
+      $pre = $1;
+      
+      $line =~ s/([ \t]+)$//;
+      $post = $1;
+      
+      $line =~ s/^$cmd([= \t][ \t]*).*/$pre$cmd\1$value$post/;
+      $$buff[$line_no] = $line;
+    }
+  }
+  else
+  {
+    &xst_boot_grub_insert_cmd ($buff, $line_no, $cmd, $value) if ($value ne undef);
+  }
+}
+
+sub xst_boot_grub_replace_cmd
+{
+  my ($grub_conf, $cmd, $value, $entry) = @_;
+  
+  $buff = &xst_file_buffer_load ($grub_conf);
+  $buff = [] if $buff eq undef;
+
+  &xst_boot_grub_replace_cmd_in_buff ($buff, $cmd, $value, $entry);
+  
+  return &xst_file_buffer_save ($buff, $grub_conf);
+}
+
+sub xst_boot_grub_get_stat
+{
+  my ($file, $field) = @_;
+  my (@tmp);
+
+  @tmp = stat ($file);
+  return $tmp[$field];
+}
+
+sub xst_boot_grub_find_device
+{
+  my ($file) = @_;
+  my ($filedev, $dev, $res);
+  local *DIR;
+
+  $res = undef;
+  $filedev = &xst_boot_grub_get_stat ($file, 0);
+
+  opendir (DIR, "/dev");
+  
+  while ($dev = readdir (DIR))
+  {
+    $dev = "/dev/$dev";
+    if ((-b $dev) && (&xst_boot_grub_get_stat ($dev, 6) eq $filedev))
+    {
+      $res = $dev;
+      last;
+    }
+  }
+
+  closedir (DIR);
+  return $res;
+}
+
+sub xst_boot_grub_replace_file_cmd
+{
+  my ($grub_conf, $cmd, $device_map, $mtab, $value, $entry) = @_;
+  my ($grubdev, $file, $dev, $root);
+  my ($mntopts, $res, $dev, $dir, $oldval);
+
+  $file = $value;
+
+  $dev = &xst_boot_grub_find_device ($file);
+  $mntopts = &xst_parse_split_first_array ($mtab, $dev, "[ \t]+", "[ \t]+");
+  $dir = $$mntopts[0];
+
+  $file =~ s/^$dir//;
+  $file =~ s/\/+/\//g;
+
+  $grubdev = &xst_boot_grub_linux2grub ($device_map, $dev);
+
+  $res = "($grubdev)$file";
+
+  $oldval = &xst_boot_grub_parse_cmd ($grub_conf, $cmd, $entry);
+  $oldval =~ s/^[^ \t]+//;
+  $res .= $oldval;
+
+  return &xst_boot_grub_replace_cmd ($grub_conf, $cmd, $res, $entry);
+}
+
+sub xst_boot_grub_replace_pixmap
+{
+  my ($grub_conf, $device_map, $mtab, $value) = @_;
+
+  return &xst_boot_grub_replace_file_cmd ($grub_conf, "splashimage", $device_map, $mtab, $value);
+}
+
+sub xst_boot_grub_replace_image
+{
+  my ($grub_conf, $device_map, $mtab, $entry, $value) = @_;
+
+  return &xst_boot_grub_replace_file_cmd ($grub_conf, "kernel", $device_map, $mtab, $value, $entry);
+}
+
+sub xst_boot_grub_replace_other
+{
+  my ($grub_conf, $device_map, $mtab, $entry, $value) = @_;
+
+  return &xst_boot_grub_replace_file_cmd ($grub_conf, "chainloader", $device_map, $mtab, $value, $entry);
+}
+
+sub xst_boot_grub_replace_timeout
+{
+  my ($grub_conf, $value) = @_;
+  my ($timeout);
+
+  if ($value == -1 || $value eq undef)
+  {
+    return &xst_boot_grub_replace_cmd ($grub_conf, "timeout", undef);
+  }
+  
+  $timeout = int ($value / 10);
+
+  return &xst_boot_grub_replace_cmd ($grub_conf, "timeout", $timeout);
+}
+
+sub xst_boot_grub_replace_prompt
+{
+  my ($grub_conf, $value) = @_;
+
+  return &xst_boot_grub_replace_cmd ($grub_conf, "hiddenmenu", ($value)? undef: " ");
+}
+
+sub xst_boot_grub_replace_default
+{
+  my ($grub_conf, $value) = @_;
+  my ($default, @entries);
+
+  @entries = &xst_boot_grub_get_entries ($grub_conf);
+  return -1 if (scalar @entries) == 0;
+
+  for ($default = 0; $default < scalar (@entries); $default++)
+  {
+    last if $value eq $entries[$default];
+  }
+
+  return -1 if $default == scalar (@entries); # didn't find it.
+  return &xst_boot_grub_replace_cmd ($grub_conf, "default", $default);
+}
+
+sub xst_boot_grub_replace_root
+{
+  my ($grub_conf, $entry, $value) = @_;
+  my ($root, $buff, $line_no, $entry_line, $currval);
+
+  $currval = &xst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
+  return -1 if $currval eq undef;
+
+  if ($value eq undef)
+  {
+    $currval =~ s/[ \t]root=[^ \t]*//;
+  }
+  else
+  {
+    if ($currval =~ /[ \t]root=/)
+    {
+      $currval =~ s/([ \t]root=)[^ \t]*/\1$value/;
+    }
+    else
+    {
+      $currval .= " root=$value";
+    }
+  }
+  
+  return &xst_boot_grub_replace_cmd ($grub_conf, "kernel", $currval, $entry);
+}
+
+sub xst_boot_grub_replace_append
+{
+  my ($grub_conf, $entry, $value) = @_;
+  my ($currval, $root);
+  
+  $currval = &xst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
+  $currval =~ /root=([^ \t]+)/;
+  $root = $1;
+  $currval =~ s/([ \t]+).*/\1/;
+
+  $currval .= "root=$root $value";
+
+  return &xst_boot_grub_replace_cmd ($grub_conf, "kernel", $currval, $entry);
+}
+
+sub xst_boot_grub_replace_type
+{
+  my ($grub_conf, $entry, $value) = @_;
+  my ($buff, $line_no, $line, $res);
+  
+  $buff = &xst_file_buffer_load ($grub_conf);
+  $buff = [] if $buff eq undef;
+  $line_no = 0;
+  return -1 if &xst_boot_grub_search_entry ($buff, \$line_no, $entry) eq undef;
+
+  $line_no ++;
+  while ($line_no < scalar (@$buff))
+  {
+    $line = $$buff[$line_no];
+    
+    last if &xst_boot_grub_line_is_title ($line) ne undef;
+    
+    if ($line =~ /^\#[ \t]*XstEntryType[ \t]+(.*)$/)
+    {
+      $res = $1;
+      last;
+    }
+
+    $line_no ++;
+  }
+
+  if ($res eq undef)
+  {
+    &xst_boot_grub_insert_cmd ($buff, $line_no, "#XstEntryType",  $value);
+  }
+  else
+  {
+    $$buff[$line_no] =~ s/^(\#[ \t]*XstEntryType[ \t]+).*$/\1$value/;
+  }
+  
+  return &xst_file_buffer_save ($buff, $grub_conf);
+}
+
+sub xst_boot_grub_replace_label
+{
+  my ($grub_conf, $entry, $value) = @_;
+  my ($buff, $line_no, $title);
+  
+  $buff = &xst_file_buffer_load ($grub_conf);
+  $buff = [] if $buff eq undef;
+  $line_no = 0;
+
+  $title = &xst_boot_grub_search_entry ($buff, \$line_no, $entry);
+  if ($title eq undef)
+  {
+    $line_no ++;
+    &xst_boot_grub_insert_entry ($buff, \$line_no, $value);
+  }
+  else
+  {
+    $$buff[$line_no] =~ s/$title/$value/;
+  }
+  
+  return &xst_file_buffer_save ($buff, $grub_conf);
 }
 
 1;

@@ -242,16 +242,16 @@ sub xst_xml_print_hash
 }
 
 # Call the corresponding function depending on the reference
-# type of $s. If just a scalar, print <$tag>$s</$tag>.
+# type of $x. If just a scalar, print <$tag>$x</$tag>.
 sub xst_xml_print_structure
 {
-  my ($s, $tag) = @_;
+  my ($x, $tag) = @_;
 
-     if (ref $s eq "ARRAY") { &xst_xml_print_array ($s, $tag); }
-  elsif (ref $s eq "HASH")  { &xst_xml_print_hash  ($s, $tag); }
+     if (ref $x eq "ARRAY") { &xst_xml_print_array ($x, $tag); }
+  elsif (ref $x eq "HASH")  { &xst_xml_print_hash  ($x, $tag); }
   else
   {
-    &xst_xml_print_line ("<$tag>" . &xst_xml_quote ($s) . "</$tag>\n");
+    &xst_xml_print_line ("<$tag>" . &xst_xml_quote ($x) . "</$tag>\n");
   }
 }
 

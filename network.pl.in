@@ -461,7 +461,7 @@ sub xst_network_interface_active
   }
 
   &xst_report_leave ();
-  return 0;
+  return undef;
 }
 
 sub xst_network_interface_ensure_broadcast_and_network
@@ -517,7 +517,7 @@ sub xst_network_sysconfig_rh72_ifaces_get_existing
   my ($ret);
   
   # This syncs /etc/sysconfig/network-scripts and /etc/sysconfig/networking
-  &xst_file_run ("/usr/sbin/redhat-config-network-cmd");
+  &xst_file_run ("redhat-config-network-cmd");
   
   $ret = &xst_network_sysconfig_dir_ifaces_get_existing
       ("/etc/sysconfig/networking/profiles/default");
@@ -725,7 +725,7 @@ sub xst_network_dial2iface
   else
   {
     $iface{"enabled"} = &xst_network_interface_active ($$dial{"xst_dev"},
-                                                       \&xst_network_active_interfaces_get);
+                                                       \&xst_network_active_interfaces_get)? 1: 0;
   }
 
   foreach $i (keys %map)
@@ -1332,9 +1332,7 @@ sub xst_network_interface_set
   
   foreach $i (keys (%fn))
   {
-    $value = $fn{$i};
-    $value =~ s/\#iface\#/$dev/;
-    $ {$dist_attrib{"fn"}}{$i} = $value;
+    $ {$dist_attrib{"fn"}}{$i} = &xst_parse_expand ($fn{$i}, "iface", $dev);
   }
   
   $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
@@ -2220,7 +2218,8 @@ sub xst_network_get_interfaces_parse_table
            [ "serial_hwctl",       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
            [ "phone_number",       \&xst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
            [ "enabled",            \&xst_network_interface_active, IFACE,
-                                                                   \&xst_network_active_interfaces_get ]
+                                                                   \&xst_network_active_interfaces_get ],
+           [ "enabled",            \&xst_parse_trivial, 0 ]
            ]
              },
 
@@ -2270,8 +2269,11 @@ sub xst_network_get_interfaces_parse_table
            [ "serial_escapechars", \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
            [ "serial_hwctl",       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
            [ "phone_number",       \&xst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           [ "enabled",            \&xst_network_interface_active, "%dev%",
+                                                                   \&xst_network_active_interfaces_get ],
            [ "enabled",            \&xst_network_interface_active, IFACE,
-                                                                   \&xst_network_active_interfaces_get ]
+                                                                   \&xst_network_active_interfaces_get ],
+           [ "enabled",            \&xst_parse_trivial, 0 ]
            ]
              },
 
@@ -2321,7 +2323,8 @@ sub xst_network_get_interfaces_parse_table
            [ "serial_hwctl",       \&xst_parse_kw,                       PPP_OPTIONS, "crtscts" ],
            [ "phone_number",       \&xst_parse_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
            [ "enabled",            \&xst_network_interface_active,       IFACE,
-                                                                       \&xst_network_active_interfaces_get ]
+                                                                       \&xst_network_active_interfaces_get ],
+           [ "enabled",            \&xst_parse_trivial,                  0 ]
            ]
              },
 
@@ -2373,7 +2376,8 @@ sub xst_network_get_interfaces_parse_table
            [ "serial_hwctl",       \&xst_parse_kw,                       PPP_OPTIONS, "crtscts" ],
            [ "phone_number",       \&xst_parse_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
            [ "enabled",            \&xst_network_interface_active,       IFACE,
-                                                                       \&xst_network_active_interfaces_get ]
+                                                                       \&xst_network_active_interfaces_get ],
+           [ "enabled",            \&xst_parse_trivial,                  0 ]
            ]
              },
 
@@ -2399,7 +2403,8 @@ sub xst_network_get_interfaces_parse_table
 #          [ "gateway",            \&xst_parse_sh,      IFCFG, GATEWAY ], # not supported
            [ "remote_address",     \&xst_network_suse70_get_ifconfig_arg, [IFCFG, IFACE], pointopoint ],
            [ "enabled",            \&xst_network_interface_active,        IFACE,
-                                                                \&xst_network_suse70_active_interfaces_get ]
+                                                                \&xst_network_suse70_active_interfaces_get ],
+           [ "enabled",            \&xst_parse_trivial,                   0 ]
            ]
              }
 	  );
@@ -2701,7 +2706,8 @@ sub xst_network_get_interface_replace_table
       fn =>
 	    {
         IFCFG => ["/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
-                  "/etc/sysconfig/networking/devices/ifcfg-#iface#"],
+                  "/etc/sysconfig/networking/devices/ifcfg-#iface#",
+                  "/etc/sysconfig/network-scripts/ifcfg-#iface#"],
         CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE  => "#iface#",
         WVDIAL => "/etc/wvdial.conf",

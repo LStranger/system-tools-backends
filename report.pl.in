@@ -142,6 +142,14 @@ sub xst_report_escape
 $xst_report_level = 0;
 $xst_report_started = 0;
 
+# Just to trap these errors with the debugger easily.
+sub xst_report_stderr
+{
+  my ($major, $key, $res) = @_;
+  
+  print STDERR "$xst_name - $major::${key}::$res";
+}
+
 sub xst_report
 {
   my (@args) = @_;
@@ -176,9 +184,9 @@ sub xst_report
       $major eq "error" ||
       $major eq "debug")
   {
-      print STDERR "$xst_name - $major::${key}::$res";
+    &xst_report_stderr ($major, $key, $res);
   }
-  
+
   if ($key ne "progress")
   {
     return if ($xst_report_level >= $xst_report_threshold || !$xst_report_started);
@@ -260,6 +268,7 @@ sub xst_report
      "file_open_write_success"  => ["info",  _("Writing to [%s].")],
      "file_run_pipe_failed"     => ["warn",  _("Failed to pipe command [%s] for reading.")],
      "file_run_pipe_success"    => ["info",  _("Piping command [%s] for reading.")],
+     "file_run"                 => ["info",  _("Running command [%s].")],
      "file_create_path"         => ["info",  _("Directory [%s] created.")],
      "file_backup_rotate"       => ["info",  _("Backup directory [%s] was rotated.")],
      "file_backup_success"      => ["info",  _("Saved backup for [%s].")],
@@ -268,7 +277,6 @@ sub xst_report
      "file_open_filter_success" => ["info",  _("Found [%s]. Patching [%s].")],
      "file_buffer_load"         => ["info",  _("Loading file [%s] to buffer.")],
      "file_buffer_save"         => ["info",  _("Saving buffer to file [%s].")],
-     "file_run"                 => ["info",  _("Running command [%s].")],
      "file_remove"              => ["info",  _("Removing file [%s].")],
      "file_locate_tool_success" => ["info",  _("Found tool [%s].")],
      "file_locate_tool_failed"  => ["warn",  _("Couldn't find tool [%s].")],
