@@ -120,7 +120,7 @@ $progress_max = 8;
 @rc_config_names =         ( "/etc/rc.config" );
 @fstab_names =             ( "/etc/fstab" );
 @exports_names =           ( "/etc/exports" );
-@smb_conf_names =          ( "/etc/smb.conf" );
+@smb_conf_names =          ( "/etc/smb.conf", "/etc/samba/smb.conf" );
 
 
 # --- Internal configuration variables --- #

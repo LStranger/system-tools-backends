@@ -115,7 +115,7 @@ $progress_max = 7;
 @hosts_names =             ( "/etc/hosts" );
 @sysconfig_network_names = ( "/etc/sysconfig/network" );
 @rc_config_names =         ( "/etc/rc.config" );
-@smb_conf_names =          ( "/etc/smb.conf" );
+@smb_conf_names =          ( "/etc/smb.conf", "/etc/samba/smb.conf" );
 
 
 # --- Internal configuration variables --- #
