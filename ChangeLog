@@ -1,3 +1,9 @@
+2001-08-22  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_probe_load): use xst_file_* instead of open.
+	(x_probe_store): ditto.
+	Disable modelines for now. Misc updates.
+
 2001-08-21  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* general.pl.in (xst_directive_run): Report the directive that

@@ -60,7 +60,7 @@ my $x4_sections = {
       ModelName  => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
       HorizSync  => [ \&parse_range_hz,  \&xml_parse_kw_unique, 0 ],
       VertRefresh =>[ \&parse_range_hz,  \&xml_parse_kw_unique, 0 ],
-      ModeLine   => [ \&parse_modeline,  \&xml_parse_modeline,  1 ],
+#     ModeLine   => [ \&parse_modeline,  \&xml_parse_modeline,  1 ],
     },
     options => {},
   },
@@ -136,7 +136,7 @@ my $x3_sections = {
       ModelName  => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
       HorizSync  => [ \&parse_range_hz,  \&xml_parse_kw_unique, 0 ],
       VertRefresh =>[ \&parse_range_hz,  \&xml_parse_kw_unique, 0 ],
-      ModeLine   => [ \&parse_modeline,  \&xml_parse_modeline,  1 ],
+#     ModeLine   => [ \&parse_modeline,  \&xml_parse_modeline,  1 ],
     },
     options => {},
   },
@@ -175,7 +175,7 @@ my $x3_sections = {
 };
 
 my @x_colordepths = (8, 15, 16, 24);
-my $x_probe_file = "___scriptsdir___/x-probe.xml";
+my $x_probe_file = "probe.xml";
 
 # Standard modelines (VESA plus couple extras)
 
@@ -534,18 +534,25 @@ sub parse_option
 
 sub parse_modeline
 {
-  # TODO: We don't support Mode "name" and multiline Modeline definitions
+  # TODO: We don't support Mode "name".
 
   my $line = shift;
-  my (%hash, $i, $name);
+  my $fh = shift;
+  my (%hash, $i);
   my @fields = qw (dotclock hdisp hsyncstart hsyncend htotal
                    vdisp vsyncstart vsyncend vtotal);
   my $field_count = scalar @fields;
 
+  # HACK. Xconfigurator adds mulitline Modelines
+  if (scalar @$line < ($field_count + 2)) {
+    my @buf = &general_parse_section ($fh);
+    foreach (@buf) { push @$line, $_ };
+  }
+  
   shift @$line; # Dump 'ModeLine' keyword
 
   # Get name, remove quotes
-  $name = shift @$line;
+  my $name = shift @$line;
   $name =~ s/\"//g;
   $hash{'name'} = $name;
 
@@ -677,7 +684,7 @@ sub x_parse_section
 
   my $hash = bless {}, "XstX" . $section;
   
-  while (@line = &general_parse_section ($buff)) {    
+  while (@line = &general_parse_section ($buff)) {
     my ($kw, $func);
     
     if ($kw = &xst_x_keyword_in_list ($line[0], keys %$keywords)) {
@@ -693,7 +700,7 @@ sub x_parse_section
     }
     
     if ($func) {
-      my ($ref) = &$func (\@line);
+      my ($ref) = &$func (\@line, $buff);
 
       &add2section ($hash, $ref);
     }
@@ -785,7 +792,7 @@ sub x_xml_print_modelines
   my @kws = qw(name dotclock hdisp hsyncstart hsyncend htotal
                vdisp vsyncstart vsyncend vtotal);
 
-  &xst_xml_container_enter ("Modes");
+  &xst_xml_container_enter ("ModeLine");
   
   foreach $mode (@$modelines) {
     my $type = ref ($mode);
@@ -883,8 +890,9 @@ sub x_xml_print_section
 # Internal
 sub xml_parse_kw_unique
 {
+  my $hash = shift;
   my $kw = shift;
-  my $val = &xst_xml_get_text (shift);
+  my $val = &xst_xml_get_text (shift @_);
 
   bless [ $kw, $val ], "XstXKeywordUnique";
 }
@@ -892,8 +900,9 @@ sub xml_parse_kw_unique
 # Internal
 sub xml_parse_kw_list
 {
+  my $hash = shift;
   my $kw = shift;
-  my $val = &xst_xml_get_text (shift);
+  my $val = &xst_xml_get_text (shift @_);
 
   bless [ $kw, $val ], "XstXKeywordList";
 }
@@ -901,10 +910,44 @@ sub xml_parse_kw_list
 # Internal
 sub xml_parse_display_modes
 {
+  my $hash = shift;
   my $kw = shift;
-  my $val = &xst_xml_get_text (shift);
+  my $val = &xst_xml_get_text (shift @_);
 
   bless [ $kw, $val ], "XstXDisplayMode";
+}
+
+# Internal
+sub xml_parse_modeline
+{
+  my $hash = shift;
+  my $kw = shift;
+  my $modelines = shift;
+
+  shift @$modelines;
+
+  while (@$modelines) {
+    # Dump 'Mode'
+    shift @$modelines;
+
+    my $new_mode = {};
+    my $mode = shift @$modelines;
+
+    # Dump empty element which always is there, dunno why.
+    shift @$mode;
+    while (@$mode) {      
+      $new_mode->{$$mode[0]} = &xst_xml_get_text ($$mode[1]);
+
+      shift @$mode;
+      shift @$mode;
+    }
+
+    bless $new_mode, "XstXModeLine";
+    &add2section ($hash, $new_mode);
+  }
+
+  # We have completely taken care of it
+  return undef;
 }
 
 # Internal
@@ -926,7 +969,7 @@ sub x_xml_parse_section
         # TODO:
         # print STDERR "$tree->[0]\n";
         1;
-      } else { $ref = &$func ($$tree[0], $$tree[1]); }
+      } else { $ref = &$func ($hash, $$tree[0], $$tree[1]); }
     }
     
     elsif (exists $options->{$$tree[0]}) {
@@ -1025,7 +1068,7 @@ sub x_add_modelines
   }
 
   foreach my $val (@$modelines) {
-    my $value = $quote . $val->{'name'} . $quote;
+    my $value = "\"$val->{'name'}\"";
     $value .= " " . $val->{'dotclock'};
     $value .= " " . $val->{'hdisp'};
     $value .= " " . $val->{'hsyncstart'};
@@ -1073,7 +1116,7 @@ sub x_add_values
     }
 
     elsif ($type eq "XstXSubsection") {
-      &x_add_section ($fd, $section, $key, $pre_space + 8, $val_col + 8, $section_list, 1);
+      &x_add_section ($fd, $section, $key, $pre_space + 7, $val_col + 7, $section_list, 1);
     }
 
     else {
@@ -1115,9 +1158,10 @@ sub x_add_section
   foreach my $section (@{$config->{$section_name}}) {
     next unless $section;
     
-    print $fd "\n$section_str \"$section_name\"\n";
-    &x_add_values ($fd, $section, $pre_space, $val_col, $section_list->{$section_name});
-    print $fd "End$section_str\n";
+    print $fd " " x $pre_space;
+    print $fd "$section_str \"$section_name\"\n";
+    &x_add_values ($fd, $section, $pre_space + 7, $val_col + 7, $section_list->{$section_name});
+    print $fd " " x $pre_space, "End$section_str\n";
   }
 
   delete $config->{$section_name};
@@ -1234,6 +1278,16 @@ sub x_update_display_mode
   return "";
 }
 
+sub x_update_modeline
+{
+  my ($line, $section, $new_section, $kw, $quoted) = @_;
+  my $quote = $quoted ? "\"" : "";
+
+  # TODO: Implement.
+  
+  return $line;
+}
+
 sub x_update_keyword
 {
   my ($line, $section, $new_section, $kw, $quoted) = @_;
@@ -1255,8 +1309,7 @@ sub x_update_keyword
     }
 
     elsif ($type eq "XstXModeLines") {
-      # TODO:
-      1;
+      return &x_update_modeline ($line, $section, $new_section, $kw, $quoted);
     }
     
     else {
@@ -1703,6 +1756,8 @@ sub x_probe_print_xml
 
   return unless $list;  
 
+  &xst_report_end ();
+  
   &xst_xml_print_begin ();
   &xst_xml_print_vspace ();
   
@@ -1726,11 +1781,13 @@ sub x_probe_store
   return unless $config;
   # TODO: Write monitor and card information also.
 
-  open (F, ">$x_probe_file");
-  if (F) {
-    local *STDOUT = *F;
+  my $file = &xst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $x_probe_file;
+
+  my $fh = &xst_file_open_write_from_names ($file);
+  if ($fh) {
+    local *STDOUT = $fh;
     &x_probe_print_xml ($list);
-    close (F);
+    close ($fh);
   }
 }
 
@@ -1742,10 +1799,14 @@ sub x_probe_load
   return unless $config;
   # TODO: Check if monitor || card is changed
 
-  open (F, "$x_probe_file");
-  if (F) {
-    my @content = <F>;
-    close (F);
+  my $file = &xst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $x_probe_file;
+
+  my $fh = &xst_file_open_read_from_names ($file);
+  &xst_report_end ();
+
+  if ($fh) {
+    my @content = <$fh>;
+    close ($fh);
 
     print @content;
     return 1;
@@ -1761,11 +1822,8 @@ sub x_probe
   my $direct = shift;
 
   return unless $orig_file;
-  return unless $config;
+  return unless $config;  
 
-  # Finish reporting (yuck!)
-  &xst_report_end ();
-  
   return if (!$direct && &x_probe_load ($config));
   
   my $modes = &x_probe_get_modelines ($config);
