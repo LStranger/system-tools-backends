@@ -765,7 +765,7 @@ sub gst_network_get_interface_type
     }
   }
 
-  if ($dev =~ /ppp/)
+  if ($dev =~ /^(ppp|tun)/)
   {
     # check whether the proper plugin exists
     if (&gst_network_check_pppd_plugin ("capiplugin"))

@@ -4,6 +4,10 @@
 
 2005-03-15  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* network.pl.in: recognize tun interfaces as ppp too
+
+2005-03-15  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* network.pl.in: leave only wireless-* and remove wireless_* (for
 	handled wi-fi options, the rest will remain untouched)
 
