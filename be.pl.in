@@ -2000,7 +2000,6 @@ sub check_linuxppc {
 sub be_guess_system
 {
   my $dir = "___scriptsdir___";
-  my FILE;
   
   if (! -f "$dir/system.guess")
   {
@@ -2015,7 +2014,7 @@ sub be_guess_system
   }
 
   open FILE, "$dir/system.guess";
-  $be_system = chomp (<FILE>);
+  chomp ($be_system = <FILE>);
   close FILE;
 
   # if the system is linux, set $be_dist and $be_dist_version
