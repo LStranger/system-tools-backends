@@ -89,6 +89,7 @@ sub xst_parse_from_table
     unshift @cp, &xst_parse_replace_files (shift (@cp), $fn);
 
     &xst_parse_replace_hash_values (\@cp, \%hash);
+    &xst_debug_print_line ("xst_parse_from_table: $key");
     $hash{$key} = &$proc (@cp) if ($hash{$key} eq undef);
   }
 

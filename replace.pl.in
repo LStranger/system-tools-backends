@@ -50,6 +50,7 @@ sub xst_replace_from_table
       unshift @cp, &xst_parse_replace_files (shift (@cp), $fn);
       push (@cp, $$values_hash{$key});
 	 
+      &xst_debug_print_line ("xst_replace_from_table: $key");
       &xst_parse_replace_hash_values (\@cp, $values_hash);
       $res = -1 if &$proc (@cp);
     }
