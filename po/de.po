@@ -4,17 +4,18 @@
 # package.
 # Christian Neumair <chris@gnome-de.org>, 2004.
 # Hendrik Richter <hendrik@gnome-de.org>, 2004
-#
+# 
+# 
 msgid ""
 msgstr ""
-"Project-Id-Version: setup-tools-backends 0.32.1\n"
+"Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-30 12:17+0200\n"
-"PO-Revision-Date: 2004-02-05 14:58+0200\n"
-"Last-Translator: Hendrik Richter <hendrik@gnome-de.org>\n"
+"POT-Creation-Date: 2005-01-20 22:00+0100\n"
+"PO-Revision-Date: 2005-01-20 22:00+0100\n"
+"Last-Translator: Frank Arnold <frank@scirocco-5v-turbo.de>\n"
 "Language-Team: German <gnome-de@gnome.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #. please, keep this list sorted
@@ -105,8 +106,8 @@ msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
 msgstr ""
-"Läuft im Hintergrund und speichert alle Zeichenketten an »/dev/console« "
-"in einem Protokoll"
+"Läuft im Hintergrund und speichert alle Zeichenketten an »/dev/console« in "
+"einem Protokoll"
 
 #: service-list.pl.in:45
 msgid ""
@@ -140,9 +141,9 @@ msgid ""
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
 msgstr ""
-"cpufreqd überwacht den Status der Batterie und passt dementsprechend "
-"die Taktfrequenz der CPU an, um bei optimaler Geschwindigkeit so wenig "
-"Strom wie mötig zu verbrauchen"
+"cpufreqd überwacht den Status der Batterie und passt dementsprechend die "
+"Taktfrequenz der CPU an, um bei optimaler Geschwindigkeit so wenig Strom wie "
+"mötig zu verbrauchen"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -367,8 +368,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
-"Startet joystick-device-check, ein Programm welches sicherstellt, "
-"dass die /dev/js*-Geräte-Nodes korrekt sind"
+"Startet joystick-device-check, ein Programm welches sicherstellt, dass die /"
+"dev/js*-Geräte-Nodes korrekt sind"
 
 #: service-list.pl.in:77
 msgid ""
@@ -525,8 +526,8 @@ msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
 msgstr ""
-"Überprüft die Zeit eines Network-Time-Protokol (NTP-)Servers und passt "
-"die Systemzeit entsprechend an."
+"Überprüft die Zeit eines Network-Time-Protokol (NTP-)Servers und passt die "
+"Systemzeit entsprechend an."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -883,3 +884,51 @@ msgstr "Standard Runlevel"
 #: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Netzwerkloser Runlevel"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "Systemprotokolle überwachen"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "Audio-Geräte verwenden"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "Zugriff auf CD-ROM-Laufwerke"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "Zugriff auf Modem-Geräte"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "Internetverbindung über Modem-Geräte"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "Faxe senden und empfangen"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "Zugriff auf Floppy-Laufwerke"
+
+#: users-conf.in:186
+msgid "Mount removable devices automatically"
+msgstr "Wechselbare Geräte automatisch einbinden"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "Zugriff auf Bandlaufwerke"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "Berechtigung zum Erlangen von Administratorrechten"
+
+#: users-conf.in:459
+msgid "Default"
+msgstr "Vorgabe"
+
+#: users-conf.in:460
+msgid "Default profile"
+msgstr "Vorgabeprofil"
