@@ -2654,8 +2654,7 @@ sub xst_network_get_replace_table
 # We're calling this sepparated cuz we are going to call wvdial to activate.           
         [ "interface",     \&xst_network_suse70_activate_ppp ],
         [ "interface",     \&xst_network_interfaces_set,	 OLD_HASH ],
-# I use "interface" here to force the execution of SUSECONFIG.
-        [ "interface",     \&xst_file_run,                 SUSECONFIG ],
+        [ "_always_",      \&xst_file_run,                 SUSECONFIG ],
 		    ]
 			 }
 	  );

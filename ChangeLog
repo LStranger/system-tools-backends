@@ -1,3 +1,12 @@
+2001-12-19  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_replace_table): Use the
+	new keyword for SuSE's suseconfig run.
+
+	* replace.pl.in (xst_replace_run_entry): New "_always_" key
+	forces call of the function.
+	(xst_replace_from_table): same.
+
 2001-12-18  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* platform.pl.in (check_debian): Correctly detect woody, which

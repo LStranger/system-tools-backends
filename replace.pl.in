@@ -86,7 +86,7 @@ sub xst_replace_run_entry
   
   &xst_debug_print_line ("xst_replace_from_table: $key");
   return -1 if (!&xst_parse_replace_hash_values ($ncp, $values_hash));
-  push (@$ncp, $$values_hash{$key});
+  push (@$ncp, $$values_hash{$key}) unless $key eq "_always_";
   $res = -1 if &$proc (@$ncp);
   return $res;
 }
@@ -114,7 +114,7 @@ sub xst_replace_from_table
   {
     @cp = @$i;
     $key = shift (@cp);
-    if (exists $$values_hash{$key})
+    if ((exists $$values_hash{$key}) or ($key eq "_always_"))
     {
       $proc = shift (@cp);
       @files = &xst_parse_replace_files (shift (@cp), $fn);
