@@ -1,5 +1,10 @@
 2001-02-24  Arturo Espinosa  <arturo@ximian.com>
 
+	* network.pl.in: peerdns support.
+	* util.pl.in (xst_util_struct_eq): oops, forgot to rename inner calls.
+	
+2001-02-24  Arturo Espinosa  <arturo@ximian.com>
+
 	* network-conf.in (xml_print): cosmetic changes.
 	* network.pl.in (xst_network_rh62_interface_set_by_dev,
 	xst_network_rh62_interface_set) better criterion for device activation.
