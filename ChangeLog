@@ -1,3 +1,8 @@
+2002-09-02  Theo van Klaveren  <t.vanklaveren@student.utwente.nl>
+
+	* users-conf.in: basic FreeBSD porting work, adding/deleting
+	users and groups should work
+
 2002-05-17  Carlos Garnacho Parro  <garparr@teleline.es>
 
 	* service-list.pl.in: added a service list
