@@ -38,6 +38,7 @@ AM_GLIB_GNU_GETTEXT
 
 AC_OUTPUT([
 Makefile
+m4macros/Makefile
 po/Makefile.in
 system-tools-backends.pc
 files/Makefile

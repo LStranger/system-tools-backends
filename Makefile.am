@@ -1,4 +1,4 @@
-SUBDIRS = files po
+SUBDIRS = m4macros files po
 
 backends = \
 	dhcpd-conf \
