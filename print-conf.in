@@ -103,6 +103,8 @@ sub xml_parse_print
 
   while (@$tree)
   {
+      $i = $$tree[0]{'name'};
+    print STDERR "Parse print '$$tree[0]'\n";
     if ($$tree[0] eq "printer") { &xml_parse_printer ($$tree[1], \%printer); }
 
     shift @$tree;
@@ -123,9 +125,12 @@ sub xml_parse_printer
 
   shift @$tree;
 
+  print STDERR "Parse printer\n";
+
   # FIXME: needs expansion.
   while (@$tree)
   {
+      print STDERR "tree: '$$tree[1]'\n";
     $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
 
     shift @$tree;
@@ -181,15 +186,10 @@ sub xml_print
   my $i, $val;
 
   &xst_xml_print_begin ();
-  &xst_xml_print_line ("<print>\n");
-  &xst_xml_enter ();
 
   foreach $i (keys (%$h)) {
       &xml_print_printer ($$h{$i}, $i);
   }
-
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</print>\n");
 
   &xst_xml_print_end ();
 }

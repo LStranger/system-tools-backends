@@ -165,8 +165,6 @@ sub xst_print_conf_set
   my $old_hash;
   my %dist_attrib;
   
-  &xst_print_ensure_loopback ($values_hash);
-
   $old_hash = &xst_print_conf_get ();
 #  %dist_attrib = &xst_print_get_replace_table ();
 #  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
