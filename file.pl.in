@@ -152,8 +152,7 @@ sub xst_open_read_from_names
   {
     if (open (FILE, "$xst_prefix/$name"))
     {
-      # FIXME: Remove debug.
-      print STDERR "xst_open_read_from_names:$xst_prefix/$name\n" if $xst_verbose;
+      &xst_debug_print_line ("xst_open_read_from_names:$xst_prefix/name");
       $fname = $name;
       last;
     }
@@ -297,7 +296,7 @@ sub xst_buffer_load
   my $file = $_[0];
   my @buffer;
   my $fd;
-  
+
   $fd = &xst_open_read_from_names ($file);
   return undef if !$fd;
 
@@ -314,19 +313,15 @@ sub xst_buffer_save
   my ($buffer, $file) = @_;
   my $fd, $i;
 
-  # FIXME: Remove debug.
+  &xst_debug_print_string ("\nfile:$file\n");
 
-  print STDERR "\nfile:$file\n";
-  
   foreach $i (@$buffer)
   {
-    print STDERR "|" . $i;
+    &xst_debug_print_string ("|" . $i);
   }
 
   $fd = &xst_open_write_from_names ($file);
   return -1 if !$fd;
-
-  # FIXME: Remove debug.
 
   foreach $i (@$buffer)
   {

@@ -1,3 +1,17 @@
+2001-03-08  Hans Petter Jansson
+
+	* debug.pl.in (xst_debug_open_output_file): Implement.
+	  (xst_debug_print_string_to_file): Implement.
+	  (xst_debug_print_indent): Print to file. More efficient.
+	  (xst_debug_rotate_try): Fix bug that would lead to multiple
+	  rotations on one backend invocation.
+
+	* file.pl.in (xst_open_read_from_names): Use debug funcs.
+	  (xst_buffer_save): Use debug funcs.
+
+	* xml.pl.in (xst_xml_scan): Dump scanned XML to in.xml.
+	  (xst_xml_get_pcdata): Use debug funcs.
+
 2001-03-08  Arturo Espinosa  <arturo@ximian.com>
 
 	* replace.pl.in (xst_replace_from_table): big oops here. A
