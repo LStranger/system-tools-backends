@@ -805,7 +805,6 @@ sub xml_print
 	  &xst_xml_print ("<user>\n");
 		&xst_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  #&xst_xml_print ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n");
 		  &xst_xml_print ("<" . $users_prop_map{"$j"} . ">" . xst_xml_quote ($$i[$j]) . "</" . $users_prop_map {$j} . ">\n");
 		}
 		&xst_xml_leave ();
