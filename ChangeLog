@@ -1,3 +1,13 @@
+2001-03-08  Arturo Espinosa  <arturo@ximian.com>
+
+	* service.pl.in: New functions to handle SysV rc
+	  scripts, a little better organized code.
+	* time-conf.in: Use xst_service_sysv_set_status
+	  and get_status now.
+	* Removing networking-conf.in, nameresolution-conf.in
+	  and network-conf.in.bak.
+
+	
 2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
 	* file.pl.in (xst_open_read_from_names): Missing $ in var for
