@@ -820,18 +820,29 @@ sub del_group
 sub add_group
 {
   my ($data) = @_;
+  my ($u, $user, $users);
+
+  $u = [ @{$$data[$groups_prop_map{"users"}]} ]; sort @$u;
 	
   if ($gst_dist =~ /^freebsd/)
   {
     $command = "$cmd_pw groupadd -n \'" . $$data[$groups_prop_map{"name"}] .
-     "\' -g " . $$data[$groups_prop_map{"gid"}];
+      "\' -g " . $$data[$groups_prop_map{"gid"}];
+    &gst_file_run ($command);
   }
   else
   {
     $command = "$cmd_groupadd -g \'" . $$data[$groups_prop_map{"gid"}] .
-     "\' " . $$data[$groups_prop_map{"name"}];
+      "\' " . $$data[$groups_prop_map{"name"}];
+    &gst_file_run ($command);
+
+    foreach $user (@$u)
+    {
+      $command = "$cmd_gpasswd -a \'" . $user .
+        "\' " . $$data[$groups_prop_map{"name"}];
+      &gst_file_run ($command);
+    }
   }
-  &gst_file_run ($command);
 }
 
 sub change_group

@@ -1,3 +1,7 @@
+2004-05-05  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* users-conf.in (add_group): made it to add users too in linux OS
+
 2004-05-04  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* service.pl.in: made it to look too in /usr/local/etc/rc.d for
