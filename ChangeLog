@@ -1,3 +1,8 @@
+2001-06-06  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* package-conf.in: contributed by Richard Bos <allabos@freeler.nl>
+	* Makefile.am: added pertinent entries for package backend.
+
 2001-06-05  Tambet Ingo  <tambet@ximian.com>
 
 	* users-conf.in (change_user_chfn): Little fix.

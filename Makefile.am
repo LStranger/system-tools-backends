@@ -8,7 +8,8 @@ backends = \
 	boot-conf \
 	print-conf \
 	internetsharing-conf \
-	mouse-conf
+	mouse-conf \
+	package-conf
 
 PERLBODY = \
 	gettext.pl.in \
@@ -47,6 +48,7 @@ EXTRA_DIST = \
 	print-conf.in \
 	mouse-conf.in \
 	internetsharing-conf.in \
+	package-conf.in \
 	guess_system.sh
 
 CLEANFILES = $(backends) $(perl_libs)
