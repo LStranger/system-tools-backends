@@ -41,7 +41,6 @@
 # nmbd
 # ifconfig: check current interfaces and activate/deactivate.
 
-
 BEGIN {
   $SCRIPTSDIR = "@scriptsdir@";
   if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)

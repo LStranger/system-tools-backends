@@ -1527,7 +1527,7 @@ sub gst_replace_rcinet1conf
   $iface =~ s/eth//;
   $line = "$kw\[$iface\]";
 
-  $val = "\"$val\"";
+  $val = "\"$val\"" if ($val ne undef);
 
   return &gst_replace_split ($file, $line, "[ \t]*=[ \t]*", $val);
 }

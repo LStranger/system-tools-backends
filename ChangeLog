@@ -1,3 +1,8 @@
+2004-03-16  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network-conf.in, network.pl.in: added slackware 9.1 ppp support
+	* replace.pl.in, parse.pl.in, file.pl.in: related fixes
+
 2004-02-18  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* configure.in: fixed compilation

@@ -318,7 +318,7 @@ sub gst_parse_split_ref
     next if $line eq "";
     @line = split ($re, $line, 2);
 
-    if (shift (@line) eq $key)
+    if (shift (@line) =~ "^$key\$")
     {
       if ($all) {
         push @res, $line[0];
@@ -414,7 +414,7 @@ sub gst_parse_split_first_array
 {
   my ($file, $key, $re, $sep, $line_read_proc) = @_;
   my @ret;
-  
+
   @ret = split ($sep, &gst_parse_split ($file, $key, $re, 0, $line_read_proc));
 
   return \@ret;
@@ -635,7 +635,7 @@ sub gst_parse_kw
   &gst_report_enter ();
   &gst_report ("parse_kw", $keyword, $file);
   
-  if (! -f $file)
+  if (! -f "$gst_prefix/$file")
   {
     &gst_report_enter ();
     &gst_report ("file_open_read_failed", $file);
@@ -1487,7 +1487,9 @@ sub gst_parse_rcinet1conf
   my ($line);
 
   $iface =~ s/eth//;
-  $line = "$kw\[$iface\]";
+
+  #we must double escape those []
+  $line = "$kw\\[$iface\\]";
 
   return &gst_parse_sh ($file, $line);
 }

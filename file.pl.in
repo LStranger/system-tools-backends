@@ -221,7 +221,7 @@ sub gst_file_exists
 {
   my ($file) = @_;
 
-  return (-f $file)? 1: 0;
+  return (-f "$gst_prefix/$file")? 1: 0;
 }
 
 sub gst_file_open_read_from_names
@@ -302,7 +302,6 @@ sub gst_file_open_write_from_names
 
   return *FILE;
 }
-
 
 sub gst_file_open_filter_write_from_names
 {
@@ -501,7 +500,7 @@ sub gst_file_remove
 
   &gst_report_enter ();
   &gst_report ("file_remove", $name);
-  
+
   if (stat ($name))
   {
     &gst_file_backup ($name);
