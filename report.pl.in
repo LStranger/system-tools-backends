@@ -134,16 +134,32 @@ sub xst_report
   my ($major, $minor, $str, $format, $res);
   my $report_message = &xst_report_table ();
 
-  &xst_debug_print_line ("Non-existing report key $key") if !exists $$report_message{$key};
+  if (! (exists $$report_message{$key}))
+  {
+      &xst_report ("report_minor_unk", $key);
+      return;
+  }
 
   ($major, $str) = @{$$report_message{$key}};
+
+  if (! (exists $xst_report_valid_majors{$major}))
+  {
+      &xst_report ("report_major_unk", $major, join ("::", $key, @args));
+      return;
+  }
 
   $xst_report_started = 1 if !$xst_report_started && $key eq "begin" && $major eq "sys";
 
   # Verbose (--verbose) output is human-readable only.
   $format = "$str\n";
   $res = sprintf ($format, @args);
-  print STDERR "$xst_name - $major::${key}::$res" if $xst_do_verbose || $major eq "error";
+
+  if ($xst_do_verbose   ||
+      $major eq "error" ||
+      $major eq "debug")
+  {
+      print STDERR "$xst_name - $major::${key}::$res";
+  }
   
   if ($key ne "progress")
   {
@@ -186,12 +202,23 @@ sub xst_report
 
 &textdomain ("ximian-setup-tools");
 
+%xst_report_valid_majors = (
+    "sys"   => 1,
+    "error" => 1,
+    "warn"  => 1,
+    "info"  => 1,
+    "debug" => 1
+    );
+
 %xst_report_message =
     (
      "begin"    => ["sys", _("Start of work report.")],
      "end"      => ["sys", _("End of work report.")],
      "progress" => ["sys", _("%d")],
      "compat"   => ["info", _("%s.")],
+
+     "report_major_unk"         => ["error", _("Unknown major [%s] in report [%s].")],
+     "report_minor_unk"         => ["error", _("Unknown minor [%s].")],
 
      "directive_run"            => ["info",  _("Running directive [%s] with args [%s].")],
      "directive_unsup"          => ["error", _("Directive [%s] not supported.")],
@@ -208,7 +235,7 @@ sub xst_report
      "xml_unexp_tag"            => ["error", _("Unexpected tag [%s].")],
      "xml_unexp_arg"            => ["error", _("Unexpected argument [%s] to tag [%s].")],
 
-     "file_copy_failed"         => ["warn",  _("Could not copy file [%s] to [$s].")],
+     "file_copy_failed"         => ["debug", _("Could not copy file [%s] to [%s].")],
      "file_open_read_failed"    => ["warn",  _("Could not open [%s] for reading.")],
      "file_open_read_success"   => ["info",  _("Reading options from [%s].")],
      "file_open_write_failed"   => ["error", _("Failed to write to [%s].")],

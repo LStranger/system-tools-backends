@@ -440,14 +440,13 @@ sub xst_service_sysv_install_script
 
   ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
 
-  $res = copy ("$FILESDIR/$file", "$initd_path/$service");
-  if ($res)
+  if (!copy ("$FILESDIR/$file", "$initd_path/$service"))
   {
       &xst_report ("file_copy_failed", "$FILESDIR/$file", "$initd_path/$service");
       return -1;
   }
 
-  chmod (0755, "$FILESDIR/$file");
+  chmod (0755, "$initd_path/$service");
 
   return 0;
 }

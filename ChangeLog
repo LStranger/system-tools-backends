@@ -1,3 +1,15 @@
+Tue Sep 18 11:46:35 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* service.pl.in (xst_service_sysv_install_script): reversed
+	return value interpretation of copy.
+
+	* report.pl.in: typo in new file_copy_failed entry.
+	(xst_report): validate major, and better unk minor handling.
+	(xst_report): also spit reports if they have debug major.
+
+	* service.pl.in (xst_service_sysv_install_script): Oops: chmod
+	the installed initd script, not the resource file! :)
+
 Mon Sep 17 11:36:47 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
         * Other Perl style changes in xml, network, service and other
