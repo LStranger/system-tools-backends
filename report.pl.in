@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 #-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-# Functions for on-the-fly commentary on a tool's work.
+# /* Functions for on-the-fly commentary on a tool's work. */
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
@@ -37,10 +37,10 @@ sub xst_progress
 {
   my $prc = $_[0];
 
-  # Don't go backwards.
+  # /* Don't go backwards. */
   $prc = $xst_progress_last_percentage if ($prc < $xst_progress_last_percentage);
 
-  # Don't go above 99%.
+  # /* Don't go above 99%. */
   $prc = 99 if ($prc >= 100);
 
   if ($xst_progress && (int $prc > int $xst_progress_last_percentage))
@@ -85,7 +85,7 @@ sub xst_report_enter
 {
   # This has been trivialized because it is not working
   # correctly at the moment and is causing some trouble.
-  # We'll probably replace this with something smarter
+  # /* We'll probably replace this with something smarter */
   # (like a detail-level value in the report hash)
   # when the report strings are used at the gui-level again.
 #  $xst_report_level ++;

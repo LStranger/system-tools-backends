@@ -1,3 +1,7 @@
+2001-05-24  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* report.pl.in (xst_report_enter): Ugly hack to avoid po warnings.
+
 2001-05-23  Hans Petter Jansson  <hpj@ximian.com>
 
 	* shares-conf.in: XML tags: browseable -> browse, writable -> write.
