@@ -1,5 +1,9 @@
 2002-12-02  Carlos Garnacho Parro <garnacho@tuxerver.net>
 
+        * Makefile.am: fixed to make distcheck pass
+	
+2002-12-02  Carlos Garnacho Parro <garnacho@tuxerver.net>
+
 	* time-conf.in: solved bug #99744
 
 2002-12-02  Carlos Garnacho Parro <garnacho@tuxerver.net>
