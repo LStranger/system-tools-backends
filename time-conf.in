@@ -161,7 +161,7 @@ sub xml_print
   my $h = $_[0];
   my @sync;
 
-  @scalar_keys = ("timezone");
+  @scalar_keys = qw (timezone, ntpinstalled);
 
   $sync = $$h{"sync"};
 
@@ -397,10 +397,11 @@ sub conf_get_parse_table
          },
          table =>
              [
-              ["local_time",  \&time_get_local_time],
-              ["timezone",    \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              ["sync",        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
-              ["sync_active", \&xst_service_sysv_get_status, "xntpd"],
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_get_status, "xntpd" ],
+              [ "ntpinstalled", \&xst_service_sysv_installed, "xntpd" ],
               ]
                 },
        
@@ -414,10 +415,11 @@ sub conf_get_parse_table
          },
          table =>
              [
-              ["local_time",  \&time_get_local_time],
-              ["timezone",    \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              ["sync",        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
-              ["sync_active", \&xst_service_sysv_get_status, "ntpd"],
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_get_status, "ntpd" ],
+              [ "ntpinstalled", \&xst_service_sysv_installed, "ntpd" ],
               ]
                 },
 
@@ -431,10 +433,11 @@ sub conf_get_parse_table
          },
          table =>
              [
-              ["local_time",  \&time_get_local_time],
-              ["timezone",    \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              ["sync",        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
-              ["sync_active", \&xst_service_sysv_get_status, "ntp"],
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_get_status, "ntpd" ],
+              [ "ntpinstalled", \&xst_service_sysv_installed, "ntp" ],
               ]
                 },
        );
@@ -473,10 +476,10 @@ sub conf_get_replace_table
          },
          table =>
              [
-              ["local_time",  \&time_set_local_time],
-              ["timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              ["sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
-              ["sync_active", \&xst_service_sysv_set_status, 90, "xntpd"],
+              [ "local_time",  \&time_set_local_time ],
+              [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active", \&xst_service_sysv_set_status, 90, "xntpd" ],
               ]
                 },
 
@@ -490,10 +493,10 @@ sub conf_get_replace_table
          },
          table =>
              [
-              ["local_time",  \&time_set_local_time],
-              ["timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              ["sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
-              ["sync_active", \&xst_service_sysv_set_status, 90, "ntpd"],
+              [ "local_time",   \&time_set_local_time ],
+              [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_set_status, 90, "ntpd" ],
               ]
                 },
 
@@ -507,10 +510,10 @@ sub conf_get_replace_table
          },
          table =>
              [
-              ["local_time",  \&time_set_local_time],
-              ["timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
-              ["sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
-              ["sync_active", \&xst_service_sysv_set_status, 23, "ntp"],
+              [ "local_time",  \&time_set_local_time ],
+              [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active", \&xst_service_sysv_set_status, 23, "ntp" ],
               ]
                 }
        );
