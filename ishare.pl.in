@@ -57,7 +57,7 @@ sub xst_ishare_fwrules_get_ipchains
   my (%hash, $fd, $val);
 
   $hash{"tools"} = &xst_file_tool_installed ("ipchains");
-  $$hash{"kerneltool"} = (-f "/proc/sys/net/ip_fwchains")? 1: 0;
+  $$hash{"kerneltool"} = (-f "/proc/net/ip_fwchains")? 1: 0;
 
   if ($hash{"tools"})
   {
@@ -83,7 +83,7 @@ sub xst_ishare_ipchains_save
   my ($fd, $dev, $landev, $landevs, $network, $netmask);
   my (@buff, $line);
   
-  $fd = &xst_file_fun_pipe_read ("ipchains-save");
+  $fd = &xst_file_run_pipe_read ("ipchains-save");
   @buff = (<$fd>);
   close $fd;
 
@@ -179,7 +179,7 @@ sub xst_ishare_dhcp_isc_save
     $iface = $$interface{$dev};
 
     &xst_ishare_dhcp_conf_add_interface (\@buff, $$iface{"address"}, $$iface{"netmask"},
-                                         $$info{$$iface{"dev"}});
+                                         $ {$$info{$$iface{"dev"}}}{"hwaddr"});
   }
 
   &xst_file_buffer_clean (\@buff);
@@ -199,7 +199,7 @@ sub xst_ishare_dhcp_isc_set
     &xst_ishare_dhcp_isc_save ($dhcpd_conf, $interface, $values_hash);
   }
   
-  &xst_service_sysv_set_status ($priority, "ipchains", $$values_hash{"active"});
+  &xst_service_sysv_set_status ($priority, "dhcpd", $$values_hash{"active"});
 }
 
 

@@ -119,7 +119,7 @@ sub xst_service_sysv_get_status
 
   # Stolen from RedHat's /etc/rc.d/init.d/functions:status
   # FIXME: portable to other UNIXES?
-  $pid = &xst_run_backtick ("pidof -o %PPID -x $service");
+  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
   chomp $pid;
 
   if ($pid)

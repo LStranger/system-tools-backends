@@ -1,3 +1,17 @@
+2001-08-09  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* ishare.pl.in (xst_ishare_dhcp_isc_save): Oops. The
+	required argument is the hwaddr, only.
+	(xst_ishare_dhcp_isc_set): Activate the dhcpd service:
+	not ipchains (here).
+
+	* service.pl.in (xst_service_sysv_get_status): little
+	typo here.
+
+	* ishare.pl.in (xst_ishare_fwrules_get_ipchains): The
+	proc file for ipchains is in /proc/net, not /proc/sys/net.
+	(xst_ishare_ipchains_save): typo. What was I thinking of?
+
 2001-08-09  Christian Rose  <menthos@menthos.com>
 
 	* report.pl.in: Fixed a typo.
