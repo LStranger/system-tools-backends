@@ -1,3 +1,10 @@
+2002-05-17  Carlos Garnacho Parro  <garparr@teleline.es>
+
+	* service-list.pl.in: added a service list
+	* service.pl.in: added new functionality
+	* runlevel-conf.in: rewritten from scratch
+	* AUTHORS: updated
+
 2002-02-10  Chema Celorio  <chema@celorio.com>
 
 	* Port to the GNOME 2.0 platform
