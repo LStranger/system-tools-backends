@@ -1,3 +1,8 @@
+2003-12-24  Carlos Garcia Campos <elkalmail@yahoo.es>
+
+	* disks-conf.in: updated CD/DVD type content detection (data, blank,
+	mixed or audio)
+	
 2003-12-22  Alvaro del Castillo San Félix <acs@barrapunto.com>
 
 	* disks-conf.in: several modifications to add support for the new

@@ -314,20 +314,45 @@ sub get_ide_setting
 
 sub get_cdrom_settings
 {
-   my ($dev_clean);
-
-   ($dev_clean) = @_;
-
+   my @cd_name_sett = ("play-audio", "write-cdr", "write-cdrw", "read-dvd",
+                       "write-dvdr", "write-dvdram");
    my @opts = ("Can play audio", "Can write CD-R", "Can write CD-RW", "Can read DVD", 
                "Can write DVD-R", "Can write DVD-RAM");
    
-   for ($i = 0; $opts[$i]; $i++) {
-      $value[$i] = `cat /proc/sys/dev/cdrom/info | 
-      awk -F":" -v dev=$dev_clean '\$1 == "drive name"{split (\$2, a, " "); 
-      for (i in a) if (a[i] == dev) { col = i;};} \$1 == "$opts[$i]"{print \$++col}'`;
+   my $proc_cdrom_file;
+   local *PROC_CDROM_FILE;
+   $proc_cdrom_file = &gst_file_open_read_from_names ("/proc/sys/dev/cdrom/info");
+   if (not $proc_cdrom_file) { return; }
+   *PROC_CDROM_FILE = $proc_cdrom_file;
+   
+   my @devs;
+   while (<PROC_CDROM_FILE>) {
+      if ($_ =~ /drive name/) {
+	 ($line) = ($_ =~ /^drive name:(.*$)/);
+	 $line =~ s/^\s*//;
+	 $line =~ s/\s*$//;
+	 my @columns = split (" ", $line);
+	 for (my $i = 0; $columns[$i]; $i++) {
+	    $devs[$i] = "/dev/$columns[$i]";
+	 }
+      } elsif ($_ =~ /$opts[0]/) {
+	 ($line) = ($_ =~ /.*:(.*$)/);
+	 $line =~ s/^\s*//;
+	 $line =~ s/\s*$//;
+	 my @columns = split (" ", $line);
+	 my $i = 0;
+	 foreach (@columns) {
+	    $columns[$i] =~ s/^\s*//;
+	    $columns[$i] =~ s/\s*$//;
+	    &update_disk_data ($devs[$i], $cd_name_sett[0], "$columns[$i]");
+	    $i++;
+	 }
+	 shift @opts;
+	 shift @cd_name_sett;
+      }
    }
-
-   return @value;
+	 
+   close (PROC_CDROM_FILE);
 }
 
 
@@ -435,23 +460,6 @@ sub read_fstab
        if ($dma ne "") { &update_disk_data ($disk, "dma", $dma); }
     } elsif ($media_type eq "disk-scsi") {
        &update_disk_data ($disk, "media", "disk");
-       #$map = `sg_map -i | grep "$dev"`;
-       #if ($map ne "") {
-	  #($model) = ($map =~ /^\/dev\/sg[0-9]+[ ]+\/dev\/[a-z0-9]+(.*)/);
-	  #$map =~ /^\/dev\/sg[0-9]+[ \t]+\/dev\/[a-z0-9]+[ \t]+([a-zA-Z0-9]*)[ \t]+([a-zA-Z0-9\+]+ [0-9]+)/;
-	  #print "1 -> $1 y 2 -> $2\n";
-	  #$model = $1 + " " + $2;
-	  #@map_line = split (/[ \r\t]+/, $map);
-	  #if (scalar @map_line eq 5) {
-	     #   $model = $map_line[2] + ' ' + $map_line[3];
-	     #print "mapline $map_line[2] + $map_line[3]";
-	     #} elsif (scalar @map_line eq 4) {
-		#$model = $map_line[2];
-		#print "mapline $map_line[2]";
-		#}
-		#if ($model ne "") { &update_disk_data ($disk, "model", $model); }
-		#print "map es $map\nmodel es $model";
-		#}
     } elsif ($media_type eq "usb-storage") {
     }
     
@@ -620,6 +628,27 @@ sub write_fstab
   close OUTFILE;
 }
 
+sub get_cdroms
+{
+   my @list_devices;
+
+   $line = `cat /proc/sys/dev/cdrom/info | grep "drive name" | cut -d: -f2 2>/dev/null`;
+   $line =~ s/^\s*//;
+   $line =~ s/\s*$//;
+   @list_devices = split (/[ \r\t]+/, $line);
+
+   for (my $i = 0; $list_devices[$i]; $i++) {
+      my $dev = "/dev/$list_devices[$i]";
+      &update_disk_data ($dev, "media", "cdrom");
+      if ($list_devices[$i] =~ /^hd[a-d]/) {
+	 $model = `cat /proc/ide/$list_devices[$i]/model 2>/dev/null`;
+	 if ($model ne "") { &update_disk_data ($dev, "model", $model); }
+	 $dma = &get_ide_setting ($list_devices[$i], "using_dma");
+	 if ($dma ne "") { &update_disk_data ($dev, "dma", $dma); }
+      } 
+   }
+}
+	       
 
 # fdisk -l <disk device>
 #
@@ -710,8 +739,7 @@ sub get_fdisk
 
         $device = $line[0]; shift @line;
         ($disk) = ($device =~ /([a-zA-Z\/]+)/);
-        if ($line[0] eq "\*")
-        {
+        if ($line[0] eq "\*") {
           # NOTE: Currently unused.
           $bootable = 1; shift @line;
         }
@@ -741,71 +769,86 @@ sub get_fdisk
         &update_partition($disk, $device, "", $type, "noauto", 0, $size, 0,
                           $bootable, 1);
       } 
+
+      # Time to get the model and media type
+      # We support IDE, SCSI and USB medias in general
+      # For the moment, we fix a IDE device
+
+      $media_type = &get_media_type ($dev);
+      if ($media_type eq "disk-ide") {
+         ($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
+         $model = `cat /proc/ide/$dev_clean/model 2>/dev/null`;
+         if ($model ne "") { &update_disk_data ($dev, "model", $model); }
+         $media = `cat /proc/ide/$dev_clean/media 2>/dev/null`;
+         if ($media ne "") {
+	    &update_disk_data ($dev, "media", $media);
+	 }
+         $dma = &get_ide_setting ($dev_clean, "using_dma");
+         if ($dma ne "") { &update_disk_data ($dev, "dma", $dma); }
+      } elsif ($media_type eq "disk-scsi") {
+	 $head = `fdisk -l $dev 2>/dev/null`;
+         if ($head ne "") {
+	    &update_disk_data ($dev, "media", "disk");
+	 }
+      } elsif ($media_type eq "usb-storage") {
+      }
     }
     &gst_file_close ($fd);
-
+                                                                                  
     &gst_report ("disks_size_query", $dev);
-
-    # Time to get the model and media type
-    # We support IDE, SCSI and USB medias in general
-    # For the moment, we fix a IDE device
-       #$is_ide = 0;
-       #$is_scsi = 0;
-       #($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
     
-       #($dev_prefix) = ($dev_clean =~ /(^[a-z]*)[a-z]/);
-       #if ($dev_prefix eq "hd") {
-	  #    $is_ide = 1;
-	  # $is_scsi = 0;
-	  #} elsif ($dev_prefix eq "sd") {
-	     # $is_ide = 0;
-	     #$is_scsi = 1;
-	     # }
-
-    $media_type = &get_media_type ($dev);
-    if ($media_type eq "disk-ide") {
-       ($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
-       $model = `cat /proc/ide/$dev_clean/model 2>/dev/null`;
-       if ($model ne "") { &update_disk_data ($dev, "model", $model); }
-       $media = `cat /proc/ide/$dev_clean/media 2>/dev/null`;
-       if ($media ne "") {
-	  &update_disk_data ($dev, "media", $media);
-	  if ($media =~ /^cdrom.*$/) { 
-	     @cd_name_sett = ("play-audio", "write-cdr", "write-cdrw", "read-dvd",
-	                      "write-dvdr", "write-dvdram");
-	     @cd_sett = &get_cdrom_settings ($dev_clean);
-	     for ($j = 0; $cd_name_sett[$j]; $j++) {
-		   &update_disk_data ($dev, $cd_name_sett[$j], $cd_sett[$j]);
-	     }
-	  }
-       }
-       $dma = &get_ide_setting ($dev_clean, "using_dma");
-       if ($dma ne "") { &update_disk_data ($dev, "dma", $dma); }
-    } elsif ($media_type eq "disk-scsi") {
-       $head = `fdisk -l $dev 2>/dev/null`;
-       if ($head ne "") {
-          &update_disk_data ($dev, "media", "disk");
-       }
-    } elsif ($media_type eq "usb-storage") {
-    }
-
     # Floppy disk support
     $floppy = `grep fd /proc/devices | wc -l`;
     chomp $floopy;
     if ($floppy >= 1)
     {
-        $dev="/dev/fd0";
-        &update_disk_data ($dev, "media", "floppy"); 
+       $dev="/dev/fd0";
+       &update_disk_data ($dev, "media", "floppy"); 
     } elsif (system ("fdisk /dev/fd1 > /dev/null 2>&1")) {
-        $dev="/dev/fd1";
-        &update_disk_data ($dev, "media", "floppy");
+       $dev="/dev/fd1";
+       &update_disk_data ($dev, "media", "floppy");
     }
-
 
     &gst_print_progress();
   }
 }
 
+sub get_scsi_options
+{
+   my $proc_scsi_file;
+   local *PROC_SCSI_FILE;
+   $proc_scsi_file = &gst_file_open_read_from_names ("/proc/scsi/scsi");
+   if (not $proc_scsi_file) { return; }
+   *PROC_SCSI_FILE = $proc_scsi_file;
+
+   my $disk = 'a';
+   my $cdrom = 0;
+   my ($vendor, $model, $dev);
+   while (<PROC_SCSI_FILE>) {
+      my $data = $_;
+      $data =~ s/^\s*//;
+      $data =~ s/\s*$//;
+      @line = split(":", $data);
+      if ($line[0] eq "Vendor") {
+	 ($vendor, $model) = ($data =~ /^Vendor:(.*)Model:(.*)Rev:.*$/);
+	 $vendor =~ s/^\s*//;
+	 $vendor =~ s/\s*$//;
+	 $model  =~ s/^\s*//;
+	 $model  =~ s/\s*$//;
+      } elsif ($line[0] eq "Type") {
+	 if ($data =~ /CD-ROM/) {
+	    $dev = "/dev/sr$cdrom";
+	    $cdrom++;
+	 } elsif ($data =~ /Direct-Access/) {
+	    $dev = "/dev/sd$disk";
+	    $disk++;
+	 } 
+	 if ($dev ne "") { &update_disk_data ($dev, "model", "$vendor $model"); }
+      }  
+   }
+
+   close (PROC_SCSI_FILE);
+}
 
 # --- XML parsing --- #
 
@@ -942,15 +985,16 @@ sub xml_print
       }
       if (%$disk->{media}) { &gst_xml_print_line ("<media>" . %$disk->{media} . "</media>\n"); }
       if (%$disk->{model}) { &gst_xml_print_line ("<model>" . %$disk->{model} . "</model>\n"); }
-      #if (%$disk->{media} ne "floppy") { get_dev_speed (%$disk->{device}); }
+      if (%$disk->{media} =~ /cdrom/) { 
+	 &get_removable_storage_info (%$disk->{device});
+	 &gst_xml_print_state_tag ("play-audio",   %$disk->{"play-audio"});
+	 &gst_xml_print_state_tag ("write-cdr",    %$disk->{"write-cdr"});
+	 &gst_xml_print_state_tag ("write-cdrw",   %$disk->{"write-cdrw"});
+	 &gst_xml_print_state_tag ("read-dvd",     %$disk->{"read-dvd"});
+	 &gst_xml_print_state_tag ("write-dvdr",   %$disk->{"write-dvdr"});
+	 &gst_xml_print_state_tag ("write-dvdram", %$disk->{"write-dvdram"});
+      }
       if (%$disk->{dma}) { &gst_xml_print_state_tag ("dma", %$disk->{dma}); }
-      if (%$disk->{"play-audio"})   { &gst_xml_print_state_tag ("play-audio",   %$disk->{"play-audio"}); }
-      if (%$disk->{"write-cdr"})    { &gst_xml_print_state_tag ("write-cdr",    %$disk->{"write-cdr"}); }
-      if (%$disk->{"write-cdrw"})   { &gst_xml_print_state_tag ("write-cdrw",   %$disk->{"write-cdrw"}); }
-      if (%$disk->{"read-dvd"})     { &gst_xml_print_state_tag ("read-dvd",     %$disk->{"read-dvd"}); }
-      if (%$disk->{"write-dvdr"})   { &gst_xml_print_state_tag ("write-dvdr",   %$disk->{"write-dvdr"}); }
-      if (%$disk->{"write-dvdram"}) { &gst_xml_print_state_tag ("write-dvdram", %$disk->{"write-dvdram"}); }
-      
       
       my $partitions = %$disk->{partitions};
       
@@ -1003,12 +1047,14 @@ sub xml_print
 
 # --- Get (read) config --- #
 
-
 sub get
 {
   setlocale (LC_ALL, "en_US");
-
+  
+  &get_cdroms;
+  &get_cdrom_settings;
   &get_fdisk;
+  &get_scsi_options;
   &read_fstab;
 
   &gst_report_end ();
@@ -1113,24 +1159,89 @@ sub test_xml
     system ("cat $file");
 }
 
-# --- Calculates the speed of a device in kb/s--- #
-sub get_dev_speed_old
+sub get_removable_storage_info
 {
    my ($device) = @_;
 
-   $speed_str = `{ time -p dd if=$device of=/dev/null bs=1k count=15000 1>/dev/null; } 2>&1`;
-   @speed_data = split (/\n/, $speed_str);
-   foreach (@speed_data) {
-      @time = split(/ /, $_);
-      if ($time[0] =~ /^dd:.*$/) { last; }
-      if ($time[0] eq "real" and $time[1] ne 0) {
-	 $speed = 15360000 / ($time[1] * 1024);
-	 $speed =~ s/^([0-9]+\.[0-9][0-9]).+/$1/;
-	 &gst_xml_print_line ("<speed>" . $speed  . "</speed>\n");
+   if (!open (RD, "<$device")) {
+      &gst_xml_print_state_tag ("empty", 1);
+      return;
+   }
+
+   &gst_xml_print_state_tag ("empty", 0);
+
+   if ($^O eq 'linux') {
+      $CDROMREADTOCHDR   = 0x5305;
+      $CDROMREADTOCENTRY = 0x5306;
+   } elsif ($^O =~ /bsd/) {
+      $CDROMREADTOCHDR   = 0x40046304;
+      $CDROMREADTOCENTRY = 0xc0086305;
+   } elsif (($^O eq 'solaris') || ($^O eq 'sunos')) {
+      $CDROMREADTOCHDR   = 0x49b;
+      $CDROMREADTOCENTRY = 0x49c;
+   } else {
+      return;
+   }
+
+   $CDROM_DATA_TRACK = 0x04;
+   $CDROM_MSF = 0x02;
+   
+
+   if (!ioctl (RD, 0x5305, $tochdr)) {
+      &gst_xml_print_line ("<type-content>" . "blank"  . "</type-content>\n");
+      close (RD);
+      return;
+   }
+   
+   my ($start, $end);
+   if ($^O =~ /bsd/) {
+      ($start, $end) = unpack "CC", (substr $tochdr, 2, 2);
+   } else {
+      ($start, $end) = unpack "CC", $tochdr;
+   }
+   
+   for (my $i = $start; $i <= $end; $i++ ) {
+      push @tracks, $i;
+   }
+   push @tracks, 0xAA;
+
+   $audio = 0;
+   $data = 0;
+   foreach (@tracks) {
+      ioctl (RD, 0x5306, $tocentry = pack ("CCC", $_, 0, $CDROM_MSF, 0, 0, 0, 0));
+      my @times = unpack ("CCCCCCCCC", $tocentry);
+      if ($times[1] & ($CDROM_DATA_TRACK << 4)) {
+	 $data ++;
+      } else {
+	 $audio ++;
       }
    }
-}       
 
+   close (RD);
+
+   if ($data gt 0) {
+      if ($audio gt 0) {
+	 &gst_xml_print_line ("<type-content>" . "mixed"  . "</type-content>\n");
+      } else {
+	 &gst_xml_print_line ("<type-content>" . "data"  . "</type-content>\n");
+      }
+   } else {
+      &gst_xml_print_line ("<type-content>" . "audio"  . "</type-content>\n");
+   }
+}
+  
+sub removable_info
+{
+   my ($tool, $device) = @_;
+   
+   &gst_report_end ();
+   &gst_xml_print_begin ("removable_info");
+   &get_removable_storage_info ($device);
+   &gst_xml_print_end ("removable_info");
+}	       
+
+   
+# --- Calculates the speed of a device in human readable Kib/sec, Mib/sec, etc.--- #
 sub get_dev_speed
 {
    my ($device) = @_;
@@ -1199,6 +1310,8 @@ $directives = {
                   "Return a XML file to the frontend." ],
   "dev_speed" => [ \&dev_speed, ["device"],
                   "Return the speed of a device in kb/s" ],
+  "removable_info" => [ \&removable_info, ["device"],
+                       "Return info about the removable storages"],
 };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);
