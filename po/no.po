@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: system-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-01-19 15:21+0100\n"
-"PO-Revision-Date: 2005-01-19 15:25+0100\n"
+"POT-Creation-Date: 2005-02-16 12:10+0100\n"
+"PO-Revision-Date: 2005-02-16 12:13+0100\n"
 "Last-Translator: Kjartan Maraas <kmaraas@gnome.org>\n"
 "Language-Team: no_NO <i18n-nb@lister.ping.uio.no>\n"
 "MIME-Version: 1.0\n"
@@ -95,7 +95,9 @@ msgstr "Opptak av oppstartsmeldinger"
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
-msgstr "Kjører i bakgrunnen og kopierer alle strenger som sendes til /dev/console til en loggfil"
+msgstr ""
+"Kjører i bakgrunnen og kopierer alle strenger som sendes til /dev/console "
+"til en loggfil"
 
 #: service-list.pl.in:45
 msgid ""
@@ -145,7 +147,7 @@ msgstr "Common Unix Printing System"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr ""
+msgstr "Utskriftssystem basert på Internet Printing Protocol, versjon 1.1"
 
 #: service-list.pl.in:52
 msgid ""
@@ -231,7 +233,7 @@ msgstr "Program som forhandler IPv6-tunneler"
 
 #: service-list.pl.in:65
 msgid "A IPv6 Dynamic Tunnel Broker"
-msgstr ""
+msgstr "En dynamisk tunnelforhandler for IPv6"
 
 #: service-list.pl.in:66
 msgid "GNOME Display Manager"
@@ -275,7 +277,7 @@ msgstr ""
 
 #: service-list.pl.in:71
 msgid "internet superserver"
-msgstr ""
+msgstr "Internett-supertjener"
 
 #: service-list.pl.in:71
 msgid ""
@@ -303,7 +305,7 @@ msgstr "Protokoll for nøkkelutveksling over Internett"
 
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol openbsd implementation"
-msgstr ""
+msgstr "OpenBSD-implementasjon av protokollen Internet Key Exchange"
 
 #: service-list.pl.in:75
 msgid "start and stop ISDN services"
@@ -783,8 +785,8 @@ msgid "Access to floppy drives"
 msgstr "Tilgang til diskettstasjoner"
 
 #: users-conf.in:186
-msgid "Mount removable devices automatically"
-msgstr "Monter eksterne enheter automatisk"
+msgid "Enable access to external storage devices automatically"
+msgstr "Aktiver tilgang til eksterne lagringsenheter automatisk"
 
 #: users-conf.in:187
 msgid "Access to tape drives"
@@ -794,10 +796,10 @@ msgstr "Tilgang til tape-stasjoner"
 msgid "Be able to get administrator privileges"
 msgstr "Kan få administratorrettigheter"
 
-#: users-conf.in:459
+#: users-conf.in:491
 msgid "Default"
 msgstr "Forvalgt"
 
-#: users-conf.in:460
+#: users-conf.in:492
 msgid "Default profile"
 msgstr "Forvalgt profil"
