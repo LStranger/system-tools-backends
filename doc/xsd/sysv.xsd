@@ -24,6 +24,7 @@
   <complexType name="sysType">
     <sequence>
       <element type="runlevelType" name="runlevel" minOccurs="0" maxOccurs="unbounded"/>
+      <element type="servicesType" name="servicrs"/>
     </sequence>
   </complexType>
 
@@ -49,5 +50,11 @@
     </restriction>
   </simpleType>
 
+  <complexType name="services">
+    <sequence>
+      <element type="string" name="service" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+  
 </schema>
         
