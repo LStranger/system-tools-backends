@@ -1,5 +1,9 @@
 2005-02-08  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* Release 1.1.91
+
+2005-02-08  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* network.pl.in: added some extra stability to the dhclient call in
 	enable_iface_with_config, made it truly return whether it has failed
 

@@ -1,0 +1,47 @@
+System Tools Backends Version 1.1.91, 2005-02-08
+------------------------------------------------
+
+The GNOME System Tools version 1.1.91 "Ad infinitum" have been released.
+
+The GNOME System Tools are a set of cross-platform configuration utilities for Linux and other Unix systems. The frontends knows nothing about the underlying system and provide the same user interface across the different types of systems. Internally they use the system-tools-backends package.
+
+Changes since last release
+==========================
+
+  General
+  =======
+  - Separate it from the GNOME System Tools frontends (Jeff Waugh, garnacho)
+
+  Network
+  =======
+  - Fixed hosts file parsing when there's more than one line per IP address (garnacho)
+  - Only add an empty PPP interface if it wasn't added before (garnacho)
+  - Use dhclient more reliably (garnacho)
+
+  Time
+  ====
+  - Update the correct server status in Debian (garnacho)
+
+  Users
+  =====
+  - Detect whether to use md5 or not (garnacho)
+  - Made a group description more user friendly (Ole Laursen)
+
+  Translations
+  ============
+  - cs (Miloslav Trmac)
+  - da (Ole Laursen)
+  - de (Frank Arnold)
+  - en_CA (Adam Weinberger)
+  - en_GB (David Lodge)
+  - es (Francisco Javier F. Serrador)
+  - lt (Åœygimantas BeruÄka)
+  - pt (Duarte Loreto)
+  - pt_BR (Raphael Higino)
+  - sq (Elian Myftiu)
+  - sv (Christian Rose)
+
+Downloading
+===========
+You can get it from :
+ftp://ftp.gnome.org/pub/GNOME/sources/system-tools-backends/1.1/
