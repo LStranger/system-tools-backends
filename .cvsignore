@@ -24,7 +24,7 @@ replace.pl
 report.pl
 service.pl
 shares-conf
-shares.pl
+share.pl
 time-conf
 users-conf
 util.pl
