@@ -133,6 +133,7 @@ sub be_ensure_local_host_entry
 
 sub xml_parse
 {
+  my $tree, %hash;
   # Scan XML to tree.
 
   $tree = &be_xml_scan;
@@ -142,13 +143,13 @@ sub xml_parse
 
   while (@$tree)
   {
-    if ($$tree[0] eq "network") { &xml_parse_network ($$tree[1]); }
+    if ($$tree[0] eq "network") { &xml_parse_network ($$tree[1], \%hash); }
 
     shift @$tree;
     shift @$tree;
   }
 
-  return($tree);
+  return(\%hash);
 }
 
 # <network>...</network>
@@ -156,40 +157,45 @@ sub xml_parse
 sub xml_parse_network
 {
   my $tree = $_[0];
+  my $hash = $_[1];
+  my (@searchdomain, @nameserver, @order, %statichost, %interface);
 
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "hostname")        { $cf_hostname = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "domain")          { $cf_domain = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "hostnamereverse") { $cf_hostname_reverse = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "domainreverse")   { $cf_domain_reverse = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "workgroup")       { $cf_workgroup = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "description")     { $cf_description = &be_xml_get_text($$tree[1]); }
-    elsif ($$tree[0] eq "winsserver")      { $cf_winsserver = &be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "searchdomain")    { push(@cf_searchdomains, &be_xml_get_word($$tree[1])); }
-    elsif ($$tree[0] eq "nameserver")      { push(@cf_nameservers, &be_xml_get_word($$tree[1])); }
-    elsif ($$tree[0] eq "statichost")      { &xml_parse_statichost($$tree[1]); }
-    elsif ($$tree[0] eq "order")           { &xml_parse_order($$tree[1]); }
-    elsif ($$tree[0] eq "hostmatch")       { &xml_parse_hostmatch($$tree[1]); }
-    elsif ($$tree[0] eq "interface")       { &xml_parse_interface($$tree[1]); }
+    if    ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &be_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &be_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "workgroup")       { $$hash{"workgroup"} = &be_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "description")     { $$hash{"description"} = &be_xml_get_text ($$tree[1]); }
+    elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &be_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "hostmatch")       { $$hash{"hostmatch"} = &be_xml_get_text ($$tree[1]); }
+    elsif ($$tree[0] eq "order")           { push (@order, &be_xml_get_word ($$tree[1])); }
+    elsif ($$tree[0] eq "searchdomain")    { push (@searchdomain, &be_xml_get_word ($$tree[1])); }
+    elsif ($$tree[0] eq "nameserver")      { push (@nameserver, &be_xml_get_word ($$tree[1])); }
+    elsif ($$tree[0] eq "statichost")      { &xml_parse_statichost ($$tree[1], \%statichost); }
+    elsif ($$tree[0] eq "interface")       { &xml_parse_interface ($$tree[1], \%interface); }
 
     shift @$tree;
     shift @$tree;
   }
-}
 
+  $$hash{"order"} = \@order unless $#order < 0;
+  $$hash{"searchdomain"} = \@order unless $#searchdomain < 0;
+  $$hash{"nameserver"} = \@order unless $#nameserver < 0;
+  $$hash{"statichost"} = \%statichost unless scalar keys %statichost == 0;
+  $$hash{"interface"} = \%interface unless scalar keys %interface == 0;
+}
 
 # <network><statichost>...</statichost></network>
 
 sub xml_parse_statichost
 {
   my $tree = $_[0];
+  my $statichost = $_[1];
   my $ip;
   my @alias;
 
-  push(@cf_statichosts, &be_read_boolean($$tree[0]->{enabled}));
   shift @$tree;
 
   while (@$tree)
@@ -203,69 +209,31 @@ sub xml_parse_statichost
 
   if ($ip =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
   {
-    push(@cf_statichosts, $ip);
-    push(@cf_statichosts, [@alias]);
-  }
-  else
-  {
-    # Print warning message: IP is not well-formed.
+    $$statichost{$ip} = \@alias;
   }
 }
-
-
-# <network><order>...</order></network>
-
-sub xml_parse_order
-{
-  my $tree = $_[0];
-
-  shift @$tree;  # Skip attributes.
-
-  while (@$tree)
-  {
-    if ($$tree[0] eq "") { shift @$tree; shift @$tree; next; }
-    push(@cf_order, $$tree[0]);
-
-    shift @$tree;
-    shift @$tree;
-  }
-}
-
-
-# <network><hostmatch return=... /></network>
-
-sub xml_parse_hostmatch
-{
-  my $tree = $_[0];
-
-  # Check attribute; 'all' or 'first'.
-
-  if ($$tree[0]->{return} eq "all") { $cf_hostmatch = 0; }
-  else { $cf_hostmatch = 1; }
-}
-
 
 # <interface>...</interface>
 
 sub xml_parse_interface
 {
   my $tree = $_[0];
-  my %interface;
+  my $interface = $_[1];
+  my %hash;
   my $dev;
 
   shift @$tree;
   
   while (@$tree)
   {
-    $interface{$$tree[0]} = &be_xml_get_word ($$tree[1]);
+    $hash{$$tree[0]} = &be_xml_get_word ($$tree[1]);
 
     shift @$tree;
     shift @$tree;
   }
 
-  $dev = $interface{"dev"};
-  delete $interface{"dev"};
-  $$cf_nw_interfaces{$dev} = { %interface };
+  $dev = $hash{"dev"};
+  $$interface{$dev} = \%hash;
 }
 
 
@@ -532,18 +500,13 @@ sub set_immediate
 
 sub set
 {
+  my $hash;
+  
   &be_begin ();
-  &xml_parse ();
+  $hash = &xml_parse ();
 
-  &write_smb_conf (); &be_progress(10);
-  &write_rc_config (); &be_progress(20);
-  &write_sysconfig_network (); &be_progress(30);
-#  &write_defaultdomain (); &be_progress(40);
-  &write_hostname (); &be_progress(50);
-  &write_resolv_conf (); &be_progress(60);
-  &write_hosts (); &be_progress(70);
-  &write_host_conf (); &be_progress(80);
-  &be_ensure_local_host_entry ($cf_hostname);
+  &xst_network_conf_set ($hash);
+  &be_ensure_local_host_entry ($$hash{"hostname"});
 
   # network interface configuring
   &set_interfaces (); &be_progress (90);
@@ -562,10 +525,12 @@ sub set
 
 sub filter
 {
+  my $hash;
+  
   &be_begin ();
-  &xml_parse ();
+  $hash = &xml_parse ();
   &be_end ();
-  &xml_print ();
+  &xml_print ($hash);
 }
 
 

@@ -1,3 +1,7 @@
+2001-01-26  Arturo Espinosa  <arturo@ximian.com>
+
+	* network-conf.in: parsing now follows the new hash structure.
+
 2001-01-26  Chema Celorio  <chema@celorio.com>
 
 	* be.pl.in: if $verbose, print the file name before it is
