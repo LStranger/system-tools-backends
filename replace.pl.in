@@ -576,73 +576,73 @@ sub xst_replace_ini_bool
 }
 
 # *cap replacement methods.
-sub xst_replace_cap
-{
-  my ($file, $section, $var, $value) = @_;
-  my ($buff, $i, $found_flag, $ret);
-  my ($pre_space, $post_comment, $sec_save);
-
-  $buff = &xst_file_buffer_load ($file);
-#  &xst_file_buffer_join_lines ($buff);
-  $found_flag = 0;
-
-  foreach $i (@$buff)
-  {
-    $pre_space = $post_comment = "";
-    
-    chomp $i;
-    $pre_space = $1    if $i =~ s/^([ \t]+)//;
-    $post_comment = $1 if $i =~ s/^([ \t]*[\#].*)//;
-    
-    if ($i ne "")
-    {
-      if ($i =~ /^$section[|:]/i)
-      {
-        $i =~ s/^($section)//i;
-        $sec_save = $1;
-        $found_flag = 1;
-      }
-
-      if ($found_flag)
-      {
-        if ($i =~ /^[a-z0-9]+[|:]/)
-        {
-          $i = "\t:$var=$value:\n$i";
-          $found_flag = 2;
-        }
-
-        if ($found_flag && $i =~ /^:$var[=:]/i)
-        {
-          if ($value ne "")
-          {
-            $i =~ s/^(:$var)[^:]*/$1=$value/i;
-          }
-          else
-          {
-            $i = "";
-          }
-          $found_flag = 2;
-        }
-      }
-    }
-
-    if ($found_flag && $sec_save ne "")
-    {
-      $i = $sec_save . $i;
-      $sec_save = "";
-    }
-    
-    $i = $pre_space . $i . $post_comment . "\n";
-    last if $found_flag == 2;
-  }
-
-  push @$buff, "\n$section:\\\n" if (!$found_flag);
-  push @$buff, "\t:$var=$value:\n" if ($found_flag < 2 && $value ne "");
-  
-  &xst_file_buffer_clean ($buff);
-  $ret = &xst_file_buffer_save ($buff, $file);
-  return $ret;
-}
+#sub xst_replace_cap
+#{
+#  my ($file, $section, $var, $value) = @_;
+#  my ($buff, $i, $found_flag, $ret);
+#  my ($pre_space, $post_comment, $sec_save);
+#
+#  $buff = &xst_file_buffer_load ($file);
+##  &xst_file_buffer_join_lines ($buff);
+#  $found_flag = 0;
+#
+#  foreach $i (@$buff)
+#  {
+#    $pre_space = $post_comment = "";
+#    
+#    chomp $i;
+#    $pre_space = $1    if $i =~ s/^([ \t]+)//;
+#    $post_comment = $1 if $i =~ s/^([ \t]*[\#].*)//;
+#    
+#    if ($i ne "")
+#    {
+#      if ($i =~ /^$section[|:]/i)
+#      {
+#        $i =~ s/^($section)//i;
+#        $sec_save = $1;
+#        $found_flag = 1;
+#      }
+#
+#      if ($found_flag)
+#      {
+#        if ($i =~ /^[a-z0-9]+[|:]/)
+#        {
+#          $i = "\t:$var=$value:\n$i";
+#          $found_flag = 2;
+#        }
+#
+#        if ($found_flag && $i =~ /^:$var[=:]/i)
+#        {
+#          if ($value ne "")
+#          {
+#            $i =~ s/^(:$var)[^:]*/$1=$value/i;
+#          }
+#          else
+#          {
+#            $i = "";
+#          }
+#          $found_flag = 2;
+#        }
+#      }
+#    }
+#
+#    if ($found_flag && $sec_save ne "")
+#    {
+#      $i = $sec_save . $i;
+#      $sec_save = "";
+#    }
+#    
+#    $i = $pre_space . $i . $post_comment . "\n";
+#    last if $found_flag == 2;
+#  }
+#
+#  push @$buff, "\n$section:\\\n" if (!$found_flag);
+#  push @$buff, "\t:$var=$value:\n" if ($found_flag < 2 && $value ne "");
+#  
+#  &xst_file_buffer_clean ($buff);
+#  $ret = &xst_file_buffer_save ($buff, $file);
+#  return $ret;
+#}
 
 sub xst_replace_remove_cap_section
 {
@@ -694,6 +694,197 @@ sub xst_replace_remove_cap_section
 
   &xst_file_buffer_clean ($buff);
   $ret = &xst_file_buffer_save ($buff, $file);
+  return $ret;
+}
+
+# Load a printcap file to buffer, join \ lines and split them back up into a
+# 'one option, printtool comment or section name per line' format.
+sub xst_replace_printcap_buffer_load
+{
+  my ($file) = @_;
+  my ($inbuf, @outbuf);
+
+  $inbuf = &xst_file_buffer_load ($file);
+  &xst_file_buffer_join_lines ($inbuf);
+
+  for $i (@$inbuf)
+  {
+    my ($comment) = ("");
+
+    chomp $i;
+    $comment = $1 if $i =~ s/^([ \t]*[\#].*)//;
+
+    if ($i ne "")
+    {
+      my @line = split /:/, $i;
+
+      if ($i =~ /^[a-z0-9]+/i)
+      {
+        push @outbuf, (@line [0] . ":\n");
+        shift @line;
+      }
+
+      for $elem (@line)
+      {
+        $elem =~ s/^[ \t]//;
+        $elem =~ s/[ \t]$//;
+        if ($elem ne "")
+        {
+          push @outbuf, ("\t:$elem:\n");
+        }
+      }
+    }
+    elsif ($comment ne "")
+    {
+      push @outbuf, ($comment . "\n");
+    }
+    else
+    {
+      push @outbuf, "\n";
+    }
+  }
+
+  return \@outbuf;
+}
+
+# Save a printcap buffer to file. This doesn't do any extra processing for now,
+# but it may do so in the future.
+sub xst_replace_printcap_buffer_save
+{
+  my ($file, $buf) = @_;
+  my $ret;
+
+  &xst_file_buffer_clean ($buf);
+  $ret = &xst_file_buffer_save ($buf, $file);
+  return $ret;
+}
+
+# Find next printer definition, returning (printtool-comment-lineno, stanza-name-lineno).
+sub xst_replace_printcap_get_next_stanza
+{
+  my ($buf, $line_no) = @_;
+  my ($last_printtool_line) = (-1);
+
+  while ($line_no <= $#$buf)
+  {
+    if ($$buf [$line_no] =~ /^\#\#PRINTTOOL3\#\#/)
+    {
+      $last_printtool_line = $line_no;
+    }
+    elsif ($$buf [$line_no] =~ /^[a-z0-9]+/i)
+    {
+      return ($last_printtool_line, $line_no);
+    }
+
+    $line_no++;
+  }
+
+  return (-1, -1);
+}
+
+# Find next printer option.
+sub xst_replace_printcap_get_next_option
+{
+  my ($buf, $line_no) = @_;
+
+  while ($line_no <= $#$buf)
+  {
+    if ($$buf [$line_no] =~ /^\#\#PRINTTOOL3\#\#/ ||
+        $$buf [$line_no] =~ /^[a-z0-9]+/i)
+    {
+      last;
+    }
+
+    if ($$buf [$line_no] =~ /^\t:/)
+    {
+      return $line_no;
+    }
+
+    $line_no++;
+  }
+
+  return -1;
+}
+
+sub xst_replace_printcap_parse_stanza
+{
+  my ($stanza) = @_;
+  my ($key);
+
+  $key = $1 if $stanza =~ /^([a-z0-9]+)/i;
+  return $key;
+}
+
+sub xst_replace_printcap_parse_option
+{
+  my ($option) = @_;
+  my ($key, $value);
+
+  ($key, $value) = ($option =~ /^\t:([a-z0-9]+)[\#=]?([a-z0-9]*)/i);
+  return ($key, $value);
+}
+
+# Locate stanza line for $printer in $buf, starting at $line_no.
+sub xst_replace_printcap_find_stanza
+{
+  my ($buf, $line_no, $printer) = @_;
+  my ($printtool_line_no, $found_printer);
+
+  while ((($printtool_line_no, $line_no) = &xst_replace_printcap_get_next_stanza ($buf, $line_no)))
+  {
+    if ($line_no == -1) { last; }
+
+    $found_printer = &xst_replace_printcap_parse_stanza ($$buf [$line_no]);
+    return ($printtool_line_no, $line_no) if ($found_printer eq $printer);
+    $line_no++;
+  }
+
+  return (-1, -1);
+}
+
+# Search buffer for option with key $key, starting
+# at $line_no position. Return line number, or -1 if not found.
+sub xst_replace_printcap_find_option
+{
+  my ($buf, $line_no, $key) = @_;
+  my $found_key;
+
+  while (($line_no = &xst_replace_printcap_get_next_option ($buf, $line_no)) != -1)
+  {
+    ($found_key) = &xst_replace_printcap_parse_option ($$buf [$line_no]);
+    return $line_no if ($found_key eq $key);
+    $line_no++;
+  }
+
+  return -1;
+}
+
+sub xst_replace_printcap
+{
+  my ($file, $section, $var, $value) = @_;
+  my ($printtool_line_no, $stanza_line_no, $option_line_no);
+  my ($buf, $ret);
+
+  $buf = &xst_replace_printcap_buffer_load ($file);
+
+  ($printtool_line_no, $stanza_line_no) = &xst_replace_printcap_find_stanza ($buf, 0, $section);
+  if ($stanza_line_no == -1)
+  {
+    # TODO: Create stanza line here.
+    return -1;
+  }
+
+  $option_line_no = &xst_replace_printcap_find_option ($buf, $stanza_line_no + 1, $var);
+  if ($option_line_no == -1)
+  {
+    # TODO: Create option line here.
+    return -1;
+  }
+
+  # TODO: Handle different types, i.e. #, = and boolean.
+  $$buf [$option_line_no] = "\t:" . $var . "=" . $value . ":\n";
+
+  $ret = &xst_replace_printcap_buffer_save ($file, $buf);
   return $ret;
 }
 

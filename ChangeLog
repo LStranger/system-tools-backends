@@ -1,3 +1,17 @@
+2001-06-27  Hans Petter Jansson  <hpj@ximian.com>
+
+	* replace.pl.in (xst_replace_cap): Comment out for now, we've got
+	  something better up our sleeves.
+	  (xst_replace_printcap_buffer_load): Implement.
+	  (xst_replace_printcap_buffer_save): Implement.
+	  (xst_replace_printcap_get_next_stanza): Implement.
+	  (xst_replace_printcap_get_next_option): Implement.
+	  (xst_replace_printcap_parse_stanza): Implement.
+	  (xst_replace_printcap_parse_option): Implement.
+	  (xst_replace_printcap_find_stanza): Implement.
+	  (xst_replace_printcap_find_option): Implement.
+	  (xst_replace_printcap): Implement.
+
 2001-06-27  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* xml.pl.in (xst_xml_read_file): Code readability.
