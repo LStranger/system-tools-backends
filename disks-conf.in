@@ -127,7 +127,6 @@ sub update_partition
    $bootable, $detected) = @_;
 
   if ($fs eq "auto") { $fs = ""; }
-  print "hola\n";
 
   for ($i = 0; $cf_disks[$i]; $i++)
   {
