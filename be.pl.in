@@ -666,7 +666,12 @@ sub be_open_read_from_names
     
   foreach $name (@_)
   {
-    if (open(FILE, "$be_prefix/$name")) { $fname = $name; last; }
+    if (open(FILE, "$be_prefix/$name"))
+    {
+	   print STDERR "be_open_read_from_names:$name\n" if $be_verbose;
+	   $fname = $name;
+	   last;
+    }
   }
   
   (my $fullname = "$be_prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
