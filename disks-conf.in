@@ -491,15 +491,8 @@ sub read_fstab
        close HANDLE;
     } else {
        &update_disk_data ($disk, "present", 0);
-
-       # by default, a removable device is a disk
-       if ($fs eq "iso9660") {
-	  $media = "cdrom";
-       } else {
-	  $media = "disk";
-       }
-
-       &update_disk_data ($disk, "media", $media);
+       # FIXME removable disk by defualt
+       &update_disk_data ($disk, "media", "disk");
     }
 
     
@@ -769,9 +762,15 @@ sub scan_scsi_bus
   
             %scsi_data->{'device'} = $dev;
             %scsi_data->{'id'} = $scsi_info[0] & 0xff;
-      	    %scsi_data->{'lun'} = ($scsi_info[0] >> 8) & 0xff;
+	    %scsi_data->{'lun'} = ($scsi_info[0] >> 8) & 0xff;
 	    %scsi_data->{'channel'} = ($scsi_info[0] >> 16) & 0xff;
 	    %scsi_data->{'host'} = (($scsi_info[0] >> 24) & 0xff);
+
+	    if (ioctl(RD, $SCSI_IOCTL_GET_BUS_NUMBER, $arg)) {
+	       my @args = unpack ("CCCCCC", $arg);
+	       %scsi_data->{'host'} = $args[0];
+	    }
+	       
 
             push (@scsi, \%scsi_data);
 	    push (@$list_devices, $dev);
@@ -779,7 +778,7 @@ sub scan_scsi_bus
 	 close (RD);
       }
    }
-   
+  
    my $vendor;
    my $model;
    my $media;
@@ -796,8 +795,8 @@ sub scan_scsi_bus
          
          $i = 0;
          while ($scsi[$i]) {
-            if ($scsi[$i]->{'id'} eq int ($id) && $scsi[$i]->{'lun'} eq int ($lun) &&
-                $scsi[$i]->{'channel'} eq int ($channel) && $scsi[$i]->{'host'} eq int ($host)) {
+            if ($scsi[$i]->{'id'} == int ($id) && $scsi[$i]->{'lun'} == int ($lun) &&
+                $scsi[$i]->{'channel'} == int ($channel) && $scsi[$i]->{'host'} == int ($host)) {
                 last;
             }
             $i++;
@@ -1240,14 +1239,14 @@ sub sort_by_media
 {
    my %medias = ("disk" => 1, "cdrom" => 2, "floppy" => 3, "" => 4);
 
-   my $ia = $a->{media};
+   $ia = $a->{media};
    $ia =~ s/^\s*//;
    $ia =~ s/\s*$//;
 
-   my $ib = $b->{media};
+   $ib = $b->{media};
    $ib =~ s/^\s*//;
    $ib =~ s/\s*$//;
-
+   
    if ($ia eq $ib) {
       return ($a->{device} gt $b->{device});
    } else {
@@ -1466,31 +1465,33 @@ sub test_xml
     system ("cat $file");
 }
 
-sub msf2lba
-{
-   ($m, $s, $f) = @_;
+#sub msf2lba
+#{
+#   ($m, $s, $f) = @_;
 
-   return int (((($m * 60) + $s) * 75 + $f) - 150);
-}
+#   return int (((($m * 60) + $s) * 75 + $f) - 150);
+#}
 
-sub lba2msf
-{
-   $lba = @_;
+#sub lba2msf
+#{
+#  $lba = @_;
 
-   $lba += 150;
-   $lba &= 0xffffff;
+#   $lba += 150;
+#   $lba &= 0xffffff;
 
-   my $m = int ($lba / (60 * 75));
-   $lba %= (60 * 75);
+#   my $m = int ($lba / (60 * 75));
+#   $lba %= (60 * 75);
 
-   return ($m, int ($lba / 75), int ($lba % 75));
-}
+#   return ($m, int ($lba / 75), int ($lba % 75));
+#}
 
 sub get_cdrom_disc_info
 {
-   my ($device) = @_;
+   my ($device, $alias) = @_;
 
-   if (!open (RD, "<$device")) {
+   if ($alias eq " ") { undef ($alias); }
+   
+   if (!sysopen (RD, $device, O_RDONLY | O_NONBLOCK)) {
       &gst_xml_print_state_tag ("empty", 1);
       return;
    }
@@ -1533,14 +1534,15 @@ sub get_cdrom_disc_info
    } else {
       $cdtype = "unknown";
    }
-	 
-   &gst_xml_print_state_tag ("empty", 0);
 
    if (!ioctl (RD, $CDROMREADTOCHDR, $tochdr)) {
-      &gst_xml_print_line ("<type-content>" . "blank"  . "</type-content>\n");
+      #&gst_xml_print_line ("<type-content>" . "blank"  . "</type-content>\n");
+      &gst_xml_print_state_tag ("empty", 1);
       close (RD);
       return;
    }
+  
+   &gst_xml_print_state_tag ("empty", 0);
    
    my ($start, $end);
    if ($^O =~ /bsd/) {
@@ -1639,43 +1641,27 @@ sub get_cdrom_disc_info
 	 if ($size) { &gst_xml_print_line ("<size>" . $size . "</size>\n"); }
       } else {
 	 &gst_xml_print_state_tag ("mounted", 0);
+	 # try to get mount point from fstab
+	 if ($device && ($line = `cat /etc/fstab | grep $device`)) {
+	    my @sline = split(/[ \n\r\t]+/, $line);
+	    my $point = $sline[1];
+	    if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); } 
+	 } elsif ($alias && ($line = `cat /etc/fstab | grep $alias`)) {
+	    my @sline = split(/[ \n\r\t]+/, $line);
+	    my ($point) = $sline[1];
+	    if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+	 }
       }
    }
-   
-   #if ($data gt 0) {
-      #   if ($audio gt 0) {
-	 # &gst_xml_print_line ("<type-content>" . "mixed"  . "</type-content>\n");
-	 #&gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
-	 #&gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
-	 #&gst_xml_print_line ("<data-tracks>" . $data . "</data-tracks>\n");
-	 #} else {
-	    #&gst_xml_print_line ("<type-content>" . "data"  . "</type-content>\n");
-	    #}
-      
-	    #if (`mount | grep $device`) {
-	       #&gst_xml_print_state_tag ("mounted", 1);
-	       #my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
-	       #if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
-	       #my ($size) = `df $device | grep $device | awk  '/\\/dev/ {print \$2}'`;
-	       #if ($size) { &gst_xml_print_line ("<size>" . $size . "</size>\n"); }
-	       #} else {
-		  #&gst_xml_print_state_tag ("mounted", 0);
-		  #}
-
-		  #} else {
-		     #&gst_xml_print_line ("<type-content>" . "audio"  . "</type-content>\n");
-		     #&gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
-		     #&gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
-		     #}
 }
   
 sub cdrom_disc_info
 {
-   my ($tool, $device) = @_;
+   my ($tool, $device, $alias) = @_;
    
    &gst_report_end ();
    &gst_xml_print_begin ("disc_info");
-   &get_cdrom_disc_info ($device);
+   &get_cdrom_disc_info ($device, $alias);
    &gst_xml_print_end ("disc_info");
 }	       
 
@@ -1877,7 +1863,7 @@ $directives = {
                        "Return a XML file to the frontend." ],
   "dev_speed"       => [ \&dev_speed, ["device"],
                        "Return the speed of a device in kb/s" ],
-  "cdrom_disc_info" => [ \&cdrom_disc_info, ["device"],
+  "cdrom_disc_info" => [ \&cdrom_disc_info, ["device", "alias"],
                        "Return info about the cdrom discs"],
   "mount"           => [ \&mount_fs, ["device", "media", "typefs", "point", "mounted", "listed", "uid"], 
                        "Immediatly mount or umount a given partition"],
