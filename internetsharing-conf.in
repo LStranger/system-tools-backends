@@ -111,7 +111,7 @@ sub xml_parse_fwrules
       else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
-  $hash{"landev"} = $landevs;
+  $$hash{"landev"} = $landevs;
 
   return $hash;
 }

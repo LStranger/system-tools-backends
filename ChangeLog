@@ -1,5 +1,9 @@
 2001-08-06  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* internetsharing-conf.in (xml_parse_fwrules): landev
+	tag support, to set which devices are attached to lans
+	we want to masquerade to the exterior.
+
 	* Makefile.am (PERLBODY): Generate ishare.pl.
 
 	* ishare.pl.in: Added. Moved all xst_ishare* functions
