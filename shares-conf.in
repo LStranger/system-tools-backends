@@ -392,6 +392,8 @@ sub xml_print_import_smb
   &xst_xml_enter ();
 
   &xml_print_import_common ($fsinfo);
+  &xst_xml_print_pcdata ("user",     &xst_filesys_info_get_option ($fsinfo, "username"));
+  &xst_xml_print_pcdata ("password", &xst_filesys_info_get_option ($fsinfo, "password"));
 
   &xst_xml_leave ();
   &xst_xml_print_line ("</import>");

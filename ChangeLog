@@ -1,3 +1,8 @@
+2001-06-06  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in (xml_print_import_smb): Print <user> and <password> tags.
+	  Fixes bug #3222.
+
 2001-06-06  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* package-conf.in: contributed by Richard Bos <allabos@freeler.nl>
