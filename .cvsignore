@@ -6,10 +6,13 @@ memory-conf
 nameresolution-conf
 networking-conf
 network-conf
+new_network-conf
 shares-conf
 time-conf
 users-conf
 be.pl
+parse.pl
+network.pl
 
 
 
