@@ -669,9 +669,9 @@ sub del_user
   my ($command);
 	
   if ($gst_dist =~ /^freebsd/) {
-    $command = "$cmd_pw userdel -r -n \'" . $$data[$users_prop_map{"login"}] . "\' ";
+    $command = "$cmd_pw userdel -n \'" . $$data[$users_prop_map{"login"}] . "\' ";
   } else {
-    $command = "$cmd_userdel -r \'" . $$data[$users_prop_map{"login"}] . "\'";
+    $command = "$cmd_userdel \'" . $$data[$users_prop_map{"login"}] . "\'";
   }
   &gst_file_run ($command);
 }

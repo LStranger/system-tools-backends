@@ -1,5 +1,10 @@
 2003-09-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* users-conf.in (del_user): made it not to delete the deleted user's
+	  home, it's a more safe default
+
+2003-09-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* boot.pl.in (gst_boot_get_entry_parse_table): pass the correct
 	  parameters to gst_boot_grub_parse_initrd (), fixes bug #121744
 
