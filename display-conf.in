@@ -36,6 +36,10 @@ require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/x.pl";
 }
 
+use File::Copy;
+use IO::File;
+use POSIX qw(tmpnam);
+
 # use strict;
 
 # --- Tool information --- #
@@ -155,12 +159,13 @@ sub filter
 sub test
 {
   my $testX_cmd = "___scriptsdir___/testX";
-  my $tmp_file = "/tmp/XF86Config-tmp";
   my $real_file = &distro_file ();
 
-  # TODO: Check $res after xst_file_run
-  
-  my $res = &xst_file_run ("cp $real_file $tmp_file");
+  my $tmp_file;
+  do { $tmp_file = tmpnam () }
+  until my $fh = IO::File->new ($tmp_file, O_RDWR|O_CREAT|O_EXCL);
+
+  copy ($real_file, $tmp_file);
   
   my $config = &x_parse ($tmp_file);
   my $xml_config = &xml_parse ();
@@ -169,18 +174,19 @@ sub test
   &x_config_set ($tmp_file, $config, $xml_config);
 
   $res = &xst_file_run ("$testX_cmd --config=$tmp_file");
-  $res = &xst_file_run ("rm -f $tmp_file");
+  unlink ($tmp_file);
   
   &xst_report_end ();
 }
 
 sub probe
 {
+  my ($tool, $direct) = @_;  
   my $cfg_file = &distro_file ();
   return unless $cfg_file;
-  
+
   my $config = &x_parse ($cfg_file);
-  &x_probe ($cfg_file, $config);
+  &x_probe ($cfg_file, $config, $direct);
 }
 
 # --- Main --- #
@@ -193,7 +199,7 @@ $directives = {
   "set"    => [ \&set,    [], "" ],
   "filter" => [ \&filter, [], "" ],
   "test"   => [ \&test,   [], "Test settings." ],
-  "probe"  => [ \&probe,  [], "Return list of valid standard modelines." ],
+  "probe"  => [ \&probe,  [ "direct*" ], "Return list of valid standard modelines." ],
 };
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);

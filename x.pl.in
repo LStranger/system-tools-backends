@@ -26,6 +26,9 @@ require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
 
 use Text::ParseWords;
+use File::Copy;
+use IO::File;
+use POSIX qw(tmpnam);
 use strict;
 
 my $sections = {};
@@ -172,6 +175,7 @@ my $x3_sections = {
 };
 
 my @x_colordepths = (8, 15, 16, 24);
+my $x_probe_file = "___scriptsdir___/x-probe.xml";
 
 # Standard modelines (VESA plus couple extras)
 
@@ -918,8 +922,11 @@ sub x_xml_parse_section
     
     if (exists $keywords->{$$tree[0]}) {
       $func = $keywords->{$$tree[0]}[1];
-      if ($func eq "") { print STDERR "$tree->[0]\n"; }
-      else { $ref = &$func ($$tree[0], $$tree[1]); }
+      if ($func eq "") {
+        # TODO:
+        # print STDERR "$tree->[0]\n";
+        1;
+      } else { $ref = &$func ($$tree[0], $$tree[1]); }
     }
     
     elsif (exists $options->{$$tree[0]}) {
@@ -1254,7 +1261,7 @@ sub x_update_keyword
     
     else {
       # TODO: Implement, give warning.
-      print STDERR "x_update_keyword: $type\n";
+      # print STDERR "x_update_keyword: $type\n";
       1;
     }
 
@@ -1335,7 +1342,8 @@ sub x_update_section
 
       else {
         #TODO: Give error;
-        print STDERR "x_update_section: $kw\n";
+        # print STDERR "x_update_section: $kw\n";
+        1;
       }
     }
     
@@ -1639,8 +1647,11 @@ sub x_probe_save
   return unless $orig_file;
   return unless $config;
 
-  my $cfg_fname = '/tmp/gewgv';
-  my $res = &xst_file_run ("cp $orig_file $cfg_fname");
+  my $cfg_fname;
+  do { $cfg_fname = tmpnam () }
+  until my $fh = IO::File->new ($cfg_fname, O_RDWR|O_CREAT|O_EXCL);
+
+  copy ($orig_file, $cfg_fname);
   my $orig_cfg = &x_parse ($cfg_fname);
 
   &x_config_set ($cfg_fname, $orig_cfg, $config);
@@ -1690,24 +1701,73 @@ sub x_probe_print_xml
 {
   my $list = shift;
 
-  return unless $list;
+  return unless $list;  
 
+  &xst_xml_print_begin ();
+  &xst_xml_print_vspace ();
+  
   foreach my $depth (keys %$list) {
-    &xst_xml_container_enter ("$depth");
+    &xst_xml_print_line ("<Depth value=\"$depth\">");
+    &xst_xml_enter ();
     &x_xml_print_modelines (0, $list->{$depth});
-    &xst_xml_container_leave ();
-
+    &xst_xml_leave ();
+    &xst_xml_print_line (q(</Depth>));
   }
+
+  &xst_xml_print_end ();
+}
+
+# Internal
+sub x_probe_store
+{
+  my $config = shift;
+  my $list = shift;
+
+  return unless $config;
+  # TODO: Write monitor and card information also.
+
+  open (F, ">$x_probe_file");
+  if (F) {
+    local *STDOUT = *F;
+    &x_probe_print_xml ($list);
+    close (F);
+  }
+}
+
+# Internal
+sub x_probe_load
+{
+  my $config = shift;
+
+  return unless $config;
+  # TODO: Check if monitor || card is changed
+
+  open (F, "$x_probe_file");
+  if (F) {
+    my @content = <F>;
+    close (F);
+
+    print @content;
+    return 1;
+  }
+
+  return undef;
 }
 
 sub x_probe
 {
   my $orig_file = shift;
-  my $config = shift;  
+  my $config = shift;
+  my $direct = shift;
 
   return unless $orig_file;
   return unless $config;
 
+  # Finish reporting (yuck!)
+  &xst_report_end ();
+  
+  return if (!$direct && &x_probe_load ($config));
+  
   my $modes = &x_probe_get_modelines ($config);
   my $screen = &x_probe_get_screen ($config);
   my $monitor = &x_probe_get_monitor ($config, $screen);
@@ -1717,9 +1777,10 @@ sub x_probe
 
   my $cfg_file = &x_probe_save ($orig_file, $config);
   my $list = &x_probe_run ($cfg_file, $modes);
-  # TODO: delete_file ($cfg_file);
+  unlink ($cfg_file);
   
   &x_probe_print_xml ($list);
+  &x_probe_store ($config, $list);
 }
 
 

@@ -1,3 +1,12 @@
+2001-08-20  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in: Made probe caching. Removed some debugging messages.
+	Continued work on probe_* functions.
+
+	* display-conf.in: Use portable copy and delete functions.
+	(test): Get better temp file.
+	(probe): Probe could have arguments.
+
 2001-08-17  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot.pl.in (xst_boot_parse_global_kw): Report that no lilo.conf
