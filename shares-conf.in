@@ -1805,7 +1805,7 @@ sub get
 
   get_interfaces; be_print_progress ();          # Needed for primary interface detection.
   read_rc_config;                          # Ditto.
-  read_network_interfaces                  # Ditto
+  read_network_interfaces;                 # Ditto
   read_sysconfig_network;                  # Ditto.
   read_primary_interface;                  # IP subnet information.
   read_smb_conf; be_print_progress ();           # SMB workgroup.
