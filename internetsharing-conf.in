@@ -1508,7 +1508,7 @@ SEE ALSO
        ipfw(4)
 
 AUTHOR
-       Rusty Russell <rusty@linuxcare.com>.  Thanks also to  Hans
+       Rusty Russell rusty at linuxcare.com.  Thanks also to  Hans
        Persson	for detailed proofreading; I want him to read all
        my future documents!
 
