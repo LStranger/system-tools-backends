@@ -1,3 +1,7 @@
+2001-03-26  Tambet Ingo  <tambet@ximian.com>
+
+	* users-conf.in (write_logindefs): Implement.
+
 2001-03-26  Ryan Boren <rboren@fuzzybelly.org>
 
 	* backends/print-conf.in (xst_printcap_read): Fix spool

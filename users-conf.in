@@ -45,6 +45,7 @@ require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
+require "___scriptsdir___/replace.pl";
 
 
 $DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
@@ -325,6 +326,34 @@ sub read_profiles
 
   $path = &xst_file_get_data_path . "/users/profiles.xml";
   $profiles = &xst_buffer_load ($path);
+}
+
+sub write_logindefs
+{
+  my ($key);
+  local *FILE;
+  my $file = "";
+  
+  foreach $key (@login_defs_names)
+  {
+    if (open (FILE, $key))
+    {
+      &xst_debug_print_line ("write_logindefs:$key");
+      $file = $key;
+      last;
+    }
+  }
+
+  if ($file eq "") 
+  { 
+    &xst_report_warning (99, "Could not read \[@login_defs_names\]");
+    return;
+  }
+  
+  foreach $key (keys (%login_defs))
+  {
+    &xst_replace_split ($file, $login_defs_prop_map{$key}, "[ \t]+", $login_defs{$key});
+  }
 }
 
 sub write_group_passwd
@@ -947,6 +976,7 @@ sub set
   if ($xst_do_immediate)
   {
     &write_group_passwd ();
+    &write_logindefs ();
   }
 
   &xst_end();
