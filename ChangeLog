@@ -1,5 +1,11 @@
 2001-07-12  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network.pl.in (xst_network_rh62_interface_activate_by_dev):
+	Don't do ifdown on the background. ifdown is fast enough, and
+	launching ifup/ifdown almost at the same time doesn't seem like
+	a good idea.
+	(xst_network_suse70_interface_activate_by_dev): same.
+
 	* users-conf.in (xml_parse_users): Ignore files and shells
 	tags when parsing, instead of complaining.
 	(xml_parse_login_defs): files tag should be ignored here.
