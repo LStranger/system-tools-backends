@@ -404,6 +404,7 @@ sub xml_print_export_nfs
   &xst_xml_print_line ("<export type='nfs'>");
   &xst_xml_enter ();
 
+  &xst_xml_print_pcdata ("name", "unknown");
   &xst_xml_print_pcdata ("path", &xst_share_nfs_info_get_point ($info));
 
   for $client (@$client_table)
@@ -427,6 +428,7 @@ sub xml_print_export_smb
   &xst_xml_print_line ("<export type='smb'>");
   &xst_xml_enter ();
 
+  &xst_xml_print_pcdata    ("name",       &xst_share_smb_info_get_name    ($info));
   &xst_xml_print_pcdata    ("path",       &xst_share_smb_info_get_point   ($info));
   &xst_xml_print_pcdata    ("comment",    &xst_share_smb_info_get_comment ($info));
   &xst_xml_print_state_tag ("enabled",    &xst_share_smb_info_get_enabled ($info));
