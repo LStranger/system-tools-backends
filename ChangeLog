@@ -1,5 +1,11 @@
 2001-02-07  Hans Petter Jansson  <hpj@ximian.com>
 
+	* network.pl.in: Separated the parse/replace tables from the rest
+	  of the code. They are now returned by get_table functions that
+	  pick the table depending on the platform.
+
+2001-02-07  Hans Petter Jansson  <hpj@ximian.com>
+
 	* be.pl.in: Redid the platform naming scheme, added switch for
 	  manual override.
 

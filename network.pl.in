@@ -88,66 +88,26 @@ sub xst_network_sysconfig_ifaces_get_existing
 
 sub xst_network_interfaces_get
 {
-  my %dist_attrib =
-	 (
-	  redhat62 => {
-	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
-	    fn => {
-		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-	      CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
-		 IFACE => "#iface#"},
-	    table => [
-			    [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
-			    [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
-			    [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
-			    [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
-			    [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
-			    [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
-			    [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
-			    [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
-			    [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
-			    [ disconnect_timeout, \&xst_parse_sh,      IFCFG, DISCONNECTTIMEOUT ],
-			    [ retry_timeout,      \&xst_parse_sh,      IFCFG, RETRYTIMEOUT ],
-			    [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
-			    [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
-			    [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
-			    [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
-			    [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
-			    [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
-			    [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
-			    [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
-			    [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
-			    [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
-			    [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
-			    [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
-			    [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
-			    [ enabled,            \&xst_network_interface_active, IFACE ]
-			    ]
-				 }
-	  );
-  my %dist_cmp = (
-			   "^redhat.*" => "redhat62"
-			   );
-  my (%hash, %fn, @ifaces);
+  my (%table, %hash, %fn, @ifaces);
   my ($dist, $value, $file, $proc);
   my ($i, $j);
-  
-  $dist = &be_map_dist (%dist_cmp);
-  
-  %fn = %{$ {$dist_attrib{$dist}}{"fn"}};
-  $proc = $ {$dist_attrib{$dist}}{"ifaces_get"};
+
+  %table = &xst_network_get_interfaces_get_table ();
+
+  %fn = %{$ {%table}{"fn"}};
+  $proc = $ {%table}{"ifaces_get"};
   @ifaces = &$proc ();
   foreach $i (@ifaces)
   {
     foreach $j (keys (%fn))
     {
-	 $value = $fn{$j};
-	 $value =~ s/\#iface\#/$i/;
-	 $ {$ {$dist_attrib{$dist}}{"fn"}}{$j} = $value;
+      $value = $fn{$j};
+      $value =~ s/\#iface\#/$i/;
+      $ {$ {$dist_attrib{$dist}}{"fn"}}{$j} = $value;
     }
-    
+
     $hash{$i} = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
-							    $ {$dist_attrib{$dist}}{"table"});
+                                       $ {$dist_attrib{$dist}}{"table"});
   }
 
   return \%hash;
@@ -155,36 +115,6 @@ sub xst_network_interfaces_get
 
 sub xst_network_conf_get
 {
-  my %dist_attrib =
-	 (
-	  redhat62 => {
-	    fn => {
-		 SYSCONFIG_NW => "/etc/sysconfig/network",
-		 RESOLV_CONF  => "/etc/resolv.conf",
-		 HOST_CONF    => "/etc/host.conf",
-		 HOSTS        => "/etc/hosts",
-	      SMB_CONF     => "/etc/smb.conf" },
-	    table => [
-			    [ auto,          \&xst_parse_sh_bool,           SYSCONFIG_NW, NETWORKING ],
-			    [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
-			    [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
-			    [ gateway,       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY],
-			    [ gateway_dev,   \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
-			    [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
-			    [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-			    [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-			    [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-			    [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-			    [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
-			    [ statichost,    \&xst_parse_split_hash,        HOSTS, "[ \t]+", "[ \t]+" ],
-			    [ workgroup,     \&xst_parse_ini,               SMB_CONF, "global", "workgroup" ],     
-			    [ description,   \&xst_parse_ini,               SMB_CONF, "global", "server string" ],    
-			    [ winsserver,    \&xst_parse_ini,               SMB_CONF, "global", "wins server" ],
-			    [ interface,     \&xst_network_interfaces_get ]
-			    ]
-				 }
-	  );
-  
   # mapping from regular expression, which will be compared to the string
   # "$be_dist,$be_dist_version,$be_system" to a string, which will be used as
   # a the key of the dist_attrib field to use.
@@ -210,43 +140,6 @@ sub xst_network_interfaces_set
 {
   my $value_hash = $_[0];
 
-  my %dist_attrib =
-	 (
-	  redhat62 => {
-	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
-	    fn => {
-		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-	      CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
-		 IFACE => "#iface#"},
-	    table => [
-			    [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
-			    [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
-			    [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
-			    [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
-			    [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
-			    [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
-			    [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
-			    [ remote_address,     \&xst_replace_sh,      IFCFG, REMIP ],
-			    [ login,              \&xst_replace_sh,      IFCFG, PAPNAME ],
-			    [ disconnect_timeout, \&xst_replace_sh,      IFCFG, DISCONNECTTIMEOUT ],
-			    [ retry_timeout,      \&xst_replace_sh,      IFCFG, RETRYTIMEOUT ],
-			    [ serial_port,        \&xst_replace_sh,      IFCFG, MODEMPORT ],
-			    [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
-			    [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
-			    [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
-			    [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
-			    [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
-			    [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
-			    [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
-			    [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],
-			    [ serial_escapechars, \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
-			    [ serial_defabort,    \&xst_replace_sh_bool, IFCFG, DEFABORT ],
-			    [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
-			    [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
-			    [ enabled,            \&xst_network_interface_active_set, IFACE ]
-			    ]
-				 }
-	  );
   my %dist_cmp = (
 			   "^redhat.*" => "redhat62"
 			   );
@@ -281,36 +174,6 @@ sub xst_network_conf_set
 {
   my $values_hash = $_[0];
   
-  my %dist_attrib =
-	 (
-	  redhat62 => {
-	    fn => {
-		 SYSCONFIG_NW => "/etc/sysconfig/network",
-		 RESOLV_CONF  => "/etc/resolv.conf",
-		 HOST_CONF    => "/etc/host.conf",
-		 HOSTS        => "/etc/hosts",
-	      SMB_CONF     => "/etc/smb.conf" },
-	    table => [
-			    [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
-			    [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
-			    [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
-			    [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
-			    [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
-			    [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
-			    [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-			    [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-			    [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-			    [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-			    [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
-			    [ statichost,    \&xst_replace_join_hash,        HOSTS, "[ \t]+", "[ \t]+" ],
-			    [ workgroup,     \&xst_replace_ini,              SMB_CONF, "global", "workgroup" ],     
-			    [ description,   \&xst_replace_ini,              SMB_CONF, "global", "server string" ],
-			    [ winsserver,    \&xst_replace_ini,              SMB_CONF, "global", "wins server" ],
-			    [ interface,     \&xst_network_interfaces_set ]
-			    ]
-				 }
-	  );
-  
   # mapping from regular expression, which will be compared to the string
   # "$be_dist,$be_dist_version,$be_system" to a string, which will be used as
   # a the key of the dist_attrib field to use.
@@ -327,4 +190,224 @@ sub xst_network_conf_set
   $res = &xst_replace_from_table ($ {$dist_attrib{$dist}}{"fn"},
 						    $ {$dist_attrib{$dist}}{"table"}, $values_hash);
   return;
+}
+
+
+sub xst_network_get_interfaces_parse_table
+{
+  my %dist_map =
+  (
+    "redhat-6.0" => "redhat-6.2",
+    "redhat-6.1" => "redhat-6.2",
+    "redhat-6.2" => "redhat-6.2"
+  );
+
+  my %dist_tables =
+  (
+    "redhat-6.2" =>
+    {
+      ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
+      fn =>
+      {
+        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE => "#iface#"
+      },
+      table =>
+      [
+        [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
+        [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
+        [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
+        [ broadcast,          \&xst_parse_sh,      IFCFG, BROADCAST ],
+        [ network,            \&xst_parse_sh,      IFCFG, NETWORK ],
+        [ mtu,                \&xst_parse_sh,      IFCFG, MTU ],
+        [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
+        [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
+        [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
+        [ disconnect_timeout, \&xst_parse_sh,      IFCFG, DISCONNECTTIMEOUT ],
+        [ retry_timeout,      \&xst_parse_sh,      IFCFG, RETRYTIMEOUT ],
+        [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
+        [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
+        [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
+        [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
+        [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
+        [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+        [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
+        [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
+        [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
+        [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+        [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
+        [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+        [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
+        [ enabled,            \&xst_network_interface_active, IFACE ]
+      ]
+    }
+  );
+
+  my $table = $dist_map{$be_dist};
+  if ($table) { return $dist_tables{$table}; }
+
+  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
+}
+
+
+sub xst_network_get_interfaces_replace_table
+{
+  my %dist_map =
+  (
+    "redhat-6.0" => "redhat-6.2",
+    "redhat-6.1" => "redhat-6.2",
+    "redhat-6.2" => "redhat-6.2"
+  );
+
+  my %dist_tables =
+  (
+    "redhat-6.2" =>
+    {
+      ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
+      fn =>
+      {
+        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
+        IFACE => "#iface#"
+      },
+      table =>
+      [
+        [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
+        [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
+        [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
+        [ broadcast,          \&xst_replace_sh,      IFCFG, BROADCAST ],
+        [ network,            \&xst_replace_sh,      IFCFG, NETWORK ],
+        [ mtu,                \&xst_replace_sh,      IFCFG, MTU ],
+        [ mru,                \&xst_replace_sh,      IFCFG, MRU ],
+        [ remote_address,     \&xst_replace_sh,      IFCFG, REMIP ],
+        [ login,              \&xst_replace_sh,      IFCFG, PAPNAME ],
+        [ disconnect_timeout, \&xst_replace_sh,      IFCFG, DISCONNECTTIMEOUT ],
+        [ retry_timeout,      \&xst_replace_sh,      IFCFG, RETRYTIMEOUT ],
+        [ serial_port,        \&xst_replace_sh,      IFCFG, MODEMPORT ],
+        [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
+        [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
+        [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
+        [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
+        [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
+        [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
+        [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
+        [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],
+        [ serial_escapechars, \&xst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+        [ serial_defabort,    \&xst_replace_sh_bool, IFCFG, DEFABORT ],
+        [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+        [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
+        [ enabled,            \&xst_network_interface_active_set, IFACE ]
+      ]
+    }
+  );
+
+  my $table = $dist_map{$be_dist};
+  if ($table) { return $dist_tables{$table}; }
+
+  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
+}
+
+
+sub xst_network_get_conf_parse_table
+{
+  my %dist_map =
+  (
+    "redhat-6.0" => "redhat-6.2",
+    "redhat-6.1" => "redhat-6.2",
+    "redhat-6.2" => "redhat-6.2"
+  );
+
+  my %dist_tables =
+  (
+    "redhat-6.2" =>
+    {
+      fn =>
+      {
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/smb.conf"
+      },
+      table =>
+      [
+        [ auto,          \&xst_parse_sh_bool,           SYSCONFIG_NW, NETWORKING ],
+        [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
+        [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
+        [ gateway,       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY],
+        [ gateway_dev,   \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
+        [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
+        [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
+        [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
+        [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
+        [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
+        [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
+        [ statichost,    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+        [ workgroup,     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+        [ description,   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+        [ winsserver,    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+        [ interface,     \&xst_network_interfaces_get ]
+      ]
+    }
+  );
+
+  my $table = $dist_map{$be_dist};
+  if ($table) { return $dist_tables{$table}; }
+
+  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
+}
+
+
+sub xst_network_get_conf_replace_table
+{
+  my %dist_map =
+  (
+    "redhat-6.0" => "redhat-6.2",
+    "redhat-6.1" => "redhat-6.2",
+    "redhat-6.2" => "redhat-6.2"
+  );
+
+  my %dist_tables =
+  (
+    "redhat-6.2" =>
+    {
+      fn =>
+      {
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/smb.conf"
+      },
+      table =>
+      [
+        [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+        [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
+        [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+        [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+        [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+        [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+        [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
+        [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
+        [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
+        [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
+        [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
+        [ statichost,    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+        [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
+        [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
+        [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+        [ interface,     \&xst_network_interfaces_set ]
+      ]
+    }
+  );
+
+  my $table = $dist_map{$be_dist};
+  if ($table) { return $dist_tables{$table}; }
+
+  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
 }
