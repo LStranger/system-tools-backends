@@ -152,14 +152,16 @@ sub xst_platform_guess
   
   if (! -f "$dir/system.guess")
   {
-    system ("$dir/guess_system.sh > $dir/system.guess 2>/dev/null");
+    system ("$dir/guess_system.sh 2> /dev/null > $dir/system.guess");
 
     # FIXME: is this check for success correct? Taken from perlfunc.
-    if ($? >> 8)
-    {
-      &xst_report_warning ("Couldn't guess system.");
-      return;
-    }
+    # NOTE: Don't need this check anymore. The system checks below are enough.
+    #
+    # if ($? >> 8)
+    # {
+    #   &xst_report_warning ("Couldn't guess system.");
+    #   return;
+    # }
   }
 
   if (-f "$dir/system.guess")

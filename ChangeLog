@@ -1,3 +1,7 @@
+2001-02-16  Hans Petter Jansson  <hpj@ximian.com>
+
+	* platform.pl.in: Silence stderr output, disable early abort code.
+
 2001-02-15  Arturo Espinosa  <arturo@ximian.com>
 
 	* xml.pl.in: substitute &amp; entity too.
