@@ -1,3 +1,9 @@
+2004-07-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* platform.pl.in (gst_platform_get_system): added, this functionality
+	  has been detached from gst_platform_guess()
+	* general.pl.in: call gst_platform_get_system() in any case
+
 2004-06-30  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Release 0.34

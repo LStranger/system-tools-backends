@@ -352,19 +352,19 @@ sub check_solaris
   return -1;
 }
 
+sub gst_platform_get_system
+{
+  my ($tool) = @_;
+
+  # get the output of 'uname -s', it returns the system we are running
+  $$tool{"system"} = &gst_file_run_backtick ("uname -s");
+  chomp ($$tool{"system"});
+}
+
 sub gst_platform_guess
 {
   my ($tool) = @_;
-  local *FD;
 
-  # get the output of 'uname -s', it returns the system we are running
-  *FD = &gst_file_run_pipe_read ("uname -s");
-  $$tool{"system"} = <FD>;
-  chomp ($$tool{"system"});
-  close FD;
-
-  # set $gst_dist and $gst_dist_version
-  
   my %check = (
     # Red Hat check must run after Mandrake and Fedora
     "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, 

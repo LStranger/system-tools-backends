@@ -374,7 +374,6 @@ sub gst_init
       print STDERR "Error: Unrecognized option '$arg'.\n\n";
       &gst_print_usage (\%tool, 1);
     }
-
   }
   
   # See if debug requested in env.
@@ -383,6 +382,7 @@ sub gst_init
   
   # Set up subsystems.
 
+  &gst_platform_get_system (\%tool);
   &gst_platform_guess (\%tool) if !$tool{"platform"};
   &gst_report_begin ();
 
