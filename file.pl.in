@@ -178,22 +178,9 @@ sub xst_open_write_from_names
     
   if ($name eq "")
   {
-    # If we couldn't locate the file, and have no prefix, give up.
-	
-    # If we have a prefix, but couldn't locate the file relative to '/',
-    # take the first name in the array and let that be created in $prefix.
-	
-    if ($xst_prefix eq "")
-    {
-      &xst_report_warning (98, "No file to replace: \[@_\]");
-      return (0);
-    }
-    else
-    {
-      $name = $_[0];
-      (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
-      &xst_report_warning (97, "Could not find \[@_\]. Writing to \[$fullname\]");
-    }
+    $name = $_[0];
+    (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
+    &xst_report_warning (97, "Could not find \[@_\]. Writing to \[$fullname\]");
   }
   else
   {

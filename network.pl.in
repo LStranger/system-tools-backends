@@ -58,7 +58,7 @@ sub xst_network_dialing_get
   my ($file) = @_;
   my %ret, @sections;
   my $i, $j, $name, $val;
-  
+
   &xst_run ("wvdialconf $xst_prefix/$file") if (!-e "$xst_prefix/$file");
   
   @sections = &xst_parse_ini_sections ($file);
@@ -288,12 +288,12 @@ sub xst_network_rh62_interface_set_by_dev
   if ($enabled)
   {
     print STDERR "\n\nifup $dev\n\n";
-    return -1 if &xst_run ("ifup $dev");
+    return -1 if &xst_run ("ifup $dev &");
   }
   else
   {
     print STDERR "\n\nifdown $dev\n\n";
-    return -1 if &xst_run ("ifdown $dev");
+    return -1 if &xst_run ("ifdown $dev &");
   }
 
   return 0;
