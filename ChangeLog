@@ -2,6 +2,7 @@
 
 	* users-conf.in (xml_parse_users): Ignore files and shells
 	tags when parsing, instead of complaining.
+	(xml_parse_login_defs): files tag should be ignored here.
 
 	* file.pl.in (xst_file_open_write_from_names): Wrong report
 	call.

@@ -704,7 +704,6 @@ sub xml_parse_users
 		elsif ($$tree[0] eq "group_last_modified") { &xml_parse_group_last_modified ($$tree[1]); }
 		elsif ($$tree[0] eq "userdb") { &xml_parse_userdb ($$tree[1]); }
 		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1]); }
-		elsif ($$tree[0] eq "files")   { }
 		elsif ($$tree[0] eq "shells")  { }
 		else
 		{
@@ -728,8 +727,8 @@ sub xml_parse_login_defs
 		{
 		  $login_defs{$$tree[0]} = $$tree[1][2];
 		}
-		else
-		{
+		elsif ($$tree[0] ne "files")
+    {
 		  &xst_report ("xml_unexp_tag", $$tree[0]);
 		}
 		
