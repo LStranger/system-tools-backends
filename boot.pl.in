@@ -62,18 +62,13 @@ sub xst_boot_parse_global
   my ($fd, @line, $re);
 
   $re = "[ \t]*=[ \t]*";
-  print "$file\n";
   $fd = &xst_file_open_read_from_names ($file);
 
   while (($line = <$fd>))
   {
-      print "1-$line\n";
     chomp $line;
-      print "1-$line\n";
     $line =~ s/^[ \t]+//;
-      print "1-$line\n";
     $line = &xst_parse_process_sh_line ($line);
-      print "1-$line\n";
     
     next if ($line eq "");
     last if ($line =~ /^(image|other)/);

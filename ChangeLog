@@ -1,3 +1,8 @@
+2001-05-25  Chema Celorio  <chema@celorio.com>
+
+	* boot-conf.in (xml_print_global_kws): remove print. duh !
+	* boot.pl.in (xst_boot_parse_global): ditto
+
 2001-05-24  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* 0.5 RELEASE

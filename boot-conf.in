@@ -155,7 +155,6 @@ sub xml_print_global_kws
 
   while ($i = shift @tags)
   {
-      print "$i\n";
     &xst_xml_print_line ("<$i/>\n") if exists $$h{$i};
   }
 }
