@@ -1,5 +1,11 @@
 2001-11-14  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* display-conf.in: Added redhat-7.2 support: identical to 7.1.
+
+	* shares-conf.in: Added redhat-7.2 support: identical to 7.1.
+
+	* time-conf.in: Added redhat-7.2 support: identical to 7.1.
+
 	* network.pl.in (xst_network_get_interfaces_parse_table): If
 	interface has no NAME variable, use the IFACE: that's the new
 	Red Hat 7.2 way.
