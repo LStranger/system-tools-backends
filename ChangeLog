@@ -1,3 +1,14 @@
+2001-10-02  Tambet Ingo  <tambet@ximian.com>
+
+	* users-conf.in: Rewrote profiles and login.defs stuff.
+	Removed/exchanged all old cruft so now it seems more like
+	other 'up-to-date' backends.
+
+	* xml.pl.in (xst_xml_format_pcdata): Don't use if ($name) conditions
+	if 0 or empty string are valid values. Use if (defined ($name))
+	instead.
+	(xst_xml_print_comment): Implement.
+
 2001-10-01  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* display-conf.in: Added mandrake-7.2 to the list of supported
