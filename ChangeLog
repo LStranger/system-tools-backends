@@ -1,3 +1,7 @@
+2002-09-14  Carlos Garnacho Parro  <garparr@teleline.es>
+
+	* configure.in: next step, 0.22.0
+
 2002-09-13  Carlos Garnacho Parro  <garparr@teleline.es>
 
 	* platform.pl.in: Added FreeBSD 4 and FreeBSD 5 in $PLATFORM_INFO
