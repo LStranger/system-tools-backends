@@ -1,3 +1,8 @@
+2003-07-09  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* platform.pl.in: s/Mandrake\ Linux/Linux\ Mandrake/ in PLATFORM_INFO,
+	and made MDK 9.1 codename "Bamboo". Fixes bug #116864
+
 2003-06-25  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network-conf.in, network.pl.in, platform.pl.in, runlevel-conf.in,
