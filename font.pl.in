@@ -23,7 +23,7 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-$SCRIPTSDIR = "___scriptsdir___";
+my $SCRIPTSDIR = "___scriptsdir___";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 {
     $SCRIPTSDIR = ".";
@@ -745,7 +745,7 @@ sub font_remove
   {
     foreach my $fname (@{$entry->{'file'}})
     {
-      unlink ($fname);
+      # unlink ($fname);
       &xst_report ('font_remove_success', $fname);
     }
   }
@@ -924,6 +924,24 @@ sub font_list
   return $fonts;
 }
 
+# Return true if the two fonts are equal.
+sub font_cmp
+{
+  my $font1 = shift;
+  my $font2 = shift;
+
+  return if ($font1 && ! $font2);
+  return if ($font2 && ! $font1);
+
+  if ($font1->{'name'} eq $font2->{'name'} &&
+      $font1->{'format'} eq $font2->{'format'})
+  {
+    return 1;
+  }
+
+  return;
+}
+
 # Check whether font exists in font list.
 # Returns true if yes, undef if not.
 sub font_exists
@@ -933,11 +951,27 @@ sub font_exists
 
   foreach my $tmp (@$font_list)
   {
-    # Maybe we should check for more things here.
-    return 1 if $tmp->{'name'} eq $font->{'name'};
+    return 1 if &font_cmp ($tmp, $font);
   }
 
   return;
+}
+
+# Deletes a font from font list
+sub font_delete
+{
+  my $font_list = shift;
+  my $font = shift;
+
+  for (my $i = 0; $i < scalar @$font_list; $i++)
+  {
+    my $tmp = $$font_list[$i];
+    if (&font_cmp ($tmp, $font))
+    {
+      delete $$font_list[$i];
+      last;
+    }
+  }
 }
 
 # Returns a hash of all fonts.
@@ -966,17 +1000,18 @@ sub font_lists_compare
   my $sys_fonts = shift;
   my $xml_fonts = shift;
 
+  # Make a copy of xml_fonts.
+  my @fonts_copy = @$xml_fonts;
+
   my $del = [];
   my $add = [];
 
   # Build list of removals
-  for (my $i = 0; $i < scalar @$sys_fonts; $i++)
+  foreach my $font (@$sys_fonts)
   {
-    my $font = $$sys_fonts[$i];
-
-    if (&font_exists ($xml_fonts, $font))
+    if (&font_exists (\@fonts_copy, $font))
     {
-      delete $$sys_fonts[$i];
+      &font_delete (\@fonts_copy, $font);
     }
     else
     {
@@ -985,13 +1020,24 @@ sub font_lists_compare
   }
 
   # Build list of additions
-  foreach my $font (@$sys_fonts)
+  foreach my $font (@fonts_copy)
   {
     next unless $font;
     push @$add, $font;
   }
 
   return ($del, $add);
+}
+
+# Returns true if file should be copied.
+sub font_file_copy_need
+{
+  my $path = shift;
+
+  # Can we be a bit smarter?
+  return if ($path =~ /\/usr\//);
+
+  return 1;
 }
 
 # Copy new font files to our fonts dir.
@@ -1003,18 +1049,20 @@ sub font_file_copy
 
   foreach my $font (@$add)
   {
+    next unless exists $font->{'name'};
+
     my $type = $font->{'format'};
     foreach my $file (@{$font->{'file'}})
     {
       my $path = $file->{'path'};
+      next unless &font_file_copy_need ($path);
+
       my $new_path = "$XST_FONT_DIR/$type/";
       &xst_file_create_path ($new_path, 0755) unless (-d $new_path);
-      $new_path .= lc (basename ($new_path));
-      unless (-f $new_path)
-      {
-        copy ($path, $new_path);
-        $file->{'path'} = $new_path;
-      }
+      $new_path .= lc (basename ($path));
+      
+      copy ($path, $new_path) unless (-f $new_path);
+      $file->{'path'} = $new_path;
     }
   }
 }
@@ -1029,7 +1077,7 @@ sub font_file_del
   {
     foreach my $file (@{$font->{'file'}})
     {
-      unlink $file->{'path'} if (-f $file->{'path'});
+#      unlink $file->{'path'} if (-f $file->{'path'});
     }
   }
 }
@@ -1139,7 +1187,7 @@ sub gp_run
   $user = $user ? "--user " : "--dynamic ";
   $set = $set ? "" : "--clean --target - ";
 
-  my $command = &xst_file_locate_tool ('/home/tambet/cvs/gnome-print/installer/gnome-font-install');
+  my $command = &xst_file_locate_tool ('gnome-font-install');
   return unless $command;
   $command = "$command --debug --recursive " . $set . $user . $dir;
 
@@ -1240,18 +1288,27 @@ sub gp_parse
 
   my $tree = &xst_xml_scan ($fname);
 
-  unless ($$tree[0] eq 'fontmap')
+  if ($$tree[0] eq 'fontmap')
+  {
+    $tree = $$tree[1];
+    unless (&xst_xml_get_attribute ($tree, 'version') >= 2)
+    {
+      # TODO: report
+      &xst_debug_print_line ("gp_parse: File '$fname' fontmap version should be 2.0 or higher.");
+      return;
+    }
+  }
+
+  elsif ($$tree[0] eq 'font')
+  {
+    # shift @$tree;
+    $tree = $$tree[1];
+  }
+
+  else
   {
     # TODO: report
     &xst_debug_print_line ("gp_parse: File '$fname' doesn't seem to be fontmap file.");
-    return;
-  }
-
-  $tree = $$tree[1];
-  unless (&xst_xml_get_attribute ($tree, 'version') >= 2)
-  {
-    # TODO: report
-    &xst_debug_print_line ("gp_parse: File '$fname' fontmap version should be 2.0 or higher.");
     return;
   }
 
@@ -1279,8 +1336,8 @@ sub gp_read_fontmaps
 {
   my $fontmap = 'gnome-print.fontmap';
   my $home = $ENV{'HOME'};
-  my $prefix = '/opt'; # FIXME!
-  my $sysconfdir = "$prefix/etc";
+  my $prefix = '/usr'; # FIXME!
+  my $sysconfdir = "/etc"; # FIXME!
   my $datadir = "$prefix/share";
 
   my @dirs = ("$home/.gnome/fonts", "$sysconfdir/gnome/fonts", "$datadir/gnome/fonts");
@@ -1300,7 +1357,7 @@ sub gp_read_fontmaps
 
     foreach (@files)
     {
-      my $font_ref = &gp_parse ($_);
+      my $font_ref = &gp_parse ($_) if (-f $_);
       push @fontlist, @$font_ref if $font_ref;
     }
   }
@@ -1312,17 +1369,24 @@ sub gp_font_set
 {
   my $del = shift;
   my $add = shift;
-  my $font;
+  my ($font, @list);
 
   foreach $font (@$del)
   {
+    # FIXME!
     1;
   }
 
   foreach $font (@$add)
   {
-    1;
+    next unless exists $font->{'file'};
+
+    foreach my $file (@{$font->{'file'}})
+    {
+      push @list, $file->{'path'};
+    }
   }
+  &gp_invoke (join (" ", @list), 1) if scalar @list;
 }
 
 
@@ -1365,6 +1429,10 @@ sub xfs_get_fontpath
   return \@fonts;
 }
 
+sub xfs_reload
+{
+  &xst_file_run ('/etc/rc.d/init.d/xfs restart') if (-f '/var/run/xfs.pid');
+}
 
 
 ################################
@@ -1419,14 +1487,26 @@ sub x_fontpath_get
 
 sub x_fontpath_add
 {
-  my $paths = shift || return;
+  my $new_paths = shift || return;
+  my $old_paths = &x_fontpath_get ();
+  my (@path, %seen);
 
-  my $line = join (",", @$paths);
+  @seen{@$old_paths} = (); # Tricky perl to build a lookup table.
+  foreach my $item (@$new_paths)
+  {
+    push @path, $item unless (exists $seen{$item});
+  }
+
+  # Now we have a list of new paths, let's add them
+  # FIXME: Where do we add it? xfs? xftt? just tu current x server fontpath? XF86Config?
+
+  my $line = join (",", @path);
   &xst_file_run ("xset fp+ $line");
 }
 
 sub x_fonts_refresh
 {
+  &xfs_reload ();
   &xst_file_run ("xset fp rehash");
 }
 
@@ -1454,6 +1534,7 @@ sub x_fonts_dir_parse
   return @fonts;
 }
 
+# Not used.
 sub x_fonts_dir_modify
 {
   my $del = shift;
@@ -1487,10 +1568,16 @@ sub x_fonts_dir_modify
     }
   }
 
-  # Add
-  # FIXME: we don't have x fontname yet.
-
   &xst_file_buffer_save ($buf, $file);
+  
+  # Add:
+  # Bad bad hack, FIXME.
+  my $cmd = "type1inst -nolog -q -d " .
+      "$XST_FONT_DIR/type1/";
+  &xst_file_run ($cmd);
+
+  $cmd = "ttmkfdir -d $XST_FONT_DIR/truetype/ -o $XST_FONT_DIR/truetype/fonts.scale";
+  &xst_file_run ($cmd);
 }
 
 
@@ -1531,11 +1618,50 @@ sub x_font_dirs
     foreach my $file (@{$font->{'file'}})
     {
       my $item = dirname ($file->{'path'});
-      push @$dirlist, $item unless $seen{$item}++; # It's a kinda magic! Oh wait, it's just perl :)
+      push @$dirlist, $item unless $seen{$item}++; # It's a kinda magic! No wait, it's just perl :)
     }
   }
 
   return $dirlist;
+}
+
+sub x_add_font
+{
+  my $add = shift;
+  my $type1_tool = &xst_file_locate_tool ("$SCRIPTSDIR/type1inst");
+  my $true_tool  = &xst_file_locate_tool ("ttmkfdir");
+  my $tmp;
+
+  my $type1 = [];
+  my $true  = [];
+
+  my $path = [];
+
+  foreach my $font (@$add)
+  {
+    if    ($font->{'format'} eq 'type1') { push @$type1, $font; }
+    elsif ($font->{'format'} eq 'truetype') { push @$true, $font; }
+
+    else { &xst_debug_print_line ("x_add_font: unknonw font type: $font->{format}."); }
+  }
+
+  # Install type1 fonts.
+  $tmp = &x_font_dirs ($type1);
+  push @$path, @$tmp if $tmp;
+  foreach my $dir (@$tmp)
+  {
+    &xst_file_run ("$type1_tool -q -d $dir");
+  }
+
+  # Install TrueType fonts.
+  $tmp = &x_font_dirs ($true);
+  push @$path, @$tmp if $tmp;
+  foreach my $dir (@$tmp)
+  {
+    &xst_file_run ("$true_tool -d $dir -d -o $dir/fonts.scale");
+  }
+
+  &x_fontpath_add ($path);
 }
 
 sub x_font_set
@@ -1543,15 +1669,12 @@ sub x_font_set
   my $del = shift;
   my $add = shift;
 
-  my @tmp = @$del;
-  push @tmp, @$add;
+  &x_add_font ($add);
 
-  my $path = &x_font_dirs (\@tmp);
-  &x_font_dir_modify ($del, $add, $path);
+  #FIXME: $del
 
-  &x_font_refresh ();
+  &x_fonts_refresh ();
 }
-
 
 
 1;

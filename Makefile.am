@@ -44,13 +44,13 @@ perl_libs = $(PERLBODY:.pl.in=.pl)
 
 backends = $(BACKENDSBODY:.in=)
 
-scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh
+scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh type1inst
 
 EXTRA_DIST = \
 	$(PERLBODY) \
 	$(BACKENDSBODY) \
 	guess_system.sh \
-	\
+	type1inst		 \
 	README \
 	AUTHORS \
 	NEWS

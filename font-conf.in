@@ -49,7 +49,8 @@ BEGIN {
 
 $name = 'font';
 $version = "___version___";
-@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 turbolinux-7.0 debian-2.2 debian-woody mandrake-7.2 mandrake-8.0);
+@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 redhat-7.2 turbolinux-7.0
+                mandrake-7.2 mandrake-8.0);
 
 $description =<<"end_of_description;";
        Configures fonts.
@@ -82,7 +83,7 @@ sub set
 {
   my $font_list = &font_xml_parse ();
 
-  # FIXME: &font_set ($font_list);
+  &font_set ($font_list);
   &xst_report_end ();
 }
 

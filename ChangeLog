@@ -1,3 +1,16 @@
+2001-12-04  Tambet Ingo  <tambet@ximian.com>
+
+	* Makefile.am (EXTRA_DIST): Added type1inst to build.
+	* type1inst: new file.
+	* font.pl.in: Now it's able to install font to X and
+	gnome-print. Font systems syncronisation work too.
+	(font_file_del): Disabled font deletion for now.
+	(font_remove): Ditto.
+
+	* font-conf.in: Removed debians from supported list since
+	we don't support xfs-tt yet. 
+	(set): Enabled it.
+
 2001-11-29  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot.pl.in: s/image/entry/ bugs: some "image" strs were
