@@ -1566,6 +1566,7 @@ sub gst_service_get_status
        "redhat-7.3"   => \&gst_service_redhat_get_status,
        "redhat-8.0"   => \&gst_service_redhat_get_status,
        "redhat-9"     => \&gst_service_redhat_get_status,
+       "mandrake-7.2" => \&gst_service_redhat_get_status,
        "fedora-1"     => \&gst_service_redhat_get_status,
        "fedora-2"     => \&gst_service_redhat_get_status,
 

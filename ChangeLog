@@ -1,3 +1,8 @@
+2004-08-05  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* service.pl.in: added support for mdk 7.2 (and ALT Linux) for
+	the get_status directive
+
 2004-08-02  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* boot-conf.in: fixed some issues in entry name verifying function,
