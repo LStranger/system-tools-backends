@@ -57,11 +57,6 @@ BEGIN {
   require "$SCRIPTSDIR/network.pl$DOTIN";
 }
 
-
-# Debug stuff
-#$gst_prefix = "/tmp/y";
-#open STDERR, ">/tmp/err";
-
 # --- Tool information --- #
 
 $name = "network";
@@ -211,12 +206,83 @@ sub xml_parse_dialing
   $$dialing{$name} = \%hash;
 }
 
+# couple of functions for fixing profiles format
+sub fix_profile_modem_iface
+{
+  my ($configuration, $section, $dialing) = @_;
+  my ($s, $key, %h);
+
+  foreach $s (keys %$dialing)
+  {
+    if ($s eq $section)
+    {
+      $h = $$dialing{$s};
+
+      foreach $key (keys %$h)
+      {
+        $$configuration{$key} = $$h{$key};
+      }
+    }
+  }
+}
+
+sub fix_profile_interface_format
+{
+  my ($interface, $dialing) = @_;
+  my (%configuration, $key, $section);
+
+  return if (exists $$interface{"configuration"});
+
+  foreach $key (keys %$interface)
+  {
+    if ($key !~ /^(dev|enabled|hwaddr)$/)
+    {
+      if ($key eq 'wvsection')
+      {
+        &fix_profile_modem_iface (\%configuration, $$interface{$key}, $dialing);
+        $configuration{"section"} = $$interface{$key};
+      }
+      else
+      {
+        $dest_key = $key;
+        $configuration{$key} = $$interface{$key};
+      }
+
+      delete $$interface{$key};
+    }
+  }
+
+  $$interface{"type"} = &gst_network_get_interface_type ($$interface{"dev"});
+
+  if (%configuration)
+  {
+    $$interface{"configuration"} = \%configuration;
+  }
+}
+
+sub fix_profile_format
+{
+  my ($hash) = @_;
+  my ($interfaces, $dialing, $iface);
+
+  $interfaces = $$hash{"interface"};
+  $dialing    = $$hash{"dialing"};
+
+  foreach $iface (keys %$interfaces)
+  {
+    &fix_profile_interface_format ($$interfaces{$iface}, $dialing);
+  }
+}
+
 sub xml_parse_profile
 {
   my ($tree, $hash) = @_;
   my (%profile);
 
   &xml_parse_network ($tree, \%profile);
+
+  # We've got to translate the old profiles format
+  &fix_profile_format (\%profile);
 
   push @{$hash->{"profiledb"}{"profile"}}, \%profile;
 }
@@ -242,16 +308,28 @@ sub xml_parse_profiledb
 
 # --- XML printing --- #
 
-sub xml_print_profiledb
+sub xml_print_configuration
 {
   my ($h) = @_;
   my @scalar_keys =
       qw(auto hostname gateway gatewaydev gwdevunsup domain 
-         hostmatch workgroup description smbdesc winsserver winsuse smbuse
+         hostmatch workgroup smbdesc winsserver winsuse smbuse
          smartdhcpcd smbinstalled dialinstalled name);
   my @array_keys =
       qw(nameserver searchdomain order);
 
+  # Hostname, domain, search domains, nameservers.
+
+  &gst_xml_print_scalars ($h, @scalar_keys);
+  &gst_xml_print_arrays ($h, @array_keys);
+  &network_xml_print_statichost ($h);
+
+  &xml_print_interfaces ($$h{"interface"});
+}
+
+sub xml_print_profiledb
+{
+  my ($h) = @_;
 
   &gst_xml_print_vspace ();
 
@@ -262,13 +340,7 @@ sub xml_print_profiledb
     gst_xml_print_line ("<profile>\n");
     gst_xml_enter ();
 
-    #print profile contents
-    &gst_xml_print_scalars ($i, @scalar_keys);
-    &gst_xml_print_arrays ($i, @array_keys);
-    &network_xml_print_statichost ($i);
-
-    &gst_xml_print_hash_hash ($$i{"interface"}, "interface");
-    &gst_xml_print_hash_hash ($$i{"dialing"}, "dialing");
+    &xml_print_configuration ($i);
 
     gst_xml_leave ();
     gst_xml_print_line ("</profile>\n");
@@ -277,26 +349,40 @@ sub xml_print_profiledb
   gst_xml_print_line ("</profiledb>\n");
 }
 
+sub xml_print_interfaces
+{
+  my ($h) = @_;
+  my ($dev, $type);
+
+  foreach $dev (keys %$h)
+  {
+    if ($$h{$dev}{"type"})
+    {
+      $type = $$h{$dev}{"type"};
+      delete $$h{$dev}{"type"};
+    }
+    else
+    {
+      $type = &gst_network_get_interface_type ($dev);
+    }
+    
+    &gst_xml_print_vspace ();
+    &gst_xml_print_line ("<interface type='$type'>");
+    &gst_xml_enter ();
+    &gst_xml_print_hash ($$h{$dev});
+
+    &gst_xml_leave ();
+    &gst_xml_print_line ("</interface>");
+  }
+}
+
 sub xml_print
 {
   my ($h) = @_;
-  my @scalar_keys =
-      qw(auto hostname gateway gatewaydev gwdevunsup domain 
-         hostmatch workgroup smbdesc winsserver winsuse smbuse
-         smartdhcpcd smbinstalled dialinstalled);
-  my @array_keys =
-      qw(wireless_device nameserver searchdomain order);
 
   &gst_xml_print_begin ();
 
-  # Hostname, domain, search domains, nameservers.
-
-  &gst_xml_print_scalars ($h, @scalar_keys);
-  &gst_xml_print_arrays ($h, @array_keys);
-  &network_xml_print_statichost ($h);
-
-  &gst_xml_print_hash_hash ($$h{"interface"}, "interface");
-  &gst_xml_print_hash_hash ($$h{"dialing"}, "dialing");
+  &xml_print_configuration ($h);
   &xml_print_profiledb ($h);
 
   &gst_xml_print_end ();
@@ -310,8 +396,11 @@ sub read_profiledb
   my ($path);
   my ($tree);
 
-  $path = gst_file_get_data_path () . "/" . $main::tool->{"name"} . "/" . $profile_file;
-  $tree = &gst_xml_scan ($path, $tool);
+  $path = gst_file_get_data_path () . "/" . $main::tool->{"name"} . "/";
+  chmod (0755, $path);
+  chmod (0644, $path .  $profile_file);
+
+  $tree = &gst_xml_scan ($path . $profile_file, $tool);
   if ($tree && scalar @$tree)
   {
     if ($$tree[0] eq 'profiledb')
@@ -330,11 +419,12 @@ sub write_profiledb
 {
   my ($hash) = @_;
   my $profiledb = $hash->{'profiledb'};
-  my $path = &gst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $profile_file;
+  my $path = &gst_file_get_data_path () . "/" . $main::tool->{'name'} . "/";
+  chmod (0755, $path);
 
   if ($profiledb) {
     # Write our profiles.
-    my $fh = &gst_file_open_write_from_names ($path);
+    my $fh = &gst_file_open_write_from_names ($path . $profile_file);
     if ($fh)
     {
       local *STDOUT = $fh;
@@ -346,8 +436,10 @@ sub write_profiledb
   }
   else
   {
-    gst_file_remove ($path);
+    gst_file_remove ($path . $profile_file;);
   }
+
+  chmod (0644, $path . $profile_file);
 }
 
 
@@ -376,6 +468,34 @@ sub set
   &gst_report_end ();
 }
 
+sub set_profile
+{
+  my ($tool, $profile_name) = @_;
+  my ($hash, $profiles, $profile);
+
+  &read_profiledb (\%$hash);
+  $profiles = $$hash{"profiledb"}{"profile"};
+
+  foreach $profile (@$profiles)
+  {
+    if ($$profile{"name"} eq $profile_name)
+    {
+      &gst_network_conf_set ($profile);
+    }
+  }
+
+  &gst_report_end ();
+}
+
+sub save_profiles
+{
+  my $hash;
+
+  $hash = &xml_parse ();
+  &write_profiledb ($hash);
+  &gst_report_end ();
+}
+
 
 # --- Filter config: XML in, XML out --- #
 
@@ -389,21 +509,45 @@ sub filter
   &xml_print ($hash);
 }
 
-
 sub enable_iface
 {
   my ($tool, $iface, $enabled) = @_;
   my (%dist_attrib, $iface_set);
-  my %hash = ("file" => $iface);
+  my %hash = ("configuration" => {"file" => $iface});
   
   %dist_attrib = &gst_network_get_interface_replace_table ();
   $iface_set = $dist_attrib{"iface_set"};
   &$iface_set (\%hash, undef, $enabled, 1);
+
+  # small hack for ensuring that the interface is really down
+  # when messing ifup/ifdown/ifconfig calls
+  gst_file_run ("ifconfig $iface down") if ($enabled == 0);
+  
   # Don't forget to do gst_end when the reports are over!
   &gst_report_end ();
   # XML output would come here, but this directive returns no XML.
 }
 
+sub enable_iface_with_config
+{
+  my ($tool) = @_;
+  my ($tree, $hash, $ret, $str);
+
+  # Scan XML to tree.
+  $tree = &gst_xml_scan ();
+
+  if (shift @$tree eq "interface")
+  {
+    $hash = &gst_network_xml_parse_interface (shift @$tree);
+  }
+
+  $ret = &gst_network_enable_iface_with_config ($hash);
+  &gst_report_end ();
+
+  &gst_xml_print_begin  ("enable-iface");
+  &gst_xml_print_pcdata ("success", ($ret == 0) ? "1" : "0");
+  &gst_xml_print_end    ("enable-iface");
+}
 
 sub list_ifaces
 {
@@ -436,19 +580,18 @@ sub detect_modem
   &gst_xml_print_end    ("network-modem-device");
 }
 
-sub get_interface_name
+sub detect_essids
 {
-  my ($tool, $keyword) = @_;
-  my ($name);
+  my ($tool, $iface) = @_;
+  my (@essids);
 
-  $name = &gst_network_get_interface_name ($keyword);
+  $essids = &gst_network_detect_essids ($iface);
   &gst_report_end ();
 
-  &gst_xml_print_begin  ("network-get-interface-name");
-  &gst_xml_print_pcdata ("name", $name) if ($name ne undef);
-  &gst_xml_print_end    ("network-get-interface-name");
+  &gst_xml_print_begin ("essids");
+  &gst_xml_print_structure ($essids, "network");
+  &gst_xml_print_end   ("essids");
 }
-
 
 # --- Main --- #
 
@@ -461,13 +604,16 @@ $directives = {
   "filter"             => [ \&filter,       [], "" ],
   "list_ifaces"        => [ \&list_ifaces,  [],
                             "List interfaces and active/inactive status." ],
+  "save_profiles"      => [ \&save_profiles, [], "Save the profiles list" ],
+  "set_profile"        => [ \&set_profile,  [ "profile_name" ],
+                            "Set a profile as the default configuration" ],
   "enable_iface"       => [ \&enable_iface, [ "interface", "enabled" ],
                             "Immediatly enable or disable a given interface. " .
                             "interface is the file tag value, enabled is 1 or 0." ],
+  "enable_iface_with_config" => [ \&enable_iface_with_config, [],
+                                  "Enable an interface with a given configuration" ],
   "detect_modem"       => [ \&detect_modem, [], "Detects the modem device." ],
-  "get_interface_name" => [ \&get_interface_name, ["interface name" ],
-                            "get the system dependent device name from a keyword. " .
-                            "it accepts [Modem|Ethernet|Parallel|Infrared]." ]
+  "detect_essids"      => [ \&detect_essids, [ "interface" ], "Detects active wireless networks" ]
 };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);

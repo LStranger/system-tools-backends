@@ -22,6 +22,123 @@
 
 	* configure.in: Added "fr" (French) to ALL_LINGUAS.
 
+2004-12-21  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: handled properly wvdial dependent distros with the
+	new XML format
+
+2004-12-20  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in: added the "save_profiles" directive
+
+2004-12-16  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in: added "set_profile" directive, which sets all
+	the configuration from a profile name
+
+2004-12-16  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in: avoid the creation of empty <configuration> tags
+	* network.pl.in: don't report when running iwconfig, it was getting
+	saved in the profiles file
+
+2004-12-14  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in, network.pl.in: improved old profiles fixing, 
+	fixed plip interfaces enabling, accept other characters than numbers 
+	in dial prefix, other code improvements
+
+2004-12-06  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in (fixdown_profile_interface_format),
+	(fixdown_profile_format): added functions for translating the old
+	profile format to the new one
+
+2004-12-06  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+        * file.pl.in (gst_file_get_temp_name): added.
+        * network.pl.in (gst_network_enable_iface_with_config): splitted in
+        several functions. Handled too the modem stuff, creating a temporary
+        chat file and using pppd.
+
+2004-12-01  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: moved pppscripts creation to a generic function,
+	made debian use pppscript instead of wvial. s/wvsection/section/g
+
+2004-11-26  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in (gst_network_enable_iface_with_config): little fix 
+	with multiword essids
+
+2004-11-23  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: add the PPP interface EVEN if it's not configured
+
+2004-11-23  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in (gst_network_interfaces_get): began to handle PPP
+	devices
+
+2004-11-22  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in: added a small hack for being sure that the
+	interface is really down when possibly messing ifup/ifdown/ifconfig
+	calls
+
+2004-11-20  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in (gst_network_enable_iface_with_config): add "up" 
+	at the end of the ifconfig call
+
+2004-11-18  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in, network.pl.in: finished the
+	"enable_iface_with_config" directive, it should work with eth, wifi,
+	irlan and plip interfaces in linux and freebsd. Got rid of the hideous
+	"get_interface_name" hack
+
+2004-11-18  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in, network.pl.in: began working on the new
+	"enable_iface_with_config" directive
+
+2004-11-16  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in, network.pl.in: fix some functions that got
+	broken with the new xml format, only save the interfaces if they
+	have changed
+
+2004-11-15  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in, network-conf.in: added "detect_essids" directive
+
+2004-11-11  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in (gst_network_interfaces_set): really delete the
+	interfaces that aren't configured.
+	* replace.pl.in: somewhat improve interfaces deleting in debian
+
+2004-11-11  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: more silly improvements for storing correctly the
+	information
+
+2004-11-10  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: made it able to store again the configuration, still
+	some checking has to be done, though
+
+2004-11-08  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: removed "wireless_device" tags, they're no longer
+	used. (gst_network_get_default_gatewaydev) added.
+
+2004-11-08  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in, network.pl.in: modified XML format for the new
+	network tool
+
 2004-11-05  Carlos Garcia Campos <carlosgc@gnome.org>
 
 	* disks-conf.in, partition.pl.in: added DVD support 

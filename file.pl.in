@@ -24,6 +24,7 @@
 
 use File::Path;
 use File::Copy;
+use File::Temp;
 use Carp;
 
 $SCRIPTSDIR = "@scriptsdir@";
@@ -46,7 +47,9 @@ $GST_FILE_WRITE = 2;
 
 sub gst_file_get_base_path
 {
-  return "/var/cache/setup-tool-backends";
+  my $path = "/var/cache/setup-tool-backends";
+  chmod (0755, $path);
+  return $path;
 }
 
 
@@ -70,7 +73,9 @@ sub gst_file_get_debug_path
 
 sub gst_file_get_data_path
 {
-  return (&gst_file_get_base_path (). "/data");
+  my $path = &gst_file_get_base_path (). "/data";
+  chmod (0755, $path);
+  return $path;
 }
 
 
@@ -890,6 +895,13 @@ sub gst_file_copy
   my ($orig, $dest) = @_;
 
   copy ("$gst_prefix/$orig", "$gst_prefix/$dest");
+}
+
+sub gst_file_get_temp_name
+{
+  my ($prefix) = @_;
+
+  return mktemp ($prefix);
 }
 
 1;
