@@ -56,7 +56,6 @@ EXTRA_DIST = \
 	$(BACKENDSBODY) \
 	guess_system.sh \
 	type1inst		 \
-	README \
 	AUTHORS \
 	NEWS
 

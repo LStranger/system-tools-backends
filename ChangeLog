@@ -1,3 +1,7 @@
+2002-11-28  Carlos Garnacho Parro <garnacho@tuxerver.net>
+
+	* Makefile.am: removed README
+
 2002-11-22  Carlos Garnacho Parro <garnacho@tuxerver.net>
 
 	* added RH7.3 in $PLATFORM_INFO
