@@ -1,5 +1,6 @@
 2001-01-16  Arturo Espinosa <arturo@ximian.com>
 
+	* network-conf.in: network backend.
 	* guess_system.sh: stolen from autoconf, a script to tell the
 	system the backends are running on.
 	* Makefile.am: install guess_system.sh where be.pl goes.

@@ -1044,7 +1044,7 @@ sub xml_print
   }
 
   foreach $elem (keys (%{$cf_nw_interfaces}))
-  {
+  { 
     be_xml_vspace ();
     be_xml_print ("<interface>\n");
     be_xml_enter ();
@@ -1053,12 +1053,12 @@ sub xml_print
     my %interface = %{$ { $cf_nw_interfaces}{$elem}};
     foreach $elem2 (keys (%interface))
     {
-	 be_xml_print ("<$elem2>$interface{$elem2}<$elem2>\n");
+      be_xml_print ("<$elem2>$interface{$elem2}</$elem2>\n");
     }
-
+    
     be_xml_leave ();
     be_xml_print ("</interface>\n");
-  }
+  } 
 
   be_xml_vspace ();
   be_xml_print ("<!-- You shouldn't have to modify anything below this line -->\n");
