@@ -352,8 +352,7 @@ sub xst_network_ensure_local_host_entry
     my $localhost = $$statichost{$lo_ip};
     foreach $i (@$localhost)
     {
-      if ($i eq $hostname)
-          return;
+      return if ($i eq $hostname);
     }
 
     push @$localhost, $hostname;
