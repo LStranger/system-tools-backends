@@ -1,5 +1,44 @@
 2001-05-15  Hans Petter Jansson  <hpj@ximian.com>
 
+	* share.pl.in (xst_share_smb_info_new): Implement.
+	  (xst_share_smb_info_set): Implement.
+	  (xst_share_smb_info_get_point): Implement.
+	  (xst_share_smb_info_set_point): Implement.
+	  (xst_share_smb_info_get_comment): Implement.
+	  (xst_share_smb_info_set_comment): Implement.
+	  (xst_share_smb_info_get_enabled): Implement.
+	  (xst_share_smb_info_set_enabled): Implement.
+	  (xst_share_smb_info_get_browse): Implement.
+	  (xst_share_smb_info_set_browse): Implement.
+	  (xst_share_smb_info_get_public): Implement.
+	  (xst_share_smb_info_set_public): Implement.
+	  (xst_share_smb_info_get_write): Implement.
+	  (xst_share_smb_info_set_write): Implement.
+	  (xst_share_smb_table_new): Implement.
+	  (xst_share_smb_table_add): Implement.
+	  (xst_share_nfs_info_new): Implement.
+	  (xst_share_nfs_info_set): Implement.
+	  (xst_share_nfs_info_get_point): Implement.
+	  (xst_share_nfs_info_set_point): Implement.
+	  (xst_share_nfs_info_get_client_table): Implement.
+	  (xst_share_nfs_info_set_client_table): Implement.
+	  (xst_share_nfs_table_new): Implement.
+	  (xst_share_nfs_table_add): Implement.
+	  (xst_share_nfs_client_info_new): Implement.
+	  (xst_share_nfs_client_info_set): Implement.
+	  (xst_share_nfs_client_info_get_pattern): Implement.
+	  (xst_share_nfs_client_info_set_pattern): Implement.
+	  (xst_share_nfs_client_info_get_write): Implement.
+	  (xst_share_nfs_client_info_set_write): Implement.
+	  (xst_share_nfs_client_table_new): Implement.
+	  (xst_share_nfs_client_table_add): Implement.
+	  (xst_share_parse_smb_conf): Implement.
+	  (xst_share_parse_nfs_exports): Implement.
+
+	* Makefile.am: Add share.pl.in.
+
+2001-05-15  Hans Petter Jansson  <hpj@ximian.com>
+
 	* filesys.pl.in (xst_filesys_translate_ext2_device_to_label): Rename to
 	  xst_filesys_ext2_device_to_label.
 	  (xst_filesys_info_dup): Fix bug in options copying.

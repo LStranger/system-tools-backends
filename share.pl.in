@@ -1,0 +1,329 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Common functions for exporting network shares (NFS or SMB).
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/parse.pl";
+require "___scriptsdir___/replace.pl";
+
+# --- share_export_smb_info; information on a particular SMB export --- #
+
+sub xst_share_smb_info_new
+{
+  my $info = {};
+  return $info;
+}
+
+sub xst_share_smb_info_set
+{
+  my ($info, $key, $value) = @_;
+  
+  if ($value eq "")
+  {
+    delete $info->{$key};
+  }
+  else
+  {
+    $info->{$key} = $value;
+  }
+}
+
+sub xst_share_smb_info_get_point
+{
+  return $_[0]->{'point'};
+}
+
+sub xst_share_smb_info_set_point
+{
+  &xst_share_smb_info_set ($_[0], 'point', $_[1]);
+}
+
+sub xst_share_smb_info_get_comment
+{
+  return $_[0]->{'comment'};
+}
+
+sub xst_share_smb_info_set_comment
+{
+  &xst_share_smb_info_set ($_[0], 'comment', $_[1]);
+}
+
+sub xst_share_smb_info_get_enabled
+{
+  return $_[0]->{'enabled'};
+}
+
+sub xst_share_smb_info_set_enabled
+{
+  &xst_share_smb_info_set ($_[0], 'enabled', $_[1]);
+}
+
+sub xst_share_smb_info_get_browse
+{
+  return $_[0]->{'browse'};
+}
+
+sub xst_share_smb_info_set_browse
+{
+  &xst_share_smb_info_set ($_[0], 'browse', $_[1]);
+}
+
+sub xst_share_smb_info_get_public
+{
+  return $_[0]->{'public'};
+}
+
+sub xst_share_smb_info_set_public
+{
+  &xst_share_smb_info_set ($_[0], 'public', $_[1]);
+}
+
+sub xst_share_smb_info_get_write
+{
+  return $_[0]->{'write'};
+}
+
+sub xst_share_smb_info_set_write
+{
+  &xst_share_smb_info_set ($_[0], 'write', $_[1]);
+}
+
+# --- share_smb_table; multiple instances of share_smb_info --- #
+
+sub xst_share_smb_table_new
+{
+  my @array;
+  return \@array;
+}
+
+sub xst_share_smb_table_add
+{
+  my ($table, $info) = @_;
+  push @$table, $info;
+}
+
+# --- share_export_nfs_info; information on a particular NFS export --- #
+
+sub xst_share_nfs_info_new
+{
+  my $info = {};
+  return $info;
+}
+
+sub xst_share_nfs_info_set
+{
+  my ($info, $key, $value) = @_;
+  
+  if ($value eq "")
+  {
+    delete $info->{$key};
+  }
+  else
+  {
+    $info->{$key} = $value;
+  }
+}
+
+sub xst_share_nfs_info_get_point
+{
+  return $_[0]->{'point'};
+}
+
+sub xst_share_nfs_info_set_point
+{
+  &xst_share_nfs_info_set ($_[0], 'point', $_[1]);
+}
+
+sub xst_share_nfs_info_get_client_table
+{
+  return $_[0]->{'clients'};
+}
+
+sub xst_share_nfs_info_set_client_table
+{
+  &xst_share_nfs_info_set ($_[0], 'clients', $_[1]);
+}
+
+# --- share_nfs_table; multiple instances of share_smb_info --- #
+
+sub xst_share_nfs_table_new
+{
+  my @array;
+  return \@array;
+}
+
+sub xst_share_nfs_table_add
+{
+  my ($table, $info) = @_;
+  push @$table, $info;
+}
+
+# --- share_export_nfs_client_info; information on a particular NFS export's client --- #
+
+sub xst_share_nfs_client_info_new
+{
+  my $info = {};
+  return $info;
+}
+
+sub xst_share_nfs_client_info_set
+{
+  my ($info, $key, $value) = @_;
+  
+  if ($value eq "")
+  {
+    delete $info->{$key};
+  }
+  else
+  {
+    $info->{$key} = $value;
+  }
+}
+
+sub xst_share_nfs_client_info_get_pattern
+{
+  return $_[0]->{'pattern'};
+}
+
+sub xst_share_nfs_client_info_set_pattern
+{
+  &xst_share_nfs_client_info_set ($_[0], 'pattern', $_[1]);
+}
+
+sub xst_share_nfs_client_info_get_write
+{
+  return $_[0]->{'write'};
+}
+
+sub xst_share_nfs_client_info_set_write
+{
+  &xst_share_nfs_client_info_set ($_[0], 'write', $_[1]);
+}
+
+# --- share_nfs_client_table; multiple instances of share_smb_client_info --- #
+
+sub xst_share_nfs_client_table_new
+{
+  my @array;
+  return \@array;
+}
+
+sub xst_share_nfs_client_table_add
+{
+  my ($table, $info) = @_;
+  push @$table, $info;
+}
+
+# --- Parsing --- #
+
+sub xst_share_parse_smb_conf
+{
+  my ($smb_conf_name) = @_;
+  my (@sections, $table);
+
+  $table = xst_share_smb_table_new ();
+
+  # Get the sections.
+
+  @sections = &xst_parse_ini_sections ($smb_conf_name);
+
+  for $section (@sections)
+  {
+    next if ($section =~ /^(global)|(homes)|(printers)$/);
+    next if (&xst_parse_ini_bool ($smb_conf_name, $section, "printable"));
+
+    my $sesi = &xst_share_smb_info_new ();
+    my $point, $comment, $enabled, $browseable, $public, $writable, $printable;
+
+    $point      = &xst_parse_ini      ($smb_conf_name, $section, "path");
+    $comment    = &xst_parse_ini      ($smb_conf_name, $section, "comment");
+    $enabled    = &xst_parse_ini_bool ($smb_conf_name, $section, "available");
+    $browseable = &xst_parse_ini_bool ($smb_conf_name, $section, "browsable")   ||
+                  &xst_parse_ini_bool ($smb_conf_name, $section, "browseable");
+    $public     = &xst_parse_ini_bool ($smb_conf_name, $section, "public")      ||
+                  &xst_parse_ini_bool ($smb_conf_name, $section, "guest");
+    $writable   = &xst_parse_ini_bool ($smb_conf_name, $section, "writable")    ||
+                  &xst_parse_ini_bool ($smb_conf_name, $section, "writeable");
+
+    &xst_share_smb_info_set_point   ($sesi, $point);
+    &xst_share_smb_info_set_comment ($sesi, $comment);
+    &xst_share_smb_info_set_enabled ($sesi, $enabled);
+    &xst_share_smb_info_set_browse  ($sesi, $browseable);
+    &xst_share_smb_info_set_public  ($sesi, $public);
+    &xst_share_smb_info_set_write   ($sesi, $writable);
+
+    &xst_share_smb_table_add ($table, $sesi);
+  }
+
+  return $table;
+}
+
+sub xst_share_parse_nfs_exports
+{
+  my ($nfs_exports_name) = @_;
+  my (@sections, $table, $entries);
+  my $point;
+
+  $table = xst_share_nfs_table_new ();
+
+  $entries = &xst_parse_split_hash_with_continuation ($nfs_exports_name, "[ \t]+", "[ \t]+");
+
+  for $point (keys %$entries)
+  {
+    my $clients = $$entries{$point};
+    my $info = &xst_share_nfs_info_new ();
+    my $client_table = &xst_share_nfs_client_table_new ();
+
+    &xst_share_nfs_info_set_point ($info, $point);
+
+    for $client (@$clients)
+    {
+      my $cinfo = &xst_share_nfs_client_info_new ();
+
+      $client =~ /([a-zA-Z0-9.-_*?@\/]+)/;
+      &xst_share_nfs_client_info_set_pattern ($cinfo, $1);
+
+      my $option_str = "";
+      my @options;
+
+      if ($client =~ /\((.+)\)/) { $option_str = $1; }
+      @options = ($option_str =~ /([a-zA-Z0-9_=-]+),?/mg);
+
+      for $option (@options)
+      {
+        if ($option eq "rw") { &xst_share_nfs_client_info_set_write ($cinfo, 1); }
+        # Add supported NFS export options here. Some might have to be split on '='.
+      }
+
+      &xst_share_nfs_client_table_add ($client_table, $cinfo);
+    }
+
+    &xst_share_nfs_info_set_client_table ($info, $client_table);
+    &xst_share_nfs_table_add ($table, $info);
+  }
+
+  return $table;
+}
+
+1;

@@ -26,7 +26,8 @@ PERLBODY = \
 	filesys.pl.in \
 	media.pl.in \
 	debug.pl.in \
-	print.pl.in 
+	print.pl.in \
+	share.pl.in
 
 
 perl_libs = \
