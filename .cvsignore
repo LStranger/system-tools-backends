@@ -1,4 +1,5 @@
 *.tar.gz
+intl
 Makefile
 Makefile.in
 ABOUT-NLS
