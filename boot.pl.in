@@ -287,7 +287,6 @@ sub xst_boot_conf_replace_image
   {
     if ($i =~ /$name[ \t]*=[ \t]*$image{$name}\s+/) # Found the image.
     {
-      delete $image{$name};
       $found++;
       next;
     }
@@ -306,6 +305,7 @@ sub xst_boot_conf_replace_image
 
         $i = $txt . $i;
       }
+      last;
     }
     
     next if ($found != 1);
@@ -352,6 +352,7 @@ sub xst_boot_conf_replace_image
 
   if (keys %image && $found) #end of file reached, let's add pending tags.
   {
+    delete $image{$name};
     foreach $key (keys %image)
     {
       $i = "$key\n" unless $image{$key};

@@ -1,3 +1,10 @@
+2001-02-26  Tambet Ingo  <tambet@ximian.com>
+
+	* boot-conf.in (xml_parse_image): get text (not word).
+
+	* boot.pl.in (xst_boot_conf_replace_image): Fixed bug that sometimes didn't write
+	type. Don't scan to the end of file if everything is done already. 
+
 2001-02-25  Hans Petter Jansson  <hpj@ximian.com>
 
 	* general.pl.in (xst_begin): Don't break if platform unknown -

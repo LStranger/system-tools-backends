@@ -104,6 +104,7 @@ sub xml_parse_boot
     elsif ($$tree[0] eq "boot") { $$hash{"boot"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "map") { $$hash{"map"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "install") { $$hash{"install"} = &xst_xml_get_word ($$tree[1]); }
+
     elsif ($$tree[0] eq "entry") { &xml_parse_image ($$tree[1], \@images); }
 
     shift @$tree;
@@ -124,7 +125,7 @@ sub xml_parse_image
 
   while (@$tree)
   {
-    $hash{$$tree[0]} = &xst_xml_get_word ($$tree[1]);
+    $hash{$$tree[0]} = &xst_xml_get_text ($$tree[1]);
 
     shift @$tree;
     shift @$tree;
@@ -246,7 +247,7 @@ sub set
   
   &xst_begin ();
 
-# $xst_input_file = "aaa";
+#  $xst_input_file = "aaa";
   $hash = &xml_parse ();
 
   &xst_boot_conf_set ($hash);
