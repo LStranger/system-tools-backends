@@ -3,6 +3,10 @@
 	* parse.pl.in (xst_parse_split): Keep all tokens on line
 	  associated with key.
 
+	* media.pl.in: Added.
+
+	* removable-media.pl.in: Added.
+
 2001-02-04  Hans Petter Jansson  <hpj@ximian.com>
 
 	* parse.pl.in (xst_parse_line_first): Stopped from losing return value.
