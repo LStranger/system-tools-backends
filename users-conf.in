@@ -44,7 +44,7 @@
 require "___scriptsdir___/be.pl";
 
 $DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report and command.
-
+$TEST_NIS = 0;
 
 # --- Tool information --- #
 
@@ -706,6 +706,59 @@ sub xml_parse_group
   
 # --- XML printing --- #
 
+sub xml_print_nis
+{
+  my ($key, $i, $j, $k);
+  
+  &be_xml_print ("<nis_userdb>\n");
+	&be_xml_enter ();
+	foreach $i (@users)
+	{
+          &be_xml_vspace ();
+	  &be_xml_print ("<user>\n");
+		&be_xml_enter ();
+		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
+		  &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n");
+		}
+		&be_xml_leave ();
+		&be_xml_print ("</user>\n");
+	}
+	&be_xml_leave ();
+  
+  &be_xml_vspace ();
+  &be_xml_print ("</nis_userdb>\n");
+	
+  &be_xml_print ("<!-- Now the groups -->\n");
+  &be_xml_vspace ();
+	
+	&be_xml_print ("<nis_groupdb>\n");
+	&be_xml_enter ();
+	foreach $i (@groups)
+	{
+    &be_xml_vspace ();
+	  &be_xml_print ("<group>\n");
+		&be_xml_enter ();
+		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
+			&be_xml_print ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
+		}
+		&be_xml_print ("<users>\n");
+		&be_xml_enter ();
+		$k = $$i[$groups_prop_map{"users"}];
+		foreach $j (@$k)
+		{
+			&be_xml_print ("<user>$j</user>\n");
+		}
+		&be_xml_leave ();
+		&be_xml_print ("</users>\n");
+
+		&be_xml_leave ();
+		&be_xml_print ("</group>\n");
+	}
+	&be_xml_leave ();
+  &be_xml_vspace ();
+  &be_xml_print ("</nis_groupdb>\n");
+}
+
 sub xml_print
 {
   my ($key, $i, $j, $k);
@@ -789,7 +842,10 @@ sub xml_print
 	&be_xml_leave ();
   &be_xml_vspace ();
   &be_xml_print ("</groupdb>\n");
-	
+
+  # This for test purposes only
+  &xml_print_nis () if $TEST_NIS;
+
   &be_xml_vspace ();
 	&be_xml_leave ();
   print "</users>\n";
