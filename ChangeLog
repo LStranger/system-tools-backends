@@ -1,5 +1,14 @@
 2001-03-29  Hans Petter Jansson  <hpj@ximian.com>
 
+	* xml.pl.in (xst_xml_scan): Now accepts a filename to scan from. Fallback
+	  remains stdin.
+
+2001-03-29  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_fstab): Don't use -> for hash indirection.
+
+2001-03-29  Hans Petter Jansson  <hpj@ximian.com>
+
 	* parse.pl.in (xst_parse_fstab): Implement.
 
 2001-03-29  Kenneth Christiansen  <kenneth@gnu.org>

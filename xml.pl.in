@@ -318,11 +318,19 @@ sub xst_xml_scan_recurse
 }
 
 
-sub xst_xml_scan
+sub xst_xml_scan  # (file) If no file specified, reads stdin.
 {
+  my ($file) = @_;
   my $doc; my @tree; my $i;
+  local *INPUT_FILE;
 
-  if ($xst_input_file eq "") 
+  if ($file)
+  {
+    open INPUT_FILE, $file;
+    $doc .= $i while ($i = <INPUT_FILE>);
+    close INPUT_FILE;
+  }
+  elsif ($xst_input_file eq "") 
   {
     $doc .= $i while ($i = <STDIN>);
   }
