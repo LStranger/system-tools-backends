@@ -72,6 +72,7 @@ end_of_usage_generic;
 
 # --- Auto-informative printing --- #
 
+
 sub be_print_usage
 {
   my $i;
@@ -98,7 +99,14 @@ sub be_print_version
 # --- Paths to config files --- #
 
 
-@hosts_names =             ( "/etc/hosts" );
+# We list each config file type with as many alternate locations as possible.
+# They are tried in array order. First found = used.
+
+@hosts_names =              ( "/etc/hosts" );               # (all)
+@sysconfig_network_names =  ( "/etc/sysconfig/network" );   # Red Hat
+@rc_config_names =          ( "/etc/rc.config" );           # SuSE
+@network_interfaces_names = ( "/etc/network/interfaces" );  # Debian
+@network_options_names =    ( "/etc/network/options" );     # Debian
 
 
 # --- Operation modifying variables --- #
@@ -107,6 +115,7 @@ sub be_print_version
 # that a $prefix of "" will cause the configurator to use '/' as the base path,
 # and disables creation of directories and writing of previously non-existent
 # files.
+
 
 $be_name = "";       # Short name of tool.
 $be_version = "";    # Version of tool - [major.minor.revision].
@@ -121,6 +130,7 @@ $be_input_file = "";
 
 
 # --- Progress printing --- #
+
 
 $be_progress_current = 0;  # Compat with old $progress_max use.
 $be_progress_last_percentage = 0;
@@ -160,6 +170,7 @@ sub be_print_progress  # Compat with old $progress_max use.
 
 
 # --- Report printing --- #
+
 
 sub be_report
 {
@@ -229,6 +240,7 @@ sub be_report_fatal
 # be_xml_vspace: Ensures there is a vertical space of one and only one line.
 # be_xml_print: Indent, then print all arguments. Just for sugar.
 
+
 $be_indent_level = 0;
 $be_have_vspace = 0;
 
@@ -241,11 +253,8 @@ sub be_xml_print { &be_xml_indent; print @_; }
 
 # --- XML scanning --- #
 
+
 # This code tries to replace XML::Parser scanning from stdin in tree mode.
-
-
-#@be_xml_scan_list;
-
 
 sub be_xml_scan_make_kid_array
   {
@@ -298,6 +307,7 @@ sub be_xml_scan_recurse
   return(\@list);
 }
 
+
 sub be_xml_scan
   {
     my $doc; my @tree; my $i;
@@ -318,9 +328,6 @@ sub be_xml_scan
     $tree = be_xml_scan_recurse;
     
     return($tree);
-    
-    #  $" = "\n";
-    #  print "@list\n";
   }
 
 
@@ -393,6 +400,7 @@ sub be_xml_plain_to_entities
 
 # --- Utilities for strings, arrays and other data structures --- #
 
+
 # Boolean <-> strings conversion.
 
 sub be_read_boolean
@@ -444,8 +452,8 @@ sub be_push_unique
 
 sub be_ignore_line
   {
-    if (($_[0] =~ /^\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return(1); }
-    return(0);
+    if (($_[0] =~ /^\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return 1; }
+    return 0;
   }
 
 
@@ -462,7 +470,7 @@ sub be_item_is_in_list
 
   foreach my $item (@_)
   {
-    if ( $value eq $item ) { return 1; }
+    if ($value eq $item) { return 1; }
   }
 
   return 0;
@@ -534,7 +542,55 @@ sub be_get_key_for_subkey_and_subvalues
 }
 
 
+# --- IP calculation --- #
+
+
+# be_ip_calc_network (<IP>, <netmask>)
+#
+# Calculates the network address and returns it as a string.
+
+sub be_ip_calc_network
+{
+  my @ip_reg1;
+  my @ip_reg2;
+
+  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+
+  @ip_reg1[0] = (@ip_reg1[0] * 1) & (@ip_reg2[0] * 1);
+  @ip_reg1[1] = (@ip_reg1[1] * 1) & (@ip_reg2[1] * 1);
+  @ip_reg1[2] = (@ip_reg1[2] * 1) & (@ip_reg2[2] * 1);
+  @ip_reg1[3] = (@ip_reg1[3] * 1) & (@ip_reg2[3] * 1);
+
+  return(join('.', @ip_reg1));
+}
+
+
+# be_ip_calc_network (<IP>, <netmask>)
+#
+# Calculates the broadcast address and returns it as a string.
+
+sub be_ip_calc_broadcast
+{
+  my @ip_reg1;
+  my @ip_reg2;
+  
+  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+ 
+  @ip_reg1 = ($cf_hostip =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+
+  @ip_reg1[0] = (@ip_reg1[0] * 1) | (~(@ip_reg2[0] * 1) & 255);
+  @ip_reg1[1] = (@ip_reg1[1] * 1) | (~(@ip_reg2[1] * 1) & 255);
+  @ip_reg1[2] = (@ip_reg1[2] * 1) | (~(@ip_reg2[2] * 1) & 255);
+  @ip_reg1[3] = (@ip_reg1[3] * 1) | (~(@ip_reg2[3] * 1) & 255);
+  
+  return(join('.', @ip_reg1));
+}
+
+
 # --- File operations --- #
+
 
 @be_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin",
                       "/usr/bin", "/usr/local/bin" );
@@ -571,6 +627,7 @@ sub be_locate_tool
   return($found);
 }
 
+
 sub be_open_read_from_names
 {
   local *FILE;
@@ -580,18 +637,16 @@ sub be_open_read_from_names
   {
     if (open(FILE, "$be_prefix/$name")) { $fname = $name; last; }
   }
-
+  
   (my $fullname = "$be_prefix/$fname") =~ tr/\//\//s;  # '//' -> '/'	
 
-  if ($fname ne "") 
-  { 
-    be_report_info(99, "Reading options from \"$fullname\"");
-  }
-  else 
+  if ($fname eq "") 
   { 
     be_report_warning(99, "Could not read \[@_\]");
+    return;
   }
-    
+
+  be_report_info(99, "Reading options from \[$fullname\]");
   return *FILE;
 }
 
@@ -622,13 +677,13 @@ sub be_open_write_from_names
 	  {
 	    $name = $_[0];
 	    (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-	    be_report_warning(97, "Could not find \[@_\]. Writing to \"$fullname\"");
+	    be_report_warning(97, "Could not find \[@_\]. Writing to \[$fullname\]");
 	  }
       }
     else
       {
 	(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-	be_report_info(98, "Found \"$name\". Writing to \"$fullname\"");
+	be_report_info(98, "Found \[$name\]. Writing to \[$fullname\]");
       }
     
     ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
@@ -649,7 +704,8 @@ sub be_open_write_from_names
     
     if (!open(FILE, ">$name"))
       {
-	be_report_error(99, "Failed to write to \"$name\"");
+	be_report_error(99, "Failed to write to \[$name\]");
+	return;
       }
     
     return *FILE;
@@ -682,13 +738,13 @@ sub be_open_filter_write_from_names
 	  {
 	    $name = $_[0];
 	    (my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-	    be_report_warning(97, "Could not find \[@_\]. Patching \"$fullname\"");
+	    be_report_warning(97, "Could not find \[@_\]. Patching \[$fullname\]");
 	  }
       }
     else
       {
 	(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-	be_report_info(98, "Found \"$name\". Patching \"$fullname\"");
+	be_report_info(98, "Found \[$name\]. Patching \[$fullname\]");
       }
     
     ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
@@ -713,7 +769,8 @@ sub be_open_filter_write_from_names
     
     if (!open(OUTFILE, ">$name"))
       {
-	be_report_error(99, "Failed to write to \"$name\"");
+	be_report_error(99, "Failed to write to \[$name\]");
+	return;
       }
     
     return(*INFILE, *OUTFILE);
@@ -739,49 +796,53 @@ sub be_create_path
   }
 
 
-# --- Configuration utilities --- #
+# --- Name resolution utilities --- #
 
 
-# be_ensure_local_host_entry (<ip>, <hostname>)
+# be_ensure_local_host_entry (<hostname>)
 #
-# Given a text IP and hostname, add the hostname as an alias for the local
-# hosts (provided) IP to the /etc/hosts database. This is required for tools
-# like nmblookup to work on a computer with no reverse name or DNS.
+# Given a hostname, add the hostname as an alias for the loopback IP, in the
+# /etc/hosts database. This is required for tools like nmblookup to work on
+# a computer with no reverse name or DNS. The name is added as the first alias,
+# which usually means it'll be returned by a lookup on the loopback IP.
 
 sub be_ensure_local_host_entry
 {
-  my $local_ip = @_[0];
-  my $local_hostname = @_[1];
+  my $local_ip = "127.0.0.1";
+  my $local_hostname = @_[0];
+  my ($ifh, $ofh);
   local *INFILE;
   local *OUTFILE;
   my $written = 0;
 
-  if ($local_ip eq "" || $local_hostname eq "") { return; }
+  if ($local_hostname eq "") { return; }
 
   # Find the file.
   
   (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@hosts_names);
-  if (not *OUTFILE) { return; }  # We didn't find it.
+  if (!*OUTFILE) { return; }  # We didn't find it.
 
   # Write the file, preserving as much as possible from INFILE.
 
   while (<INFILE>)
   {
     @line = split(/[ \n\r\t]+/, $_);
-    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+    if ($line[0] eq "") { shift @line; }  # Leading whitespace. He.
 
     if ($line[0] ne "" && (not be_ignore_line($line[0])) &&
 #       ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) &&
         $line[0] eq $local_ip)
     {
-      # Found $local_ip. Add $local_hostname to its list, if it's not already there.
+      # Found $local_ip. Add $local_hostname to beginning of list,
+      # and remove any other occurrences.
 
       shift @line;
 
-      be_push_unique(\@line, $local_hostname);
-
-      printf OUTFILE ("%-16s", $local_ip);
-      for $alias (@line) { print OUTFILE " $alias"; }
+      printf OUTFILE ("%-16s %s", $local_ip, $local_hostname);
+      for $alias (@line)
+      {
+        if ($alias ne $local_hostname) { print OUTFILE " $alias"; }
+      }
       print OUTFILE "\n";
 
       $written = 1;
@@ -792,6 +853,565 @@ sub be_ensure_local_host_entry
   # If the IP wasn't present, add the entry at the end.
 
   if (!$written) { printf OUTFILE ("%-16s %s\n", $local_ip, $local_hostname); }
+  close INFILE;
+  close OUTFILE;
+}
+
+
+# --- Network interface readers --- #
+
+# Example of use:
+#
+# $nw = be_network_get();
+# $ifaces = $$nw{"interfaces"};
+#
+# if (exists($nw{"global"}->{"forward"})) { print "Forwarding.\n"; }
+#
+# foreach $key (keys(%{$ifaces}))
+# {
+#   print $key . " " . $$ifaces{$key}->{address} . " " . $$ifaces{$key}->{netmask} .
+#         " " . $$ifaces{$key}->{method} . " " . $$ifaces{$key}->{gateway};
+#
+#   if (exists($$ifaces{$key}->{primary})) { print "PRIMARY"; }
+#   
+#   print "\n";
+# }
+
+# Debian 2.[2|3]+ style /etc/network/interfaces
+#
+# <filtered lines>
+# iface <interface> inet <static|dhcp|bootp|ppp>
+#     address <ip>
+#     netmask <ip mask>
+#     gateway <gateway ip>
+#     broadcast <broadcast ip>
+#     network <network ip>
+#     noauto (this is only used to not enable the interface on boot)
+#     up <command to run when the interface is brought up>
+#     down <command to run when the interface is brought down>
+# <filtered lines>
+# (more interfaces may follow)
+#
+# A "#" character at the very beginning of a line causes that line to be
+# treated as a comment.
+# A "\" character at the very end of a line causes that line to continue onto
+# the next line.
+#
+# NOTE: For more information on the format of /etc/network/interfaces, read
+# the "interfaces" man page (section 5).  Also be sure to look at the example
+# file in /usr/share/doc/netbase/examples/interfaces.  Both of these are
+# included as part of the "netbase" package in Debian 2.[2|3].
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent:
+
+# Debian 2.[2|3] style /etc/network/options
+#
+# <filtered lines>
+# ip_forward=<yes|no>
+# spoofprotect=<yes|no>
+# syncookies=<yes|no>
+# <filtered lines>
+#
+# Reads in relevant network options that aren't found in
+# /etc/network/interfaces.  NOTE: None of these options are interface specific.
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent:
+
+# be_network_get_debian_interfaces
+
+sub be_network_get_debian
+{
+  my (%nw, %ifaces, $current_name, $current_iface, $fh);
+
+  $fh = be_open_read_from_names(@network_interfaces_names);
+  if (not $fh) { return; }
+
+  $nw{"interfaces"} = \%ifaces;
+
+  # Build a list of all interfaces
+  while (<$fh>)
+  {
+    # Split the current line into a list of tokens.
+    @line = split(/[ \n\r\t]+/, $_);
+
+    # Remove leading whitespace.
+    if ($line[0] eq "") { shift(@line); }
+
+    # Check to see if this line continues onto other lines.  If so, append
+    # them
+    while ($line[$#line] eq "\\")
+    {
+      # Remove the \ character.
+      pop @line;
+
+      # Read in the next line and split it into a list of tokens.
+      @nextline = split(/[ \n\r\t]+/, <FILE>);
+
+      # Remove any leading whitepage.
+      if ($nextline[0] eq "") { shift(@nextline); }
+
+      # Append @nextline to the end of @line
+      push @line, @nextline;
+    }
+
+    # Make sure this line isn't a comment.
+    if (be_ignore_line($line[0])) { next; }
+
+    # Check if the line specifies a new interface.
+    if ($line[0] eq "iface" && not be_ignore_line($line[1]))
+    {
+      # Make sure the interface is set up for IPv4/internet networking
+      if ($line[2] ne "inet") { next; }
+
+      # Also make sure there is a set configuration method.
+      if ($line[3] eq "" || be_ignore_line($line[3]))
+      {
+        be_report_warning(02, "Warning: Interface $line[1] has no " .
+                              "config method");
+        next;
+      }
+
+      # Create a new hash table for this interface.
+      my %iface_hash = ();
+
+      # Set this interface to be the 'current' one.
+      $current_name = $line[1];
+      $current_iface = $ifaces{$current_name} = \%iface_hash;
+
+      # Set the interface's method
+      $$current_iface{"method"} = $line[3];
+      
+      # Default in Debian is auto (onboot).
+      $$current_iface{"auto"} = 1;
+    }
+    else  # Add an attribute to an already set interface.
+    {
+      # Make sure an interface has been set.
+      if (not $current_iface) { next; }
+
+      # Make sure the attribute isn't empty.
+      if (not $line[1]) { next; }
+
+      if ($line[1] eq "noauto") { $$current_iface{"auto"} = 0; }
+
+      # Set the attribute
+      $$current_iface{$line[0]} = join(' ', $line[1..$#line]);
+    }
+  }
+
+  close $fh;
+
+  # Read options.
+
+  my %g;
+  $nw{"global"} = \%g;
+
+  $fh = be_open_read_from_names(@network_options_names);
+  if (!$fh) { return \%nw; }
+
+  # Build a list of all interfaces
+  while (<$fh>)
+  {
+    # Split the current line into a list of tokens.
+    @line = split(/[ \n\r\t=]+/, $_);
+
+    # Remove leading whitespace.
+    if ($line[0] eq "") { shift(@line); }
+
+    # Make sure this line isn't a comment.
+    if (be_ignore_line($line[0])) { next; }
+
+    # Set any relevant global configuration variables.
+    if ($line[0] eq "ip_forward" && not be_ignore_line($line[1]) &&
+        be_read_boolean($line[1]))
+    {
+      $g{"forward"} = 1;
+    }
+  }
+
+  close ($fh);
+
+  # Select a primary interface.
+  
+  # - If only one interface exists, use that one.
+  # - If an interface has a preset gateway, use that one.
+  # - The first interface with a dynamic configuration "method" (such as
+  #¤  "dhcp", "bootp", "ppp", etc.) will be selected.
+  # - If all else fails, pick the first interface.
+
+  # Do any interfaces exist at all?
+  if (scalar(keys(%ifaces)) == 0)
+  {
+    return \%nw;
+  }
+
+  # See if only one interface exists.
+  elsif (scalar(keys(%ifaces)) == 1)
+  {
+    $chosen_name = (keys(%ifaces))[0];
+  }
+
+  else
+  {
+    # Look for an interface with a preset gateway.
+    $chosen_name = be_get_key_for_subkeys(\%ifaces, ["gateway"]);
+    
+    # If need be, look for an interface with a dynamic configuration "method".
+    if ($chosen_name eq "")
+    {
+      $chosen_name = be_get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
+    }
+
+    # If an interface hasn't been chosen, then just pick the first available one.
+    if ($chosen_name eq "")
+    {
+      $chosen_name = (keys(%ifaces))[0];
+    }
+  }
+
+  %{$ifaces{$chosen_name}}->{"primary"} = 1;
+
+  return \%nw;
+}
+
+
+# Red Hat style /etc/sysconfig/network-scripts/ifcfg-*
+#
+# <filtered lines>
+# IPADDR=<ip>
+# NETMASK=<ip mask>
+# NETWORK=<network ip>
+# BROADCAST=<broadcast ip>
+# BOOTPROTO=<bootp|dhcp|none>
+# ONBOOT=<boolean>
+# <filtered lines>
+#
+# Determines the configuration of a specific network interface. First
+# argument must be the name of the interface.
+#
+# Exists: Red Hat [5|6].x
+#
+# Absent:
+
+# Red Hat style /etc/sysconfig/network
+#
+# <filtered lines>
+# NETWORKING=<boolean>
+# FORWARD_IPV4=<boolean>
+# GATEWAY=<ip>
+# GATEWAYDEV=<interface>
+# <filtered lines>
+#
+# Determines the primary network configuration. BEWARE: This is actually a
+# sourced shell script. We rely on some lenience from the user (and the distro)
+# to be able to parse it correctly.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0
+#
+# Absent: SuSE 6.3, SunOS 5.7
+
+# be_network_get_redhat
+
+sub be_network_get_redhat
+{
+  local *IFACE_DIR;
+  my (%nw, %ifaces, $fh);
+
+  if (!(opendir IFACE_DIR, "/etc/sysconfig/network-scripts")) { return 0; }
+
+  $nw{"interfaces"} = \%ifaces;
+
+  foreach $i (readdir (IFACE_DIR))
+  {
+    next if not $i =~ /ifcfg-([a-z0-9]+)/;
+
+    $fh = be_open_read_from_names("/etc/sysconfig/network-scripts/$i");
+    if (!$fh) { next; }
+
+    # Found an interface file, add another interface hash.
+
+    my %iface_hash;
+    my $iface_name = $1;
+    my $iface = $ifaces{$iface_name} = \%iface_hash;
+
+    # Parse the file.
+
+    while (<$fh>)
+    {
+      @line = split(/[ \n\r\t\"\'=]+/, $_);
+      if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+      if ($line[0] eq "IPADDR" && not be_ignore_line($line[1]))
+      {
+        $$iface{"address"} = $line[1];
+	if (!exists($$iface{"method"})) { $$iface{"method"} = "static"; }
+      }
+      elsif ($line[0] eq "NETMASK" && not be_ignore_line($line[1]))
+      {
+        $$iface{"netmask"} = $line[1];
+      }
+      elsif ($line[0] eq "BOOTPROTO" && not be_ignore_line($line[1]))
+      {
+        if ($line[1] eq "bootp")   { $$iface{"method"} = "bootp"; }
+        elsif ($line[1] eq "dhcp") { $$iface{"method"} = "dhcp"; }
+      }
+      elsif ($line[0] eq "ONBOOT" && not be_ignore_line($line[1]))
+      {
+        if (be_read_boolean($line[1]))
+	{
+	  $$iface{"auto"} = 1;  # Set the auto flag.
+	}
+      }
+    }
+
+    close ($fh);
+  }
+
+  closedir (IFACE_DIR);
+
+  # Read options.
+
+  my (%g, $gateway_dev);
+  $nw{"global"} = \%g;
+
+  $fh = be_open_read_from_names(@sysconfig_network_names);
+  if (!$fh) { return \%nw; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<$fh>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "NETWORKING" && !be_ignore_line($line[1]) &&
+        be_read_boolean($line[1]))
+    {
+      $g{"auto"} = 1;
+    }
+    elsif ($line[0] eq "FORWARD_IPV4" && !be_ignore_line($line[1]) &&
+           be_read_boolean($line[1]) == 1)
+    {
+      $g{"forward"} = 1;
+    }
+    elsif ($line[0] eq "GATEWAY" && !be_ignore_line($line[1]))
+    {
+      $g{"gateway"} = $line[1];
+    }
+    elsif ($line[0] eq "GATEWAYDEV" && !be_ignore_line($line[1]))
+    {
+      $gateway_dev = $line[1];
+    }
+  }
+
+  close($fh);
+
+  # Select a primary interface.
+
+  # Do any interfaces exist at all?
+  if (scalar(keys(%ifaces)) == 0)
+  {
+    return \%nw;
+  }
+
+  # See if only one interface exists.
+  elsif (scalar(keys(%ifaces)) == 1)
+  {
+    $chosen_name = (keys(%ifaces))[0];
+
+#    be_report_info(2, "Only one interface, $chosen_name, exists.  It is being " .
+#                      "selected as the primary interface");
+  }
+
+  # See if the default gateway device was specified explicitly.
+  elsif ($gateway_dev ne "")
+  {
+    $chosen_name = $gateway_dev;
+  }
+
+  # See if the gateway IP can be found on a static interface's network.
+  elsif ($g{"gateway"} ne "")
+  {
+    foreach $key (keys(%ifaces))
+    {
+      if (!exists($ifaces{$key}->{"address"}) ||
+          !exists($ifaces{$key}->{"netmask"})) { next; }
+
+      if (be_ip_calc_network($g{"gateway"}, $ifaces{$key}->{"netmask"}) eq
+          be_ip_calc_network($ifaces{$key}->{"address"}, $ifaces{$key}->{"netmask"}))
+      {
+        $chosen_name = $key;
+        last;
+      }
+    }
+  }
+  
+  # Last ditch.
+  
+  if ($chosen_name eq "")
+  {
+    foreach $key (keys(%ifaces))
+    {
+      if (($key =~ /eth.*/) || ($key =~ /hme.*/) || ($key =~ /ppp.*/))
+      {
+	$chosen_name = $key;
+	last;
+      }
+    }
+  }
+
+  if ($chosen_name eq "")
+  {
+    $chosen_name = (keys(%ifaces))[0];
+  }
+
+  if ($chosen_name ne "")
+  {
+    $ifaces{$chosen_name}->{"primary"} = 1;
+  }
+
+  return \%nw;
+}
+
+
+# SuSE style /etc/rc.config
+#
+# <filtered lines>
+# NETDEV_0="<dev>"
+# IPADDR_0="<ip>"
+# IFCONFIG_0="<ip> broadcast <broadcast> netmask <netmask>"
+# <filtered lines>
+#
+# BEWARE: This is actually a sourced shell script. We rely on some lenience
+# from the user (and the distro) to be able to parse it correctly. The file
+# is read by SuSE configuration tools and translated to NET-3 config files
+# at strategic times.
+#
+# Exists: SuSE 6.3
+#
+# Absent: Red Hat 6.x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SunOS 5.7
+
+# be_network_get_suse_interfaces
+
+sub be_network_get_suse
+{
+  my (%nw, %ifaces, @iface_name, @iface_ip, @iface_netmask, @iface_method, $fh);
+
+  # Find the file.
+
+  $fh = be_open_read_from_names(@rc_config_names);
+  if (not $fh) { return; }  # We didn't find it.
+
+  $nw{"interfaces"} = \%ifaces;
+
+  # Parse the file.
+
+  while (<$fh>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] =~ /NETDEV_([0-9]+)/ && not be_ignore_line($line[1]))
+    {
+      $iface_name[$1] = $line[1];
+    }
+    elsif ($line[0] =~ /IPADDR_([0-9]+)/)
+    {
+      $iface_ip[$1] = $line[1];
+    }
+    elsif ($line[0] =~ /IFCONFIG_([0-9]+)/)
+    {
+      my $id = $1;
+      shift @line;
+
+      while (@line)
+      {
+        if (be_ignore_line($line[0])) { last; }
+
+        if ($line[0] eq "broadcast")
+        {
+          # Calculate this ourselves.
+
+          shift @line;
+          shift @line;
+        }
+        elsif ($line[0] eq "netmask")
+        {
+	  @iface_netmask[$id] = $line[1];
+          shift @line;
+          shift @line;
+        }
+        elsif ($line[0] eq "bootp")
+        {
+          @iface_method[$id] = "bootp";
+          last;
+        }
+        elsif ($line[0] =~ /dhcp.*/)
+        {
+          $iface_method[$id] = "dhcp";
+          last;
+        }
+        elsif ($line[0] ne "")
+	{
+	  $iface_ip[$id] = $line[0];
+	  shift @line;
+	}
+        else { shift @line; }
+      }
+    }
+  }
+
+  close($fh);
+
+  # Hash the information.
+
+  for ($i = 0; @iface_name[$i]; $i++)
+  {
+    my %iface_hash;
+    my $iface = $ifaces{@iface_name[$i]} = \%iface_hash;
+
+    $$iface{"address"} = $iface_ip[$i];
+    $$iface{"netmask"} = $iface_netmask[$i];
+    if ($iface_ip[$i] ne "" && $iface_method eq "")
+    {
+      $$iface{"method"} = "static";
+    }
+    else
+    {
+      $$iface{"method"} = $iface_method[$i];
+    }
+  }
+
+  return \%nw;
+}
+
+
+# be_network_get
+#
+# Gets a hash of all listed interfaces and options, regardless of
+# host environment.
+
+sub be_network_get
+{
+  my $nw;
+
+  $nw = be_network_get_redhat ();
+
+  if (!$nw)
+  {
+    $nw = be_network_get_debian ();
+  }
+
+  if ($nw eq "")
+  {
+    $nw = be_network_get_suse ();
+  }
+
+  return $nw;
 }
 
 
