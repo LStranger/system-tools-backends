@@ -124,56 +124,58 @@ sub gst_service_list_get_info
 sub gst_service_list_service_is_forbidden
 {
 	my ($service) = @_;
-	my (%service_forbidden_list);
 	my ($ret);
-	
-	# This is the hash that contains all the "forbidden" services
-	%service_forbidden_list =
-	(
-		# TODO: we ought to separate the services depending on the distro that uses them
-	
-		# These are the forbidden services I found in Red Hat
-		"halt" => 1,
-		"functions" => 1,
-		"killall" => 1,
-	
-		# These are the forbidden services I found in Debian Woody	
-		"single" => 1,
-		"sendsigs" => 1,
-		"reboot" => 1,
-		"rcS" => 1,
-		"modutils" => 1,
-		"hostname.sh" => 1,
-		#"halt" => 1 in debian too
-		"devpts.sh" => 1,
-		"console-screen.sh" => 1,
-		"checkroot.sh" => 1,
-		"checkfs.sh" => 1,
-		"bootmisc.sh" => 1,
-		"checkfs.sh" => 1,
-    "keymap.sh" => 1,
-    "hwclockfirst.sh" => 1,
-    "etc-setserial" => 1,
-    "procps.sh" => 1,
-    "mountall.sh" => 1,
-    "dns-clean" => 1,
-    "ifupdown" => 1,
-    "networking" => 1,
-    "mountnfs.sh" => 1,
-    "setserial" => 1,
-    "hwclock.sh" => 1,
-    "urandom" => 1,
-    "nviboot" => 1,
 
-    # this shouldn't be shown in slackware
-    "inet2" => 1
-	);
+  my ($service_forbidden_list) =
+    [
+     # These are the forbidden services I found in Red Hat
+     "halt",
+     "functions",
+     "killall",
+     # These are the forbidden services I found in Debian Woody	
+     "single",
+     "sendsigs",
+     "reboot",
+     "rcS",
+     "modutils",
+     "hostname\.sh",
+     "devpts\.sh",
+     "console-screen\.sh",
+     "checkroot\.sh",
+     "checkfs\.sh",
+     "bootmisc\.sh",
+     "checkfs\.sh",
+     "keymap\.sh",
+     "hwclockfirst\.sh",
+     "etc-setserial",
+     "procps\.sh",
+     "mountall\.sh",
+     "dns-clean",
+     "ifupdown",
+     "networking",
+     "mountnfs\.sh",
+     "setserial",
+     "hwclock\.sh",
+     "urandom",
+     "nviboot",
+     # this shouldn't be shown in slackware
+     "inet2",
+     # those were found in gentoo
+     "net\..*",
+     "depscan\.sh",
+     "functions\.sh",
+     "halt\.sh",
+     "reboot\.sh",
+     "runscript\.sh",
+     "shutdown\.sh"
+    ];
+
+  foreach $i (@$service_forbidden_list)
+  {
+    return 1 if ($service =~ "^$i\$");
+  }
 	
-	$ret = $service_forbidden_list{$service};
-	return $ret;
+  return undef;
 }
-	
-
-
 
 1;

@@ -170,7 +170,9 @@ sub gst_service_get_verbose_runlevels
      "pld-1.99"       => "redhat-5.2",
      "fedora-1"       => "redhat-5.2",
 
-     "slackware-9.1.0" => "slackware-9.1.0"
+     "slackware-9.1.0" => "slackware-9.1.0",
+
+     "gentoo"         => "gentoo"
     );
 
   %runlevels=
@@ -184,6 +186,10 @@ sub gst_service_get_verbose_runlevels
                       "2" => _("Graphical mode"),
                       "3" => _("Text mode"),
                       "6" => _("Rebooting the system")
+                     },
+     "gentoo"     => {"boot"      => _(,
+                      "default"   => "lelele",
+                      "nonetwork" => "lilili"
                      },
      "slackware-9.1.0" => {"4" => _("Graphical mode") }
     );
@@ -750,6 +756,149 @@ sub gst_service_bsd_get_services
   return \%ret;
 }
 
+# these functions get a list of the services that run on a gentoo init
+sub gst_service_gentoo_get_runlevels
+{
+  my($raw_output) = gst_file_run_backtick("rc-status -l");
+  my(@runlevels) = split(/\n/,$raw_output);
+    
+  return @runlevels;
+}
+
+sub gst_service_gentoo_get_services_by_runlevel
+{
+  my($runlevel) = @_;
+  my($raw_output) = gst_file_run_backtick("rc-status $runlevel");
+  my(@raw_lines) = split(/\n/,$raw_output);
+  my(@services);
+  my($line);
+
+  foreach $line (@raw_lines)
+  {
+    if ($line !~ /^Runlevel/)
+    {
+      $line=(split(" ",$line))[0];
+	    push(@services,$line);
+	  }
+  }
+
+  return \@services
+}
+
+sub gst_service_gentoo_get_services_list
+{
+  return &gst_service_sysv_list_dir ("/etc/init.d/");
+}
+
+sub gst_service_gentoo_service_exist
+{
+  my($service) = @_;
+  my($services) = &gst_service_gentoo_get_services_list();
+
+  foreach $i (@$services)
+  {
+    return 1 if ($i =~ /$service/);
+  }
+
+  return 0;
+}
+
+sub gst_service_gentoo_get_runlevels_by_service
+{
+  my ($service) = @_;
+  my(@runlevels,@services_in_runlevel,@contain_runlevels, $runlevel);
+  my ($elem);
+
+  # let's do some catching to improve performance
+  if ($gentoo_services_hash eq undef)
+  {
+    @runlevels = &gst_service_gentoo_get_runlevels ();
+
+    foreach $runlevel (@runlevels)
+    {
+      $$gentoo_services_hash{$runlevel} = &gst_service_gentoo_get_services_by_runlevel ($runlevel);
+    }
+  }
+
+  if (&gst_service_gentoo_service_exist($service))
+  {
+    foreach $runlevel (keys %$gentoo_services_hash)
+    {
+      $services_in_runlevel = $$gentoo_services_hash {$runlevel};
+
+      foreach $elem (@$services_in_runlevel)
+      {
+        push (@contain_runlevels, $runlevel) if ($elem eq $service);
+      }
+    }
+  }
+
+  return @contain_runlevels;
+}
+
+sub gst_service_gentoo_runlevel_status_by_service
+{
+  my ($service) = @_;
+  my (@arr, @ret);
+  my (@runlevels) = &gst_service_gentoo_get_runlevels();
+  my (@started) = &gst_service_gentoo_get_runlevels_by_service($service);
+  my (%start_runlevels) = map { $started[$_], 1 } 0 .. $#started;
+
+  foreach $runlevel (@runlevels)
+  {
+    if (defined $start_runlevels{$runlevel})
+    {
+      push @arr, { "number" => $runlevel,
+                   "action" => "start" };
+    }
+    else
+    {
+      push @arr, { "number" => $runlevel,
+                   "action" => "stop" };
+    }
+  }
+
+  push @ret, { "runlevel" => \@arr };
+  return @ret;
+}
+
+sub gst_service_gentoo_get_service_info
+{
+	my ($service) = @_;
+	my ($script, $name, $description, @actions, @runlevels);
+	my %hash;
+	
+	# We have to check out if the service is in the "forbidden" list
+	return undef if (&gst_service_list_service_is_forbidden ($service));
+
+	($name, $description) = &gst_service_list_get_info ($service);
+
+	my($runlevels) = &gst_service_gentoo_runlevel_status_by_service ($service);
+
+	$hash{"script"} = $service;
+	$hash{"name"} = $name unless ($name eq undef);
+	$hash{"description"} = $description unless ($description eq undef);
+	$hash{"runlevels"} = $runlevels unless ($runlevels eq undef);
+
+	return \%hash;
+}
+
+sub gst_service_gentoo_get_services
+{
+  my ($service);
+  my (@arr,%ret);
+  my ($service_list) = &gst_service_gentoo_get_services_list();
+
+  foreach $service (@$service_list)
+  {
+    my (%hash);
+    $hash = &gst_service_gentoo_get_service_info ($service);
+
+    $ret{$service} = $hash if ($hash ne undef);
+  }
+
+  return \%ret;
+}
 
 # generic functions to get the available services
 sub gst_get_init_type
@@ -762,6 +911,10 @@ sub gst_get_init_type
   {
     return "bsd";
   }
+  elsif ($gst_dist =~ /gentoo/)
+  {
+    return "gentoo";
+  }
   else
   {
     return "sysv";
@@ -772,18 +925,10 @@ sub gst_service_get_services
 {
   $type = &gst_get_init_type ();
 
-  if ($type eq "sysv")
-  {
-    return &gst_service_sysv_get_services ();
-  }
-  elsif ($type eq "file-rc")
-  {
-    return &gst_service_filerc_get_services ();
-  }
-  elsif ($type eq "bsd")
-  {
-    return &gst_service_bsd_get_services ();
-  }
+  return &gst_service_sysv_get_services ()   if ($type eq "sysv");
+  return &gst_service_filerc_get_services () if ($type eq "file-rc");
+  return &gst_service_bsd_get_services ()    if ($type eq "bsd");
+  return &gst_service_gentoo_get_services () if ($type eq "gentoo");
 
   return undef;
 }
@@ -1070,6 +1215,16 @@ sub gst_service_redhat_get_status
   return 0;
 }
 
+sub gst_service_gentoo_get_status
+{
+  my ($service) = @_;
+
+  $line = `/etc/init.d/$service status`;
+
+  return 1 if ($line =~ /started/);
+  return 0;
+}
+
 # returns true if the service is already running
 sub gst_service_get_status
 {
@@ -1090,7 +1245,9 @@ sub gst_service_get_status
        "redhat-7.3"   => \&gst_service_redhat_get_status,
        "redhat-8.0"   => \&gst_service_redhat_get_status,
        "redhat-9"     => \&gst_service_redhat_get_status,
-       "fedora-1"     => \&gst_service_redhat_get_status
+       "fedora-1"     => \&gst_service_redhat_get_status,
+
+       "gentoo"       => \&gst_service_gentoo_get_status
       );
   my $proc;
 
@@ -1163,6 +1320,40 @@ sub gst_service_bsd_run_script
   }
 }
 
+sub gst_service_gentoo_run_script
+{
+  my ($service, $arg) = @_;
+  my ($option);
+
+  my %map =
+    ("stop" => "stopped",
+     "start" => "started"
+    );
+
+  &gst_report_enter ();
+
+  if (!exists $map{$arg})
+  {
+    &gst_report ("service_sysv_op_unk", $arg);
+    &gst_report_leave ();
+    return -1;
+  }
+
+  if (&gst_service_gentoo_service_exist ($service))
+  {
+    if (!&gst_file_run ("/etc/init.d/$service $arg"))
+    {
+      &gst_report ("service_sysv_op_success", $service, $str);
+      &gst_report_leave ();
+	    return 0;
+	  }
+  }
+
+  &gst_report ("service_sysv_op_failed", $service, $str);
+  &gst_report_leave ();
+  return -1;
+}
+
 sub gst_service_run_script
 {
   my ($service, $arg) = @_;
@@ -1170,7 +1361,8 @@ sub gst_service_run_script
   my %map =
       (
        "sysv"   => \&gst_service_sysv_run_initd_script,
-       "bsd"    => \&gst_service_bsd_run_script
+       "bsd"    => \&gst_service_bsd_run_script,
+       "gentoo" => \&gst_service_gentoo_run_script
       );
 
   $type = &gst_get_init_type ();
