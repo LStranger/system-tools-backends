@@ -7,6 +7,7 @@
 #
 # Authors: Hans Petter Jansson <hpj@ximian.com>
 #          Arturo Espinosa <arturo@ximian.com>
+#          Kenneth Christiansen <kenneth@gnu.org>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -37,9 +38,10 @@ require "___scriptsdir___/debug.pl";
 # &xst_xml_print: Indent, then print all arguments. Just for sugar.
 
 
-$xst_indent_level = 0;
-$xst_have_vspace = 0;
+my $xst_indent_level = 0;
+my $xst_have_vspace = 0;
 
+my @xst_xml_stack;
 
 sub xst_xml_print_begin
 {
@@ -85,17 +87,22 @@ sub xst_xml_print_string
   &xst_debug_print_string_to_file ("out.xml", @_[0]);
 }
 
-
-sub xst_xml_print_indent
+sub xst_xml_format_indent
 {
   my $i;
   my $indent_string;
 
   for ($i = 0; $i < $xst_indent_level; $i++) { $indent_string .= " "; }
-  &xst_xml_print_string ($indent_string);
   $xst_have_vspace = 0;
+  return $indent_string;
 }
 
+sub xst_xml_print_indent
+{
+  my $indent = xst_xml_format_indent;
+
+  &xst_xml_print_string($indent);
+}
 
 sub xst_xml_print_vspace
 {
@@ -117,12 +124,39 @@ sub xst_xml_print_line
   &xst_xml_print_string ($line . "\n");
 }
 
+sub xst_xml_format_pcdata # (name, pcdata)
+{
+  my ($name, $pcdata) = @_;
+  
+  if ($pcdata) {
+    return "<$name>$pcdata</$name>";
+#    xst_xml_print_line ("<$name>$pcdata</$name>");
+  }
+}
+
+sub xst_xml_print_pcdata # (name, pcdata)
+{
+  my ($name, $pcdata) = @_;
+  my $line = xst_xml_format_pcdata ($name, $pcdata);
+
+  &xst_xml_print_line ($line); 
+}
+
+sub xst_xml_format_state_tag
+{
+  my ($name, $state) = @_;
+  my $boolean = xst_print_boolean_truefalse ($state);
+
+  return "<$name state='$boolean'/>";
+}
 
 sub xst_xml_print_state_tag
 {
-  &xst_xml_print_line ("<" . @_[0] . " state='" . &xst_print_boolean_truefalse (@_[1]) . "'/>");
-}
+  my ($name, $state) = @_;
+  my $state_tag = xst_xml_format_state_tag ($name, $state);
 
+  &xst_xml_print_line ($state_tag); 
+}
 
 # Pass a hash and the keys whose items are scalars. Print <key>val</key>.
 sub xst_xml_print_scalars
@@ -190,6 +224,42 @@ sub xst_xml_print_hash_hash
   } 
 }
 
+sub xst_xml_container_enter # (name)
+{
+  my ($container) = @_;
+
+  ## xst_xml_stack is not my, as it is defined at top,
+  ## so it is global
+  push @xst_xml_stack, $container;
+
+  xst_xml_print_line ("<$container>");
+  xst_xml_enter();
+}
+
+sub xst_xml_container_leave
+{
+  ## checks if there is a start tag
+  if ($#xst_xml_stack >= 0) { 
+    my $current_container = $xst_xml_stack[$#xst_xml_stack];
+    pop @xst_xml_stack; 
+
+    xst_xml_leave();
+    xst_xml_print_line ("</$current_container>");
+  }
+}
+
+sub xst_xml_print_container # (name, @strings)
+{
+  my ($name, @strings) = @_;
+
+  if (@strings) {
+    xst_xml_container_enter ($name);
+    foreach $tag (@strings) {
+      xst_xml_print_line "$tag";
+    }
+    xst_xml_container_leave;
+  }
+} 
 
 # --- XML scanning --- #
 

@@ -1,3 +1,19 @@
+2001-03-20  Kenneth Christiansen  <kenneth@gnu.org>
+
+	reviewed by: Hans Petter Jansson  <hpj@ximian.com>
+
+	* xml.pl.in: Added some my's
+	  implimented stack for managing tag containers
+	* xml.pl.in(xst_xml_(print|format)_indent): 
+	  Made format version
+	* xml.pl.in(xst_xml_(print|format)_pcdata: 
+	  New function for printing pcdata  
+	* xml.pl.in(xst_xml_(print|format)_state_tag): 
+	  Made format version, cleaned up a little
+	* xml.pl.in(xst_xml_container_enter): New function     
+	* xml.pl.in(xst_xml_container_leave): New function
+	* xml.pl.in(xst_xml_print_container): New function
+
 2001-03-20  Tambet Ingo  <tambet@ximian.com>
 
         * users-conf.in: Initial support for profiles.
