@@ -1,3 +1,12 @@
+2004-07-14  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* general.pl.in, xml.pl.in: finally made all the output utf-8, this
+	  will require perl >= 5.8.0 (on older versions it will still work,
+	  but the output won't be guaranteed to be utf-8), it also allows
+	  backends i18n for distributions != debian (with it's annyoning
+	  liblocale-gettext-perl package). Fixes also bugs #142921 and 
+	  #145240
+
 2004-07-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* replace.pl.in (gst_replace_line_first): add a \n after the line.

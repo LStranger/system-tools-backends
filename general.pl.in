@@ -37,18 +37,16 @@ eval "use Locale::gettext";
 $eval_gettext = $@;
 eval "use POSIX";
 $eval_posix = $@;
-# why the hell does debian package have this function while the rest of the distros hasn't??
-eval "&bind_textdomain_codeset (\"@GETTEXT_PACKAGE@\", \"UTF-8\")";
-$eval_codeset = $@;
+eval "use Encode";
+$eval_encode = $@;
 
-$has_i18n = (($eval_gettext eq "") && ($eval_posix eq "") && ($eval_codeset eq ""));
+$has_i18n = (($eval_gettext eq "") && ($eval_posix eq "") && ($eval_encode eq ""));
 
 if ($has_i18n)
 {
   # set up i18n stuff
   &setlocale (LC_MESSAGES, "");
   &bindtextdomain ("@GETTEXT_PACKAGE@", "@localedir@");
-  &bind_textdomain_codeset ("@GETTEXT_PACKAGE@", "UTF-8");
   &textdomain ("@GETTEXT_PACKAGE@");
 
   eval "sub _ { return gettext (shift); }";
