@@ -48,6 +48,7 @@ sub gst_util_read_boolean
     
   return 1 if ($v =~ "true" ||
                $v =~ "yes"  ||
+               $v =~ "YES"  ||
                $v =~ "on"   ||
                $v eq "1");
   return 0;

@@ -1269,6 +1269,53 @@ sub gst_service_gentoo_set_services
   }
 }
 
+sub gst_service_rcng_set_status
+{
+  my ($service, $action) = @_;
+  my ($fd, $key, $res);
+  my ($default_rcconf) = "/etc/defaults/rc.conf";
+  my ($rcconf) = "/etc/rc.conf";
+
+  $fd = &gst_file_run_pipe_read ("/etc/rc.d/$service rcvar");
+
+  while (<$fd>)
+  {
+    if (/^\$(.*)=.*$/)
+    {
+      # to avoid cluttering rc.conf with duplicate data,
+      # we first look in the defaults/rc.conf for the key
+      $key = $1;
+      $res = &gst_parse_sh_bool ($default_rcconf, $key);
+
+      if ($res == $action)
+      {
+        &gst_replace_sh ($rcconf, $key);
+      }
+      else
+      {
+        &gst_replace_sh_bool ($rcconf, $key, "YES", "NO", $action);
+      }
+    }
+  }
+
+  &gst_file_close ($fd);
+}
+
+sub gst_service_rcng_set_services
+{
+  my ($services, $runlevel) = @_;
+  my ($action, $runlevels, $script);
+
+  foreach $service (@$services)
+  {
+    $script = $$service {"script"};
+    $runlevels = $$service{"runlevels"}[0]{"runlevel"}[0];
+    $action = ($$runlevels {"action"} eq "start")? 1 : 0;
+
+    &gst_service_rcng_set_status ($script, $action);
+  }
+}
+
 sub gst_service_set_services
 {
 	my ($services, $runlevel) = @_;
@@ -1279,6 +1326,7 @@ sub gst_service_set_services
   &gst_service_filerc_set_services ($services, $runlevel) if ($type eq "file-rc");
   &gst_service_bsd_set_services    ($services, $runlevel) if ($type eq "bsd");
   &gst_service_gentoo_set_services ($services, $runlevel) if ($type eq "gentoo");
+  &gst_service_rcng_set_services   ($services, $runlevel) if ($type eq "rcng");
 }
 
 sub gst_service_set_conf
