@@ -1,3 +1,7 @@
+2004-03-19  Evandro Fernandes Giovanini  <evandrofg@ig.com.br>
+
+	* configure.in (ALL_LINGUAS): Added "pt_BR" (Brazilian Portuguese).
+
 2004-03-17  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* replace.pl.in: (gst_replace_chat): added the possibility of not
