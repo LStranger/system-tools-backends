@@ -1,6 +1,9 @@
 2005-03-01  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* Release 1.1.92
+	* general.pl.in: made bind_textdomain_codeset optional, big hack, but
+	ATM it's better than requiring a package that distros don't ship at
+	all...
 
 2005-03-01  Carlos Garnacho Parro  <carlosg@gnome.org>
 
