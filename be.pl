@@ -385,9 +385,9 @@ sub be_xml_plain_to_entities
   }
 
 
-# --- String and array manipulation --- #
+# --- Utilities for strings, arrays and other data structures --- #
 
-# Boolean/strings conversion.
+# Boolean <-> strings conversion.
 
 sub be_read_boolean
   {
@@ -409,9 +409,9 @@ sub be_print_boolean_truefalse
   }
 
 
-# Pushes a value to an array, only if it's not already in there.
-# I'm sure there's a smarter way to do this. Should only be used for small lists,
-# as it's O(N^2). Larger lists with unique members should use a hash.
+# Pushes a list to an array, only if it's not already in there.
+# I'm sure there's a smarter way to do this. Should only be used for small
+# lists, as it's O(N^2). Larger lists with unique members should use a hash.
 
 sub be_push_unique
   {
@@ -436,17 +436,40 @@ sub be_push_unique
   }
 
 
-sub be_is_line_comment_start
+sub be_ignore_line
   {
     if (($_[0] =~ /^\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return(1); }
     return(0);
   }
 
 
+# be_item_is_in_list
+#
+# Given:
+#   * A scalar value.
+#   * An array.
+# this function will return 1 if the scalar value is in the array, 0 otherwise.
+
+sub be_item_is_in_list
+{
+  my $value = shift(@_);
+
+  foreach my $item (@_)
+  {
+    if ( $value eq $item ) { return 1; }
+  }
+
+  return 0;
+}
+
+
+
+
+
 # --- File operations --- #
 
-@be_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin", "/usr/bin",
-                   "/usr/local/bin" );
+@be_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin",
+                      "/usr/bin", "/usr/local/bin" );
 
 sub be_locate_tool
 {
@@ -471,11 +494,12 @@ sub be_locate_tool
     if (-x "$path/$_[0]") { $found = "$path/$_[0]"; last; }
   }
 
-  if (! $found && $be_verbose) {
-	  print STDERR "Couldn't find $_[0] program in path %s:%s", 
-		  join (",", @be_builtin_paths), join (",", @user_paths);
-	}
-	
+  if (!$found)
+  {
+    be_report_warning(96, "Couldn't find $_[0] tool in any of " .
+      join (", ", @be_builtin_paths) . " : " . join (", ", @user_paths));
+  }
+
   return($found);
 }
 
@@ -555,7 +579,7 @@ sub be_open_write_from_names
     
     # Truncate and return filehandle.
     
-    if (!open(FILE, ">$name") && $be_verbose)
+    if (!open(FILE, ">$name"))
       {
 	be_report_error(99, "Failed to write to \"$name\"");
       }
@@ -619,7 +643,7 @@ sub be_open_filter_write_from_names
     
     open(INFILE, "$name.confsave");
     
-    if (!open(OUTFILE, ">$name") && $be_verbose)
+    if (!open(OUTFILE, ">$name"))
       {
 	be_report_error(99, "Failed to write to \"$name\"");
       }

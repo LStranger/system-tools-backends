@@ -280,7 +280,7 @@ sub read_fstab
 
     if ($line[0] eq "") { shift @line; }
     if ($line[0] eq "") { next; }
-    if (be_is_line_comment_start($line[0])) { next; }
+    if (be_ignore_line($line[0])) { next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
     if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||
@@ -325,7 +325,7 @@ sub write_fstab
 
     if ($line[0] eq "") { shift @line; }
     if ($line[0] eq "") { print OUTFILE; next; }
-    if (be_is_line_comment_start($line[0])) { print OUTFILE; next; }
+    if (be_ignore_line($line[0])) { print OUTFILE; next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
     if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||

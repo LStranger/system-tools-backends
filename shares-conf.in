@@ -97,25 +97,6 @@ $cf_netmask = "";
 $cf_hostip = "";
 
 
-# is_in_list
-#
-# Given:
-#   * A scalar value.
-#   * An array.
-# this function will return 1 if the scalar value is in the array, 0 otherwise.
-
-sub is_in_list
-{
-  my $value = shift(@_);
-
-  foreach my $item (@_)
-  {
-    if ( $value eq $item ) { return 1; }
-  }
-
-  return 0;
-}
-
 # --- Configuration file manipulation --- #
 
 # Debian 2.[2|3]+ style /etc/network/interfaces
@@ -193,14 +174,14 @@ sub read_network_interfaces_into_hash
     }
 
     # Make sure this line isn't a comment.
-    if (be_is_line_comment_start($line[0])) { next; }
+    if (be_ignore_line($line[0])) { next; }
 
     # Check if the line specifies a new interface.
-    if ($line[0] eq "iface" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "iface" && not be_ignore_line($line[1]))
     {
       # Make sure the device was detected via ifconfig (see "get_immediate").
       # NOTE: This will weed out any loopback or dummy interfaces.
-      if (not is_in_list($line[1], @cf_interface_list))
+      if (not be_item_is_in_list($line[1], @cf_interface_list))
       {
         be_report_warning(3, "$line[1] isn't an available, configured interface");
         next;
@@ -210,7 +191,7 @@ sub read_network_interfaces_into_hash
       if ($line[2] ne "inet") { next; }
 
       # Also make sure there is a set configuration method.
-      if ($line[3] eq "" || be_is_line_comment_start($line[3]))
+      if ($line[3] eq "" || be_ignore_line($line[3]))
       {
         be_report_warning(4, "Interface $line[1] has no configuration method");
         next;
@@ -355,9 +336,9 @@ sub read_sysconfig_network_scripts_ifcfg
     @line = split(/[ \n\r\t\"\'=]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "IPADDR" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "IPADDR" && not be_ignore_line($line[1]))
     { $cf_hostip = $line[1]; }
-    elsif ($line[0] eq "NETMASK" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "NETMASK" && not be_ignore_line($line[1]))
     { $cf_netmask = $line[1]; }
   }
 
@@ -461,9 +442,9 @@ sub read_sysconfig_network
     @line = split(/[ \n\r\t\"\'=]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "GATEWAY" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "GATEWAY" && not be_ignore_line($line[1]))
     { $cf_gateway = $line[1]; }
-    elsif ($line[0] eq "GATEWAYDEV" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "GATEWAYDEV" && not be_ignore_line($line[1]))
     { $cf_interface = $line[1]; }
   }
 
@@ -505,7 +486,7 @@ sub read_rc_config
     @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "NETDEV_0" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "NETDEV_0" && not be_ignore_line($line[1]))
     {
       $cf_interface = $line[1];
     }
@@ -519,7 +500,7 @@ sub read_rc_config
 
       while (@line)
       {
-        if (be_is_line_comment_start($line[0])) { last; }
+        if (be_ignore_line($line[0])) { last; }
 	
 	if ($line[0] eq "broadcast")
 	{
@@ -604,41 +585,41 @@ sub read_smb_conf
 
       ($section) = (join(' ', @line) =~ /^\[(.*)\]/);
     }
-    elsif ($line[0] eq "workgroup" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "workgroup" && not be_ignore_line($line[1]))
     {
       $cf_workgroup = $line[1];
     }
-    elsif ($line[0] eq "path" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "path" && not be_ignore_line($line[1]))
     {
       $path = $line[1];
     }
-    elsif ($line[0] eq "comment" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "comment" && not be_ignore_line($line[1]))
     {
       shift @line;
       $comment = join(' ', @line);
     }
-    elsif ($line[0] eq "available" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "available" && not be_ignore_line($line[1]))
     {
       $enabled = be_read_boolean($line[1]);
     }
-    elsif ($line[0] =~ /^browse?able/ && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] =~ /^browse?able/ && not be_ignore_line($line[1]))
     {
       $browseable = be_read_boolean($line[1]);
     }
-    elsif ($line[0] eq "public" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "public" && not be_ignore_line($line[1]))
     {
       $public = be_read_boolean($line[1]);
     }
     elsif ($line[0] eq "guest" && $line[1] eq "ok" &&
-           not be_is_line_comment_start($line[2]))
+           not be_ignore_line($line[2]))
     {
       $public = be_read_boolean($line[2]);
     }
-    elsif ($line[0] =~ /write?able/ && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] =~ /write?able/ && not be_ignore_line($line[1]))
     {
       $writeable = be_read_boolean($line[1]);
     }
-    elsif ($line[0] eq "printable" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "printable" && not be_ignore_line($line[1]))
     {
       $printable = be_read_boolean($line[1]);
     }
@@ -696,12 +677,12 @@ sub write_smb_conf
       @buf = ();
       push @buf, $_;
     }
-    elsif ($line[0] eq "printable" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "printable" && not be_ignore_line($line[1]))
     {
       $printable = be_read_boolean($line[1]);
       push @buf, $_;
     }
-    elsif ($line[0] eq "security" && not be_is_line_comment_start($line[1]) &&
+    elsif ($line[0] eq "security" && not be_ignore_line($line[1]) &&
            $section =~ /^global/i)
     {
       push @buf, "   security = share\n";
@@ -775,7 +756,7 @@ sub read_fstab
 
     if ($line[0] eq "") { shift @line; }
     if ($line[0] eq "") { next; }
-    if (be_is_line_comment_start($line[0])) { next; }
+    if (be_ignore_line($line[0])) { next; }
     ($device, $dir, $fs, $options) = @line;
 
     $host = ""; $path = "";
@@ -859,7 +840,7 @@ sub write_fstab
 
     if ($line[0] eq "") { shift @line; }
     if ($line[0] eq "") { print OUTFILE; next; }
-    if (be_is_line_comment_start($line[0])) { print OUTFILE; next; }
+    if (be_ignore_line($line[0])) { print OUTFILE; next; }
     ($device, $dir, $fs, $options) = @line;
 
     $host = ""; $path = "";
@@ -1076,7 +1057,7 @@ sub read_exports
 
     if ($line[0] eq "") { shift @line; }
     if ($line[0] eq "") { next; }
-    if (be_is_line_comment_start($line[0])) { next; }
+    if (be_ignore_line($line[0])) { next; }
 
     $path = $line[0]; shift @line;
     push @cf_exports_list, "nfs";  # Type
@@ -1723,11 +1704,8 @@ sub get_host_mounts
       }
       close(FD);
 
-      if ($be_verbose)
-      {
-        if ($#smb_hosts + 1) { be_report_info(05, "Master reported " . ($#smb_hosts + 1) . " hosts in workgroup"); }
-        else { be_report_info(06, "No hosts reported by master - asking others"); }
-      }
+      if ($#smb_hosts + 1) { be_report_info(05, "Master reported " . ($#smb_hosts + 1) . " hosts in workgroup"); }
+      else { be_report_info(06, "No hosts reported by master - asking others"); }
     }
     else { be_report_warning(02, "No workgroup master found"); }
 

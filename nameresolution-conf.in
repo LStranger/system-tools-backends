@@ -139,7 +139,7 @@ sub read_resolv_conf
       shift @line;
       for $elem (@line)
       {
-        if (be_is_line_comment_start($elem)) { last; }
+        if (be_ignore_line($elem)) { last; }
         if ($elem ne "") { be_push_unique(\@cf_searchdomains, $elem); }
       }
     }
@@ -148,7 +148,7 @@ sub read_resolv_conf
       shift @line;
       for $elem (@line)
       {
-        if (be_is_line_comment_start($elem)) { last; }
+        if (be_ignore_line($elem)) { last; }
         if ($elem ne "") { be_push_unique(\@cf_nameservers, $elem); }
       }
     }
@@ -279,7 +279,7 @@ sub read_hosts
     @line = split(/[ \n\r\t]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] ne "" && (not be_is_line_comment_start($line[0])) &&
+    if ($line[0] ne "" && (not be_ignore_line($line[0])) &&
         ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/))
     {
       push(@cf_statichosts, $line[0]);  # IP.
@@ -288,7 +288,7 @@ sub read_hosts
       @alias = ();
       for $alias (@line)
       {
-        if (be_is_line_comment_start($alias)) { last; }
+        if (be_ignore_line($alias)) { last; }
         push(@alias, $alias);
       }
       push(@cf_statichosts, [@alias]);  # Alias.
@@ -321,7 +321,7 @@ sub write_hosts
     @line = split(/[ \n\r\t]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] ne "" && (not be_is_line_comment_start($line[0])) &&
+    if ($line[0] ne "" && (not be_ignore_line($line[0])) &&
         ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/))
     {
       # Don't print (recognized) old entries - we handle those.
@@ -377,7 +377,7 @@ sub read_hostname
   while (<FILE>)
   {
     chop($_);
-    if ( not be_is_line_comment_start($_) )
+    if ( not be_ignore_line($_) )
     { $cf_hostname = $_; }
   }
 
@@ -427,7 +427,7 @@ sub read_defaultdomain
   while (<FILE>)
   {
     chop($_);
-    if (not be_is_line_comment_start($_))
+    if (not be_ignore_line($_))
     { $cf_domain = $_; }
   }
 
@@ -482,9 +482,9 @@ sub read_sysconfig_network
     @line = split(/[ \n\r\t\"\'=]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "HOSTNAME" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "HOSTNAME" && not be_ignore_line($line[1]))
     { $cf_hostname = $line[1]; }
-    elsif ($line[0] eq "DOMAINNAME" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "DOMAINNAME" && not be_ignore_line($line[1]))
     { $cf_domain = $line[1]; }
   }
 
@@ -569,7 +569,7 @@ sub read_rc_config
     @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "FQHOSTNAME" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "FQHOSTNAME" && not be_ignore_line($line[1]))
     {
       $cf_hostname = $line[1];
     }
@@ -578,7 +578,7 @@ sub read_rc_config
       shift @line;
       for $elem (@line)
       {
-        if (be_is_line_comment_start($elem)) { last; }
+        if (be_ignore_line($elem)) { last; }
         if ($elem ne "") { be_push_unique(\@cf_searchdomains, $elem); }
       }
     }
@@ -587,7 +587,7 @@ sub read_rc_config
       shift @line;
       for $elem (@line)
       {
-        if (be_is_line_comment_start($elem)) { last; }
+        if (be_ignore_line($elem)) { last; }
         if ($elem ne "") { be_push_unique(\@cf_nameservers, $elem); }
       }
     }
@@ -675,25 +675,25 @@ sub read_smb_conf
     @line = split(/[ \n\r\t=]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "workgroup" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "workgroup" && not be_ignore_line($line[1]))
     {
       $cf_workgroup = $line[1];
     }
-    elsif ($line[0] eq "serverstring" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "serverstring" && not be_ignore_line($line[1]))
     {
       shift @line;
       $cf_description = join(' ', @line);
     }
-    elsif ($line[0] eq "server" && $line[1] eq "string" && not be_is_line_comment_start($line[2]))
+    elsif ($line[0] eq "server" && $line[1] eq "string" && not be_ignore_line($line[2]))
     {
       shift @line; shift @line;
       $cf_description = join(' ', @line);
     }
-    elsif ($line[0] eq "winsserver" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "winsserver" && not be_ignore_line($line[1]))
     {
       $cf_winsserver = $line[1];
     }
-    elsif ($line[0] eq "wins" && $line[1] eq "server" && not be_is_line_comment_start($line[2]))
+    elsif ($line[0] eq "wins" && $line[1] eq "server" && not be_ignore_line($line[2]))
     {
       $cf_winsserver = $line[2];
     }
@@ -743,27 +743,27 @@ sub write_smb_conf
       $block = $line[0];
     }
 
-    if ($line[0] eq "workgroup" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "workgroup" && not be_ignore_line($line[1]))
     {
       print OUTFILE "workgroup = $cf_workgroup\n";
       $wrote_workgroup = 1;
     }
-    elsif ($line[0] eq "serverstring" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "serverstring" && not be_ignore_line($line[1]))
     {
       print OUTFILE "serverstring = $cf_description\n";
       $wrote_description = 1;
     }
-    elsif ($line[0] eq "server" && $line[1] eq "string" && not be_is_line_comment_start($line[2]))
+    elsif ($line[0] eq "server" && $line[1] eq "string" && not be_ignore_line($line[2]))
     {
       print OUTFILE "server string = $cf_description\n";
       $wrote_description = 1;
     }
-    elsif ($line[0] eq "winsserver" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "winsserver" && not be_ignore_line($line[1]))
     {
       print OUTFILE "winsserver = $cf_winsserver\n";
       $wrote_winsserver = 1;
     }
-    elsif ($line[0] eq "wins" && $line[1] eq "server" && not be_is_line_comment_start($line[2]))
+    elsif ($line[0] eq "wins" && $line[1] eq "server" && not be_ignore_line($line[2]))
     {
       if ($cf_winsserver ne "") { print OUTFILE "wins server = $cf_winsserver\n"; }
       $wrote_winsserver = 1;

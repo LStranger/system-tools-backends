@@ -151,26 +151,6 @@ sub get_key_for_subkey_and_subvalues
 }
 
 
-# is_in_list
-#
-# Given:
-#   * A scalar value.
-#   * An array.
-# this function will return 1 if the scalar value is in the array, 0 otherwise.
-
-sub is_in_list
-{
-  my $value = shift(@_);
-
-  foreach my $item (@_)
-  {
-    if ( $value eq $item ) { return 1; }
-  }
-
-  return 0;
-}
-
-
 # --- Configuration file manipulation --- #
 
 # Debian 2.[2|3]+ style /etc/network/interfaces
@@ -248,14 +228,14 @@ sub read_network_interfaces_into_hash
     }
 
     # Make sure this line isn't a comment.
-    if (be_is_line_comment_start($line[0])) { next; }
+    if (be_ignore_line($line[0])) { next; }
 
     # Check if the line specifies a new interface.
-    if ($line[0] eq "iface" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "iface" && not be_ignore_line($line[1]))
     {
       # Make sure the device was detected via ifconfig (see "get_immediate").
       # NOTE: This will weed out any loopback or dummy interfaces.
-      if (not is_in_list($line[1], @cf_interface_list))
+      if (not be_item_is_in_list($line[1], @cf_interface_list))
       {
         be_report_warning(01, "$line[1] isn't an available, " .
                               "configured interface");
@@ -266,7 +246,7 @@ sub read_network_interfaces_into_hash
       if ($line[2] ne "inet") { next; }
 
       # Also make sure there is a set configuration method.
-      if ($line[3] eq "" || be_is_line_comment_start($line[3]))
+      if ($line[3] eq "" || be_ignore_line($line[3]))
       {
         be_report_warning(02, "Warning: Interface $line[1] has no " .
                               "config method");
@@ -603,10 +583,10 @@ sub read_network_options
     if ($line[0] eq "") { shift(@line); }
 
     # Make sure this line isn't a comment;
-    if (be_is_line_comment_start($line[0])) { next; }
+    if (be_ignore_line($line[0])) { next; }
 
     # Set any relevant global configuration variables.
-    if ($line[0] eq "ip_forward" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "ip_forward" && not be_ignore_line($line[1]))
     { $cf_forward = be_read_boolean($line[1]); }
   }
 
@@ -686,17 +666,17 @@ sub read_sysconfig_network_scripts_ifcfg
     @line = split(/[ \n\r\t\"\'=]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "IPADDR" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "IPADDR" && not be_ignore_line($line[1]))
     { $cf_hostip = $line[1]; }
-    elsif ($line[0] eq "NETMASK" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "NETMASK" && not be_ignore_line($line[1]))
     { $cf_netmask = $line[1]; }
-    elsif ($line[0] eq "BOOTPROTO" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "BOOTPROTO" && not be_ignore_line($line[1]))
     {
       if ($line[1] eq "bootp")   { $cf_method = "bootp"; }
       elsif ($line[1] eq "dhcp") { $cf_method = "dhcp"; }
       else                       { $cf_method = "static"; }
     }
-    elsif ($line[0] eq "ONBOOT" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "ONBOOT" && not be_ignore_line($line[1]))
     { $cf_onboot = be_read_boolean($line[1]); }
   }
 
@@ -885,13 +865,13 @@ sub read_sysconfig_network
     @line = split(/[ \n\r\t\"\'=]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "NETWORKING" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "NETWORKING" && not be_ignore_line($line[1]))
     { $cf_networking = be_read_boolean($line[1]); }
-    elsif ($line[0] eq "FORWARD_IPV4" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "FORWARD_IPV4" && not be_ignore_line($line[1]))
     { $cf_forward = be_read_boolean($line[1]); }
-    elsif ($line[0] eq "GATEWAY" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "GATEWAY" && not be_ignore_line($line[1]))
     { $cf_gateway = $line[1]; }
-    elsif ($line[0] eq "GATEWAYDEV" && not be_is_line_comment_start($line[1]))
+    elsif ($line[0] eq "GATEWAYDEV" && not be_ignore_line($line[1]))
     { $cf_interface = $line[1]; }
   }
 
@@ -991,7 +971,7 @@ sub read_rc_config
     @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "NETDEV_0" && not be_is_line_comment_start($line[1]))
+    if ($line[0] eq "NETDEV_0" && not be_ignore_line($line[1]))
     {
       $cf_interface = $line[1];
     }
@@ -1005,7 +985,7 @@ sub read_rc_config
 
       while (@line)
       {
-        if (be_is_line_comment_start($line[0])) { last; }
+        if (be_ignore_line($line[0])) { last; }
 	
 	if ($line[0] eq "broadcast")
 	{

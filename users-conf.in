@@ -205,7 +205,7 @@ sub read_login_defs
 	
 	while (<FILE>)
 	{
-	  next if &be_is_line_comment_start ($_);
+	  next if &be_ignore_line ($_);
 	  chomp;
 		@line = split (/[ \t]+/, $_);
 		$login_defs{$login_defs_prop_map{$line[0]}} = $line[1];
@@ -621,12 +621,12 @@ sub xml_parse_groupdb
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
-	{
-	  if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1]); }
-		elsif ($be_verbose)
-		{
-		  be_report_warning(7, "Unexpected tag " . $$tree[0] . " while parsing groupdb");
-		}
+  {
+    if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1]); }
+    else
+    {
+      be_report_warning(7, "Unexpected tag " . $$tree[0] . " while parsing groupdb");
+    }
 
     shift @$tree;
     shift @$tree;
