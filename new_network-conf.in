@@ -300,18 +300,19 @@ sub unquote
 sub xml_print_scalars
 {
   my ($h, @scalar_keys) = @_;
-  my $i;
+  my $i, $val;
 
   while ($i = shift @scalar_keys)
   {
-    &be_xml_print ("<$i>$$h{$i}</$i>\n") if exists $$h{$i};
+    $val = &quote ($$h{$i});
+    &be_xml_print ("<$i>$val</$i>\n") if exists $$h{$i};
   }
 }
 
 sub xml_print_arrays
 {
   my ($h, @array_keys) = @_;
-  my $i, $j;
+  my $i, $j, $val;
   
   foreach $i (@array_keys)
   {
@@ -320,7 +321,8 @@ sub xml_print_arrays
 	 &be_xml_vspace ();
 	 foreach $j (@{$$h{$i}})
 	 {
-	   &be_xml_print ("<$i>$j</$i>\n");
+	   $val = &quote ($j);
+	   &be_xml_print ("<$i>$val</$i>\n");
 	 }
     }
   }
@@ -329,18 +331,20 @@ sub xml_print_arrays
 sub xml_print_statichost
 {
   my ($h) = $_[0];
-  my $i, $j, $statichost;
+  my $statichost, $i, $j, $val;
   
+  &be_xml_vspace ();
   foreach $i (keys %{$$h{"statichost"}})
   {
     $statichost = $ {$$h{"statichost"}}{$i};
-    &be_xml_vspace ();
     &be_xml_print ("<statichost>\n");
     &be_xml_enter ();
-    &be_xml_print ("<ip>$i</ip>\n");
+    $val = &quote ($i);
+    &be_xml_print ("<ip>$val</ip>\n");
     foreach $j (@$statichost)
     {
-	 &be_xml_print ("<alias>$j</alias>\n");
+	 $val = &quote ($j);
+	 &be_xml_print ("<alias>$val</alias>\n");
     }
     &be_xml_leave ();
     &be_xml_print ("</statichost>\n");
@@ -350,7 +354,7 @@ sub xml_print_statichost
 sub xml_print_interfaces
 {
   my ($h) = $_[0];
-  my $interface, $i, $j;
+  my $interface, $i, $j, $val;
   
   foreach $i (keys %{$$h{"interface"}})
   { 
@@ -361,7 +365,8 @@ sub xml_print_interfaces
     
     foreach $j (keys (%$interface))
     {
-      &be_xml_print ("<$j>$$interface{$j}</$j>\n");
+	 $val = &quote ($$interface{$j});
+      &be_xml_print ("<$j>$val</$j>\n");
     }
     
     &be_xml_leave ();
@@ -418,9 +423,6 @@ sub get
   # network interface stuff
   $hash = &xst_network_conf_get ();
 
-  # get_immediate needs to go after read_interfaces.
-#  &get_immediate ($hash); &be_print_progress ();
-  
   &be_end();
   &xml_print ($hash);
 }
