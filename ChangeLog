@@ -1,3 +1,7 @@
+2004-10-17  Marcel Telka  <marcel@telka.sk>
+
+	* configure.in (ALL_LINGUAS): Added sk.
+
 2004-09-29  Abel Cheung  <maddog@linuxhall.org>
 
 	* configure.in: Added "tr" to ALL_LINGUAS.
