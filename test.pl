@@ -98,6 +98,9 @@ sub test_interfaces
 $hash = &xst_print_conf_get ();
 &xst_debug_print_struct ($hash);
 
+# &xst_replace_remove_cap_section ("/etc/printcap", "lp");
+&xst_replace_cap ("/etc/printcap", "lpk", "lp", "/dev/pekk");
+
 # @arr = &xst_parse_cap_sections ("/etc/termcap");
 
 # for $i (@arr)

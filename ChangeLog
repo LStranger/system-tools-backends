@@ -1,3 +1,14 @@
+2001-06-27  Hans Petter Jansson  <hpj@ximian.com>
+
+	* print-conf.in: Update supported platforms.
+
+	* print.pl.in: Ditto.
+
+	* replace.pl.in (xst_replace_sh_export): Implement.
+	  (xst_replace_sh_export_bool): Implement.
+	  (xst_replace_cap): Implement.
+	  (xst_replace_remove_cap_section): Implement.
+
 2001-06-26  Tambet Ingo  <tambet@ximian.com>
 
 	* xml.pl.in (xst_xml_get_text): ref safe now. Don't return 'ARRAY'

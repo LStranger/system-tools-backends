@@ -239,6 +239,32 @@ sub xst_replace_sh
   return $ret;
 }
 
+# Escape $value in /bin/sh way, find/append key and set escaped value, make sure line har 
+sub xst_replace_sh_export
+{
+  my ($file, $key, $value) = @_;
+  my $ret;
+
+  $value = &xst_parse_shell_escape ($value);
+
+  # This will expunge the whole var if the value is empty.
+
+  # FIXME: Just adding "export " works for the case I need, though it doesn't
+  # handle arbitraty whitespace. Something should be written to replace xst_replace_split()
+  # here.
+
+  if ($value eq "")
+  {
+    $ret = &xst_replace_split ($file, "export " . $key, "[ \t]*=[ \t]*");
+  }
+  else
+  {
+    $ret = &xst_replace_split ($file, "export " . $key, "[ \t]*=[ \t]*", $value);
+  }
+  
+  return $ret;
+}
+
 # Treat value as a yes/no bool, replace in shell style.
 sub xst_replace_sh_bool
 {
@@ -247,6 +273,16 @@ sub xst_replace_sh_bool
   $value = ($value == 1)? "yes": "no";
   
   return &xst_replace_sh ($file, $key, $value);
+}
+
+# Treat value as a yes/no bool, replace in export... shell style.
+sub xst_replace_sh_export_bool
+{
+  my ($file, $key, $value) = @_;
+
+  $value = ($value == 1)? "yes": "no";
+  
+  return &xst_replace_sh_export ($file, $key, $value);
 }
 
 # Get a fully qualified hostname from a $key shell var in $file
@@ -537,6 +573,128 @@ sub xst_replace_ini_bool
   $value = ($value == 1)? "yes": "no";
 
   return &xst_replace_ini ($file, $section, $var, $value);
+}
+
+# *cap replacement methods.
+sub xst_replace_cap
+{
+  my ($file, $section, $var, $value) = @_;
+  my ($buff, $i, $found_flag, $ret);
+  my ($pre_space, $post_comment, $sec_save);
+
+  $buff = &xst_file_buffer_load ($file);
+#  &xst_file_buffer_join_lines ($buff);
+  $found_flag = 0;
+
+  foreach $i (@$buff)
+  {
+    $pre_space = $post_comment = "";
+    
+    chomp $i;
+    $pre_space = $1    if $i =~ s/^([ \t]+)//;
+    $post_comment = $1 if $i =~ s/^([ \t]*[\#].*)//;
+    
+    if ($i ne "")
+    {
+      if ($i =~ /^$section[|:]/i)
+      {
+        $i =~ s/^($section)//i;
+        $sec_save = $1;
+        $found_flag = 1;
+      }
+
+      if ($found_flag)
+      {
+        if ($i =~ /^[a-z0-9]+[|:]/)
+        {
+          $i = "\t:$var=$value:\n$i";
+          $found_flag = 2;
+        }
+
+        if ($found_flag && $i =~ /^:$var[=:]/i)
+        {
+          if ($value ne "")
+          {
+            $i =~ s/^(:$var)[^:]*/$1=$value/i;
+          }
+          else
+          {
+            $i = "";
+          }
+          $found_flag = 2;
+        }
+      }
+    }
+
+    if ($found_flag && $sec_save ne "")
+    {
+      $i = $sec_save . $i;
+      $sec_save = "";
+    }
+    
+    $i = $pre_space . $i . $post_comment . "\n";
+    last if $found_flag == 2;
+  }
+
+  push @$buff, "\n$section:\\\n" if (!$found_flag);
+  push @$buff, "\t:$var=$value:\n" if ($found_flag < 2 && $value ne "");
+  
+  &xst_file_buffer_clean ($buff);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  return $ret;
+}
+
+sub xst_replace_remove_cap_section
+{
+  my ($file, $section) = @_;
+  my ($buff, $i, $found_flag, $ret);
+  my ($pre_space, $post_comment, $sec_save);
+
+  $buff = &xst_file_buffer_load ($file);
+  $found_flag = 0;
+
+  foreach $i (@$buff)
+  {
+    $pre_space = $post_comment = "";
+
+    chomp $i;
+    $pre_space = $1    if $i =~ s/^([ \t]+)//;
+    $post_comment = $1 if $i =~ s/^([ \t]*[\#].*)//;
+
+    if ($i ne "")
+    {
+      if ($i =~ /^$section[|:]/i)
+      {
+        $i = "";
+        $found_flag = 1;
+      }
+      elsif ($found_flag && $i =~ /^[a-z0-9]+[|:]/i)
+      {
+        $i = $pre_space . $i . $post_comment . "\n";
+        last;
+      }
+    }
+
+    if ($found_flag)
+    {
+      if ($post_comment =~ /^[ \t]*$/)
+      {
+        $i = "";
+      }
+      else
+      {
+        $i = $post_comment . "\n";
+      }
+    }
+    else
+    {
+      $i = $pre_space . $i . $post_comment . "\n";
+    }
+  }
+
+  &xst_file_buffer_clean ($buff);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  return $ret;
 }
 
 # Debian /etc/network/interfaces in-line replacing methods.

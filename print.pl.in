@@ -84,7 +84,8 @@ sub xst_print_get_printer_parse_table
   my %dist_map =
 	(
 	  "redhat-7.0" => "redhat-7.0",
-	  "redhat-7.1" => "redhat-7.0"
+	  "redhat-7.1" => "redhat-7.0",
+    "debian-2.2" => "redhat-7.0"
   );
 
   my %dist_tables =
