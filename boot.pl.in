@@ -30,6 +30,59 @@ require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
 
 
+sub xst_boot_parse_global_kw
+{
+  my ($file, $key) = @_;
+  my $fd;
+
+  $fd = &xst_open_read_from_names ($file);
+
+  while (<$fd>)
+  {
+    chomp;
+    s/^[ \t]+//;
+    next if (/^\#/ || /^$/);
+    last if (/^(image|other)/);
+
+    if ($key eq $_)
+    {
+      close $fd;
+      return 1;
+    }
+  }
+
+  close $fd;
+  return undef;
+}
+
+sub xst_boot_parse_global
+{
+  my ($file, $key) = @_;
+  my ($fd, @line, $re);
+
+  $re = "[ \t]*=[ \t]*";
+  $fd = &xst_open_read_from_names ($file);
+
+  while (<$fd>)
+  {
+    chomp;
+    s/^[ \t]+//;
+    next if (/^\#/ || /^$/);
+    last if (/^(image|other)/);
+    @line = split ($re, $_, 2);
+
+    if (shift (@line) eq $key)
+    {
+      close $fd;
+      return $line[0];
+    }
+  }
+
+  close $fd;
+  return undef;
+}
+
+
 sub xst_boot_conf_set_images
 {
   my ($fn, $key, $images) = @_;
@@ -226,21 +279,25 @@ sub xst_boot_conf_get
 	    fn => {
 		 LILO_CONF => "/etc/lilo.conf" },
 	    table => [
-			    [ prompt,  \&xst_parse_sh, LILO_CONF, prompt ],
-			    [ root,    \&xst_parse_sh, LILO_CONF, root ],
-			    [ delay,   \&xst_parse_sh, LILO_CONF, delay ],
-			    [ timeout, \&xst_parse_sh, LILO_CONF, timeout ],
-			    [ default, \&xst_parse_sh, LILO_CONF, default ],
-			    [ image,   \&xst_boot_conf_get_images, LILO_CONF, image ],
-			    [ other,   \&xst_boot_conf_get_images, LILO_CONF, other ],
-			    ] 
-				 }
-	  );
-
+                [ prompt,  \&xst_boot_parse_global_kw, LILO_CONF, prompt ],
+                [ lba32,   \&xst_boot_parse_global_kw, LILO_CONF, lba32 ],
+                [ root,    \&xst_boot_parse_global, LILO_CONF, root ],
+                [ delay,   \&xst_boot_parse_global, LILO_CONF, delay ],
+                [ timeout, \&xst_boot_parse_global, LILO_CONF, timeout ],
+                [ default, \&xst_boot_parse_global, LILO_CONF, default ],
+                [ append,   \&xst_boot_parse_global, LILO_CONF, append ],
+                [ boot,   \&xst_boot_parse_global, LILO_CONF, boot ],
+                [ 'map',   \&xst_boot_parse_global, LILO_CONF, 'map' ],
+                [ install,   \&xst_boot_parse_global, LILO_CONF, install ],
+                [ image,   \&xst_boot_conf_get_images, LILO_CONF, image ],
+                [ other,   \&xst_boot_conf_get_images, LILO_CONF, other ],
+                ] 
+                  }
+    );
+  
   my $table = $dist_map{$xst_dist};
   return undef if !$table;
-
+  
   return &xst_parse_from_table ($ {$dist_tables{$table}}{"fn"},
-						  $ {$dist_tables{$table}}{"table"});
+                                $ {$dist_tables{$table}}{"table"});
 }
-

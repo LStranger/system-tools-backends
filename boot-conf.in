@@ -160,37 +160,15 @@ sub unquote
 }
 
 
-sub xml_print_scalars
+sub xml_print_global_kws
 {
-  my ($h, @scalar_keys) = @_;
-  my $i, $val;
+  my $h = $_[0];
+  my @tags = ('prompt', 'lba32', 'compact', 'linear', 'lock');
+  my $i;
 
-  while ($i = shift @scalar_keys)
+  while ($i = shift @tags)
   {
-    $val = &quote ($$h{$i});
-
-    if (exists $$h{$i}) { &xst_xml_print ("<$i>$val</$i>\n"); }
-    else { &xst_xml_print ("<$i/>\n"); }
-  }
-}
-
-
-sub xml_print_arrays
-{
-  my ($h, @array_keys) = @_;
-  my $i, $j, $val;
-  
-  foreach $i (@array_keys)
-  {
-    if (exists $$h{$i})
-    {
-	 &xst_xml_vspace ();
-	 foreach $j (@{$$h{$i}})
-	 {
-	   $val = &quote ($j);
-	   &xst_xml_print ("<$i>$val</$i>\n");
-	 }
-    }
+    &xst_xml_print ("<$i/>\n") if exists $$h{$i};
   }
 }
 
@@ -198,11 +176,18 @@ sub xml_print_arrays
 sub xml_print_globals
 {
   my $h = $_[0];
-  my @scalar_keys = (prompt, timeout, default, delay, root);
+  my @tags = ('boot', 'default', 'delay', 'install', 'map', 'message', 'timeout', 'verbose',
+              'append');
+  
+  my $i, $val;
 
-  &xml_print_scalars ($h, @scalar_keys);
+  while ($i = shift @tags)
+  {
+    $val = &quote ($$h{$i});
+
+    &xst_xml_print ("<$i>$val</$i>\n") if (exists $$h{$i});
+  }
 }
-
 
 sub xml_print_images
 {
@@ -219,12 +204,12 @@ sub xml_print_images
     
     foreach $i (keys %$entry)
     {
-	 $val = &quote ($$entry{$i});
+      $val = &quote ($$entry{$i});
 
-	 if ($val eq "") { &xst_xml_print ("<$i/>\n"); }
-	 else { &xst_xml_print ("<$i>$val</$i>\n"); }
+      if ($val eq "") { &xst_xml_print ("<$i/>\n"); }
+      else { &xst_xml_print ("<$i>$val</$i>\n"); }
     }
-
+    
     &xst_xml_leave ();
     &xst_xml_print ("</entry>\n");
   }
@@ -247,6 +232,7 @@ sub xml_print
   &xst_xml_print ("<!-- Configuration starts here -->\n");
   &xst_xml_vspace ();
 
+  &xml_print_global_kws ($h);
   &xml_print_globals ($h);
   &xml_print_images ($h, 'image');
   &xml_print_images ($h, 'other');

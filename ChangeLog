@@ -1,3 +1,12 @@
+2001-02-20  Tambet Ingo  <tambet@ximian.com>
+
+	* boot-conf.in (xml_print_global_kws): New function, splitted from 
+	(xml_print_globals), added more known tags.
+
+	* boot.pl.in (xst_boot_conf_get): Use those new functions.
+	(xst_boot_parse_global_kw): New function to parse global lilo.conf keyword.
+	(xst_boot_parse_global): New function to parse global lilo variable.
+
 2001-02-19  Chema Celorio  <chema@celorio.com>
 
 	* be.pl.in (xst_buffer_save): remove this function it is
