@@ -184,7 +184,6 @@ sub xst_file_open_read_from_names
   {
     if (open (FILE, "$xst_prefix/$name"))
     {
-      &xst_debug_print_line ("xst_file_open_read_from_names:$xst_prefix/$name");
       $fname = $name;
       last;
     }
@@ -462,11 +461,11 @@ sub xst_file_run
   $command = "$tool_path @argline";
   $command =~ s/\"/\\\"/g;
 
-  &xst_report ("file_run", "/bin/sh -c \"$command\" > /dev/null 2> /dev/null");
+  &xst_report ("file_run", "$command > /dev/null 2> /dev/null");
   &xst_report_leave ();
 
   # As documented in perlfunc, divide by 256.
-  return (system ("/bin/sh -c \"$command\" > /dev/null 2> /dev/null") / 256);
+  return (system ("$command > /dev/null 2> /dev/null") / 256);
 }
 
 

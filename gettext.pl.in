@@ -27,6 +27,8 @@
 # Functions binds the gettext funtions to the textdomain
 # literally a textdomain.mo file, normally placed at 
 # /usr/share/locale/{LANG}/LC_MESSAGES/
+
+%gettext_hash = ();
  
 sub textdomain # (textdomain)
 {
@@ -38,10 +40,13 @@ sub textdomain # (textdomain)
 sub gettext # scalar (string)
 {
   my ($str) = @_;
+  my $trans;
+
+  $gettext_hash{$str} = `gettext "$str"` if (!exists $gettext_hash{$str});
 
   # the quotes are required for it to 
   # work with escape sequenses
-  return `gettext "$str"`;
+  return $gettext_hash{$str};
 }
 
 

@@ -1,3 +1,21 @@
+2001-05-08  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	After some profiling, some optimizations:
+	
+	* report.pl.in (xst_report): Only send debug string if debug flag
+	is set.
+
+	* parse.pl.in (xst_parse_from_table): Calling xst_report instead
+	of doing a direct debug.
+
+	* gettext.pl.in (gettext): gettext results are now cached. This
+	is still too expensive, and we should use the gettext CPAN module.
+
+	* file.pl.in (xst_file_open_read_from_names): removed unnecesary
+	debug function.
+	(xst_file_run): system already calls with /bin/sh -c. Removed.
+	  
+
 2001-05-07  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* report.pl.in (xst_report_enter, xst_report_leave): trivialized

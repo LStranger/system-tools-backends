@@ -89,7 +89,9 @@ sub xst_parse_from_table
     unshift @cp, &xst_parse_replace_files (shift (@cp), $fn);
 
     &xst_parse_replace_hash_values (\@cp, \%hash);
-    &xst_debug_print_line ("xst_parse_from_table: $key");
+    &xst_report_enter ();
+    &xst_report ("parse_table", "$key");
+    &xst_report_leave ();
     $hash{$key} = &$proc (@cp) if ($hash{$key} eq undef);
   }
 
@@ -137,16 +139,13 @@ sub xst_parse_process_sh_line
 
   # This will put escaped hashes out of danger.
   $line =~ s/([\"\'][^\#]*)\#([^\"\']*[\"\'])/$1__hash__$2/g;
-  $line =~ s/\\\#/__hash__/g;
+  $line =~ s/\\\#/\\__hash__/g;
 
-  # Nuke everything after a hash.
-  $line =~ s/\#.*//;
+  # Nuke everything after a hash and bye bye trailing spaces.
+  $line =~ s/[ \t]*\#.*//;
 
   # Let escaped hashes come back home.
   $line =~ s/__hash__/\#/g;
-
-  # Bye bye trailing spaces.
-  $line =~ s/[ \t]+$//;
 
   return $line;
 }

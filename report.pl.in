@@ -119,15 +119,21 @@ sub xst_report
     return if ($xst_report_level >= $xst_report_threshold || !$xst_report_started);
   }
 
-  # Report (-r) output is machine-readable.
-  print STDOUT join ("::", $key, $str, @args) . "\n" if $xst_do_report;
+  # Report (--report) output is machine-readable.
+  if ($xst_do_report)
+  {
+    print STDOUT join ("::", $key, $str, @args) . "\n";
+  }
 
-  # Verbose (-v) output is human-readable only.
-  $format = "$str\n";
-  $res = sprintf ($format, @args);
-  print STDERR $res if $xst_do_verbose;
+  # Verbose (--verbose) output is human-readable only.
+  if ($xst_debug)
+  {
+    $format = "$str\n";
+    $res = sprintf ($format, @args);
+    print STDERR $res if $xst_do_verbose;
 
-  &xst_debug_print_indented_string ($xst_report_level, "report $key: $res");
+    &xst_debug_print_indented_string ($xst_report_level, "report $key: $res");
+  }
 }
 
 
@@ -168,6 +174,7 @@ sub xst_report
      "file_locate_tool_success" => ["info",  _("Found tool [%s].")],
      "file_locate_tool_failed"  => ["warn",  _("Couldn't find tool [%s].")],
      
+     "parse_table"              => ["info",  _("Parsing option [%s].")],
      "parse_trivial"            => ["info",  _("Trivialy passing [%s].")],
      "parse_split"              => ["info",  _("Getting option [%s] from [%s].")],
      "parse_split_hash"         => ["info",  _("Getting configurations from [%s].")],
