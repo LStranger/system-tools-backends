@@ -1,3 +1,21 @@
+2001-05-15  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* replace.pl.in (xst_replace_interfaces_stanza_value): function renamed
+	from "interface_stanza".
+
+	* network.pl.in (xst_network_deb22_replace_bootproto): function renamed.
+	
+	* *-conf.in: Added support for Debian Woody. Woody users will have to
+	do echo 'woody' > /etc/debian_version
+
+	* boot.pl.in: debian-woody works as redhat-6.2.
+	* network.pl.in: created new interface parse/replace tables for debian woody,
+	because the /etc/network/interfaces format changes. Partialy implemented
+	(only auto stanza supported, but not mapping stanza). Not tested.
+	* parse.pl.in: stanza scanning routines no longer assume stanzas are iface
+	type.
+	* replace.pl.in: same here. Added auto_stanza create.
+
 2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
 
 	* share.pl.in (xst_share_smb_info_get_name): Implement.
@@ -90,6 +108,7 @@
 
 	* internetsharing-conf.in (xst_ishare_rules_get_ipchains): implement.
 
+>>>>>>> 1.202
 2001-05-14  Chema Celorio  <chema@celorio.com>
 
 	* time-conf.in: tested in RH 7.1. Add the platform

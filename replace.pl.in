@@ -466,22 +466,30 @@ sub xst_replace_ini_bool
 # NOTE: $line_no is a scalar ref. and gives the position of next stanza.
 sub xst_replace_interfaces_get_next_stanza
 {
-  my ($buff, $line_no) = @_;
+  my ($buff, $line_no, $stanza_type) = @_;
   my ($i, $line);
 
   while ($$line_no <= $#$buff)
   {
     $_ = $$buff[$$line_no];
     $_ = &xst_parse_interfaces_line_clean ($_);
-    if (/^iface[ \t]/)
+    if (/^$stanza_type[ \t]+[^ \t]/)
     {
-      s/^iface[ \t]+//;
+      s/^$stanza_type[ \t]+//;
       return [ split ("[ \t]+", $_) ];
     }
     $$line_no ++;
   }
 
   return -1;
+}
+
+sub xst_replace_interfaces_line_is_stanza
+{
+  my ($line) = @_;
+
+  return 1 if $line =~ /^(iface|auto|mapping)[ \t]+[^ \t]/;
+  return 0;
 }
 
 # Scan for next option. An option is something that is
@@ -501,7 +509,7 @@ sub xst_replace_interfaces_get_next_option
     
     if (!/^$/)
     {
-      return [ split ("[ \t]+", $_, 2) ] if (!/^iface[ \t]/);
+      return [ split ("[ \t]+", $_, 2) ] if (! &xst_replace_interfaces_line_is_stanza ($_));
       $$line_no -= $empty_lines;
       return -1;
     }
@@ -536,12 +544,12 @@ sub xst_replace_interfaces_option_locate
 }
 
 # Locate stanza line for $iface in $buff, starting at $$line_no.
-sub xst_replace_interfaces_stanza_locate
+sub xst_replace_interfaces_iface_stanza_locate
 {
   my ($buff, $line_no, $iface) = @_;
   my $stanza;
 
-  while (($stanza = &xst_replace_interfaces_get_next_stanza ($buff, $line_no)) != -1)
+  while (($stanza = &xst_replace_interfaces_get_next_stanza ($buff, $line_no, "iface")) != -1)
   {
     return 1 if ($$stanza[0] eq $iface);
     $$line_no ++;
@@ -550,8 +558,16 @@ sub xst_replace_interfaces_stanza_locate
   return 0;
 }
 
+sub xst_replace_interfaces_auto_stanza_create
+{
+  my ($buff, @ifaces) = @_;
+
+  push @$buff, "\n";
+  push @$buff, "auto " . join (" ", @ifaces) . "\n";
+}
+
 # Append a stanza for $iface to buffer.
-sub xst_replace_interfaces_stanza_create
+sub xst_replace_interfaces_iface_stanza_create
 {
   my ($buff, $iface) = @_;
 
@@ -560,7 +576,7 @@ sub xst_replace_interfaces_stanza_create
 }
 
 # Delete $iface stanza and all its option lines.
-sub xst_replace_interfaces_stanza_delete
+sub xst_replace_interfaces_iface_stanza_delete
 {
   my ($file, $iface) = @_;
   my ($buff, $line_no, $stanza);
@@ -569,7 +585,7 @@ sub xst_replace_interfaces_stanza_delete
   &xst_file_buffer_join_lines ($buff);
   $line_no = 0;
 
-  return -1 if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface));
+  return -1 if (!&xst_replace_interfaces_iface_stanza_locate ($buff, \$line_no, $iface));
   
   $$buff[$line_no] = "";
   $line_no ++;
@@ -584,7 +600,7 @@ sub xst_replace_interfaces_stanza_delete
 }
 
 # Find $iface stanza line and replace $pos value (ie the method).
-sub xst_replace_interface_stanza_value
+sub xst_replace_interfaces_stanza_value
 {
   my ($file, $iface, $pos, $value) = @_;
   my ($buff, $line_no, $stanza);
@@ -594,11 +610,11 @@ sub xst_replace_interface_stanza_value
   &xst_file_buffer_join_lines ($buff);
   $line_no = 0;
 
-  if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface))
+  if (!&xst_replace_interfaces_iface_stanza_locate ($buff, \$line_no, $iface))
   {
     $line_no = 0;
-    &xst_replace_interfaces_stanza_create ($buff, $iface);
-    &xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface);
+    &xst_replace_interfaces_iface_stanza_create ($buff, $iface);
+    &xst_replace_interfaces_iface_stanza_locate ($buff, \$line_no, $iface);
   }
 
   $line = $$buff[$line_no];
@@ -627,11 +643,11 @@ sub xst_replace_interfaces_option_str
   &xst_file_buffer_join_lines ($buff);
   $line_no = 0;
 
-  if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface))
+  if (!&xst_replace_interfaces_iface_stanza_locate ($buff, \$line_no, $iface))
   {
     $line_no = 0;
-    &xst_replace_interfaces_stanza_create ($buff, $iface);
-    &xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface);
+    &xst_replace_interfaces_iface_stanza_create ($buff, $iface);
+    &xst_replace_interfaces_iface_stanza_locate ($buff, \$line_no, $iface);
   }
 
   $line_no++;

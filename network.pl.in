@@ -163,7 +163,7 @@ sub xst_network_debian_ifaces_get_existing
 {
   my (@ret, @stanzas, $stanza);
   
-  @stanzas = &xst_parse_interfaces_stanzas ("$xst_prefix/etc/network/interfaces");
+  @stanzas = &xst_parse_interfaces_stanzas ("$xst_prefix/etc/network/interfaces", "iface");
 
   foreach $stanza (@stanzas)
   {
@@ -255,7 +255,8 @@ sub xst_network_get_file
 	  "redhat-6.2"   => \&xst_network_rh62_get_file,
 	  "redhat-7.0"   => \&xst_network_rh62_get_file,
 	  "mandrake-7.2" => \&xst_network_rh62_get_file,
-    "debian-2.2"   => \&xst_network_deb22_get_file
+    "debian-2.2"   => \&xst_network_deb22_get_file,
+    "debian-woody" => \&xst_network_deb22_get_file
 	  );
 
   $proc = $dist_map{$xst_dist};
@@ -418,7 +419,7 @@ sub xst_network_deb22_interface_delete
   my $old_hash = $_[0];
   my $dev = $$old_hash{"dev"};
 
-  &xst_replace_interfaces_stanza_delete ("$xst_prefix/etc/network/interfaces", $dev);
+  &xst_replace_interfaces_iface_stanza_delete ("$xst_prefix/etc/network/interfaces", $dev);
   
   $login = $old_hash{"login"};
   if ($login ne "")
@@ -706,7 +707,7 @@ sub xst_network_deb22_parse_bootproto
        );
 
   &xst_report_enter ();
-  @stanzas = &xst_parse_interfaces_stanzas ($file);
+  @stanzas = &xst_parse_interfaces_stanzas ($file, "iface");
 
   foreach $stanza (@stanzas)
   {
@@ -755,7 +756,7 @@ sub xst_network_deb22_replace_bootproto
     $value = $dev_to_method{$i} if $iface =~ /^$i/;
   }
 
-  return &xst_replace_interface_stanza_value ($file, $iface, 2, $proto_name_to_debian{$value});
+  return &xst_replace_interfaces_stanza_value ($file, $iface, 2, $proto_name_to_debian{$value});
 }
 
 sub xst_network_debian_parse_remote_address
@@ -794,6 +795,71 @@ sub xst_network_debian_replace_remote_address
   return $ret;
 }
 
+sub xst_network_debian_woody_get_auto_by_stanza
+{
+  my ($file, $iface) = @_;
+  my (@stanzas, $stanza, $i);
+
+  @stanzas = &xst_parse_interfaces_stanzas ($file, "auto");
+
+  foreach $stanza (@stanzas)
+  {
+    foreach $i (@$stanza)
+    {
+      return $stanza if $i eq $iface;
+    }
+  }
+
+  return 0;
+}
+
+sub xst_network_debian_woody_get_auto
+{
+  my ($file, $iface) = @_;
+
+  return 1 if &xst_network_debian_woody_get_auto_by_stanza ($file, $iface);
+  
+  # Couldn't get auto param through auto stanzas, revert to potato method.
+  return &xst_parse_interfaces_option_kw_not ($file, $iface, "noauto");
+}
+
+sub xst_network_debian_woody_set_auto
+{
+  my ($file, $iface, $value) = @_;
+
+  if (&xst_parse_interfaces_option_kw ($file, $iface, "noauto"))
+  {
+    # Potato method. We keep compatible.
+    return &xst_replace_interfaces_option_kw_not ($file, $iface, "noauto", $value);
+  }
+
+  my ($buff, $line_no, $stanza);
+  my ($pre_space, $line, $line_arr);
+  my ($found);
+
+  $buff = &xst_file_buffer_load ($file);
+  &xst_file_buffer_join_lines ($buff);
+  $line_no = 0;
+
+  while (($found = &xst_replace_interfaces_get_next_stanza ($buff, \$line_no, "auto")) != -1)
+  {
+    last if $$buff[$line_no] =~ s/[ \t]$iface$//;
+    # I'm including the hash here, although the man page says it's not supported.
+    last if $$buff[$line_no] =~ s/[ \t]$iface([\# \t])/\1/;
+  }
+
+  if ($found == -1)
+  {
+    &xst_replace_interfaces_auto_stanza_create ($buff, $iface);
+  }
+  else
+  {
+    $$buff[$line_no] =~ s/auto[ \t]*$//;
+  }
+  
+  return &xst_file_buffer_save ($buff, $file);
+}
+
 sub xst_network_ensure_loopback_interface
 {
   my ($interface) = @_;
@@ -805,7 +871,8 @@ sub xst_network_ensure_loopback_interface
 	  "redhat-6.2"   => "lo",
 	  "redhat-7.0"   => "lo",
 	  "mandrake-7.2" => "lo",
-	  "debian-2.2"   => "lo"
+	  "debian-2.2"   => "lo",
+    "debian-woody" => "lo"
 	  );
 
   $dev = $dist_map {$xst_dist};
@@ -892,7 +959,8 @@ sub xst_network_get_parse_table
 	  "redhat-6.2"   => "redhat-6.2",
 	  "redhat-7.0"   => "redhat-7.0",
 	  "mandrake-7.2" => "redhat-6.2",
-    "debian-2.2"   => "debian-2.2"
+    "debian-2.2"   => "debian-2.2",
+    "debian-woody" => "debian-2.2"
 	  );
 
   my %dist_tables =
@@ -1014,7 +1082,8 @@ sub xst_network_get_interfaces_parse_table
 	  "redhat-6.2"   => "redhat-6.2",
 	  "redhat-7.0"   => "redhat-6.2",
 	  "mandrake-7.2" => "redhat-6.2",
-    "debian-2.2"   => "debian-2.2"
+    "debian-2.2"   => "debian-2.2",
+    "debian-woody" => "debian-woody"
 	  );
   
   my %dist_tables =
@@ -1081,6 +1150,55 @@ sub xst_network_get_interfaces_parse_table
            [ "dev",                \&xst_parse_trivial,                  IFACE ],
            [ "bootproto",          \&xst_network_deb22_parse_bootproto,  [INTERFACES, IFACE]],
            [ "auto",               \&xst_parse_interfaces_option_kw_not, [INTERFACES, IFACE], "noauto" ],
+           [ "name",               \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
+           [ "address",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "address" ],
+           [ "netmask",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "netmask" ],
+           [ "broadcast",          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "broadcast" ],
+           [ "network",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
+           [ "gateway",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
+           [ "wvsection",          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
+           [ "peerdns",            \&xst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
+           [ "dns1",               \&xst_parse_trivial,                  "" ], # not supported.
+           [ "dns2",               \&xst_parse_trivial,                  "" ], # not supported.
+           [ "mtu",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mtu", "[ \t]+" ],
+           [ "mru",                \&xst_parse_split_first_str,          PPP_OPTIONS, "mru", "[ \t]+" ],
+           [ "remote_address",     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
+           [ "login",              \&xst_parse_split_first_str,          PPP_OPTIONS, "user", "[ \t]+" ],
+           [ "password",           \&xst_network_get_pap_passwd,         PAP, "%login%" ],
+           [ "password",           \&xst_network_get_pap_passwd,         CHAP, "%login%" ],
+           [ "serial_port",        \&xst_network_get_ppp_options_re,     PPP_OPTIONS, "^(/dev/[^ \t]+)" ],
+           [ "serial_speed",       \&xst_network_get_ppp_options_re,     PPP_OPTIONS, "^([0-9]+)" ],
+           [ "ppp_options",        \&xst_network_get_ppp_options_unsup,  PPP_OPTIONS ],
+           [ "set_default_gw",     \&xst_parse_kw,                       PPP_OPTIONS, "defaultroute" ],
+           [ "debug",              \&xst_parse_kw,                       PPP_OPTIONS, "debug" ],
+           [ "persist",            \&xst_parse_kw,                       PPP_OPTIONS, "persist" ],
+           [ "serial_escapechars", \&xst_parse_split_first_str,          PPP_OPTIONS, "escape", "[ \t]+" ],
+           [ "serial_hwctl",       \&xst_parse_kw,                       PPP_OPTIONS, "crtscts" ],
+           [ "phone_number",       \&xst_parse_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           [ "enabled",            \&xst_network_interface_active,       IFACE,
+                                                                       \&xst_network_active_interfaces_get ]
+           ]
+             },
+
+    # Basicly the same as debian-2.2, but the "auto" option changes.
+    # Other stuff may be later found to be different.
+	  "debian-woody" =>
+	  {
+	    ifaces_get => \&xst_network_debian_ifaces_get_existing,
+	    fn =>
+	    {
+        INTERFACES  => "/etc/network/interfaces",
+        IFACE       => "#iface#",
+        CHAT        => "/etc/chatscripts/%wvsection%",
+        PPP_OPTIONS => "/etc/ppp/peers/%wvsection%",
+        PAP         => "/etc/ppp/pap-secrets",
+        CHAP        => "/etc/ppp/chap-secrets" },
+	    table =>
+          [
+           [ "user",               \&xst_parse_trivial,                  0 ], # not supported.
+           [ "dev",                \&xst_parse_trivial,                  IFACE ],
+           [ "bootproto",          \&xst_network_deb22_parse_bootproto,  [INTERFACES, IFACE]],
+           [ "auto",               \&xst_network_debian_woody_get_auto,  [INTERFACES, IFACE]],
            [ "name",               \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
            [ "address",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "address" ],
            [ "netmask",            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], "netmask" ],
@@ -1253,7 +1371,8 @@ sub xst_network_get_interface_replace_table
 	  "redhat-6.2"   => "redhat-6.2",
 	  "redhat-7.0"   => "redhat-6.2",
 	  "mandrake-7.2" => "redhat-6.2",
-    "debian-2.2"   => "debian-2.2"
+    "debian-2.2"   => "debian-2.2",
+    "debian-woody" => "debian-woody"
 	  );
 
   my %dist_tables =
@@ -1318,7 +1437,54 @@ sub xst_network_get_interface_replace_table
           [
 # not sup  [ "user",               \&xst_parse_sh_bool, IFCFG, USERCTL ],
            [ "bootproto",          \&xst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
-           [ "Auto",               \&xst_replace_interfaces_option_kw_not, [INTERFACES, IFACE], "noauto" ],
+           [ "auto",               \&xst_replace_interfaces_option_kw_not, [INTERFACES, IFACE], "noauto" ],
+           [ "name",               \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
+           [ "address",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "address" ],
+           [ "netmask",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "netmask" ],
+           [ "broadcast",          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "broadcast" ],
+           [ "network",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
+           [ "gateway",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
+           [ "wvsection",          \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
+           [ "peerdns",            \&xst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
+# not sup  [ "dns1",               \&xst_replace_sh,                       IFCFG,       DNS1 ],
+# not sup  [ "dns2",               \&xst_replace_sh,                       IFCFG, DNS2 ],
+           [ "mtu",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mtu", "[ \t]+" ],
+           [ "mru",                \&xst_replace_join_first_str,           PPP_OPTIONS, "mru", "[ \t]+" ],
+           [ "remote_address",     \&xst_network_debian_replace_remote_address, [INTERFACES, IFACE]],
+           [ "login",              \&xst_replace_join_first_str,           PPP_OPTIONS, "user", "[ \t]+" ],
+           [ "serial_port",        \&xst_network_set_ppp_options_re,       PPP_OPTIONS, "^(/dev/[^ \t]+)" ],
+           [ "serial_speed",       \&xst_network_set_ppp_options_re,       PPP_OPTIONS, "^([0-9]+)" ],
+           [ "wvsection",          \&xst_network_set_ppp_options_connect,  PPP_OPTIONS ],
+           [ "ppp_options",        \&xst_network_set_ppp_options_unsup,    PPP_OPTIONS ],
+           [ "set_default_gw",     \&xst_replace_kw,                       PPP_OPTIONS, "defaultroute" ],
+           [ "debug",              \&xst_replace_kw,                       PPP_OPTIONS, "debug" ],
+           [ "persist",            \&xst_replace_kw,                       PPP_OPTIONS, "persist" ],
+           [ "serial_escapechars", \&xst_replace_join_first_str,           PPP_OPTIONS, "escape", "[ \t]+" ],
+           [ "serial_hwctl",       \&xst_replace_kw,                       PPP_OPTIONS, "crtscts" ],
+           [ "phone_number",       \&xst_replace_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           ]
+             },
+
+    # Basicly the same as debian-2.2, but the "auto" option changes.
+    # Other stuff may be later found to be different.
+    "debian-woody" =>
+	  {
+      iface_set    => \&xst_network_rh62_interface_activate, # They use the same ifup/ifdown cmds.
+      iface_delete => \&xst_network_deb22_interface_delete,
+      ifaces_get   => \&xst_network_debian_ifaces_get_existing,
+	    fn =>
+	    {
+        INTERFACES  => "/etc/network/interfaces",
+        IFACE       => "#iface#",
+        CHAT        => "/etc/chatscripts/%wvsection%",
+        PPP_OPTIONS => "/etc/ppp/peers/%wvsection%",
+        PAP         => "/etc/ppp/pap-secrets",
+        CHAP        => "/etc/ppp/chap-secrets" },
+	    table =>
+          [
+# not sup  [ "user",               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+           [ "bootproto",          \&xst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
+           [ "auto",               \&xst_network_debian_woody_set_auto,    [INTERFACES, IFACE]],
            [ "name",               \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
            [ "address",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "address" ],
            [ "netmask",            \&xst_replace_interfaces_option_str,    [INTERFACES, IFACE], "netmask" ],

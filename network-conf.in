@@ -58,13 +58,8 @@ require "___scriptsdir___/network.pl";
 
 $name = "network";
 $version = "0.1.0";
-@platforms = ("debian-2.2",
-              "redhat-5.2",
-              "redhat-6.0",
-              "redhat-6.1",
-              "redhat-6.2",
-              "redhat-7.0",
-              "mandrake-7.2");
+@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
+              "mandrake-7.2", "debian-2.2", "debian-woody");
 
 $description =<<"end_of_description;";
        Configures all network parameters and interfaces.

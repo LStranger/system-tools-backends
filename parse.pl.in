@@ -660,15 +660,15 @@ sub xst_parse_interfaces_line_read
 # Return ref to an array with the stanza params split.
 sub xst_parse_interfaces_get_next_stanza
 {
-  my $fd = $_[0];
+  my ($fd, $stanza_type) = @_;
   my $line;
 
   while (($line = &xst_parse_interfaces_line_read ($fd)) != -1)
   {
     $_ = $$line;
-    if (/^iface[ \t]/)
+    if (/^$stanza_type[ \t]+[^ \t]/)
     {
-      s/^iface[ \t]+//;
+      s/^$stanza_type[ \t]+//;
       return [ split ("[ \t]+", $_) ];
     }
   }
@@ -698,13 +698,13 @@ sub xst_parse_interfaces_get_next_option
 # Get all stanzas from file. Return array.
 sub xst_parse_interfaces_stanzas
 {
-  my ($file) = @_;
+  my ($file, $stanza_type) = @_;
   my ($fd, @res);
 
   $fd = &xst_file_open_read_from_names ($file);
   $res = undef;
   
-  while (($_ = &xst_parse_interfaces_get_next_stanza ($fd)) != -1)
+  while (($_ = &xst_parse_interfaces_get_next_stanza ($fd, $stanza_type)) != -1)
   {
     push @res, $_;
   }
@@ -723,7 +723,7 @@ sub xst_parse_interfaces_option_tuple
 
   $fd = &xst_file_open_read_from_names ($file);
 
-  while (($stanza = &xst_parse_interfaces_get_next_stanza ($fd)) != -1)
+  while (($stanza = &xst_parse_interfaces_get_next_stanza ($fd, "iface")) != -1)
   {
     if ($$stanza[0] eq $iface)
     {
