@@ -1,0 +1,118 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Functions for file manipulation. Find, open, read, write, backup, etc.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+require "___scriptsdir___/general.pl";
+
+
+sub xst_debug_print_indent
+{
+  my $indent = @_[0];
+  my $i;
+
+  for ($i = 0; $i < $indent; $i++) { print STDERR "  "; }
+}
+
+
+sub xst_debug_print_string
+{
+  print STDERR $_[0];
+}
+
+
+sub xst_debug_print_line
+{
+  &xst_debug_print_string ($_[0] . "\n");
+}
+
+
+sub xst_debug_print_indented_string
+{
+  my $indent = shift @_;
+  my @string = @_;
+
+  &xst_debug_print_indent ($indent);
+  &xst_debug_print_string (@string);
+}
+
+
+sub xst_debug_print_indented_line
+{
+  my $indent = shift @_;
+  my @line = @_;
+
+  &xst_debug_print_indent ($indent);
+  &xst_debug_print_line (@line);
+}
+
+
+sub xst_debug_print_struct
+{
+  &xst_debug_print_struct_r (0, 0, @_);
+}
+
+
+sub xst_debug_print_struct_r
+{
+  my ($indent) = @_[0];
+  my $is_hash_value = @_[1];
+  my $a = @_[2];
+  my $type;
+  my @keys;
+  my $elem;
+  my $i;
+
+  $type = ref $a;
+
+  if (!$is_hash_value) { &xst_debug_print_indent ($indent); }
+
+  if ($type eq "SCALAR")
+  {
+    &xst_debug_print_line ($$a);
+  }
+  elsif ($type eq "ARRAY")
+  {
+    &xst_debug_print_line ("[ARRAY]");
+
+    for ($i = 0; $i <= $#$a; $i++)
+    {
+      &xst_debug_print_struct_r ($indent, 0, $$a[$i]);
+    }
+  }
+  elsif ($type eq "HASH")
+  {
+    @keys = sort keys (%$a);
+
+    &xst_debug_print_line ("[HASH]");
+
+    foreach $i (@keys)
+    {
+      &xst_debug_print_indented_string ($indent + !$is_hash_value, $i . " -> ");
+      &xst_debug_print_struct_r ($indent + !$is_hash_value + 1, 1, $$a{$i});
+    }
+  }
+  else
+  {
+    &xst_debug_print_line ($a);
+  }
+}

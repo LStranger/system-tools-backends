@@ -19,7 +19,8 @@ xml.pl \
 service.pl \
 util.pl \
 network.pl \
-boot.pl
+boot.pl \
+debug.pl
 
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh
 
@@ -35,6 +36,7 @@ service.pl.in \
 util.pl.in \
 network.pl.in \
 boot.pl.in \
+debug.pl.in \
 disks-conf.in \
 memory-conf.in \
 nameresolution-conf.in \

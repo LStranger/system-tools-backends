@@ -1,3 +1,8 @@
+2001-03-01  Hans Petter Jansson  <hpj@ximian.com>
+
+	* debug.pl.in: Implemented basic debug functions.
+	* Makefile.am: Included debug.pl.in in build and install.
+
 2001-02-29  Arturo Espinosa  <arturo@ximian.com>
 
 	* file.pl.in (xst_run): run command with sh -c.
