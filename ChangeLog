@@ -1,6 +1,7 @@
 2001-06-29  Tambet Ingo  <tambet@ximian.com>
 
 	* display-conf.in (xml_parse): Write conf when asked to.
+	Bad bad typo!
 
 	* x.pl.in (x_update_section): Now we can write XF86Config files too.
 

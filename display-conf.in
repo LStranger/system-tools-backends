@@ -31,8 +31,8 @@
 #
 
 require "___scriptsdir___/platform.pl";
-# require "___scriptsdir___/x.pl";
-require "./x.pl";
+require "___scriptsdir___/x.pl";
+
 
 # --- Tool information --- #
 
