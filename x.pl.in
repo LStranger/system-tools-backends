@@ -1462,6 +1462,7 @@ sub x_update_section
 
   # Find section from xml config
   for (my $i = 0; $i <= scalar @{$xml_config->{$section_name}}; $i++) {
+    next unless exists $xml_config->{$section_name}[$i];
     if ($xml_config->{$section_name}[$i]->{$ident_str} eq $section->{$ident_str}) {
       $new_section = $xml_config->{$section_name}[$i];
       delete $xml_config->{$section_name}[$i];
