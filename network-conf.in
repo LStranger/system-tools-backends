@@ -178,6 +178,7 @@ sub xml_parse_interface
     shift @$tree;
   }
 
+  $hash{"file"} = &xst_network_get_file ($hash{"dev"}) if !exists $hash{"file"};
   $dev = $hash{"file"};
   $$interface{$dev} = \%hash;
 }

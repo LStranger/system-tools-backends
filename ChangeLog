@@ -1,3 +1,9 @@
+2001-02-26  Arturo Espinosa  <arturo@ximian.com>
+
+	* network-conf.in (xml_parse_dialing): set the file item if none came from the XML.
+	* network.pl.in (xst_network_rh62_get_file, xst_network_get_file): check the file
+	  name for any given distro. The corresponding sysconfig file for rh62.
+	
 2001-02-26  Tambet Ingo  <tambet@ximian.com>
 
 	* boot-conf.in (xml_parse_image): get text (not word).

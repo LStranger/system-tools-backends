@@ -190,6 +190,45 @@ sub xst_network_conf_get
   return $hash;
 }
 
+sub xst_network_rh62_get_file
+{
+  my $dev = $_[0];
+  my $pre;
+  my $i;
+
+  $pre = "$xst_prefix/etc/sysconfig/network-scripts/ifcfg-";
+  
+  return $dev if ! -e "$pre$dev";
+  
+  $dev =~ s/[0-9]*$//;
+
+  $i = 0;
+  $i ++ while (-e "$pre$dev$i");
+  
+  return "$dev$i";
+}
+
+sub xst_network_get_file
+{
+  my $dev = $_[0];
+  my $proc;
+
+  my %dist_map =
+	 (
+	  "redhat-6.0" => \&xst_network_rh62_get_file,
+	  "redhat-6.1" => \&xst_network_rh62_get_file,
+	  "redhat-6.2" => \&xst_network_rh62_get_file,
+	  "redhat-7.0" => \&xst_network_rh62_get_file
+	  );
+
+  $proc = $dist_map{$xst_dist};
+
+  return &$proc ($dev) if $proc;
+
+  # FIXME: should make us bail.
+  return undef;
+}
+
 sub xst_network_run_hostname
 {
   my $hostname = $_[0];
