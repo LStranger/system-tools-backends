@@ -1,20 +1,19 @@
 # Romanian translation for setup-tools-backend
-# Copyright (C) 2004, Free Software Foundation, Inc
-# Mişu Moldovan <dumol@go.ro>
+# Copyright (C) 2004 - 2005, Free Software Foundation, Inc
+# Mişu Moldovan <dumol@go.ro>, 2004, 2005.
 
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backend\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-09-12 04:22+0200\n"
-"PO-Revision-Date: 2004-09-12 16:36+0300\n"
+"POT-Creation-Date: 2005-03-05 22:15+0100\n"
+"PO-Revision-Date: 2005-03-06 00:48+0200\n"
 "Last-Translator: Mişu Moldovan <dumol@go.ro>\n"
 "Language-Team: Romanian <gnomero-list@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -27,7 +26,9 @@ msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
-"Notifică programele utilizatorilor asupra evenimentelor ACPI, execută comenzile asignate ca răspuns la evenimente ACPI precum apăsarea butonului „Power”."
+"Notifică programele utilizatorilor asupra evenimentelor ACPI, execută "
+"comenzile asignate ca răspuns la evenimente ACPI precum apăsarea butonului "
+"de pornire/oprire."
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
@@ -50,18 +51,22 @@ msgstr "Porneşte la iniţializare sarcinile programate, dar neexecutate"
 
 #: service-list.pl.in:39
 msgid "Run cron jobs that were left out due to downtime"
-msgstr "Porneşte sarcini „cron” care nu au fost executate deoarece calculatorul era oprit"
+msgstr ""
+"Porneşte sarcini „cron” care nu au fost executate deoarece calculatorul era "
+"oprit"
 
 #: service-list.pl.in:40
 msgid "Automatic power management daemon"
-msgstr "Daemonul de power management automat"
+msgstr "Daemonul de „power management” automat"
 
 #: service-list.pl.in:40
 msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
 msgstr ""
-"apmd este utilizat pentru monitorizarea stării bateriei şi înregistrarea acestor evenimente prin syslog(8). Poate fi utilizat şi pentru închiderea calculatorului când bateria e pe terminate."
+"apmd este utilizat pentru monitorizarea stării bateriei şi înregistrarea "
+"acestor evenimente prin syslog(8). Poate fi utilizat şi pentru închiderea "
+"calculatorului când bateria e pe terminate."
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
@@ -100,8 +105,8 @@ msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
 msgstr ""
-"Porneşte în fundal şi copiază toate mesajele trimise către /dev/console "
-"într-un fişier de tip log"
+"Porneşte în fundal şi copiază toate mesajele trimise către /dev/console într-"
+"un fişier de tip log"
 
 #: service-list.pl.in:45
 msgid ""
@@ -111,9 +116,9 @@ msgid ""
 "service."
 msgstr ""
 "Un serviciu intern xinetd care generează caractere. Serviciul intern xinetd "
-"care generează continuu caractere până ce conexiunea este întreruptă. Aceasta"
-" este versiunea TCP. E necesar să activaţi xinetd înainte de a utiliza acest "
-"serviciu."
+"care generează continuu caractere până ce conexiunea este întreruptă. "
+"Aceasta este versiunea TCP. E necesar să activaţi xinetd înainte de a "
+"utiliza acest serviciu."
 
 #: service-list.pl.in:46
 msgid ""
@@ -123,9 +128,9 @@ msgid ""
 "service."
 msgstr ""
 "Un serviciu intern xinetd care generează caractere. Serviciul intern xinetd "
-"care generează continuu caractere până ce conexiunea este întreruptă. Aceasta"
-" este versiunea UDP. E necesar să activaţi xinetd înainte de a utiliza acest "
-"serviciu."
+"care generează continuu caractere până ce conexiunea este întreruptă. "
+"Aceasta este versiunea UDP. E necesar să activaţi xinetd înainte de a "
+"utiliza acest serviciu."
 
 #: service-list.pl.in:47
 msgid "CPU frequency monitor"
@@ -138,12 +143,12 @@ msgid ""
 "providing optimal performance"
 msgstr ""
 "Pentru ajustarea frecvenţei procesorului în concordanţă cu starea bateriei "
-"se utilizează cpufreqd. Această ajustare se face pentru a prelungi durata "
+"se utilizează „cpufreqd”. Această ajustare se face pentru a prelungi durata "
 "de funcţionare a bateriei oferind totodată performanţe optime"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
-msgstr "Daemon pentru executarea sarcinilor programate"
+msgstr "Daemon pentru pornirea sarcinilor programate"
 
 #: service-list.pl.in:49
 msgid "Run scheduled jobs"
@@ -210,7 +215,7 @@ msgid ""
 msgstr ""
 "Un serviciu intern xinetd care returnează caracterele către clienţi. Aceasta "
 "este versiunea TCP. E necesar să activaţi xinetd înainte de a utiliza acest "
-"serviciu"
+"serviciu."
 
 #: service-list.pl.in:58
 msgid ""
@@ -219,7 +224,7 @@ msgid ""
 msgstr ""
 "Un serviciu intern xinetd care returnează caracterele către clienţi. Aceasta "
 "este versiunea UDP. E necesar să activaţi xinetd înainte de a utiliza acest "
-"serviciu"
+"serviciu."
 
 #: service-list.pl.in:59
 msgid "Sound mixing server"
@@ -239,11 +244,11 @@ msgstr "monitor modificări fişiere"
 
 #: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
-msgstr "Firstboot este un program de tip asistent ce va fi pornit prima dată"
+msgstr "Firstboot este un program de tip asistent utilizat la prima pornire"
 
 #: service-list.pl.in:63
 msgid "Text-to-speech system"
-msgstr "Sisteme de sinteză vocală"
+msgstr "Sistem de sinteză vocală"
 
 #: service-list.pl.in:63
 msgid "Festival is a general purpose text-to-speech system"
@@ -271,7 +276,7 @@ msgstr "Administratorul GDM"
 
 #: service-list.pl.in:66
 msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
-msgstr "GDM este echivalentul în GNOME a promptului „login:”."
+msgstr "GDM este echivalentul în GNOME al promptului „login:”."
 
 #: service-list.pl.in:67
 msgid "console mouse support"
@@ -283,9 +288,10 @@ msgid ""
 "Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
 msgstr ""
-"Daemonul gpm adaugă suport de mouse în programe Linux în mod text precum "
-"Midnight Commander. Permite operaţiuni de tip cut&paste în consolă utilizând "
-"un mouse. Oferă suport în consolă pentru meniuri de tip popup"
+"Daemonul gpm adaugă suport de mouse în consolă pentru programe Linux în "
+"mod text precum Midnight Commander. Permite operaţiuni de tip cut&paste în "
+"consolă utilizând un mouse. Oferă suport în consolă pentru meniuri de tip "
+"„popup”."
 
 #: service-list.pl.in:68
 msgid "Set hard disk parameters"
@@ -327,7 +333,7 @@ msgstr ""
 
 #: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
-msgstr "unealtă de administrarea pentru filtrarea de pachete IPv4 şi NAT"
+msgstr "unealtă de administrare pentru filtrarea de pachete IPv4 şi NAT"
 
 #: service-list.pl.in:72
 msgid ""
@@ -363,7 +369,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
-"Porneşte joystick-device-check pentru a verifica dacă nodurile dispozitivelor" " /dev/js* corespund versiunii kernelului folosit."
+"Porneşte joystick-device-check pentru a verifica dacă nodurile "
+"dispozitivelor /dev/js* corespund versiunii kernelului folosit."
 
 #: service-list.pl.in:77
 msgid ""
@@ -373,7 +380,7 @@ msgid ""
 msgstr ""
 "Acest pachet încarcă maparea de tastatură setată în /etc/sysconfig/keyboard. "
 "Aceasta poate fi schimbată utilizând utilitarul kbdconfig. Ar trebui să "
-"lăsaţi această setare activă pentru majoritaea calculatoarelor."
+"lăsaţi această setare activă pentru majoritatea calculatoarelor."
 
 #: service-list.pl.in:78
 msgid "Kernel Log Daemon"
@@ -389,15 +396,15 @@ msgstr ""
 msgid ""
 "This runs the hardware probe, and optionally configures changed hardware."
 msgstr ""
-"Aceasta iniţiază verificarea hardware-ului şi opţional configurarea "
-"noului hardware detectat."
+"Aceasta iniţiază verificarea hardware-ului şi opţional configurarea noului "
+"hardware detectat."
 
 #: service-list.pl.in:80 service-list.pl.in:81
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
 msgstr ""
-"LIRC este un pachet ce permite recepţia şi trasmisia de semnale infraroşu "
+"LIRC este un pachet ce permite recepţia şi trasmisia de semnale în infraroşu "
 "pentru multe din telecomenzile uzuale"
 
 #: service-list.pl.in:82
@@ -409,12 +416,12 @@ msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
-"Daemonul de tipărire lpd este necesar pentru funcţionarea lpr. Este un server"
-" ce alocă către imprimante sarcinile de tipărire"
+"Daemonul de tipărire lpd este necesar pentru funcţionarea lpr. Este un "
+"server ce alocă către imprimante sarcinile de tipărire"
 
 #: service-list.pl.in:84
 msgid "Create devices"
-msgstr "Creere dispozitive"
+msgstr "Creare dispozitive"
 
 #: service-list.pl.in:84
 msgid ""
@@ -465,7 +472,7 @@ msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
-"Montează şi demontează toate punctele de montare NFS (Netwrok File System), "
+"Montează şi demontează toate punctele de montare NFS (Network File System), "
 "SMB (Windows/Lan Manager) şi NCP (NetWare)."
 
 #: service-list.pl.in:91
@@ -473,8 +480,8 @@ msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
 msgstr ""
-"(De)activează toate interfeţele de reţea configurate pentru a fi iniţializate"
-" la boot."
+"(De)activează toate interfeţele de reţea configurate pentru a fi "
+"iniţializate la boot."
 
 #: service-list.pl.in:92
 msgid ""
@@ -577,8 +584,8 @@ msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
 msgstr ""
-"Protocolul Point-to-Point (PPP) oferă o metodă de transmitere a datelor "
-"prin legături de tip point-to-point"
+"Protocolul Point-to-Point (PPP) oferă o metodă de transmitere a datelor prin "
+"legături de tip point-to-point"
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
@@ -601,8 +608,8 @@ msgid ""
 msgstr ""
 "Aceste scripturi mapează dispozitive de tip „block” unor dispozitive brute "
 "precum partiţiilor harddisk-urilor. Aceste dispozitive sunt utilizate de "
-"aplicaţii precum Orcale. Puteţi seta aceste mapări editând fişierul "
-"/etc/sysconfig/rawdevices."
+"aplicaţii precum Oracle. Puteţi seta aceste mapări editând fişierul /etc/"
+"sysconfig/rawdevices."
 
 #: service-list.pl.in:110
 msgid ""
@@ -612,17 +619,18 @@ msgid ""
 "subscribed for."
 msgstr ""
 "Acesta este un daemon ce se conectează periodic la serverele Red Hat "
-"Networks pentru a verifica update-urile şi notificările. De asemenea, "
-"efectuează sarcini de monitorizare corespunzătoare nivelului de servicii "
-"la care este subscris acest server."
+"Networks pentru a verifica dacă există noi update-uri şi notificări. De "
+"asemenea, efectuează sarcini de monitorizare corespunzătoare nivelului de "
+"servicii la care este subscris acest server."
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
-"Serverul rsync este un bun complement pentru un server FTP, permiţând veri"
-"ficările CRC şi altele. E necesar să activaţi xinetd pentru acest serviciu."
+"Serverul rsync este un bun complement pentru un server FTP, permiţând "
+"verificările CRC şi altele. E necesar să activaţi xinetd pentru acest "
+"serviciu."
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
@@ -637,32 +645,32 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
-"Suita Samba este o colecţie de programe ce implementează protocolul "
-"Server Message Block pentru sistemele UNIX."
+"Suita Samba este o colecţie de programe ce implementează protocolul Server "
+"Message Block pentru sistemele UNIX."
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
-"Daemonul saslauthd este un server ce efectuează autentificări în clar "
-"pentru programele ce utilizează cyrus-sasl."
+"Daemonul saslauthd este un server ce efectuează autentificări în clar pentru "
+"programele ce utilizează cyrus-sasl."
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
-"Sendmail este un server MTA (Mail Transport Agent) ce distribuie mailuri "
-"de la o maşină la alta."
+"Sendmail este un server MTA (Mail Transport Agent) ce distribuie mailuri de "
+"la o maşină la alta."
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
-"Un serviciu intern xinetd ce listează serverele active. E necesar să activaţi "
-"xinetd pentru a utiliza acest serviciu."
+"Un serviciu intern xinetd ce listează serverele active. E necesar să "
+"activaţi xinetd pentru a utiliza acest serviciu."
 
 #: service-list.pl.in:117
 msgid ""
@@ -674,7 +682,7 @@ msgstr ""
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
-msgstr "obţine detalii despre sau setează porturile seriale"
+msgstr "obţine detalii despre porturile seriale şi le setează"
 
 #: service-list.pl.in:118
 msgid ""
@@ -713,8 +721,8 @@ msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
 msgstr ""
-"Programul ssh este utilizat pentru autentificarea pe calculatoare la distanţă"
-" şi apoi pentru execuţia de comenzi pe acele calculatoare."
+"Programul ssh este utilizat pentru autentificarea pe calculatoare la "
+"distanţă şi apoi pentru execuţia de comenzi pe acele calculatoare."
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
@@ -729,16 +737,16 @@ msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr ""
-"Daemonul sysklogd două utilitare de sistem pentru logarea de sistem şi "
-"pentru interceptarea mesajelor kernelului"
+"Daemonul sysklogd oferă două utilitare de sistem pentru logarea de sistem şi"
+"interceptarea mesajelor kernelului"
 
 #: service-list.pl.in:126
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
-"Daemonul syslog este utilizat de multe programe pentru a loga mesaje "
-"în diferite fişiere de loguri. Este o idee bună să îl aveţi permanent pornit."
+"Daemonul syslog este utilizat de multe programe pentru a loga mesaje în "
+"diferite fişiere de loguri. Este o idee bună să îl aveţi permanent pornit."
 
 #: service-list.pl.in:127
 msgid ""
@@ -747,9 +755,9 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
-"Un server time RFC 868. Acest protocol oferă un format de tip dată/oră "
+"Un server de timp RFC 868. Acest protocol oferă un format de tip dată/oră "
 "„machine-readable” şi independent de locaţie. Serviciul „time” măsoară "
-"timpul în secunde de la începutul zile de 1 Ianuarie 1900. Aceasta este "
+"timpul în secunde de la începutul zilei de 1 Ianuarie 1900. Aceasta este "
 "versiunea TCP. E necesar să activaţi xinetd pentru a utiliza acest serviciu."
 
 #: service-list.pl.in:128
@@ -759,9 +767,9 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
-"Un server time RFC 868. Acest protocol oferă un format de tip dată/oră "
+"Un server de timp RFC 868. Acest protocol oferă un format de tip dată/oră "
 "„machine-readable” şi independent de locaţie. Serviciul „time” măsoară "
-"timpul în secunde de la începutul zile de 1 Ianuarie 1900. Aceasta este "
+"timpul în secunde de la începutul zilei de 1 Ianuarie 1900. Aceasta este "
 "versiunea UDP. E necesar să activaţi xinetd pentru a utiliza acest serviciu."
 
 #: service-list.pl.in:129
@@ -796,7 +804,8 @@ msgstr "Pachet de administrare prin web"
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
-msgstr "Daemon NSS (Name Service Switch) pentru rezolvarea numelor în reţele NT"
+msgstr ""
+"Daemon NSS (Name Service Switch) pentru rezolvarea numelor în reţele NT"
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
@@ -828,7 +837,7 @@ msgid ""
 "display servers."
 msgstr ""
 "Daemonul xfs este un server de fonturi pentru sistemul X Window. Pune la "
-"fonturi pentru serverele X Window."
+"dispoziţie fonturi pentru serverele X Window."
 
 #: service-list.pl.in:137
 msgid ""
@@ -838,34 +847,83 @@ msgid ""
 "can be started, among other things."
 msgstr ""
 "Daemonul xinetd este un înlocuitor pentru serverul inetd. El oferă în plus "
-"mecanisme de control al accesului facilităţi extinse de logare, abilitatea "
+"mecanisme de control al accesului, facilităţi extinse de logare, abilitatea "
 "de a oferi servicii doar în anumite perioade de timp. De asemenea, poate "
 "limita numărul de servere ce pot fi pornite."
 
-#: service.pl.in:226 service.pl.in:231
+#: service.pl.in:229 service.pl.in:234
 msgid "Halting the system"
-msgstr "Opresc sistemul"
+msgstr "Se opreşte sistemul"
 
-#: service.pl.in:227 service.pl.in:233
+#: service.pl.in:230 service.pl.in:236
 msgid "Text mode"
 msgstr "Mod text"
 
-#: service.pl.in:228 service.pl.in:232 service.pl.in:241
+#: service.pl.in:231 service.pl.in:235 service.pl.in:244
 msgid "Graphical mode"
 msgstr "Mod grafic"
 
-#: service.pl.in:229 service.pl.in:234
+#: service.pl.in:232 service.pl.in:237
 msgid "Rebooting the system"
-msgstr "Repornesc sistemul"
+msgstr "Se reporneşte sistemul"
 
-#: service.pl.in:236
+#: service.pl.in:239
 msgid "Starts all system neccesary services"
 msgstr "Porneşte toate serviciile necesare sistemului"
 
-#: service.pl.in:237
+#: service.pl.in:240
 msgid "Default runlevel"
 msgstr "Nivel de pornire implicit"
 
-#: service.pl.in:238
+#: service.pl.in:241
 msgid "Networkless runlevel"
 msgstr "Nivel de pornire fără reţea"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "Monitorizează logurile sistemului"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "Utilizează dispozitive audio"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "Acces la unităţile CD-ROM"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "Acces la dispozitivele modem"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "Conectare la internet prin modem"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "Trimitere şi primire faxuri"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "Acces la unităţile de dischetă"
+
+#: users-conf.in:186
+msgid "Enable access to external storage devices automatically"
+msgstr "Activare acces automat la unităţile externe de stocare"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "Acces la unităţile de bandă"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "Poate obţine drepturi de administrator"
+
+#: users-conf.in:492
+msgid "Default"
+msgstr "Implicit"
+
+#: users-conf.in:493
+msgid "Default profile"
+msgstr "Profil implicit"
+
