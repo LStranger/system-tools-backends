@@ -1,5 +1,14 @@
 2001-11-27  Hans Petter Jansson  <hpj@ximian.com>
 
+	* service.pl.in (xst_service_proc_get_owner): Implement.
+	(xst_service_proc_stop): Implement.
+	(xst_service_proc_start): Implement.
+
+	* time-conf.in (time_set_local_time): Stop xscreensaver before
+	setting clock, start it up again with the same owner afterwards.
+	
+2001-11-27  Hans Petter Jansson  <hpj@ximian.com>
+
 	* shares-conf.in (xml_parse_import): Make sure NFS imports are
 	soft mounted, so we don't risk hanging indefinitely. Fixes
 	Ximian bug 4599.

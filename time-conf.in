@@ -331,8 +331,14 @@ sub conf_get
 sub time_set_local_time
 {
   my ($time) = @_;
+  my ($res, $xscreensaver_owner, $xscreensaver_running);
 
   &xst_report_enter ();
+
+  # Kill screensaver, so it doesn't confuse the user.
+  # FIXME: This should handle multiple processes owned by different users.
+  $xscreensaver_owner   = &xst_service_proc_get_owner ("xscreensaver");
+  $xscreensaver_running = &xst_service_proc_stop      ("xscreensaver");
 
   $command = sprintf ("date %02d%02d%02d%02d%04d.%02d", $$time{"month"}, $$time{"monthday"},
                       $$time{"hour"}, $$time{"minute"}, $$time{"year"}, $$time{"second"});
@@ -340,6 +346,13 @@ sub time_set_local_time
   &xst_report ("time_localtime_set", $command);
 
   $res = &xst_file_run ($command);
+
+  # Restart screensaver.
+  # FIXME: This should handle multiple processes owned by different users.
+  if ($xscreensaver_running)
+  {
+    &xst_service_proc_start ("xscreensaver -no-splash", $xscreensaver_owner);
+  }
 
   &xst_report_leave ();
   return -1 if $res;

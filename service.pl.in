@@ -36,6 +36,73 @@ use File::Copy;
 require "$SCRIPTSDIR/file.pl$DOTIN";
 require "$SCRIPTSDIR/report.pl$DOTIN";
 
+# --- Plain process utilities --- #
+
+# Get owner (login) of named process.
+# FIXME: Works only on modern Linux, probably.
+# FIXME: Need a version of this that examines all instances of process name.
+sub xst_service_proc_get_owner
+{
+  my ($service) = @_;
+  my ($pid, $owner);
+  my $res = 0;
+
+  &xst_report_enter ();
+
+  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
+  # FIXME: Portable to other UNIXen?
+  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
+  chomp $pid;
+
+  if ($pid)
+  {
+    $owner = &xst_file_run_backtick ("ps --no-headers -p $pid -o user");
+  }
+  else
+  {
+    $owner = undef;
+  }
+
+  &xst_report_leave ();
+  return $owner;
+}
+
+# FIXME: Need a version of this that stops all instances of process name.
+sub xst_service_proc_stop
+{
+  my ($service) = @_;
+  my ($pid);
+  my $res = 0;
+
+  &xst_report_enter ();
+
+  # Stolen from RedHat's /etc/rc.d/init.d/functions:status
+  # FIXME: Portable to other UNIXen?
+  $pid = &xst_file_run_backtick ("pidof -o %PPID -x $service");
+  chomp $pid;
+
+  if ($pid)
+  {
+    kill "SIGTERM", $pid;
+    $res = 1;
+  }
+
+  &xst_report_leave ();
+  return $res;
+}
+
+# FIXME: Need a version of this that starts all instances of process name.
+sub xst_service_proc_start
+{
+  my ($cmd, $user) = @_;
+  my ($fqsu, $fqcmd);
+
+  $fqcmd = &xst_file_get_cmd_path ($cmd);
+  $fqsu  = &xst_file_get_cmd_path ("su");
+
+  # Can't use xst_file_run_bg here, since it clobbers the quotes.
+  system ("$fqsu -c \"$fqcmd &\" $user >/dev/null 2>/dev/null");
+}
 
 # --- Service/daemon utilities --- #
 
