@@ -377,8 +377,11 @@ sub conf_get_parse_table
    "redhat-6.0"   => "redhat-6.2",
    "redhat-6.1"   => "redhat-6.2",
    "redhat-6.2"   => "redhat-6.2",
-   "redhat-7.0"   => "redhat-6.2",
-   "mandrake-7.2" => "redhat-6.2"
+
+   "redhat-7.0"   => "redhat-7.0",
+   "mandrake-7.2" => "redhat-7.0",
+
+   "debian-2.2"   => "debian-2.2"
    );
 
   my %dist_tables =
@@ -399,7 +402,41 @@ sub conf_get_parse_table
               ["sync",        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
               ["sync_active", \&xst_service_sysv_get_status, "xntpd"],
               ]
-                }
+                },
+       
+       "redhat-7.0" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           STEP_TICKERS => "/etc/ntp/step-tickers",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              ["local_time",  \&time_get_local_time],
+              ["timezone",    \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO]],
+              ["sync",        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
+              ["sync_active", \&xst_service_sysv_get_status, "ntpd"],
+              ]
+                },
+
+       "debian-2.2" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              ["local_time",  \&time_get_local_time],
+              ["timezone",    \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO]],
+              ["sync",        \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+"],
+              ["sync_active", \&xst_service_sysv_get_status, "ntp"],
+              ]
+                },
        );
 
   my $dist = $dist_map {$xst_dist};
@@ -416,8 +453,11 @@ sub conf_get_replace_table
    "redhat-6.0"   => "redhat-6.2",
    "redhat-6.1"   => "redhat-6.2",
    "redhat-6.2"   => "redhat-6.2",
-   "redhat-7.0"   => "redhat-6.2",
-   "mandrake-7.2" => "redhat-6.2"
+   
+   "redhat-7.0"   => "redhat-7.0",
+   "mandrake-7.2" => "redhat-7.0",
+
+   "debian-2.2"   => "debian-2.2"
    );
 
   my %dist_tables =
@@ -437,6 +477,40 @@ sub conf_get_replace_table
               ["timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
               ["sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
               ["sync_active", \&xst_service_sysv_set_status, 90, "xntpd"],
+              ]
+                },
+
+       "redhat-7.0" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              ["local_time",  \&time_set_local_time],
+              ["timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
+              ["sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
+              ["sync_active", \&xst_service_sysv_set_status, 90, "ntpd"],
+              ]
+                },
+
+       "debian-2.2" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              ["local_time",  \&time_set_local_time],
+              ["timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO]],
+              ["sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+"],
+              ["sync_active", \&xst_service_sysv_set_status, 23, "ntp"],
               ]
                 }
        );
