@@ -1,3 +1,10 @@
+2001-11-15  Hans Petter Jansson  <hpj@ximian.com>
+
+	* time-conf.in (xst_parse_local_time): Return the right reference.
+	(time_get_local_time): Return right year, not relative to 1900.
+	(time_set_local_time): Correct report output.
+	(conf_get_replace_table): Set time after timezone in all tables.
+
 2001-11-15  israel  <chema@celorio.com>
 
 	* time-conf.in (conf_get_parse_table): Added redhat 7.2 support

@@ -165,7 +165,7 @@ sub xml_parse_local_time
     shift @$tree;
   }
 
-  return \%hash;
+  return $hash;
 }
 
 # --- XML printing --- #
@@ -224,7 +224,6 @@ sub set
   $hash = &xml_parse ();
 
   &conf_set ($hash);
-  
   &xst_report_end ();
 }
 
@@ -265,6 +264,8 @@ sub time_get_local_time
 
   ($h{"second"}, $h{"minute"}, $h{"hour"}, $h{"monthday"}, $h{"month"}, $h{"year"},
    $trash, $trash, $trash) = localtime (time);
+
+  $h{"year"} += 1900;
 
   return \%h;
 }
@@ -323,6 +324,7 @@ sub conf_get
 
   $hash = &xst_parse_from_table ($dist_attrib{"fn"},
                                  $dist_attrib{"table"});
+
   return $hash;
 }
 
@@ -331,10 +333,12 @@ sub time_set_local_time
   my ($time) = @_;
 
   &xst_report_enter ();
-  &xst_report ("time_localtime_set", "%{$time}");
-  
+
   $command = sprintf ("date %02d%02d%02d%02d%04d.%02d", $$time{"month"}, $$time{"monthday"},
                       $$time{"hour"}, $$time{"minute"}, $$time{"year"}, $$time{"second"});
+
+  &xst_report ("time_localtime_set", $command);
+
   $res = &xst_file_run ($command);
 
   &xst_report_leave ();
@@ -398,7 +402,7 @@ sub conf_get_parse_table
    "redhat-7.0"   => "redhat-7.0",
    "redhat-7.1"   => "redhat-7.0",
    "redhat-7.2"   => "redhat-7.0",
-   
+
    "mandrake-7.1" => "redhat-7.0",
    "mandrake-7.2" => "redhat-7.0",
 
@@ -529,8 +533,8 @@ sub conf_get_replace_table
          },
          table =>
              [
-              [ "local_time",  \&time_set_local_time ],
               [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "local_time",  \&time_set_local_time ],
               [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
               [ "sync_active", \&xst_service_sysv_set_status, 90, "xntpd" ],
               ]
@@ -546,8 +550,8 @@ sub conf_get_replace_table
          },
          table =>
              [
-              [ "local_time",   \&time_set_local_time ],
               [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "local_time",   \&time_set_local_time ],
               [ "sync",         \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
               [ "sync_active",  \&xst_service_sysv_set_status, 90, "ntpd" ],
               ]
@@ -563,8 +567,8 @@ sub conf_get_replace_table
          },
          table =>
              [
-              [ "local_time",  \&time_set_local_time ],
               [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "local_time",  \&time_set_local_time ],
               [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
               [ "sync_active", \&xst_service_sysv_set_status, 23, "ntp" ],
               ]
@@ -580,8 +584,8 @@ sub conf_get_replace_table
          },
          table =>
              [
-              [ "local_time",   \&time_set_local_time ],
               [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "local_time",   \&time_set_local_time ],
               [ "sync",         \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
               [ "sync_active",  \&xst_service_sysv_set_status, 90, "xntpd" ],
               ]
