@@ -3,19 +3,19 @@
 # This file is distributed under the same license as the setup-tools-backends package.
 # Elros Cyriatan <cyriatan@fastmail.fm>, 2004.
 # Ronald van Engelen <vrijschrift.org@lacocina.nl>, 2004.
-# 
-# 
+# Tino Meinen <a.t.meinen@chello.nl>, 2005.
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-01-07 04:31+0100\n"
-"PO-Revision-Date: 2005-01-10 14:31+0100\n"
-"Last-Translator: Ronald van Engelen <ronalde@lacocina.nl>\n"
-"Language-Team: \n"
+"POT-Creation-Date: 2005-02-11 15:35+0100\n"
+"PO-Revision-Date: 2005-02-11 18:29+0100\n"
+"Last-Translator: Tino Meinen <a.t.meinen@chello.nl>\n"
+"Language-Team: Dutch <vertaling@vrijschrift.org> \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=\n"
-"Content-Transfer-Encoding: \n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -890,6 +890,7 @@ msgstr "Werkniveau zonder netwerk"
 msgid "Monitor system logs"
 msgstr "Bewaak systeem-logbestanden"
 
+# stations/apparaten
 #: users-conf.in:180
 msgid "Use audio devices"
 msgstr "Audio-apparaten gebruiken"
@@ -914,9 +915,10 @@ msgstr "Verstuur en ontvang faxen"
 msgid "Access to floppy drives"
 msgstr "Toegang tot diskettestations"
 
+# verwijderbare media/externe opslagapparaten
 #: users-conf.in:186
-msgid "Mount removable devices automatically"
-msgstr "Koppel verwijderbare apparaten automatisch aan"
+msgid "Enable access to external storage devices automatically"
+msgstr "Verwisselbare media automatisch toegankelijk maken"
 
 #: users-conf.in:187
 msgid "Access to tape drives"
@@ -926,10 +928,10 @@ msgstr "Toegang tot magnetische band-apparaten"
 msgid "Be able to get administrator privileges"
 msgstr "In staat zijn om beheerder-privileges te verkrijgen"
 
-#: users-conf.in:458
+#: users-conf.in:491
 msgid "Default"
 msgstr "Standaard"
 
-#: users-conf.in:459
+#: users-conf.in:492
 msgid "Default profile"
 msgstr "Standaardprofiel"
