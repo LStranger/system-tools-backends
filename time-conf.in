@@ -526,6 +526,6 @@ be_init($name, $version, $description, @ARGV);
 
 # Do our thing.
 
-if    ($be_operation eq "&get")    { &get; }
-elsif ($be_operation eq "&set")    { &set; }
-elsif ($be_operation eq "&filter") { &filter; }
+if    ($be_operation eq "get")    { &get; }
+elsif ($be_operation eq "set")    { &set; }
+elsif ($be_operation eq "filter") { &filter; }

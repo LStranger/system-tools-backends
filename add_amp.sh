@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo This has bugs: substitutes stuff between quotes.
+
 for i in `grep ^sub *-conf.in be.pl.in | cut -f2 -d' ' | sort | uniq`; do
  for j in *-conf.in be.pl.in; do
   echo $i:$j
