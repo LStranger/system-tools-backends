@@ -29,3 +29,7 @@ time-conf
 users-conf
 util.pl
 xml.pl
+package-conf
+display-conf
+x.pl
+font.pl
