@@ -1217,9 +1217,9 @@ sub xml_print
   be_xml_enter ();
 
   be_xml_vspace ();
-  be_xml_print "<!-- Configuration starts here -->\n";
+  be_xml_print ("<!-- Configuration starts here -->\n");
   be_xml_vspace ();
-  be_xml_print "<!-- Imports, listed and potentials -->\n";
+  be_xml_print ("<!-- Imports, listed and potentials -->\n");
   be_xml_vspace ();
 
   my @shares = @cf_shares_list;
@@ -1229,7 +1229,7 @@ sub xml_print
     if ($shares[0] ne "")
     {
       be_xml_vspace ();
-      be_xml_print "<import type='$shares[5]'>\n";
+      be_xml_print ("<import type='$shares[5]'>\n");
       be_xml_enter ();
 
       $shares[0] = be_xml_plain_to_entities(\$shares[0]);
@@ -1238,12 +1238,12 @@ sub xml_print
       $shares[6] = be_xml_plain_to_entities(\$shares[6]);
       $shares[7] = be_xml_plain_to_entities(\$shares[7]);
 
-      be_xml_print "<host>$shares[0]</host>\n";
-      be_xml_print "<path>$shares[1]</path>\n";
-      if ($shares[6] ne "") { be_xml_print "<user>$shares[6]</user>\n"; }
-      if ($shares[7] ne "") { be_xml_print "<password>$shares[7]</password>\n"; }
-      if ($shares[2] ne "") { be_xml_print "<comment>$shares[2]</comment>\n"; }
-      if ($shares[8] ne "") { be_xml_print "<point>$shares[8]</point>\n"; }
+      be_xml_print ("<host>$shares[0]</host>\n");
+      be_xml_print ("<path>$shares[1]</path>\n");
+      if ($shares[6] ne "") { be_xml_print ("<user>$shares[6]</user>\n"); }
+      if ($shares[7] ne "") { be_xml_print ("<password>$shares[7]</password>\n"); }
+      if ($shares[2] ne "") { be_xml_print ("<comment>$shares[2]</comment>\n"); }
+      if ($shares[8] ne "") { be_xml_print ("<point>$shares[8]</point>\n"); }
 
       be_xml_indent ();
 
@@ -1260,7 +1260,7 @@ sub xml_print
       print "'/>\n";
 
       be_xml_leave ();
-      be_xml_print "</import>\n";
+      be_xml_print ("</import>\n");
     }
     
     shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
@@ -1269,7 +1269,7 @@ sub xml_print
   }
 
   be_xml_vspace ();
-  be_xml_print "<!-- Exports -->\n";
+  be_xml_print ("<!-- Exports -->\n");
   be_xml_vspace ();
   
   my @shares = @cf_exports_list;
@@ -1279,15 +1279,15 @@ sub xml_print
     if ($shares[0] ne "")
     {
       be_xml_vspace ();
-      be_xml_print "<export type='$shares[0]'>\n";
+      be_xml_print ("<export type='$shares[0]'>\n");
       be_xml_enter ();
 
-      be_xml_print "<path>$shares[1]</path>\n";
+      be_xml_print ("<path>$shares[1]</path>\n");
 
       if ($shares[0] eq "smb")
       {
-        be_xml_print "<name>$shares[2]</name>\n";
-        if ($shares[3] ne "") { be_xml_print "<comment>$shares[3]</comment>\n"; }
+        be_xml_print ("<name>$shares[2]</name>\n");
+        if ($shares[3] ne "") { be_xml_print ("<comment>$shares[3]</comment>\n"); }
 
         be_xml_indent ();
         print "<enabled state='", be_print_boolean_truefalse($shares[4]), "'/>";
@@ -1306,7 +1306,7 @@ sub xml_print
         {
           if (@$clients[0] ne "")
           {
-            be_xml_print "<allow><pattern>@$clients[0]</pattern><write state='";
+            be_xml_print ("<allow><pattern>@$clients[0]</pattern><write state='");
             print be_print_boolean_truefalse(@$clients[1]);
             print "'/></allow>\n";
           }
@@ -1317,13 +1317,13 @@ sub xml_print
       }
 
       be_xml_leave ();
-      be_xml_print "</export>\n";
+      be_xml_print ("</export>\n");
     }
     
   }
   
   be_xml_vspace ();
-  be_xml_print "<!-- End of configuration -->\n";
+  be_xml_print ("<!-- End of configuration -->\n");
   be_xml_vspace ();
 
   be_xml_leave ();

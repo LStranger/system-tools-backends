@@ -134,7 +134,7 @@ sub xml_parse
 	
 sub xml_parse_memory
   {
-    my $tree = @_[0];
+    my $tree = $_[0];
     
     shift @$tree;		# Skip attributes.
     
@@ -155,7 +155,7 @@ sub xml_parse_memory
 
 sub xml_parse_swapinfo
   {
-    my $tree = @_[0];
+    my $tree = $_[0];
     my $node;
     my $entry = {};
     
@@ -209,45 +209,45 @@ sub xml_print
     be_xml_enter ();
 
     be_xml_vspace ();
-    be_xml_print "<!-- Configuration starts here -->\n";
+    be_xml_print ("<!-- Configuration starts here -->\n");
     be_xml_vspace ();
 
     foreach $entry (@cf_memory) {
-      be_xml_print "<memsize>$entry->{MemTotal}</memsize>\n";
-      be_xml_print "<swapsize>$entry->{SwapTotal}</swapsize>\n\n";
+      be_xml_print ("<memsize>$entry->{MemTotal}</memsize>\n");
+      be_xml_print ("<swapsize>$entry->{SwapTotal}</swapsize>\n\n");
     }
 
     foreach $entry (@cf_partition) {
-      be_xml_print "<partition>\n";
+      be_xml_print ("<partition>\n");
 			&be_xml_enter;
-      be_xml_print "<device>$entry->{device}</device>\n";
-      be_xml_print "<size>$entry->{size}</size>\n";
+      be_xml_print ("<device>$entry->{device}</device>\n");
+      be_xml_print ("<size>$entry->{size}</size>\n");
 			&be_xml_leave;
-      be_xml_print "</partition>\n\n";
+      be_xml_print ("</partition>\n\n");
     }
 
     be_xml_vspace ();
 
     foreach $entry (@cf_swapinfo) {
-      be_xml_print "<swapdev>\n";
+      be_xml_print ("<swapdev>\n");
 			&be_xml_enter;
-      be_xml_print "<device>$entry->{device}</device>\n";
-      be_xml_print "<enabled state='", 
+      be_xml_print ("<device>$entry->{device}</device>\n");
+      be_xml_print ("<enabled state='", 
                             be_print_boolean_yesno ($entry->{enabled}), 
-                            "'/>\n";
-      be_xml_print "<priority>$entry->{priority}</priority>\n";
-      be_xml_print "<isfile state='",
+                            "'/>\n");
+      be_xml_print ("<priority>$entry->{priority}</priority>\n");
+      be_xml_print ("<isfile state='",
                             be_print_boolean_truefalse ($entry->{is_file}),
-                            "'/>\n";
-      be_xml_print "<size>$entry->{size}</size>\n";
-      be_xml_print "<isnew state='",
+                            "'/>\n");
+      be_xml_print ("<size>$entry->{size}</size>\n");
+      be_xml_print ("<isnew state='",
                             be_print_boolean_truefalse ($entry->{is_new}),
-                            "'/>\n";
+                            "'/>\n");
 			&be_xml_leave;
-      be_xml_print "</swapdev>\n\n";
+      be_xml_print ("</swapdev>\n\n");
     }
 
-    be_xml_print "<!-- End of configuration -->\n";
+    be_xml_print ("<!-- End of configuration -->\n");
     be_xml_vspace ();
 
     be_xml_leave ();

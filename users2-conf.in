@@ -112,11 +112,38 @@ $progress_max = 3;
 
 # --- Internal configuration variables --- #
 
-# Configuration is parsed/read to, and printed/written from, these temporary variables.
+# Configuration is parsed/read to, and printed/written from, these temporary global variables.
 
 %users_hash = ();
 @users = ();
 %login_defs = ();
+
+$parse_tree = 0;
+
+# --- Mapping constants --- #
+
+%login_defs_map = ();
+@login_defs_array = (
+  "QMAIL_DIR" , "qmail_dir",
+	"MAIL_DIR" , "mailbox_dir",
+	"MAIL_FILE" , "mailbox_file",
+  "PASS_MAX_DAYS" , "passwd_max_day_use",
+  "PASS_MIN_DAYS" , "passwd_min_day_use",
+  "PASS_MIN_LEN" , "passwd_min_length",
+  "PASS_WARN_AGE" , "passwd_warning_advance_days",
+  "UID_MIN" , "new_user_min_id",
+  "UID_MAX" , "new_user_max_id",
+  "GID_MIN" , "new_group_min_id",
+  "GID_MAX" , "new_group_max_id",
+  "USERDEL_CMD" , "del_user_additional_command",
+  "CREATE_HOME" , "create_home", 
+	"", "");
+
+for ($i = 0; $login_defs_array[$i] neq ""; $i += 2)
+{
+  $login_defs_map {$login_defs_array[$i]} = $login_defs_array[$i + 1];
+  $login_defs_map {$login_defs_array[$i + 1]} = $login_defs_array[$i];
+}
 
 # --- Confignuration manipulation --- #
 
@@ -133,7 +160,7 @@ sub read_login_defs
 	  next if &be_is_line_comment_start ($_);
 	  chomp;
 		@line = split (/[ \t]+/, $_);
-		$login_defs{$line[0]} = $line[1];
+		$login_defs{$login_defs_map{$line[0]}} = $line[1];
 	}
 	
 	close (FILE);
@@ -169,6 +196,66 @@ sub write_passwd
 }
 
 
+# --- XML parsing --- #
+
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  my $tree;
+	
+  # Scan XML to tree.
+
+  $parse_tree = $tree = &be_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "networking" tag.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "users") { &xml_parse_users(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($tree);
+}
+
+sub xml_parse_users
+{
+  my $tree = $_[0];
+	
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+	{
+	  if (@$tree[0] eq "logindefs") { &xml_parse_login_defs (@$tree[1]); }
+#		elsif (@$tree[0] eq "userdb") { &xml_parse_userdb (@$tree[1]); }
+		elsif ($be_verbose)
+		{
+		  print STDERR "Unexpected tag " . @$tree[0] . " while reading logindefs.\n"
+		}
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+sub xml_parse_login_defs
+{
+  my $tree = $_[0];
+	
+  shift @$tree;  # Skip attributes.
+	
+	while (@$tree)
+	{
+		if (@$tree[0] eq "var") { print;}
+	}
+}	
+
+
 # --- XML printing --- #
 
 sub xml_print
@@ -181,40 +268,40 @@ sub xml_print
   &be_xml_enter ();
 
   &be_xml_vspace ();
-  &be_xml_print "<!-- login.defs configuration starts here -->\n";
+  &be_xml_print ("<!-- login.defs configuration starts here -->\n");
   &be_xml_vspace ();
 
-  &be_xml_print "<login_defs>\n";
+  &be_xml_print ("<logindefs>\n");
 	&be_xml_enter ();
 	foreach $key (keys %login_defs)
 	{
-	  &be_xml_print "<var name=\"" . $key . "\" value=\"" . $login_defs{$key} . "\"/>\n";
+	  &be_xml_print ("<$key>" . $login_defs{$key} . "</$key>\n");
 	}
 	&be_xml_leave ();
-	&be_xml_print "</login_defs>\n";
+	&be_xml_print ("</logindefs>\n");
 	&be_xml_vspace ();
-  &be_xml_print "<!-- Now the users -->\n";
+  &be_xml_print ("<!-- Now the users -->\n");
   &be_xml_vspace ();
 	
-	&be_xml_print "<userdb>\n";
+	&be_xml_print ("<userdb>\n");
 	&be_xml_enter ();
 	foreach $i (@users)
 	{
     &be_xml_vspace ();
-	  &be_xml_print "<user>\n";
+	  &be_xml_print ("<user>\n");
 		&be_xml_enter ();
-		&be_xml_print "<login>" . $i->[0] . "</login>\n";
-		&be_xml_print "<uid>" . $i->[2] . "</uid>\n";
-		&be_xml_print "<gid>" . $i->[3] . "</gid>\n";
-		&be_xml_print "<comment>" . $i->[4] . "</comment>\n";
-		&be_xml_print "<home>" . $i->[5] . "</home>\n";
-		&be_xml_print "<shell>" . $i->[6] . "</shell>\n";
+		&be_xml_print ("<login>" . $i->[0] . "</login>\n");
+		&be_xml_print ("<uid>" . $i->[2] . "</uid>\n");
+		&be_xml_print ("<gid>" . $i->[3] . "</gid>\n");
+		&be_xml_print ("<comment>" . $i->[4] . "</comment>\n");
+		&be_xml_print ("<home>" . $i->[5] . "</home>\n");
+		&be_xml_print ("<shell>" . $i->[6] . "</shell>\n");
 		&be_xml_leave ();
-		&be_xml_print "</user>\n";
+		&be_xml_print ("</user>\n");
 	}
 	&be_xml_leave ();
   &be_xml_vspace ();
-  &be_xml_print "</userdb>\n";
+  &be_xml_print ("</userdb>\n");
 	
   &be_xml_vspace ();
 	&be_xml_leave ();

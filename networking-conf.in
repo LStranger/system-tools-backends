@@ -1244,7 +1244,7 @@ sub xml_print
   be_xml_enter ();
 
   be_xml_vspace ();
-  be_xml_print "<!-- Configuration starts here -->\n";
+  be_xml_print ("<!-- Configuration starts here -->\n");
   be_xml_vspace ();
 
   # Hostname, domain, search domains, nameservers.
@@ -1255,16 +1255,16 @@ sub xml_print
 
   be_xml_vspace ();
 
-  if ($cfl_interface ne "") { be_xml_print "<primaryinterface>$cfl_interface</primaryinterface>\n"; }
-  if ($cfl_hostip ne "") { be_xml_print "<hostip>$cfl_hostip</hostip>\n"; }
-  if ($cfl_netmask ne "") { be_xml_print "<netmask>$cfl_netmask</netmask>\n"; }
-  if ($cfl_gateway ne "") { be_xml_print "<gateway>$cfl_gateway</gateway>\n"; }
+  if ($cfl_interface ne "") { be_xml_print ("<primaryinterface>$cfl_interface</primaryinterface>\n"); }
+  if ($cfl_hostip ne "") { be_xml_print ("<hostip>$cfl_hostip</hostip>\n"); }
+  if ($cfl_netmask ne "") { be_xml_print ("<netmask>$cfl_netmask</netmask>\n"); }
+  if ($cfl_gateway ne "") { be_xml_print ("<gateway>$cfl_gateway</gateway>\n"); }
   be_xml_vspace ();
-  if ($cfl_method ne "") { be_xml_print "<method>$cfl_method</method>\n"; }
+  if ($cfl_method ne "") { be_xml_print ("<method>$cfl_method</method>\n"); }
   be_xml_vspace ();
 
   be_xml_vspace ();
-  be_xml_print "<!-- You shouldn't have to modify anything below this line -->\n";
+  be_xml_print ("<!-- You shouldn't have to modify anything below this line -->\n");
   be_xml_vspace ();
 
   be_xml_indent (); 
@@ -1272,18 +1272,18 @@ sub xml_print
   else             { print "<forward state='no'/>\n"; }
 
   be_xml_vspace ();
-  be_xml_print "<!-- You cannot modify anything below this line -->\n";
+  be_xml_print ("<!-- You cannot modify anything below this line -->\n");
   be_xml_vspace ();
 
   for $elem (@cf_interface_list)
   {
     $elem = be_xml_plain_to_entities(\$elem);
     if ($elem ne $cfl_interface)  # Hack: Don't list primary interface here.
-    { be_xml_print "<knowninterface>$elem</knowninterface>\n"; }
+    { be_xml_print ("<knowninterface>$elem</knowninterface>\n"); }
   }
 
   be_xml_vspace ();
-  be_xml_print "<!-- End of configuration -->\n";
+  be_xml_print ("<!-- End of configuration -->\n");
   be_xml_vspace ();
 
   be_xml_leave ();

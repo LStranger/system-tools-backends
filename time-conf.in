@@ -375,39 +375,39 @@ sub xml_print
   be_xml_enter ();
 
   be_xml_vspace ();
-  be_xml_print "<!-- Configuration starts here -->\n";
+  be_xml_print ("<!-- Configuration starts here -->\n");
   be_xml_vspace ();
 
-  be_xml_print "<year>$cf_year</year>\n";
-  be_xml_print "<month>$cf_month</month>\n";
-  be_xml_print "<monthday>$cf_mday</monthday>\n";
+  be_xml_print ("<year>$cf_year</year>\n");
+  be_xml_print ("<month>$cf_month</month>\n");
+  be_xml_print ("<monthday>$cf_mday</monthday>\n");
   
   be_xml_vspace ();
   
-  be_xml_print "<hour>$cf_hour</hour>\n";
-  be_xml_print "<minute>$cf_minute</minute>\n";
-  be_xml_print "<second>$cf_second</second>\n";
+  be_xml_print ("<hour>$cf_hour</hour>\n");
+  be_xml_print ("<minute>$cf_minute</minute>\n");
+  be_xml_print ("<second>$cf_second</second>\n");
 
   be_xml_vspace ();
-  be_xml_print "<timezone>$cf_timezone</timezone>\n";
+  be_xml_print ("<timezone>$cf_timezone</timezone>\n");
   be_xml_vspace ();
   
   be_xml_vspace ();
-  be_xml_print "<synchronization active='", be_print_boolean_yesno($cf_sync_active), "'>\n";
+  be_xml_print ("<synchronization active='", be_print_boolean_yesno($cf_sync_active), "'>\n");
   
   be_xml_enter ();
   
   for $server (@cf_servers)
   {
-    be_xml_print "<server>$server</server>\n";
+    be_xml_print ("<server>$server</server>\n");
   }
   
   be_xml_leave ();
   
-  be_xml_print "</synchronization>\n";
+  be_xml_print ("</synchronization>\n");
   be_xml_vspace ();
   
-  be_xml_print "<!-- End of configuration -->\n";
+  be_xml_print ("<!-- End of configuration -->\n");
   be_xml_vspace ();
 
   be_xml_leave ();

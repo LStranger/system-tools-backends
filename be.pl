@@ -33,6 +33,9 @@ $be_verbose = 0;
 $be_progress = 0;
 $be_do_immediate = 1;
 
+# for debugging (perl -d) purposes. set to "" for normal operation:
+$be_input_file = "aaa";
+
 
 # --- Progress printing --- #
 
@@ -48,6 +51,7 @@ sub be_print_progress
 # be_xml_leave: Call before leaving a block. Decreases indent level.
 # be_xml_indent: Call before printing a line. Indents to current level. 
 # be_xml_vspace: Ensures there is a vertical space of one and only one line.
+# be_xml_print: Indent, then print all arguments. Just for sugar.
 
 $be_indent_level = 0;
 $be_have_vspace = 0;
@@ -72,7 +76,7 @@ sub be_xml_scan_make_kid_array
     my %hash = {};
     my @sublist;
     
-    @attr = $_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z]+)/g;
+    @attr = $_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z_-]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z_-]+)/g;
     %hash = @attr;
     
     push(@sublist, \%hash);
@@ -81,49 +85,58 @@ sub be_xml_scan_make_kid_array
 
 
 sub be_xml_scan_recurse
+{
+  my @list;
+  if (@_) { @list = $_[0]->[0]; }
+  
+  while (@be_xml_scan_list)
   {
-    my @list;
-    if (@_) { @list = $_[0]->[0]; }
-    
-    while (@be_xml_scan_list)
-      {
 	$el = $be_xml_scan_list[0]; shift @be_xml_scan_list;
 	
-	if ((not $el) || $el =~ /^\<[!?].*\>$/s) { next; } # Empty strings, PI and DTD must go.
-	
-	if ($el =~ /^\<.*\/\>$/s) # Empty.
-	  {
-	    $el =~ /^\<([a-zA-Z]+).*\/\>$/s;
-	    push(@list, $1);
-	    push(@list, be_xml_scan_make_kid_array($el));
+    if ((not $el) || $el =~ /^\<[!?].*\>$/s) { next; } # Empty strings, PI and DTD must go.
+    if ($el =~ /^\<.*\/\>$/s) # Empty.
+    {
+	    $el =~ /^\<([a-zA-Z_-]+).*\/\>$/s;
+	 	  push(@list, $1);
+			push(@list, be_xml_scan_make_kid_array($el));
 	  }
-	elsif ($el =~ /^\<\/.*\>$/s) # End.
+	  elsif ($el =~ /^\<\/.*\>$/s) # End.
 	  {
 	    last;
 	  }
-	elsif ($el =~ /^\<.*\>$/s) # Start.
+	  elsif ($el =~ /^\<.*\>$/s) # Start.
 	  {
-	    $el =~ /^\<([a-zA-Z]+).*\>$/s;
-	    push(@list, $1);
-	    $sublist = be_xml_scan_make_kid_array($el);
-	    push(@list, be_xml_scan_recurse($sublist));
-	    next;
+	    $el =~ /^\<([a-zA-Z_-]+).*\>$/s;
+		  push(@list, $1);
+		  $sublist = be_xml_scan_make_kid_array($el);
+		  push(@list, be_xml_scan_recurse($sublist));
+		  next;
 	  }
-	elsif ($el ne "")	# PCDATA.
+	  elsif ($el ne "")	# PCDATA.
 	  {
 	    push(@list, 0);
-	    push(@list, "$el");
+		  push(@list, "$el");
 	  }
-      }
-    
-    return(\@list);
   }
-
+	 
+  return(\@list);
+}
 
 sub be_xml_scan
   {
     my $doc; my @tree; my $i;
-    $doc .= $i while ($i = <STDIN>);
+		
+		if ($be_input_file eq "") 
+		{
+      $doc .= $i while ($i = <STDIN>);
+		}
+		else
+		{
+		  open INPUT_FILE, $be_input_file;
+      $doc .= $i while ($i = <INPUT_FILE>);
+			close INPUT_FILE;
+    }
+		
     print STDERR $doc if $be_verbose;
     @be_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
     
@@ -146,7 +159,7 @@ sub be_xml_entities_to_plain
     
     $in = $$in;
     
-    my @elist = ($in =~ /([^&]*)(\&[a-zA-Z]+\;)?/mg); # text, entity, text, entity, ...
+    my @elist = ($in =~ /([^&]*)(\&[a-zA-Z_-]+\;)?/mg); # text, entity, text, entity, ...
     
     while (@elist)
       {
