@@ -265,23 +265,6 @@ sub xst_set_location
   $xst_location = $location;
 }
 
-sub xst_archive_data
-{
-  my ($xml_data) = @_;
-  my ($location_str) = "";
-  my ($backend_id) = $0;
-  local (*OUTPUT);
-
-  return if $xst_no_archive;
-
-  $location_str = "--location=\"$xst_location\"" if $xst_location;
-  $backend_id = $1 if $backend_id =~ /\/([^\/]+)\Z/;
-
-  open OUTPUT, "|___bindir___/ximian-archiver --global --store --backend=\"$backend_id\" " . $location_str;
-  print OUTPUT $xml_data;
-  close OUTPUT;
-}
-
 sub xst_merge_std_directives
 {
   my ($tool) = @_;

@@ -1,3 +1,9 @@
+2001-06-20  Bradford Hovinen  <hovinen@ximian.com>
+
+	* general.pl.in (xst_set_location): remove xst_archive_data
+
+	* xml.pl.in (xst_xml_scan): Don't archive XML data
+
 2001-06-20  Tambet Ingo  <tambet@ximian.com>
 
 	* general.pl.in (xst_init): Use "SET_ME_UP_HARDER" env variable to
