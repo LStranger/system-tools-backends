@@ -246,8 +246,8 @@ sub xst_boot_conf_replace_image
   
   $found = 0;
 
-  $name = 'image' if $image{'image'};
-  $name = 'other' if $image{'other'};
+  $name = 'image' if exists $image{'image'};
+  $name = 'other' if exists $image{'other'};
 
   foreach $i (@$buff)
   {
@@ -258,10 +258,10 @@ sub xst_boot_conf_replace_image
       next;
     }
     
-    if ($i =~ /(image|other)/ && $found == 1) # Next image, let's add new stuff.
+    if ($i =~ /(image|other)/ && $found == 1) # Next image, let's add pending stuff.
     {
       delete $image{$name};
-      
+      $found++;
       foreach $key (keys %image)
       {
         $i = "\t$key=$image{$key}\n" . $i if $image{$key};
@@ -286,14 +286,22 @@ sub xst_boot_conf_replace_image
     {
       $i = $pre_space . $key . $op . $image{$key} . $post_comment . "\n";
       delete $image{$key};
+      next;
     }
+
+    elsif ($i ne "") # Delete unknown "junk"... yes, we are cruel!
+    {
+      $i = "";
+      next;
+    }
+    
     else
     {
       $i = $pre_space . $i . $post_comment . "\n";
     }
   }
 
-  if (!$found)
+  if (!$found) # We didn't find image, lets add it to the end of file.
   {
     push @$buff, "\n$name=$image{$name}\n";
     delete $image{$name};
@@ -332,7 +340,7 @@ sub xst_boot_replace_from_table
     }
     else
     {
-      &xst_boot_del_global ("/etc/lilo.conf", $key);
+      &xst_boot_del_global ("/home/tambeti/lilo.conf", $key);
     }
   }
 
@@ -349,14 +357,14 @@ sub xst_boot_conf_set
    "redhat-6.0" => "redhat-6.2",
    "redhat-6.1" => "redhat-6.2",
    "redhat-6.2" => "redhat-6.2",
-   "redhat-7.0" => "redhat-7.0"
+   "redhat-7.0" => "redhat-6.2"
   );
   
   my %dist_tables =
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/etc/lilo.conf"},
+		 LILO_CONF => "/home/tambeti/lilo.conf"},
 	    table => [
                 [ prompt,  \&xst_boot_set_global_kw, LILO_CONF, prompt ],
                 [ root,    \&xst_boot_set_global, LILO_CONF, root ],
@@ -391,7 +399,7 @@ sub xst_boot_conf_get
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/etc/lilo.conf" },
+		 LILO_CONF => "/home/tambeti/lilo.conf" },
 	    table => [
                 [ 'prompt',  \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
                 [ 'lba32',   \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],

@@ -218,7 +218,6 @@ sub xml_print
 }
   
 
-
 # Top-level actions.
 
 sub get
@@ -226,7 +225,7 @@ sub get
   my $hash;
 
   &xst_begin ();
-  
+
   # Get information from .conf file
   $hash = &xst_boot_conf_get ();
 
