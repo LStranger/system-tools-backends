@@ -1,5 +1,7 @@
 2001-07-02  Tambet Ingo  <tambet@ximian.com>
 
+	* display-conf.in (xml_parse): Removed extra 'shift'.
+
 	* x.pl.in (parse_serverlayout_screen): Implement.
 	(x_xml_print_serverlayout_screen): Implement.
 
