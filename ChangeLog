@@ -1,3 +1,7 @@
+2004-06-17  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* partition.pl.in: really return the partition table
+
 2004-06-09  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* users-conf.in: added SuSE 9.0 support with help from James Ogley

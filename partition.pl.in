@@ -188,8 +188,8 @@ sub gst_partition_scan_info
 {
   my ($plat) = $$tool{"system"};
 
-  &gst_partition_scan_linux_info   if ($plat eq "Linux");
-  &gst_partition_scan_freebsd_info if ($plat eq "FreeBSD");
+  return &gst_partition_scan_linux_info   if ($plat eq "Linux");
+  return &gst_partition_scan_freebsd_info if ($plat eq "FreeBSD");
 }
 
 %GST_FILESYS_TYPES =
