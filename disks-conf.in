@@ -220,10 +220,8 @@ sub update_partition
 
 sub get_partition
 {
-  my ($disk, $device);
+  my ($disk, $device) = @_;
   my ($i, $j);
-
-  ($disk, $device) = @_;
 
   for ($i = 0; $cf_disks[$i]; $i++)
   {

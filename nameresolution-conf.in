@@ -164,6 +164,7 @@ $cf_hostmatch = 0;  # 0 = all, 1 = first
 sub read_resolv_conf
 {
   my $FILE;
+  my @line = ();
 
   # Find the file.
 
@@ -309,6 +310,7 @@ sub read_hosts
 {
   local *FILE;
   my @alias = ();
+  my @line = ();
 
   # Find the file.
 
@@ -471,7 +473,7 @@ sub write_sysconfig_network
   if (not $wrote_domain)   { print OUTFILE "DOMAINNAME=$cf_domain\n"; }
 
   close(OUTFILE);
-  if (INFILE) { close(INFILE); }
+  if (*INFILE) { close(INFILE); }
 }
 
 
@@ -587,7 +589,7 @@ sub write_rc_config
   if (not $wrote_nameservers)   { print OUTFILE "NAMESERVER=\"$cf_nameservers\"\n"; }
 
   close(OUTFILE);
-  if (INFILE) { close(INFILE); }
+  if (*INFILE) { close(INFILE); }
 }
 
 
@@ -722,7 +724,7 @@ sub write_smb_conf
   if ((not $wrote_winsserver) && $cf_winsserver ne "")  { print OUTFILE "wins server = $cf_winsserver\n"; }
 
   close(OUTFILE);
-  if (INFILE) { close(INFILE); }
+  if (*INFILE) { close(INFILE); }
 }
 
 

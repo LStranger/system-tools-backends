@@ -427,7 +427,7 @@ sub read_proc_ide
 
     opendir CONTROLLER_DIR, "/proc/ide";
 
-    if (CONTROLLER_DIR)
+    if (*CONTROLLER_DIR)
       {
 	foreach $i (readdir (CONTROLLER_DIR))
 	  {
@@ -436,7 +436,7 @@ sub read_proc_ide
 	  }
       }
 
-    closedir CONTROLLER_DIR;
+    closedir (CONTROLLER_DIR);
   }
 
 # Read SCSI information
@@ -637,7 +637,7 @@ sub combine
 	       'type' => "Keyboard",
 	       'id' => "XFree86:$device->{name}",
 	       'driver' => $device->{driver},
-	       'name' => "$words[$index_kdb] keyboard"
+	       'name' => "$words[$index_kbd] keyboard"
 	      }
 	  }
 	elsif ($device->{driver} eq 'mouse')

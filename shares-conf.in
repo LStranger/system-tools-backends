@@ -158,37 +158,37 @@ sub xml_print
 
   while (@shares)
   {
-    if (@shares[0] ne "")
+    if ($shares[0] ne "")
     {
       be_xml_vspace ();
-      be_xml_indent (); print "<import type='@shares[5]'>\n";
+      be_xml_indent (); print "<import type='$shares[5]'>\n";
       be_xml_enter ();
 
-      @shares[0] = be_xml_plain_to_entities(\@shares[0]);
-      @shares[1] = be_xml_plain_to_entities(\@shares[1]);
-      @shares[2] = be_xml_plain_to_entities(\@shares[2]);
-      @shares[6] = be_xml_plain_to_entities(\@shares[6]);
-      @shares[7] = be_xml_plain_to_entities(\@shares[7]);
+      $shares[0] = be_xml_plain_to_entities(\$shares[0]);
+      $shares[1] = be_xml_plain_to_entities(\$shares[1]);
+      $shares[2] = be_xml_plain_to_entities(\$shares[2]);
+      $shares[6] = be_xml_plain_to_entities(\$shares[6]);
+      $shares[7] = be_xml_plain_to_entities(\$shares[7]);
 
-      be_xml_indent (); print "<host>@shares[0]</host>\n";
-      be_xml_indent (); print "<path>@shares[1]</path>\n";
-      if (@shares[6] ne "") { be_xml_indent (); print "<user>@shares[6]</user>\n"; }
-      if (@shares[7] ne "") { be_xml_indent (); print "<password>@shares[7]</password>\n"; }
-      if (@shares[2] ne "") { be_xml_indent (); print "<comment>@shares[2]</comment>\n"; }
-      if (@shares[8] ne "") { be_xml_indent (); print "<point>@shares[8]</point>\n"; }
+      be_xml_indent (); print "<host>$shares[0]</host>\n";
+      be_xml_indent (); print "<path>$shares[1]</path>\n";
+      if ($shares[6] ne "") { be_xml_indent (); print "<user>$shares[6]</user>\n"; }
+      if ($shares[7] ne "") { be_xml_indent (); print "<password>$shares[7]</password>\n"; }
+      if ($shares[2] ne "") { be_xml_indent (); print "<comment>$shares[2]</comment>\n"; }
+      if ($shares[8] ne "") { be_xml_indent (); print "<point>$shares[8]</point>\n"; }
 
       be_xml_indent ();
 
       print "<mounted state='";
-      print be_print_boolean_truefalse(@shares[3]);
+      print be_print_boolean_truefalse($shares[3]);
       print "'/>";
 
       print "<listed state='";
-      print be_print_boolean_truefalse(@shares[10]);
+      print be_print_boolean_truefalse($shares[10]);
       print "'/>";
 
       print "<detected state='";
-      print be_print_boolean_truefalse(@shares[4]);
+      print be_print_boolean_truefalse($shares[4]);
       print "'/>\n";
 
       be_xml_leave ();
@@ -208,32 +208,32 @@ sub xml_print
   
   while (@shares)
   {
-    if (@shares[0] ne "")
+    if ($shares[0] ne "")
     {
       be_xml_vspace ();
-      be_xml_indent (); print "<export type='@shares[0]'>\n";
+      be_xml_indent (); print "<export type='$shares[0]'>\n";
       be_xml_enter ();
 
-      be_xml_indent (); print "<path>@shares[1]</path>\n";
+      be_xml_indent (); print "<path>$shares[1]</path>\n";
 
-      if (@shares[0] eq "smb")
+      if ($shares[0] eq "smb")
       {
-        be_xml_indent (); print "<name>@shares[2]</name>\n";
-        if (@shares[3] ne "") { be_xml_indent (); print "<comment>@shares[3]</comment>\n"; }
+        be_xml_indent (); print "<name>$shares[2]</name>\n";
+        if ($shares[3] ne "") { be_xml_indent (); print "<comment>$shares[3]</comment>\n"; }
 
         be_xml_indent ();
-        print "<enabled state='", be_print_boolean_truefalse(@shares[4]), "'/>";
-        print "<browse state='", be_print_boolean_truefalse(@shares[5]), "'/>";
-        print "<public state='", be_print_boolean_truefalse(@shares[6]), "'/>\n";
+        print "<enabled state='", be_print_boolean_truefalse($shares[4]), "'/>";
+        print "<browse state='", be_print_boolean_truefalse($shares[5]), "'/>";
+        print "<public state='", be_print_boolean_truefalse($shares[6]), "'/>\n";
         be_xml_indent ();
-        print "<write state='", be_print_boolean_truefalse(@shares[7]), "'/>\n";
+        print "<write state='", be_print_boolean_truefalse($shares[7]), "'/>\n";
 
         shift @shares; shift @shares; shift @shares; shift @shares;
         shift @shares; shift @shares; shift @shares; shift @shares;
       }
-      elsif (@shares[0] eq "nfs")
+      elsif ($shares[0] eq "nfs")
       {
-        my $clients = @shares[2];
+        my $clients = $shares[2];
         while (@$clients)
         {
           if (@$clients[0] ne "")
@@ -273,13 +273,13 @@ sub ip_calc_network
   my @ip_reg1;
   my @ip_reg2;
 
-  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
-  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg1 = ($_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = ($_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
   
-  @ip_reg1[0] = (@ip_reg1[0] * 1) & (@ip_reg2[0] * 1);
-  @ip_reg1[1] = (@ip_reg1[1] * 1) & (@ip_reg2[1] * 1);
-  @ip_reg1[2] = (@ip_reg1[2] * 1) & (@ip_reg2[2] * 1);
-  @ip_reg1[3] = (@ip_reg1[3] * 1) & (@ip_reg2[3] * 1);
+  $ip_reg1[0] = ($ip_reg1[0] * 1) & ($ip_reg2[0] * 1);
+  $ip_reg1[1] = ($ip_reg1[1] * 1) & ($ip_reg2[1] * 1);
+  $ip_reg1[2] = ($ip_reg1[2] * 1) & ($ip_reg2[2] * 1);
+  $ip_reg1[3] = ($ip_reg1[3] * 1) & ($ip_reg2[3] * 1);
   
   return(join('.', @ip_reg1));
 }
@@ -290,15 +290,15 @@ sub ip_calc_broadcast
   my @ip_reg1;
   my @ip_reg2;
 
-  @ip_reg1 = (@_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
-  @ip_reg2 = (@_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg1 = ($_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
+  @ip_reg2 = ($_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
   
   @ip_reg1 = ($cf_hostip =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
 
-  @ip_reg1[0] = (@ip_reg1[0] * 1) | (~(@ip_reg2[0] * 1) & 255);
-  @ip_reg1[1] = (@ip_reg1[1] * 1) | (~(@ip_reg2[1] * 1) & 255);
-  @ip_reg1[2] = (@ip_reg1[2] * 1) | (~(@ip_reg2[2] * 1) & 255);
-  @ip_reg1[3] = (@ip_reg1[3] * 1) | (~(@ip_reg2[3] * 1) & 255);
+  $ip_reg1[0] = ($ip_reg1[0] * 1) | (~($ip_reg2[0] * 1) & 255);
+  $ip_reg1[1] = ($ip_reg1[1] * 1) | (~($ip_reg2[1] * 1) & 255);
+  $ip_reg1[2] = ($ip_reg1[2] * 1) | (~($ip_reg2[2] * 1) & 255);
+  $ip_reg1[3] = ($ip_reg1[3] * 1) | (~($ip_reg2[3] * 1) & 255);
 
   return(join('.', @ip_reg1));
 }
@@ -338,9 +338,9 @@ sub get_interfaces
 
 sub get_host_mounts
 {
-  my $ping_tool, $showmount_tool, $nmblookup_tool, $smbclient_tool;
+  my ($ping_tool, $showmount_tool, $nmblookup_tool, $smbclient_tool);
   my @hosts;
-  my $i, $j;
+  my ($i, $j);
 
   $ping_tool = be_locate_tool("ping");
   $showmount_tool = be_locate_tool("showmount");
@@ -400,7 +400,7 @@ sub get_host_mounts
 
   if ($cf_workgroup ne "")
   {
-    my $smb_master_ip, $smb_master_name;
+    my ($smb_master_ip, $smb_master_name);
     my @smb_hosts;
     
     if ($be_verbose) { print STDERR "Doing SMB detection in workgroup $cf_workgroup.\n"; }
@@ -494,7 +494,7 @@ sub get_host_mounts
     $i = 0; $j = 0;
     while (@smb_hosts)
     {
-      open(FD, "$smbclient_tool -N -U % -L @smb_hosts[0] |");
+      open(FD, "$smbclient_tool -N -U % -L $smb_hosts[0] |");
       while (<FD>) { if (/^[ \t]+Sharename[ \t]+Type[ \t]+Comment/) { last; } }
       while (<FD>)
       {
@@ -503,9 +503,9 @@ sub get_host_mounts
         {
           ($path) = ($_ =~ /^[ \t]+([^ \t-]+)/);  # Path
           $path = "/\L$path";
-          @smb_hosts[0] = "\L@smb_hosts[0]";
+          $smb_hosts[0] = "\L$smb_hosts[0]";
 
-          push(@cf_shares_list, @smb_hosts[0]);                # Host
+          push(@cf_shares_list, $smb_hosts[0]);                # Host
           push(@cf_shares_list, $path);                        # Path
           push(@cf_shares_list, ($_ =~ /^[ \t]+[^ \t-]+[ \t]+Disk[ \t]+(.*)$/));  # Comment
           push(@cf_shares_list, 0);                            # Mounted
@@ -605,17 +605,17 @@ sub set_immediate
 
     while (@shares)
     {
-      if (@shares[0] ne "" && @shares[8] ne "")
+      if ($shares[0] ne "" && $shares[8] ne "")
       {
-        if (@shares[3])
+        if ($shares[3])
         {
-          if ($be_verbose) { print STDERR "Mounting @shares[8].\n"; }
-          system "$mount_tool @shares[8] >/dev/null 2>/dev/null";
+          if ($be_verbose) { print STDERR "Mounting $shares[8].\n"; }
+          system "$mount_tool $shares[8] >/dev/null 2>/dev/null";
         }
         else
         {
-          if ($be_verbose) { print STDERR "Unmounting @shares[8].\n"; }
-          system "$umount_tool @shares[8] >/dev/null 2>/dev/null";
+          if ($be_verbose) { print STDERR "Unmounting $shares[8].\n"; }
+          system "$umount_tool $shares[8] >/dev/null 2>/dev/null";
         }
       }
 

@@ -122,6 +122,178 @@ $cf_sync_active = 0;
 @cf_servers = ();
 
 
+# --- Configuration file manipulation --- #
+
+# xntpd style /etc/ntp.conf
+#
+# <filtered lines>
+# server <server>
+# <filtered lines>
+#
+# Exists: Red Hat 6.x
+#
+# Absent:
+
+sub read_ntp_conf
+{
+  local *FILE;
+  
+  # Find the file.
+  
+  *FILE = be_open_read_from_names(@ntp_conf_names);
+  if (not *FILE) { return; }
+  
+  # Parse the file.
+  
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace.
+    
+    if ($line[0] eq "server" && $line[1] ne "127.127.1.0")  # Disregard loopback.
+    { push_unique(\@cf_servers, $line[1]); }
+  }
+}
+
+
+sub write_ntp_conf
+{
+  my ($INFILE, $OUTFILE);
+  my $wrote_servers = 0;
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@ntp_conf_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace.
+
+    if ($line[0] eq "server")
+    {
+      if ($line[1] eq "127.127.1.0") { print OUTFILE; }
+      elsif (!$wrote_servers)
+      {
+        for $elem (@cf_servers) { print OUTFILE "server $elem\n"; }
+        $wrote_servers = 1;
+      }
+    }
+    else { print OUTFILE; }
+  }
+  
+  if (!$wrote_servers)
+  {
+    for $elem (@cf_servers) { print OUTFILE "server $elem\n"; }
+    $wrote_servers = 1;
+  }
+  
+  close(OUTFILE);
+  if (*INFILE) { close(INFILE); }
+}
+
+
+# Red Hat style /etc/ntp/step-tickers
+#
+# <server>
+# <server>
+# ...
+#
+# This file is used as source for servers from which to sync the system
+# clock before xntpd is started. In Red Hat, this is done because xntpd
+# refuses to sync the clock if it is too much off.
+#
+# Exists: Red Hat 6.x
+#
+# Absent:
+
+sub write_ntp_step_tickers
+{
+  my $FILE;
+
+  # Find the file (it might very well not exist beforehand).
+
+  $FILE = open_write_from_names(@ntp_step_tickers_names);
+  if (not FILE) { return; }
+
+  # Write the file.
+
+  for $elem (@cf_servers) { print FILE "$elem\n"; }
+
+  close(FILE);
+}
+
+
+# Red Hat (?) style /etc/localtime
+#
+# Copied from /usr/share/zoneinfo/Etc/<match>, if found.
+# TODO: Otherwise, we generate it ourselves.
+#
+# Exists: Red Hat 6.x
+#
+# Absent:
+
+sub write_localtime
+{
+  my ($tz, $name);
+  my $zonebase = "/usr/share/zoneinfo/Etc/";
+
+  # Dirty tricks.
+
+  $tz = $cf_timezone;
+  $tz =~ tr/+-0//d;
+  $tz = $tz * 1;
+  
+  if (!$tz) { $tz = "${zonebase}GMT"; }
+	elsif ($tz == 33) { $tz = "${zonebase}Iran"; }
+	elsif ($tz == 43) { $tz = "${zonebase}Asia/Kabul"; }
+	elsif ($tz == 53) { $tz = "${zonebase}Asia/Calcutta"; }
+	elsif ($tz == 63) { $tz = "${zonebase}Asia/Bangkok"; }
+	elsif ($tz == 93) { $tz = "${zonebase}Australia/Darwin"; }
+	elsif ($tz == 345) { $tz = "${zonebase}America/Guyana"; }
+  elsif ($cf_timezone =~ /\+.*/) { $tz = "${zonebase}GMT+$tz"; }
+  else { $tz = "${zonebase}GMT-$tz"; }
+
+  if (stat($tz) ne "")
+  {
+    # Badly needs fixing & porting.
+
+    $name = "/etc/localtime";
+
+    if ($be_verbose)
+    {
+      (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+      print STDERR "Writing timezone configuration to \"$fullname\".\n";
+    }
+
+    ($name = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
+    create_path($name);
+
+    # Make a backup if the file already exists - if the user specified a prefix,
+    # it might not.
+
+    if (stat($name))
+    {
+      # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
+      # to specify a $name list somehow, in the future.
+
+      system("cp $name $name.confsave >/dev/null 2>/dev/null");
+    }
+
+    # Replace the timezone info file.
+
+    unlink $name;
+    system("cp $tz $name >/dev/null 2>/dev/null");
+  }
+  
+  # TODO: We might not find a corresponding GMT[+|-] zone. If we don't,
+  # we'll have to make our own.
+}
+
+
 # --- XML printing --- #
 
 
@@ -223,9 +395,9 @@ sub get
   if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
   if ($be_verbose) { print STDERR "Getting time, date and timezone.\n"; }
 
-  read_ntp_conf; be_print_progress ();
-  get_time; be_print_progress ();
-  check_servers; be_print_progress ();
+  read_ntp_conf (); be_print_progress ();
+  get_time (); be_print_progress ();
+  check_servers (); be_print_progress ();
 
   if ($be_verbose) { print STDERR "Printing XML.\n"; }
   if ($be_progress) { print "\n"; }
@@ -278,9 +450,9 @@ sub set
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
   be_xml_parse ();
 
-  write_ntp_conf;
-  write_ntp_step_tickers;
-  write_localtime;
+  write_ntp_conf ();
+  write_ntp_step_tickers ();
+  write_localtime ();
 
   if ($be_do_immediate)
   {
