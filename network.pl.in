@@ -42,29 +42,6 @@ require "$SCRIPTSDIR/service.pl$DOTIN";
 require "$SCRIPTSDIR/util.pl$DOTIN";
 require "$SCRIPTSDIR/xml.pl$DOTIN";
 
-
-# Shared XML printing function
-sub network_xml_print_statichost
-{
-  my ($h) = $_[0];
-  my ($statichost, $i, $j, $val);
-
-  &gst_xml_print_vspace ();
-  foreach $i (keys %{$$h{"statichost"}})
-  {
-    $statichost = $ {$$h{"statichost"}}{$i};
-    &gst_xml_container_enter ("statichost");
-    $val = &gst_xml_quote ($i);
-    &gst_xml_print_pcdata ("ip", $val);
-    foreach $j (@$statichost)
-    {
-      $val = &gst_xml_quote ($j);
-      &gst_xml_print_pcdata ("alias", $val);
-    }
-    &gst_xml_container_leave ("statichost");
-  }
-}
-
 sub gst_network_get_linux_wireless_ifaces
 {
   my ($fd, $line);

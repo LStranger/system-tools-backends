@@ -1,27 +1,23 @@
+2004-12-06  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* Release 1.0.2
+
 2004-11-12  Christophe Merlet  <redfox@redfoxcenter.org>
 
 	* fr.po: Added French translation from
 	Luc Rebert <luc.rebert@altern.org>.
 
-2004-11-03  Carlos Garnacho Parro  <carlosg@gnome.org>
-
-	* Release 1.1
-
 2004-10-25  Mohammad DAMT  <mdamt@bisnisweb.com>
 
 	* id.po: Added Indonesian translation
 
-2004-10-17  Marcel Telka  <marcel@telka.sk>
-
-	* sk.po: Added Slovak translation.
-
-2004-10-14  Christian Rose  <menthos@menthos.com>
- 
-        * sv.po: Updated Swedish translation.
- 
-2004-09-29  Abel Cheung  <maddog@linuxhall.org>
+2004-10-16  Abel Cheung  <maddog@linuxhall.org>
 
 	* zh_TW.po: Updated traditional Chinese translation from GNOME HK Team
+
+2004-10-14  Christian Rose  <menthos@menthos.com>
+
+	* sv.po: Updated Swedish translation.
 
 2004-09-28  Alexander Shopov  <ash@contact.bg>
 
@@ -32,10 +28,6 @@
 
 	* it.po: Added Italian translation by
 	Francesco Marletta <francesco.marletta@tiscali.it>.
-
-2004-09-15  Arafat Medini  <lumina@silverpen.de>
-
-	* ar.po: Updated Arabic translation.
 
 2004-09-13  Carlos Garnacho Parro  <carlosg@gnome.org>
 

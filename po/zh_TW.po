@@ -6,10 +6,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: setup-tools-backends 0.92.0\n"
+"Project-Id-Version: setup-tools-backends 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-09-12 20:23+0200\n"
-"PO-Revision-Date: 2004-09-29 14:29+0800\n"
+"POT-Creation-Date: 2004-10-16 12:38+0800\n"
+"PO-Revision-Date: 2004-10-16 12:39+0800\n"
 "Last-Translator: Chao-Hsiung Liao <pesder.liao@msa.hinet.net>\n"
 "Language-Team: Chinese (traditional) <zh-l10n@linux.org.tw>\n"
 "MIME-Version: 1.0\n"
@@ -28,8 +28,8 @@ msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
 msgstr ""
-"通知使用者層程式有關 ACPI 的事件﹕會根據類似電源按鈕等不同的 ACPI 事件執行"
-"不同的指令。"
+"通知使用者層程式有關 ACPI 的事件﹕會根據類似電源按鈕等不同的 ACPI 事件執行不"
+"同的指令。"
 
 # Using acronym is probably more readily recognized here -- Abel
 #: service-list.pl.in:37
@@ -41,7 +41,8 @@ msgid "web server"
 msgstr "網頁伺服器"
 
 #: service-list.pl.in:38 service-list.pl.in:70
-msgid "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+msgid ""
+"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr "Apache 是一個網頁伺服器。它用來提供 HTML 檔案與 CGI。"
 
 #: service-list.pl.in:39
@@ -352,8 +353,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
-"執行 joystick-device-check。joystick-device-check 是一個用來確認 /dev/js* "
-"裝置檔案與使用中的核心版本是否正確的程式。"
+"執行 joystick-device-check。joystick-device-check 是一個用來確認 /dev/js* 裝"
+"置檔案與使用中的核心版本是否正確的程式。"
 
 #: service-list.pl.in:77
 msgid ""
@@ -369,11 +370,13 @@ msgid "Kernel Log Daemon"
 msgstr "核心紀錄伺服程式"
 
 #: service-list.pl.in:78
-msgid "klogd is a system daemon which intercepts and logs Linux kernel messages."
+msgid ""
+"klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr "klogd 是一個系統伺服程式，可以攔截並記錄 Linux 核心的訊息。"
 
 #: service-list.pl.in:79
-msgid "This runs the hardware probe, and optionally configures changed hardware."
+msgid ""
+"This runs the hardware probe, and optionally configures changed hardware."
 msgstr "它會偵測硬體，並且可以選擇設定變更過的硬體。"
 
 #: service-list.pl.in:80 service-list.pl.in:81
@@ -436,7 +439,8 @@ msgstr "dns 伺服器"
 msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
-msgstr "named (BIND) 是一種網域名稱伺服器 (DNS)，用來把主機名稱解析為 IP 位址。"
+msgstr ""
+"named (BIND) 是一種網域名稱伺服器 (DNS)，用來把主機名稱解析為 IP 位址。"
 
 #: service-list.pl.in:90
 msgid ""
@@ -581,8 +585,8 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
-"這是一個定期連線到 Red Hat Network 伺服器的伺服程式。它能檢查更新、通"
-"知，並且根據此伺服器簽訂的服務等級進行系統監控工作。"
+"這是一個定期連線到 Red Hat Network 伺服器的伺服程式。它能檢查更新、通知，並且"
+"根據此伺服器簽訂的服務等級進行系統監控工作。"
 
 # direct translation is shit here, I will modify it -- Abel
 #: service-list.pl.in:111 service-list.pl.in:112
@@ -590,8 +594,8 @@ msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
-"rsync 伺服器是 FTP 伺服器以外一個較佳的選擇，因為它有 crc 總和檢查碼等等的"
-"功能。您必須啟用 xinetd 以使用這個服務。"
+"rsync 伺服器是 FTP 伺服器以外一個較佳的選擇，因為它有 crc 總和檢查碼等等的功"
+"能。您必須啟用 xinetd 以使用這個服務。"
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
@@ -614,26 +618,28 @@ msgstr ""
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
-msgstr ""
-"saslauthd 是一個用來協助 cyrus-sasl 程式庫進行純文字驗證的伺服程式。"
+msgstr "saslauthd 是一個用來協助 cyrus-sasl 程式庫進行純文字驗證的伺服程式。"
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
-msgstr "Sendmail 是郵件傳輸程式，它是個可以把郵件從一台機器移至另一台機器的程式。"
+msgstr ""
+"Sendmail 是郵件傳輸程式，它是個可以把郵件從一台機器移至另一台機器的程式。"
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
-msgstr "一個內部 xinetd 服務，列出作用中的伺服器。您必須啟用 xinetd 以使用這個服務。"
+msgstr ""
+"一個內部 xinetd 服務，列出作用中的伺服器。您必須啟用 xinetd 以使用這個服務。"
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
-msgstr "一個內部 xinetd 服務，列出作用中的服務。您必須啟用 xinetd 以使用這個服務。"
+msgstr ""
+"一個內部 xinetd 服務，列出作用中的服務。您必須啟用 xinetd 以使用這個服務。"
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
@@ -684,7 +690,6 @@ msgid "Linux system logging utilities"
 msgstr "Linux 系統紀錄公用程式"
 
 #: service-list.pl.in:125
-
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
@@ -829,4 +834,3 @@ msgstr "預設的 runlevel"
 #: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "沒有網路功能的 runlevel"
-

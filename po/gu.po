@@ -1,3 +1,4 @@
+# translation of setup-tools-backends.gnome-2-8.gu.po to Gujarati
 # translation of setup-tools-backends.HEAD.gu.po to Gujarati
 # translation of setup-tools-backends.HEAD.po to Gujarati
 # This file is distributed under the same license as the PACKAGE package.
@@ -6,10 +7,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: setup-tools-backends.HEAD.gu\n"
+"Project-Id-Version: setup-tools-backends.gnome-2-8.gu\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-18 12:20+0200\n"
-"PO-Revision-Date: 2004-08-20 14:55+0530\n"
+"POT-Creation-Date: 2004-10-26 04:47+0200\n"
+"PO-Revision-Date: 2004-10-26 18:43+0530\n"
 "Last-Translator: Ankit Patel <ankit@redhat.com>\n"
 "Language-Team: Gujarati\n"
 "MIME-Version: 1.0\n"
@@ -17,6 +18,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.3.1\n"
 "Plural-Forms: Plural-Forms: nplurals=2; plural=(n!=1);\n\n"
+"\n"
 
 #. please, keep this list sorted
 #. service => [long_name, description]
@@ -78,7 +80,7 @@ msgstr ""
 
 #: service-list.pl.in:42
 msgid "Audio mixer"
-msgstr "આેડિયો મિક્સર"
+msgstr "ઓડિયો મિક્સર"
 
 #: service-list.pl.in:42
 msgid "This program adjusts the settings of an audio mixing device"
@@ -121,7 +123,7 @@ msgid ""
 "service."
 msgstr ""
 "xinetd આંતરિક સેવા કે જે અક્ષરો બનાવે છે. xinetd આંતરિક સેવા કે જે સતત અક્ષરો બનાવે છે જ્યાં "
-"સુધી જોડાણ તુટી ના જાય. આ  udp આવૃત્તિ છે. તમારે xinetd ને આ સેવા વાપરવા માટે સક્રિય "
+"સુધી જોડાણ તુટી ના જાય. આ udp આવૃત્તિ છે. તમારે xinetd ને આ સેવા વાપરવા માટે સક્રિય "
 "કરવું જ પડશે."
 
 #: service-list.pl.in:47
@@ -445,7 +447,7 @@ msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
-"(BIND) નામ અપાયેલ Domain Name Server (DNS) કે જે યજમાનના નામ પરથીIP સરનામાઓ "
+"(BIND) નામ અપાયેલ Domain Name Server (DNS) કે જે યજમાનના નામ પરથી IP સરનામાઓ "
 "ઉકેલવા માટે વપરાય છે."
 
 #: service-list.pl.in:90
@@ -468,7 +470,7 @@ msgid ""
 "service provides NFS server functionality, which is configured via the /etc/"
 "exports file."
 msgstr ""
-"NFS એ TCP/IP નેટવર્ક મારફત વહેંચણી કરવાનો પ્રોટોકોલ છે. આ સેવાNFS સર્વરના કાર્યો પૂરા "
+"NFS એ TCP/IP નેટવર્ક મારફત વહેંચણી કરવાનો પ્રોટોકોલ છે. આ સેવા NFS સર્વરના કાર્યો પૂરા "
 "પાડે છે, કે જે /etc/exports ફાઈલ દ્વારા રુપરેખાંકિત થાય છે."
 
 #: service-list.pl.in:93
@@ -485,7 +487,7 @@ msgstr "નામ સેવા કેશ ડીમન"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
-msgstr "ડીમન કે જે માેટે ભાગની નામની સેવાની મંજૂરીઓના માટે કેશ પૂરુ પાડે છે."
+msgstr "ડીમન કે જે મોટે ભાગની નામની સેવાની મંજૂરીઓના માટે કેશ પૂરુ પાડે છે."
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
@@ -546,7 +548,7 @@ msgid ""
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
 "portmapper એ RPC જોડાણોની વ્યવસ્થા કરે છે, કે જે પ્રોટોકોલો જેવા કેNFS અને NIS દ્વારા "
-"વપરાય છે. portmap સર્વર મશીનો પર જ ચાલતું હોવું જોઈએકે જે પ્રોટોકોલો માટે સર્વર તરીકે "
+"વપરાય છે. portmap સર્વર મશીનો પર જ ચાલતું હોવું જોઈએ કે જે પ્રોટોકોલો માટે સર્વર તરીકે "
 "કામ કરે છે કે જે RPC નું કામ કરી લે છે."
 
 #: service-list.pl.in:104
@@ -593,7 +595,7 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
-"આ ડિમન છે કે જે રેડ હેટ નેટવર્ક સર્વરોને સુધારા માટે,  ચકાસવા માટે, સુચનો માટે, અને સિસ્ટમ "
+"આ ડિમન છે કે જે રેડ હેટ નેટવર્ક સર્વરોને સુધારા માટે, ચકાસવા માટે, સુચનો માટે, અને સિસ્ટમ "
 "પર ધ્યાન રાખતી વસ્તુઓને તેમની સેવાઓના સ્તરે નિયંત્રિત કરે છે."
 
 #: service-list.pl.in:111 service-list.pl.in:112
@@ -625,14 +627,14 @@ msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
-"saslauthd એ સર્વર પ્રક્રિયા છે કે જે સાદા લખાણના સત્તાધિકરણની મંજૂરીcyrus-sasl "
-"લાઈબ્રેરીના આધારે કરે છેે."
+"saslauthd એ સર્વર પ્રક્રિયા છે કે જે સાદા લખાણના સત્તાધિકરણની મંજૂરી cyrus-sasl "
+"લાઈબ્રેરીના આધારે કરે છે."
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
-msgstr "Sendmail મેઈલ પરિવહન એજન્ટ છે, કે જે કાર્યક્રમ છે કે જે મેઈલ એક મશીનથીબીજે મેઈલ મોકલે છે."
+msgstr "Sendmail મેઈલ પરિવહન એજન્ટ છે, કે જે કાર્યક્રમ છે કે જે મેઈલ એક મશીનથી બીજે મેઈલ મોકલે છે."
 
 #: service-list.pl.in:116
 msgid ""
@@ -667,7 +669,7 @@ msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
-"FAM એ ફાઈલનું ધ્યાન રાખતું ડીમન છે. જ્યારે ફાઈલો બદલાય છે ત્યારેઅહેવાલો મેળવવા માટે વપરાય "
+"FAM એ ફાઈલનું ધ્યાન રાખતું ડીમન છે. જ્યારે ફાઈલો બદલાય છે ત્યારે અહેવાલો મેળવવા માટે વપરાય "
 "છે. આ સેવા વાપરવા માટે તમારે xinetd સેવા સક્રિય કરવી જ પડશે."
 
 #: service-list.pl.in:120
@@ -690,7 +692,9 @@ msgstr "OpenSSH SSH સર્વર"
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
-msgstr "ssh એ દૂરસ્થ મશીન પર પ્રવેશ કરવા માટેનો અને દૂરસ્થ મશીન પર આદેશો ચલાવવા માટેનો કાર્યક્રમ છે."
+msgstr ""
+"ssh એ દૂરસ્થ મશીન પર પ્રવેશ કરવા માટેનો અને દૂરસ્થ મશીન પર આદેશો ચલાવવા માટેનો કાર્યક્રમ "
+"છે."
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
@@ -762,7 +766,7 @@ msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
-"vmware આદેશ Intel X86-આધારિત વર્ચ્યુઅલ મશીન શરુ કરે છે. આ લિપીVMware સોફ્ટવેર ચલાવવા "
+"vmware આદેશ Intel X86-આધારિત વર્ચ્યુઅલ મશીન શરુ કરે છે. આ લિપી VMware સોફ્ટવેર ચલાવવા "
 "માટે જરુરૂ સેવાઓની વ્યવસ્થા કરે છે."
 
 #: service-list.pl.in:132
@@ -814,31 +818,31 @@ msgstr ""
 "રીતે પ્રવેશની ક્ષમતાઓ છે, સમય આધારિત ઉપ્લબ્ધ સેવાઓ પણ કરવાની ક્ષમતા છે, અને ઘણા સર્વરો કે "
 "જે શરુ થવાના છે તેના પર મર્યાદા પણ મૂકી શકે છે, બીજી બધી બાબતોમાંથી."
 
-#: service.pl.in:208 service.pl.in:213
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "સિસ્ટમ અટકાવી રહ્યા છીએ"
 
-#: service.pl.in:209 service.pl.in:215
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "લખાણવાળી સ્થિતિ"
 
-#: service.pl.in:210 service.pl.in:214 service.pl.in:223
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "ગ્રાફિકલ સ્થિતિ"
 
-#: service.pl.in:211 service.pl.in:216
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "સિસ્ટમ ફરીથી શરુ કરી રહ્યા છીએ"
 
-#: service.pl.in:218
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "બધી સિસ્ટમની જરુરી સેવાઓ ચાલુ કરે છે"
 
-#: service.pl.in:219
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "મૂળભુત રનલેવલ"
 
-#: service.pl.in:220
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "નેટવર્ક વિનાના રનલેવલ"
 

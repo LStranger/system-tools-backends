@@ -61,7 +61,7 @@ EXTRA_DIST = \
 CLEANFILES = $(backends) $(perl_libs)
 
 DISTCLEANFILES =	\
-	intltool-extract 	\
+	intltool-extract	\
 	intltool-merge		\
 	intltool-update
 

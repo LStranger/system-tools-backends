@@ -1,97 +1,42 @@
-2004-11-16  Carlos Garnacho Parro  <carlosg@gnome.org>
+2004-12-06  Carlos Garnacho Parro  <carlosg@gnome.org>
 
-	* network.pl.in, parse.pl.in: look for wireless-essid, wireless-key,
-	wireless-key1 and that kind of variations in debian when parsing
-	/etc/network/interfaces
+	* Release 1.0.2
+
+2004-12-06  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in, parse.pl.in: improved debian essid and wep key parsing
 
 2004-11-14  Carlos Garnacho Parro  <carlosg@gnome.org>
 
-	* Makefile.am: moved the intltool-* files to DISTCLEANFILES.
-	Fixes #158213
+        * Makefile.am: moved the intltool-* files to DISTCLEANFILES.
+        Fixes #158213
 
 2004-11-12  Christophe Merlet  <redfox@redfoxcenter.org>
 
 	* configure.in: Added "fr" (French) to ALL_LINGUAS.
 
-2004-11-05  Carlos Garcia Campos <carlosgc@gnome.org>
-
-	* disks-conf.in, partition.pl.in: added DVD support 
-
-2004-11-05  Link Dupont  <link.dupont@gmail.com>
-
-	* platform.pl.in: Added archlinux to the list
-	* users-conf.in: added support for archlinux 0.7
-
 2004-11-04  Carlos Garnacho Parro  <carlosg@gnome.org>
 
-	* file.pl.in (gst_file_buffer_load): return a void array instead of
-	undef if the file doesn't exist, it can be filled later. Fixes
-	#157331
-
-2004-11-03  Carlos Garnacho Parro  <carlosg@gnome.org>
-
-	* Release 1.1
-
-2004-11-01  Carlos Garcia Campos <carlosgc@gnome.org>
-
-	* disks-conf.in: fixed floppy drive detection
+        * file.pl.in (gst_file_buffer_load): return a void array instead of
+        undef if the file doesn't exist, it can be filled later. Fixes
+        #157331
 
 2004-10-25  Carlos Garnacho Parro  <carlosg@gnome.org>
 
-	* Makefile.am: delete the correct intltool-* files when making clean
+        * Makefile.am: delete the correct intltool-* files when making clean
 
 2004-10-25  Mohammad DAMT  <mdamt@bisnisweb.com>
 
 	* configure.in: Added "id" (Indonesian) to ALL_LINGUAS
 	* po/id.po: Added Indonesian translation
 
-2004-10-17  Marcel Telka  <marcel@telka.sk>
-
-	* configure.in (ALL_LINGUAS): Added sk.
-
-2004-09-29  Abel Cheung  <maddog@linuxhall.org>
-
-	* configure.in: Added "tr" to ALL_LINGUAS.
-
 2004-09-28  Alexander Shopov  <ash@contact.bg>
 
 	* configure.in (ALL_LINGUAS): Added "bg" (Bulgarian)
-
+	
 2004-09-19  Alessio Frusciante  <algol@firenze.linux.it>
 
-	* configure.in: added "it" (Italian) to ALL_LINGUAS.
-
-2004-09-18  Carlos Garcia Campos <carlosgc@gnome.org>
-
-	* disks-conf.in: removed the report messages merged with the xml
-	output in disk_info directive
-
-2004-09-14  Carlos Garcia Campos <carlosgc@gnome.org>
-
-	* disks-conf.in: added format partition directive
-	
-	* partition.pl.in: moved some code from disks-conf.in to
-	partition.pl.in
-
-2004-09-14  Carlos Garnacho Parro  <carlosg@gnome.org>
-
-	* network-conf.in (xml_print_statichost): moved to network.pl.in
-	* network.pl.in (network_xml_print_statichost): added
-	* parse.pl.in: fixed a bug when searching in .ini like files, now
-	it stops at the end of the section
-	* share.pl.in, shares-conf.in: removed/comented unused code, made
-	it safe to store info in modern systems, added the get_network_conf
-	directive
-	* xml.pl.in: fixed a badly indented line
-
-2004-09-14  Carlos Garnacho Parro  <carlosg@gnome.org>
-
-	* shares-conf.in: made "/etc/exports" the default NFS exports file
-	for all distros, this is pretty standard
-	* share.pl.in, shares-conf.in: small fixes, made it work (at least 
-	the SMB exports) with all the distributions that network-conf 
-	already supports
-	* users-conf.in: Added <allows_to> tag for some groups.
+	* configure.in: Added "it" (Italian) to ALL_LINGUAS.
 
 2004-09-13  Carlos Garnacho Parro  <carlosg@gnome.org>
 
