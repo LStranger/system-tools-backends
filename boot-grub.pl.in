@@ -672,7 +672,6 @@ sub gst_boot_grub_parse_append
   return undef if $cmd eq undef;
 
   $cmd =~ s/^[^ \t]+[ \t]?//;
-  $cmd =~ s/root=[^ \t]*[ \t]*//;
 
   return $cmd;
 }

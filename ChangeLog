@@ -1,3 +1,8 @@
+2003-06-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* boot-grub.pl.in: made it not to remove the root parameter from 
+	the append data
+
 2003-06-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* boot-grub.pl.in, boot.pl.in: fix path problems when the kernel
