@@ -33,6 +33,7 @@
 
 
 require "___scriptsdir___/general.pl";
+require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
@@ -44,6 +45,7 @@ require "___scriptsdir___/boot.pl";
 
 $name = "boot";
 $version = "0.1.0";
+@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0");
 
 $description =<<"end_of_description;";
        Configures Boot manager (Only LILO at the moment).
@@ -307,6 +309,7 @@ sub filter
 # --- Main --- #
 
 &xst_init ($name, $version, $description, @ARGV);
+&xst_platform_ensure_supported (@platforms);
 
 # Do our thing.
 
