@@ -1,3 +1,21 @@
+2001-05-09  Hans Petter Jansson  <hpj@ximian.com>
+
+	* filesys.pl.in (xst_filesys_info_get_network_host): Implement.
+	  (xst_filesys_info_set_network_host): Implement.
+	  (xst_filesys_info_get_network_path): Implement.
+	  (xst_filesys_info_set_network_path): Implement.
+	  (xst_filesys_info_get_mounted): Implement.
+	  (xst_filesys_info_set_mounted): Implement.
+	  (xst_filesys_info_get_permanent): Implement.
+	  (xst_filesys_info_set_permanent): Implement.
+	  (xst_filesys_info_get_detected): Implement.
+	  (xst_filesys_info_set_detected): Implement.
+	  (xst_filesys_table_set_mounted_true): Implement.
+	  (xst_filesys_table_set_permanent_true): Implement.
+	  (xst_filesys_table_set_detected_true): Implement.
+	  (xst_filesys_parse_fstab): Parse network-specific options.
+	  (xst_filesys_parse_mtab): Ditto.
+
 2001-05-09  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* 0.4 RELEASE

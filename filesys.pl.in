@@ -126,77 +126,127 @@ sub xst_filesys_info_set           # filesys_info, key, value
   }
 }
 
-sub xst_filesys_info_get_device    # filesys_info
+sub xst_filesys_info_get_device        # filesys_info
 {
   return $_[0]->{'device'};
 }
 
-sub xst_filesys_info_set_device    # filesys_info, device
+sub xst_filesys_info_set_device        # filesys_info, device
 {
   &xst_filesys_info_set ($_[0], 'device', $_[1]);
 }
 
-sub xst_filesys_info_get_label     # filesys_info
+sub xst_filesys_info_get_label         # filesys_info
 {
   return $_[0]->{'label'};
 }
 
-sub xst_filesys_info_set_label     # filesys_info, label
+sub xst_filesys_info_set_label         # filesys_info, label
 {
   &xst_filesys_info_set ($_[0], 'label', $_[1]);
 }
 
-sub xst_filesys_info_get_uuid      # filesys_info
+sub xst_filesys_info_get_network_host  # filesys_info
+{
+  return $_[0]->{'network_host'};
+}
+
+sub xst_filesys_info_set_network_host  # filesys_info, network_host
+{
+  &xst_filesys_info_set ($_[0], 'network_host', $_[1]);
+}
+
+sub xst_filesys_info_get_network_path  # filesys_info
+{
+  return $_[0]->{'network_path'};
+}
+
+sub xst_filesys_info_set_network_path  # filesys_info, network_path
+{
+  &xst_filesys_info_set ($_[0], 'network_path', $_[1]);
+}
+
+sub xst_filesys_info_get_uuid          # filesys_info
 {
   return $_[0]->{'uuid'};
 }
 
-sub xst_filesys_info_set_uuid      # filesys_info, uuid
+sub xst_filesys_info_set_uuid          # filesys_info, uuid
 {
   &xst_filesys_info_set ($_[0], 'uuid', $_[1]);
 }
 
-sub xst_filesys_info_get_point     # filesys_info
+sub xst_filesys_info_get_point         # filesys_info
 {
   return $_[0]->{'point'};
 }
 
-sub xst_filesys_info_set_point     # filesys_info, point
+sub xst_filesys_info_set_point         # filesys_info, point
 {
   &xst_filesys_info_set ($_[0], 'point', $_[1]);
 }
 
-sub xst_filesys_info_get_fs        # filesys_info
+sub xst_filesys_info_get_fs            # filesys_info
 {
   return $_[0]->{'fs'};
 }
 
-sub xst_filesys_info_set_fs        # filesys_info, fs
+sub xst_filesys_info_set_fs            # filesys_info, fs
 {
   &xst_filesys_info_set ($_[0], 'fs', $_[1]);
 }
 
-sub xst_filesys_info_get_dump      # filesys_info
+sub xst_filesys_info_get_dump          # filesys_info
 {
   return $_[0]->{'dump'};
 }
 
-sub xst_filesys_info_set_dump      # filesys_info, dump
+sub xst_filesys_info_set_dump          # filesys_info, dump
 {
   &xst_filesys_info_set ($_[0], 'dump', $_[1]);
 }
 
-sub xst_filesys_info_get_priority  # filesys_info
+sub xst_filesys_info_get_priority      # filesys_info
 {
   return $_[0]->{'priority'};
 }
 
-sub xst_filesys_info_set_priority  # filesys_info, priority
+sub xst_filesys_info_set_priority      # filesys_info, priority
 {
   &xst_filesys_info_set ($_[0], 'priority', $_[1]);
 }
 
-sub xst_filesys_info_get_option    # filesys_info, option
+sub xst_filesys_info_get_mounted       # filesys_info
+{
+  return $_[0]->{'mounted'};
+}
+
+sub xst_filesys_info_set_mounted       # filesys_info, boolean
+{
+  &xst_filesys_info_set ($_[0], 'mounted', $_[1]);
+}
+
+sub xst_filesys_info_get_permanent     # filesys_info
+{
+  return $_[0]->{'permanent'};
+}
+
+sub xst_filesys_info_set_permanent     # filesys_info, boolean
+{
+  &xst_filesys_info_set ($_[0], 'permanent', $_[1]);
+}
+
+sub xst_filesys_info_get_detected      # filesys_info
+{
+  return $_[0]->{'detected'};
+}
+
+sub xst_filesys_info_set_detected      # filesys_info, boolean
+{
+  &xst_filesys_info_set ($_[0], 'detected', $_[1]);
+}
+
+sub xst_filesys_info_get_option      # filesys_info, option
 {
   return $_[0]->{'options'}{$_[1]};
 }
@@ -204,7 +254,7 @@ sub xst_filesys_info_get_option    # filesys_info, option
 # We can't delete keys with no values here, since most fs options don't
 # have values (i.e. they key's presence constitutes a boolean).
 
-sub xst_filesys_info_set_option    # filesys_info, option, value
+sub xst_filesys_info_set_option        # filesys_info, option, value
 {
   $_[0]->{'options'}{$_[1]} = $_[2];
 }
@@ -397,6 +447,40 @@ sub xst_filesys_table_merge_subset    # filesys_table A, filesys_table B
   return &xst_filesys_hash_to_table ($hash_c);
 }
 
+# Called to indicate that entries in a filesys table are mounted.
+
+sub xst_filesys_table_set_mounted_true  # filesys_table
+{
+  my ($table) = @_;
+  foreach $i (@$table)
+  {
+    &xst_filesys_info_set_mounted ($i, 1);
+  }
+}
+
+# Called to indicate that entries in a filesys table are permanent.
+
+sub xst_filesys_table_set_permanent_true  # filesys_table
+{
+  my ($table) = @_;
+  foreach $i (@$table)
+  {
+    &xst_filesys_info_set_permanent ($i, 1);
+  }
+}
+
+# Called to indicate that entries in a filesys table have been detected,
+# e.g. by a network or bus scanner, and were not specified in any part of
+# the user's configuration.
+
+sub xst_filesys_table_set_detected_true  # filesys_table
+{
+  my ($table) = @_;
+  foreach $i (@$table)
+  {
+    &xst_filesys_info_set_detected ($i, 1);
+  }
+}
 
 # --- Parsing --- #
 
@@ -441,6 +525,19 @@ sub xst_filesys_parse_fstab  # filename
       if ($fs eq "ext2" || $fs eq "auto")
       {
         &xst_filesys_info_set_label ($fsi, &xst_filesys_translate_ext2_device_to_label ($device));
+      }
+      # Network filesystem devices can be separated into remote host and remote path.
+      elsif ($fs eq "nfs")
+      {
+        $device =~ /([^:]+):(.+)/;
+        &xst_filesys_info_set_network_host ($fsi, $1);
+        &xst_filesys_info_set_network_path ($fsi, $2);
+      }
+      elsif ($fs eq "smbfs")
+      {
+        $device =~ /[\\\/]*([^\\\/]+)[\\\/]+(.+)/;
+        &xst_filesys_info_set_network_host ($fsi, $1);
+        &xst_filesys_info_set_network_path ($fsi, $2);
       }
     }
 
@@ -520,6 +617,19 @@ sub xst_filesys_parse_mtab  # filename
     if ($fs eq "ext2")
     {
       &xst_filesys_info_set_label ($fsi, &xst_filesys_translate_ext2_device_to_label ($device));
+    }
+    # Network filesystem devices can be separated into remote host and remote path.
+    elsif ($fs eq "nfs")
+    {
+      $device =~ /([^:]+):(.+)/;
+      &xst_filesys_info_set_network_host ($fsi, $1);
+      &xst_filesys_info_set_network_path ($fsi, $2);
+    }
+    elsif ($fs eq "smbfs")
+    {
+      $device =~ /[\\\/]*([^\\\/]+)[\\\/]+(.+)/;
+      &xst_filesys_info_set_network_host ($fsi, $1);
+      &xst_filesys_info_set_network_path ($fsi, $2);
     }
 
     # Link it in.
