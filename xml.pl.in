@@ -269,7 +269,7 @@ sub gst_xml_print_structure
 {
   my ($x, $tag) = @_;
 
-     if (ref $x eq "ARRAY") { &gst_xml_print_array ($x, $tag); }
+  if (ref $x eq "ARRAY") { &gst_xml_print_array ($x, $tag); }
   elsif (ref $x eq "HASH")  { &gst_xml_print_hash  ($x, $tag); }
   else
   {

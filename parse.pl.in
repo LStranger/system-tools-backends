@@ -820,17 +820,25 @@ sub gst_parse_ini
   {
     $_ = $$line;
     next if (/^$/);
+
     if (/\[$section\]/i)
     {
-      s/\[$section\][ \t]*//i;
       $found_section_flag = 1;
+      next;
     }
 
-    if ($found_section_flag && /^$var[ \t]*=/i)
+    if ($found_section_flag)
     {
-      s/^$var[ \t]*=[ \t]*//i;
-      $res = $_;
-      last;
+      if (/^$var[ \t]*=/i)
+      {
+        s/^$var[ \t]*=[ \t]*//i;
+        $res = $_;
+        last;
+      }
+      elsif (/\[\S+\]/i)
+      {
+        last;
+      }
     }
   }
 

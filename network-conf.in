@@ -242,29 +242,6 @@ sub xml_parse_profiledb
 
 # --- XML printing --- #
 
-sub xml_print_statichost
-{
-  my ($h) = $_[0];
-  my ($statichost, $i, $j, $val);
-  
-  &gst_xml_print_vspace ();
-  foreach $i (keys %{$$h{"statichost"}})
-  {
-    $statichost = $ {$$h{"statichost"}}{$i};
-    &gst_xml_print_line ("<statichost>\n");
-    &gst_xml_enter ();
-    $val = &gst_xml_quote ($i);
-    &gst_xml_print_line ("<ip>$val</ip>\n");
-    foreach $j (@$statichost)
-    {
-      $val = &gst_xml_quote ($j);
-      &gst_xml_print_line ("<alias>$val</alias>\n");
-    }
-    &gst_xml_leave ();
-    &gst_xml_print_line ("</statichost>\n");
-  }
-}
-
 sub xml_print_profiledb
 {
   my ($h) = @_;
@@ -288,7 +265,7 @@ sub xml_print_profiledb
     #print profile contents
     &gst_xml_print_scalars ($i, @scalar_keys);
     &gst_xml_print_arrays ($i, @array_keys);
-    &xml_print_statichost ($i);
+    &network_xml_print_statichost ($i);
 
     &gst_xml_print_hash_hash ($$i{"interface"}, "interface");
     &gst_xml_print_hash_hash ($$i{"dialing"}, "dialing");
@@ -316,7 +293,7 @@ sub xml_print
 
   &gst_xml_print_scalars ($h, @scalar_keys);
   &gst_xml_print_arrays ($h, @array_keys);
-  &xml_print_statichost ($h);
+  &network_xml_print_statichost ($h);
 
   &gst_xml_print_hash_hash ($$h{"interface"}, "interface");
   &gst_xml_print_hash_hash ($$h{"dialing"}, "dialing");

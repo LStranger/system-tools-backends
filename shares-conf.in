@@ -57,7 +57,6 @@ BEGIN {
   require "$SCRIPTSDIR/share.pl$DOTIN";
 }
 
-
 # --- Tool information --- #
 
 $name = "shares";
@@ -74,65 +73,11 @@ $version = "@VERSION@";
               "pld-1.0", "pld-1.1", "pld-1.99",
               "conectiva-9", "conectiva-10",
               "slackware-9.1.0", "slackware-10.0.0",
-              "gentoo", "freebsd-4", "freebsd-5", "freebsd-6");
+              "gentoo", "freebsd-5");
 
 $description =<<"end_of_description;";
        Configures network shares for import or export.
 end_of_description;
-
-# --- Platform handling --- #
-
-$platmap =
-{
-  "redhat-5.2"   => "redhat-6.2",
-  "redhat-6.0"   => "redhat-6.2",
-  "redhat-6.1"   => "redhat-6.2",
-  "redhat-6.2"   => "redhat-6.2",
-  "redhat-7.0"   => "redhat-7.0",
-  "redhat-7.1"   => "redhat-7.0",
-  "redhat-7.2"   => "redhat-7.0",
-  "openna-1.0"   => "redhat-7.0",
-  "debian-2.2"   => "redhat-7.0",
-  "debian-woody" => "redhat-7.0",
-  "mandrake-7.2" => "redhat-7.0",
-  "suse-7.0"     => "redhat-6.2",
-  "freebsd-4"    => "freebsd-4",
-  "freebsd-5"    => "freebsd-4",
-  "freebsd-6"    => "freebsd-4",
-  "turbolinux-7.0"   => "redhat-7.0"
-};
-
-$filemap =
-{
-  "redhat-6.2" =>
-  {
-    "fstab"    => "/etc/fstab",
-    "mtab"     => "/etc/mtab",
-    "exports"  => "/etc/exports",
-    "smb.conf" => "/etc/smb.conf"
-  },
-
-  "redhat-7.0" =>
-  {
-    "fstab"    => "/etc/fstab",
-    "mtab"     => "/etc/mtab",
-    "exports"  => "/etc/exports",
-    "smb.conf" => "/etc/samba/smb.conf"
-  },
-
-  "freebsd-4" =>
-  {
-    "fstab"    => "/etc/fstab",
-    "exports"  => "/etc/exports",
-    "smb.conf" => "/usr/local/etc/smb.conf"
-  }
-};
-
-sub distro_file
-{
-  my ($file) = @_;
-  return $$filemap{$$platmap{$gst_dist}}->{$file};
-}
 
 # --- XML parsing ---
 
@@ -615,31 +560,40 @@ sub get_installed_tools
   return $tools;
 }
 
-sub get_configured_imports
+#sub get_configured_imports
+#{
+#  my ($imports, $listed_imports, $mounted_imports);
+
+#  $listed_imports  = &gst_filesys_fstab_parse (&distro_file ("fstab"));
+#  $mounted_imports = &gst_filesys_mtab_parse  (&distro_file ("mtab"));
+
+#  &gst_filesys_table_set_permanent_true ($listed_imports);
+#  &gst_filesys_table_set_mounted_true   ($mounted_imports);
+
+#  $imports = &gst_filesys_table_merge_superset ($mounted_imports, $listed_imports);
+#  return $imports;
+#}
+
+sub get_distro_files
 {
-  my ($imports, $listed_imports, $mounted_imports);
+  my ($smb_comb, $exports);
 
-  $listed_imports  = &gst_filesys_fstab_parse (&distro_file ("fstab"));
-  $mounted_imports = &gst_filesys_mtab_parse  (&distro_file ("mtab"));
-
-  &gst_filesys_table_set_permanent_true ($listed_imports);
-  &gst_filesys_table_set_mounted_true   ($mounted_imports);
-
-  $imports = &gst_filesys_table_merge_superset ($mounted_imports, $listed_imports);
-  return $imports;
-}
-
-sub get_configured_exports
-{
-  my ($smb_exports, $nfs_exports);
-  my (%dist_attrib, $smb_conf, $exports);
-  
   %dist_attrib = &gst_network_get_parse_table ();
   $smb_conf    = $dist_attrib{"fn"}{"SMB_CONF"};
 
   # This is pretty standard
   $exports     = "/etc/exports";
 
+  return ($smb_conf, $exports);
+}
+
+sub get_configured_exports
+{
+  my ($smb_exports, $nfs_exports);
+  my (%dist_attrib, $smb_conf, $exports);
+
+  ($smb_conf, $exports) = &get_distro_files ();
+  
   $smb_exports = &gst_share_parse_smb_conf    ($smb_conf);
   $nfs_exports = &gst_share_parse_nfs_exports ($exports);
 
@@ -669,31 +623,36 @@ sub get
 sub set
 {
   my $config;
-  my ($fs, $fs_no_shares, $fs_new_shares);
-  my $imports;
+#  my ($fs, $fs_no_shares, $fs_new_shares);
+  my ($smb_conf, $exports);
+#  my $imports;
+
+  ($smb_conf, $exports) = &get_distro_files ();
 
   $config = &xml_parse ();
 
-  $imports = $$config{"imports"};
-  for $import (@$imports)
-  {
-    &gst_filesys_info_settings_to_options ($import);
-  }
+#  $imports = $$config{"imports"};
+#  for $import (@$imports)
+#  {
+#    &gst_filesys_info_settings_to_options ($import);
+#  }
 
-  $fs = &gst_filesys_fstab_parse (&distro_file ("fstab"));
-  &gst_filesys_table_set_permanent_true ($fs);
+#  $fs = &gst_filesys_fstab_parse (&distro_file ("fstab"));
+#  &gst_filesys_table_set_permanent_true ($fs);
 
-  $fs_no_shares = &gst_filesys_table_dup ($fs);
-  &remove_shares_from_filesys_table ($fs_no_shares);
+#  $fs_no_shares = &gst_filesys_table_dup ($fs);
+#  &remove_shares_from_filesys_table ($fs_no_shares);
 
-  $fs_new_shares = &gst_filesys_table_merge_superset ($$config{"imports"}, $fs_no_shares);
-  $fs_new_shares = &gst_filesys_table_merge_subset ($fs_new_shares, $fs);
+#  $fs_new_shares = &gst_filesys_table_merge_superset ($$config{"imports"}, $fs_no_shares);
+#  $fs_new_shares = &gst_filesys_table_merge_subset ($fs_new_shares, $fs);
 
-  &gst_filesys_fstab_replace     (&distro_file ("fstab"),    $fs_new_shares);
-  &gst_share_replace_smb_conf    (&distro_file ("smb.conf"), $$config{"smb_exports"});
-  &gst_share_replace_nfs_exports (&distro_file ("exports"),  $$config{"nfs_exports"});
+#  &gst_filesys_fstab_replace     (&distro_file ("fstab"),    $fs_new_shares);
 
-  &gst_filesys_mount_sync_all (&distro_file ("fstab"), &distro_file ("mtab"), $$config{"imports"});
+  &gst_share_replace_smb_conf    ($smb_conf, $$config{"smb_exports"});
+  &gst_share_replace_nfs_exports ($exports,  $$config{"nfs_exports"});
+
+  
+#  &gst_filesys_mount_sync_all (&distro_file ("fstab"), &distro_file ("mtab"), $$config{"imports"});
 
   &gst_report_end ();
 }
@@ -716,16 +675,44 @@ sub scan
   &xml_print (\%config);
 }
 
+sub get_network_conf
+{
+  my ($hash, $ifaces, $i, @arr);
+
+  $ifaces = &gst_network_interfaces_get_info ();
+
+  foreach $i (keys %$ifaces)
+  {
+    if (($$ifaces{$i}{"active"} == 1)
+        && ($$ifaces{$i}{"dev"} ne "lo"))
+    {
+      $$ifaces{$i}{"network"} = &gst_network_ipv4_calc_subnet ($$ifaces{$i}{"addr"},
+                                                               $$ifaces{$i}{"mask"});
+      push @arr, $$ifaces{$i};
+    }
+  }
+
+  # network interface stuff
+  $hash = &gst_network_conf_get ();
+  &gst_report_end ();
+
+  &gst_xml_print_begin ("network-conf");
+  &network_xml_print_statichost ($hash);
+  &gst_xml_print_structure (\@arr, "interface");
+  &gst_xml_print_end ("network-conf");
+}
+
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
 # Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
-  "get"    =>       [ \&get,    [], "" ],
-  "set"    =>       [ \&set,    [], "" ],
-  "filter" =>       [ \&filter, [], "" ],
-  "scan_network" => [ \&scan,   [], "Looks for smb or nfs shares in the network." ]
+  "get"    =>           [ \&get,    [], "" ],
+  "set"    =>           [ \&set,    [], "" ],
+  "filter" =>           [ \&filter, [], "" ],
+  "get_network_conf" => [ \&get_network_conf, [], "Gets the hosts info plus the interfaces networks." ],
+  "scan_network" =>     [ \&scan,   [], "Looks for smb or nfs shares in the network." ]
     };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);
