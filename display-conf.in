@@ -70,17 +70,19 @@ sub distro_file
 # --- XML parsing ---
 # Scan XML from standard input to an internal tree.
 
-sub xml_parse ()
+sub xml_parse
 {
+  my $fname = shift;
   my ($tree, $hash);
 
-  $tree = &xst_xml_scan ();
+  $tree = &xst_xml_scan ($fname);
 
-  # This is the top level - find and enter the "Display" tag.
-#  shift @$tree;
-  
-  while (@$tree)
-  {
+  # Find the first interesting value.
+  while ($$tree[0] eq undef) {
+    shift @$tree;
+  }
+
+  while (@$tree) {
     if ($$tree[0] eq "Display") { $hash = &x_xml_parse ($$tree[1], $hash); }
     
     shift @$tree;
@@ -115,18 +117,11 @@ sub xml_print
   &xst_xml_print_end ();
 }
 
-# Configuration handling.
-
-sub parse
-{
-  return &x_parse (&distro_file ());
-}
-
 # Top-level actions.
 
 sub get
 {
-  my $config = &parse ();
+  my $config = &x_parse (&distro_file ());
       
   &xst_end();
   &xml_print ($config);
@@ -134,8 +129,8 @@ sub get
 
 sub set
 {
-  my $config = &parse ();
-  my $xml_config = &xml_parse ();  
+  my $config = &x_parse (&distro_file ());
+  my $xml_config = &xml_parse ();
   
   &x_config_set (&distro_file (), $config, $xml_config);
   &xst_end ();
@@ -149,6 +144,27 @@ sub filter
   &xml_print ($config);
 }
 
+sub test
+{
+  # TODO: $testX_cmd should be something better (obviously :)
+  my $testX_cmd = "/home/tambet/work/ximian-setup-tools/src/display/testX";
+  my $tmp_file = "/tmp/XF86Config-tmp";
+  my $real_file = &distro_file ();
+
+  # TODO: Check $res after xst_file_run
+  
+  my $res = &xst_file_run ("cp $real_file $tmp_file");
+  
+  my $config = &x_parse ($tmp_file);
+  my $xml_config = &xml_parse ();
+  
+  &x_config_set ($tmp_file, $config, $xml_config);
+
+  $res = &xst_file_run ("$testX_cmd --config=$tmp_file");
+  $res = &xst_file_run ("rm -f $tmp_file");
+  
+  &xst_end ();
+}
 
 # --- Main --- #
 
@@ -159,6 +175,7 @@ $directives = {
   "get"    => [ \&get,    [], "" ],
   "set"    => [ \&set,    [], "" ],
   "filter" => [ \&filter, [], "" ],
+  "test"   => [ \&test,   [], "Test settings." ],
 };
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);

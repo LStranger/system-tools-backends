@@ -927,7 +927,8 @@ sub x_add_keyword
       $val = $quote . "$new_section->{$key}". $quote;
     }
 
-    elsif ($type eq "XstXKeywordList") {
+    elsif ($type eq "XstXKeywordList" ||
+           $type eq "XstXDisplayMode") {
       foreach (@{$new_section->{$key}}) {
         $val .= $quote . $_ . $quote . " ";
       }
@@ -1073,7 +1074,5 @@ sub x_config_set
   close ($infd);
   close ($outfd);
 }
-
-
 
 1;

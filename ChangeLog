@@ -1,3 +1,20 @@
+2001-07-12  Tambet Ingo  <tambet@ximian.com>
+
+	* AUTHORS: Fixed my mail address :)
+
+	* x.pl.in (x_add_keyword): Fixed stupid bug I introduced
+	in my last commit. (new resolutions didn't get added).
+
+	* display-conf.in (xml_parse): Fixed very strange bug:
+	if run with new style "set" then everything worked, but
+	not when run with --set. The problem was that $tree array
+	had one extra empty element as a first one int the list.
+	Other tools may suffer the same thing.
+	(xml_parse): Added optional argument to parse from.
+	(parse): Removed, was a single line nonsense.
+	(test): Implement. Tests if X can start up and whether it's
+	picture is readable.
+	
 2001-07-12  Chema Celorio  <chema@celorio.com>
 
 	* configure.in (dnl): fix the scriptdirs thing
