@@ -436,7 +436,7 @@ sub write_profiledb
   }
   else
   {
-    gst_file_remove ($path . $profile_file;);
+    gst_file_remove ($path . $profile_file);
   }
 
   chmod (0644, $path . $profile_file);

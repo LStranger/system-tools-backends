@@ -1,3 +1,7 @@
+2004-12-21  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network-conf.in: removed a spare semicolon
+
 2004-12-10  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* parse.pl.in, time-conf.in: handled parsing/replacing of parameters
