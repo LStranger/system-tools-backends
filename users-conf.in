@@ -464,7 +464,7 @@ sub change_group
 {
 	my $old_data = $_[0];
 	my $new_data = $_[1];
-	my ($n, $o, $i, $j, $&max_n, $&max_o, $r, @tmp); # for iterations
+	my ($n, $o, $i, $j, $max_n, $max_o, $r, @tmp); # for iterations
 
 	$command = "$cmd_groupmod -g \'" . $$new_data[$groups_prop_map{"gid"}] .
 	  "\' -n \'" . $$new_data[$groups_prop_map{"name"}] . "\'" 
@@ -478,9 +478,9 @@ sub change_group
 		$n = [ @{$$new_data[$groups_prop_map{"users"}]} ]; sort @$n;
 		$o = [ @{$$old_data[$groups_prop_map{"users"}]} ]; sort @$o;
 		
-		$&max_n = $#$n;
-		$&max_o = $#$o;
-		for ($i = 0, $j = 0; $i <= &max ($&max_n, $&max_o); ) {
+		$max_n = $#$n;
+		$max_o = $#$o;
+		for ($i = 0, $j = 0; $i <= &max ($max_n, $max_o); ) {
 		  $r = $$n[$i] cmp $$o[$j];
 			$r *= -1 if (($$o[$j] eq "") || ($$n[$i] eq ""));
 		  if ($r < 0) { # add this user to the group.

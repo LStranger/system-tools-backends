@@ -135,17 +135,17 @@ $be_input_file = "";
 # --- Progress printing --- #
 
 
-$&be_progress_current = 0;  # Compat with old $progress_max use.
-$&be_progress_last_percentage = 0;
+$be_progress_current = 0;  # Compat with old $progress_max use.
+$be_progress_last_percentage = 0;
 
 sub be_progress
 {
   $prc = @_[0];
 
-  if ($prc < $&be_progress_last_percentage)
+  if ($prc < $be_progress_last_percentage)
   {
     # Don't go backwards.
-    $prc = $&be_progress_last_percentage;
+    $prc = $be_progress_last_percentage;
   }
 
   if ($prc >= 100)
@@ -154,9 +154,9 @@ sub be_progress
     $prc = 99;
   }
 
-  if ($&be_progress) { printf "%03d percent done.\n", $prc; }
+  if ($be_progress) { printf "%03d percent done.\n", $prc; }
 
-  $&be_progress_last_percentage = $prc;
+  $be_progress_last_percentage = $prc;
 }
 
 sub be_progress_begin { &be_progress(0); }
@@ -167,8 +167,8 @@ sub be_print_progress  # Compat with old $progress_max use.
 {
   my $prc;
 
-  $&be_progress_current++;
-  &be_progress(($&be_progress_current * 100) / $progress_max);
+  $be_progress_current++;
+  &be_progress(($be_progress_current * 100) / $progress_max);
 }
 
 
@@ -177,7 +177,7 @@ sub be_print_progress  # Compat with old $progress_max use.
 
 sub be_report
 {
-  if ($&be_reporting)
+  if ($be_reporting)
   {
     printf "%1d%02d %s.\n", @_[0], @_[1], @_[2];
   }
@@ -191,7 +191,7 @@ sub be_report_begin
 sub be_report_end
 {
   &be_report(1, 01, "End of work report");
-  if ($&be_reporting) { print "\n"; }
+  if ($be_reporting) { print "\n"; }
 }
 
 sub be_report_info
@@ -277,9 +277,9 @@ sub be_xml_scan_recurse
   my @list;
   if (@_) { @list = $_[0]->[0]; }
   
-  while (@&be_xml_scan_list)
+  while (@be_xml_scan_list)
   {
-    $el = $&be_xml_scan_list[0]; shift @&be_xml_scan_list;
+    $el = $be_xml_scan_list[0]; shift @be_xml_scan_list;
 
     if (($el eq "") || $el =~ /^\<[!?].*\>$/s) { next; }  # Empty strings, PI and DTD must go.
     if ($el =~ /^\<.*\/\>$/s)  # Empty.
@@ -326,7 +326,7 @@ sub be_xml_scan
       close INPUT_FILE;
     }
 
-    @&be_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
+    @be_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
     
     $tree = &be_xml_scan_recurse;
     
@@ -1565,7 +1565,7 @@ sub be_network_get_redhat
   my %trans_bool = (# General stuff.
 				ONBOOT => auto,
 				USERCTL => user,
-				DEFROUTE => &set_default_gw,
+				DEFROUTE => set_default_gw,
 
 				# "dialing" interfaces.
 				DEBUG => debug,
@@ -2164,8 +2164,8 @@ sub be_init
     }
     elsif ($args[0] eq "--disable-immediate")           { $be_do_immediate = 0; }
     elsif ($args[0] eq "--verbose" || $args[0] eq "-v") { $be_verbose = 1; }
-    elsif ($args[0] eq "--progress")                    { $&be_progress = 1; }
-    elsif ($args[0] eq "--report")                      { $&be_reporting = 1; }
+    elsif ($args[0] eq "--progress")                    { $be_progress = 1; }
+    elsif ($args[0] eq "--report")                      { $be_reporting = 1; }
     else
     {
       print STDERR "Error: Unrecognized option '$args[0]'.\n\n";
