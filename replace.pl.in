@@ -76,11 +76,11 @@ sub xst_replace_from_table
     {
       $proc = shift (@cp);
       @files = &xst_parse_replace_files (shift (@cp), $fn);
-      unshift @cp, @files if $#files >= 0;
+      unshift @cp, @files if (scalar @files) > 0;
       push (@cp, $$values_hash{$key});
 	 
       &xst_debug_print_line ("xst_replace_from_table: $key");
-      &xst_parse_replace_hash_values (\@cp, $values_hash);
+      next if (!&xst_parse_replace_hash_values (\@cp, $values_hash));
       $res = -1 if &$proc (@cp);
     }
   }
@@ -153,13 +153,16 @@ sub xst_replace_split
       # found the key?
       if ($line_key eq $key)
       {
-        if ($#value < 0)
+        shift (@value) while ($value[0] eq "" && (scalar @value) > 0);
+        
+        if ((scalar @value) == 0)
         {
           $i = "";
           next;
         }
         
         $val = shift (@value);
+        chomp $val;
         $i = &set_value ($key, $val, $re);
       }
     }
@@ -320,12 +323,12 @@ sub xst_replace_sh_join
 # Quick trick to set a keyword $key in $file. (think /etc/lilo.conf keywords).
 sub xst_replace_kw
 {
-  my ($file, $key) = @_;
+  my ($file, $key, $value) = @_;
   my $ret;
 
   &xst_report_enter ();
   &xst_report ("replace_kw", $key, $file);
-  $ret = &xst_replace_split ($file, $key, "\$", "");
+  $ret = &xst_replace_split ($file, $key, "\$", ($value)? "\n" : "");
   &xst_report_leave ();
   return $ret;
 }
@@ -851,7 +854,7 @@ sub xst_replace_interfaces_get_next_stanza
   my ($buff, $line_no, $stanza_type) = @_;
   my ($i, $line);
 
-  while ($$line_no <= $#$buff)
+  while ($$line_no < (scalar @$buff))
   {
     $_ = $$buff[$$line_no];
     $_ = &xst_parse_interfaces_line_clean ($_);
@@ -884,7 +887,7 @@ sub xst_replace_interfaces_get_next_option
 
   $empty_lines = 0;
   
-  while ($$line_no <= $#$buff)
+  while ($$line_no < (scalar @$buff))
   {
     $_ = $$buff[$$line_no];
     $_ = &xst_parse_interfaces_line_clean ($_);
@@ -1090,7 +1093,7 @@ sub xst_replace_pump_get_next_option
 {
   my ($buff, $line_no) = @_;
 
-  while ($$line_no <= $#$buff)
+  while ($$line_no < (scalar @$buff))
   {
     $_ = $$buff[$$line_no];
     $_ = &xst_parse_interfaces_line_clean ($_);

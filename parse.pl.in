@@ -63,10 +63,12 @@ sub xst_parse_replace_hash_values
       else
       {
         &xst_debug_print_line ("Warning: xst_parse_replace_hash_values: key $replace_key doesn't exist.");
-        last;
+        return 0;
       }
     }
   }
+
+  return 1;
 }
 
 sub xst_parse_replace_files
@@ -120,7 +122,7 @@ sub xst_parse_from_table
     @files = &xst_parse_replace_files (shift (@cp), $fn);
     unshift @cp, @files if $#files >= 0;
 
-    &xst_parse_replace_hash_values (\@cp, \%hash);
+    next if (!&xst_parse_replace_hash_values (\@cp, \%hash));
     &xst_report_enter ();
     &xst_report ("parse_table", "$key");
     &xst_report_leave ();

@@ -1,5 +1,28 @@
 Wed Jul 25 03:45:51 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* replace.pl.in (xst_replace_from_table): If interpolation
+	failed, go to next feature. Failed interpolations return
+	arguments that make no sense.
+	(xst_replace_kw): Wasn't getting $value arg (!). This affected
+	Debian ppp option replacing and possibly other places.
+
+	* parse.pl.in (xst_parse_replace_hash_values): Return 1/0
+	if interpolation succeeded.
+	(xst_parse_from_table): If interpolation failed, go to next
+	feature.
+
+	* network.pl.in (xst_network_get_parse_table): Removed
+	domainname tag support.
+	(xst_network_get_replace_table): same.
+
+	* network-conf.in (xml_parse_network): Removed domainname
+	tag support.
+	(xml_print): same.
+
+	* replace.pl.in (xst_replace_split): Eliminate empty elements
+	from value array. This will delete features whose XML tags are
+	empty, but existent.
+
 	* network.pl.in (xst_network_pump_get_nodns): Only omit
 	updatedns tag if pump doesn't support it, or information will
 	be lost.
