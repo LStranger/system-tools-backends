@@ -634,7 +634,7 @@ sub gst_boot_grub_parse_append
   $cmd = &gst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
   return undef if $cmd eq undef;
 
-  $cmd =~ s/^[^ \t]+[ \t]+//;
+  $cmd =~ s/^[^ \t]+[ \t]?//;
   $cmd =~ s/root=[^ \t]*[ \t]*//;
 
   return $cmd;
