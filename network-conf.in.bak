@@ -1,0 +1,1368 @@
+#!/usr/bin/env perl
+#-*-perl-*-
+
+# Network configurator. Designed to be architecture and distribution independent.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#          Michael Vogt <mvo@debian.org> (Debian Support)
+#          Arturo Espinosa <arturo@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/resolv.conf
+# /etc/host.conf
+# /etc/hosts
+# /etc/sysconfig/network
+# /etc/rc.config
+# /etc/smb.conf
+
+# Running programs affected:
+#
+# smbd
+# nmbd
+# ifconfig: check current interfaces and activate/deactivate.
+
+
+
+require "___scriptsdir___/be.pl";
+
+
+# --- Tool information --- #
+
+$name = "network";
+$version = "0.1.0";
+
+$description =<<"end_of_description;";
+       Configures name resolution.
+end_of_description;
+
+$progress_max = 10;
+
+
+# --- System config file locations --- #
+
+# We list each config file type with as many alternate locations as possible.
+# They are tried in array order. First found = used.
+
+# Right now there's only one entry per array, as I couldn't find any
+# typical deviations.
+
+@resolv_conf_names =       ( "/etc/resolv.conf" );
+@host_conf_names =         ( "/etc/host.conf" );
+@hosts_names =             ( "/etc/hosts" );
+@sysconfig_network_names = ( "/etc/sysconfig/network" );
+@rc_config_names =         ( "/etc/rc.config" );
+@defaultdomain_names =     ( "/etc/defaultdomain");
+@hostname_names =          ( "/etc/hostname");
+@smb_conf_names =          ( "/etc/smb.conf", "/etc/samba/smb.conf" );
+
+
+# --- Internal configuration variables --- #
+
+# Configuration is parsed/read to, and printed/written from, these temporary variables.
+
+$cf_hostname = "";
+$cf_domain = "";
+$cf_workgroup = "";
+$cf_description = "";
+
+$cf_hostname_reverse = "";
+$cf_domain_reverse = "";
+
+@cf_searchdomains = ();
+@cf_nameservers = ();
+@cf_statichosts = ();
+
+$cf_winsserver = "";
+
+@cf_order = ();
+$cf_hostmatch = 0;  # 0 = all, 1 = first
+
+$cf_nw_interfaces = {}; # For interfaces and global networking params.
+$cf_nw_global = {};     # These will hold references to hashes.
+
+# Find the tools
+
+$tool_ifconfig = &be_locate_tool ("ifconfig");
+$tool_ifup = &be_locate_tool ("ifup");
+
+# --- Configuration file manipulation --- #
+
+# NET-3 style /etc/resolv.conf
+#
+# domain <domain>
+# search <domain> <domain> ...
+# search <domain> <domain> ...
+# nameserver <IP>
+# nameserver <IP>
+# 
+# Determines the following:
+#
+# - Local domain suffix
+# - Search domains
+# - Nameservers
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SuSE 6.3,
+#         SunOS 5.7, (presumably all)
+#
+# Absent: (presumably none)
+
+sub read_resolv_conf
+{
+  my $ifh;
+  local *FILE;
+  my @line = ();
+
+  # Find the file.
+
+  $ifh = &be_open_read_from_names(@resolv_conf_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "domain") { $cf_domain = $line[1]; }
+    elsif ($line[0] eq "search")
+    {
+      shift @line;
+      for $elem (@line)
+      {
+        if (&be_ignore_line($elem)) { last; }
+        if ($elem ne "") { &be_push_unique(\@cf_searchdomains, $elem); }
+      }
+    }
+    elsif ($line[0] eq "nameserver")
+    {
+      shift @line;
+      for $elem (@line)
+      {
+        if (&be_ignore_line($elem)) { last; }
+        if ($elem ne "") { &be_push_unique(\@cf_nameservers, $elem); }
+      }
+    }
+  }
+
+  close(FILE);
+  return;
+}
+
+
+sub write_resolv_conf
+{
+  my $ofh;
+  local *FILE;
+
+  # Find the file.
+
+  $ofh = &be_open_write_from_names(@resolv_conf_names);
+  if (not $ofh) { return; }  # We didn't find it.
+  *FILE = $ofh;
+
+  # Write the file.
+
+  if ($cf_domain ne "")         { print FILE "domain $cf_domain\n"; }
+  for $elem (@cf_searchdomains) { print FILE "search $elem\n"; }
+  for $elem (@cf_nameservers)   { print FILE "nameserver $elem\n"; }
+
+  close(FILE);
+}
+
+
+# NET-3 style /etc/host.conf
+#
+# order hosts,bind
+# multi on
+#
+# Nothing configurable, really. We just maintain it so we can see/correct
+# problems. The above is the default if nothing else is specified.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0
+#
+# Absent: SuSE 6.3, SunOS 5.7
+
+sub read_host_conf
+{
+  my $ifh;
+  local *FILE;
+
+  # Find the file.
+
+  $ifh = &be_open_read_from_names(@host_conf_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t,]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "order")
+    {
+      shift @line;
+      @cf_order = ();
+      push(@cf_order, @line);
+    }
+    elsif ($line[0] eq "multi")
+    {
+      if ($line[1] eq "on")      { $cf_hostmatch = 0; }
+      elsif ($line[1] eq "off")  { $cf_hostmatch = 1; }
+      else                       { $cf_hostmatch = 0; }  # Unexpected; go default.
+    }
+  }
+
+  close(FILE);
+}
+
+
+sub write_host_conf
+{
+  my $ofh;
+  local *FILE;
+
+  # Find the file.
+
+  $ofh = &be_open_write_from_names(@host_conf_names);
+  if (not $ofh) { return; }  # We didn't find it.
+  *FILE = $ofh;
+
+  # Write the file.
+
+  $" = ',';
+
+  if (@cf_order)     { print FILE "order @cf_order\n"; }
+  else               { print FILE "order hosts,bind\n"; }
+
+  $" = ' ';
+
+  if ($cf_hostmatch) { print FILE "multi off\n"; }
+  else               { print FILE "multi on\n"; }
+
+  close(FILE);
+}
+
+
+# NET-3 style /etc/hosts
+#
+# <IP> <name> <name> ...
+# <IP> <name> <name> ...
+#
+# These are host aliases to be used before DNS.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SuSE 6.3,
+#         SunOS 5.7, (presumably all)
+#
+# Absent: (presumably none)
+
+sub read_hosts
+{
+  my $ifh;
+  local *FILE;
+  my @alias = ();
+  my @line = ();
+
+  # Find the file.
+
+  $ifh = &be_open_read_from_names(@hosts_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    my $enabled = 1;
+
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (&be_ignore_line($line[0]))
+    {
+      $enabled = 0;
+      $line[0] =~ tr/\#//d;
+      if (@line[0] eq "") { shift @line; }
+    }
+
+    if ($line[0] ne "" && (not &be_ignore_line($line[0])) &&
+        ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/))
+    {
+      push(@cf_statichosts, $enabled);  # Boolean; 1 = enabled.
+      push(@cf_statichosts, $line[0]);  # IP.
+      shift @line;
+
+      @alias = ();
+      for $alias (@line)
+      {
+        if (&be_ignore_line($alias)) { last; }
+        push(@alias, $alias);
+      }
+      push(@cf_statichosts, [@alias]);  # Alias.
+    }
+  }
+
+  close(FILE);
+}
+
+
+sub write_hosts
+{
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
+
+  # Find the file.
+
+  ($ifh, $ofh) = &be_open_filter_write_from_names(@hosts_names);
+  if (not $ofh) { return; }  # We didn't find it.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  # TODO: Replace old entries with corresponding new entries for
+  # the same IP. This preserves the comment context.
+
+  my @iplist = @cf_statichosts;
+
+  # Weed out existing lines that are relevant for configuration.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift @line; }  # Leading whitespace. He.
+
+    if (&be_ignore_line($line[0]))
+    {
+      $line[0] =~ tr/\#//d;
+      if (@line[0] eq "") { shift @line; }
+    }
+
+    if ($line[0] ne "" && (not &be_ignore_line($line[0])) &&
+        ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/))
+    {
+      # Don't print (recognized) old entries - we handle those.
+    }
+    else { print OUTFILE; }
+  }
+
+  # Put new entries at the end.
+
+  while (@iplist)
+  {
+    if ($iplist[0] ne "")
+    {
+      if (!$iplist[0]) { print OUTFILE "# "; }  # Disabled entry.
+      printf OUTFILE ("%-16s", $iplist[1]);
+
+      my $aliaslist = $iplist[2];
+      for $alias (@$aliaslist) { print OUTFILE " $alias"; }
+
+      print OUTFILE "\n";
+    }
+
+    shift @iplist;
+    shift @iplist;
+    shift @iplist;
+  }
+
+  close(OUTFILE);
+}
+
+# Debian style /etc/hostname
+#
+# <empty>
+# <hostname>
+# <empty> 
+#
+# Determines the local hostname. 
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent: ?
+
+sub read_hostname
+{
+  my $ifh;
+  local *FILE;
+
+  # Find the file.
+
+  $ifh = &be_open_read_from_names(@hostname_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
+
+  # Parse the file.
+
+  # mvo: debug
+  while (<FILE>)
+  {
+    chop($_);
+    if ( not &be_ignore_line($_) )
+    { $cf_hostname = $_; }
+  }
+
+  close(FILE);
+}
+
+
+sub write_hostname
+{
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
+
+  # Find the file.
+
+  ($ifh, $ofh) = &be_open_filter_write_from_names(@hostname_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
+  print OUTFILE "$cf_hostname\n";
+
+  close(OUTFILE);
+  if (*INFILE) { close(INFILE); }
+}
+
+
+# Debian style /etc/defaultdomain
+#
+# <empty>
+# <domainname>
+# <empty> 
+#
+# Determines the local domain. 
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent: ?
+
+sub read_defaultdomain
+{
+  my $ifh;
+  local *FILE;
+
+  # Find the file.
+
+  $ifh = &be_open_read_from_names(@defaultdomain_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    chop($_);
+    if (not &be_ignore_line($_))
+    { $cf_domain = $_; }
+  }
+
+  close(FILE);
+}
+
+
+sub write_defaultdomain
+{
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
+
+  # Find the file.
+
+  ($ifh, $ofh) = &be_open_filter_write_from_names(@defaultdomain_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
+  print OUTFILE "$cf_domain\n";
+
+  close(OUTFILE);
+  if (*INFILE) { close(INFILE); }
+}
+
+
+# Red Hat style /etc/sysconfig/network
+#
+# <&filtered lines>
+# HOSTNAME=<hostname>
+# DOMAINNAME=<domainname>
+# <&filtered lines>
+#
+# Determines the local hostname and domain. BEWARE: This is actually a sourced
+# shell script. We rely on some lenience from the user (and the distro) to
+# be able to parse it correctly.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0
+#
+# Absent: SuSE 6.3, SunOS 5.7
+
+sub read_sysconfig_network
+{
+  my $ifh;
+  local *FILE;
+
+  # Find the file.
+
+  $ifh = &be_open_read_from_names(@sysconfig_network_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "HOSTNAME" && not &be_ignore_line($line[1]))
+    { $cf_hostname = $line[1]; }
+    elsif ($line[0] eq "DOMAINNAME" && not &be_ignore_line($line[1]))
+    { $cf_domain = $line[1]; }
+  }
+
+  close(FILE);
+}
+
+
+sub write_sysconfig_network
+{
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
+  my $wrote_hostname = 0;
+  my $wrote_domain = 0;
+
+  # Find the file.
+
+  ($ifh, $ofh) = &be_open_filter_write_from_names(@sysconfig_network_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "HOSTNAME")
+    {
+      print OUTFILE "HOSTNAME=$cf_hostname\n";
+      $wrote_hostname = 1;
+    }
+    elsif ($line[0] eq "DOMAINNAME")
+    {
+      print OUTFILE "DOMAINNAME=$cf_domain\n";
+      $wrote_domain = 1;
+    }
+    else { print OUTFILE; }
+  }
+
+  if (not $wrote_hostname) { print OUTFILE "HOSTNAME=$cf_hostname\n"; }
+  if (not $wrote_domain)   { print OUTFILE "DOMAINNAME=$cf_domain\n"; }
+
+  close(OUTFILE);
+  if (*INFILE) { close(INFILE); }
+}
+
+
+# SuSE style /etc/rc.config
+#
+# <&filtered lines>
+# FQHOSTNAME="<fully qualified hostname>"
+# SEARCHLIST="<space separated list of searchdomains>"
+# NAMESERVER="<space separated list of nameservers>"
+# <&filtered lines>
+#
+# Determines the local hostname.domain, searchdomains and nameservers.
+# BEWARE: This is actually a sourced shell script. We rely on some lenience
+# from the user (and the distro) to be able to parse it correctly. The file
+# is read by SuSE configuration tools and translated to NET-3 config files
+# at strategic times.
+#
+# Exists: SuSE 6.3
+#
+# Absent: Red Hat 6.x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SunOS 5.7
+
+sub read_rc_config
+{
+  my $ifh;
+  local *FILE;
+
+  # Find the file.
+
+  $ifh = &be_open_read_from_names(@rc_config_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
+
+  # Parse the file.
+
+  # The code for SEARCHLIST and NAMESERVER is basically the same as in
+  # &read_resolv_conf, only the splitting is different.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "FQHOSTNAME" && not &be_ignore_line($line[1]))
+    {
+      $cf_hostname = $line[1];
+    }
+    elsif ($line[0] eq "SEARCHLIST")
+    {
+      shift @line;
+      for $elem (@line)
+      {
+        if (&be_ignore_line($elem)) { last; }
+        if ($elem ne "") { &be_push_unique(\@cf_searchdomains, $elem); }
+      }
+    }
+    elsif ($line[0] eq "NAMESERVER")
+    {
+      shift @line;
+      for $elem (@line)
+      {
+        if (&be_ignore_line($elem)) { last; }
+        if ($elem ne "") { &be_push_unique(\@cf_nameservers, $elem); }
+      }
+    }
+  }
+
+  close(FILE);
+}
+
+
+# SuSE /etc/rc.config likes all env arguments in double quotes. Since we're
+# really nice guys, we conform to that.
+
+sub write_rc_config
+{
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
+  my $wrote_hostname = 0;
+  my $wrote_searchdomains = 0;
+  my $wrote_nameservers = 0;
+
+  # Find the file.
+
+  ($ifh, $ofh) = &be_open_filter_write_from_names(@rc_config_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "FQHOSTNAME")
+    {
+      print OUTFILE "FQHOSTNAME=\"$cf_hostname\"\n";  # FIXME: Needs to be fully qualified.
+      $wrote_hostname = 1;
+    }
+    elsif ($line[0] eq "SEARCHLIST")
+    {
+      print OUTFILE "SEARCHLIST=\"@cf_searchdomains\"\n";
+      $wrote_searchdomains = 1;
+    }
+    elsif ($line[0] eq "NAMESERVER")
+    {
+      print OUTFILE "NAMESERVER=\"@cf_nameservers\"\n";
+      $wrote_nameservers = 1;
+    }
+    else
+    {
+      print OUTFILE;
+    }
+  }
+
+  if (not $wrote_hostname)      { print OUTFILE "FQHOSTNAME=\"$cf_hostname\"\n"; }
+  if (not $wrote_searchdomains) { print OUTFILE "SEARCHLIST=\"$cf_searchdomains\"\n"; }
+  if (not $wrote_nameservers)   { print OUTFILE "NAMESERVER=\"$cf_nameservers\"\n"; }
+
+  close(OUTFILE);
+  if (*INFILE) { close(INFILE); }
+}
+
+
+# Samba /etc/smb.conf
+#
+# <&filtered lines>
+# workgroup = <workgroup>
+# server string = <description>
+# <&filtered lines>
+#
+# Exists: (Wherever Samba is installed)
+#
+# Absent: (Wherever Samba is not installed)
+
+sub read_smb_conf
+{
+  my $ifh;
+  local *FILE;
+
+  # Find the file.
+
+  $ifh = &be_open_read_from_names(@smb_conf_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "workgroup" && not &be_ignore_line($line[1]))
+    {
+      $cf_workgroup = $line[1];
+    }
+    elsif ($line[0] eq "serverstring" && not &be_ignore_line($line[1]))
+    {
+      shift @line;
+      $cf_description = join(' ', @line);
+    }
+    elsif ($line[0] eq "server" && $line[1] eq "string" && not &be_ignore_line($line[2]))
+    {
+      shift @line; shift @line;
+      $cf_description = join(' ', @line);
+    }
+    elsif ($line[0] eq "winsserver" && not &be_ignore_line($line[1]))
+    {
+      $cf_winsserver = $line[1];
+    }
+    elsif ($line[0] eq "wins" && $line[1] eq "server" && not &be_ignore_line($line[2]))
+    {
+      $cf_winsserver = $line[2];
+    }
+  }
+
+  close(FILE);
+}
+
+
+sub write_smb_conf
+{
+  my $ifh, $ofh;
+  local (*INFILE, *OUTFILE);
+  my $wrote_workgroup = 0;
+  my $wrote_description = 0;
+  my $wrote_winsserver = 0;
+  my $block = "";
+
+  # Find the file.
+
+  ($ifh, $ofh) = &be_open_filter_write_from_names(@smb_conf_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (($line[0] =~ /\[.*\]/))
+    {
+      # New block.
+
+      if ($block eq "[global]")
+      {
+        # These need to be written before exiting the [global] block.
+
+        if (not $wrote_workgroup)
+        { print OUTFILE "workgroup = $cf_workgroup\n"; $wrote_workgroup = 1; }
+        if (not $wrote_description)
+        { print OUTFILE "server string = $cf_description\n"; $wrote_description = 1; }
+        if ((not $wrote_winsserver) && $cf_winsserver ne "")
+        { print OUTFILE "wins server = $cf_winsserver\n"; $wrote_winsserver = 1; }
+      }
+
+      $block = $line[0];
+    }
+
+    if ($line[0] eq "workgroup" && not &be_ignore_line($line[1]))
+    {
+      print OUTFILE "workgroup = $cf_workgroup\n";
+      $wrote_workgroup = 1;
+    }
+    elsif ($line[0] eq "serverstring" && not &be_ignore_line($line[1]))
+    {
+      print OUTFILE "serverstring = $cf_description\n";
+      $wrote_description = 1;
+    }
+    elsif ($line[0] eq "server" && $line[1] eq "string" && not &be_ignore_line($line[2]))
+    {
+      print OUTFILE "server string = $cf_description\n";
+      $wrote_description = 1;
+    }
+    elsif ($line[0] eq "winsserver" && not &be_ignore_line($line[1]))
+    {
+      print OUTFILE "winsserver = $cf_winsserver\n";
+      $wrote_winsserver = 1;
+    }
+    elsif ($line[0] eq "wins" && $line[1] eq "server" && not &be_ignore_line($line[2]))
+    {
+      if ($cf_winsserver ne "") { print OUTFILE "wins server = $cf_winsserver\n"; }
+      $wrote_winsserver = 1;
+    }
+    else
+    {
+      print OUTFILE;
+    }
+  }
+
+  if (not $wrote_workgroup)                             { print OUTFILE "workgroup = $cf_workgroup\n"; }
+  if (not $wrote_description)                           { print OUTFILE "server string = $cf_description\n"; }
+  if ((not $wrote_winsserver) && $cf_winsserver ne "")  { print OUTFILE "wins server = $cf_winsserver\n"; }
+
+  close(OUTFILE);
+  if (*INFILE) { close(INFILE); }
+}
+
+# Network Interfaces
+
+sub read_interfaces
+{
+  my $hash;
+
+  $hash = &be_network_get ();
+
+  $cf_nw_interfaces = $$hash{"interfaces"};
+  $cf_nw_global = $$hash{"global"};
+}
+
+# --- XML parsing ---
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  # Scan XML to tree.
+
+  $tree = &be_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "network" tag.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "network") { &xml_parse_network ($$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($tree);
+}
+
+# <network>...</network>
+
+sub xml_parse_network
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if    ($$tree[0] eq "hostname")        { $cf_hostname = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "domain")          { $cf_domain = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "hostnamereverse") { $cf_hostname_reverse = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "domainreverse")   { $cf_domain_reverse = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "workgroup")       { $cf_workgroup = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "description")     { $cf_description = &be_xml_get_text($$tree[1]); }
+    elsif ($$tree[0] eq "winsserver")      { $cf_winsserver = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "searchdomain")    { push(@cf_searchdomains, &be_xml_get_word($$tree[1])); }
+    elsif ($$tree[0] eq "nameserver")      { push(@cf_nameservers, &be_xml_get_word($$tree[1])); }
+    elsif ($$tree[0] eq "statichost")      { &xml_parse_statichost($$tree[1]); }
+    elsif ($$tree[0] eq "order")           { &xml_parse_order($$tree[1]); }
+    elsif ($$tree[0] eq "hostmatch")       { &xml_parse_hostmatch($$tree[1]); }
+    elsif ($$tree[0] eq "interface")       { &xml_parse_interface($$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+# <network><statichost>...</statichost></network>
+
+sub xml_parse_statichost
+{
+  my $tree = $_[0];
+  my $ip;
+  my @alias;
+
+  push(@cf_statichosts, &be_read_boolean($$tree[0]->{enabled}));
+  shift @$tree;
+
+  while (@$tree)
+  {
+    if    ($$tree[0] eq "ip")    { $ip = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "alias") { push(@alias, &be_xml_get_word($$tree[1])); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  if ($ip =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
+  {
+    push(@cf_statichosts, $ip);
+    push(@cf_statichosts, [@alias]);
+  }
+  else
+  {
+    # Print warning message: IP is not well-formed.
+  }
+}
+
+
+# <network><order>...</order></network>
+
+sub xml_parse_order
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "") { shift @$tree; shift @$tree; next; }
+    push(@cf_order, $$tree[0]);
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+# <network><hostmatch return=... /></network>
+
+sub xml_parse_hostmatch
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'all' or 'first'.
+
+  if ($$tree[0]->{return} eq "all") { $cf_hostmatch = 0; }
+  else { $cf_hostmatch = 1; }
+}
+
+
+# <interface>...</interface>
+
+sub xml_parse_interface
+{
+  my $tree = $_[0];
+  my %interface;
+  my $dev;
+
+  shift @$tree;
+  
+  while (@$tree)
+  {
+    $interface{$$tree[0]} = &be_xml_get_word ($$tree[1]);
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  $dev = $interface{"dev"};
+  delete $interface{"dev"};
+  $$cf_nw_interfaces{$dev} = { %interface };
+}
+
+
+# --- XML printing --- #
+
+
+sub xml_print
+{
+  my $cfl_hostname = &be_xml_plain_to_entities(\$cf_hostname);
+  my $cfl_domain = &be_xml_plain_to_entities(\$cf_domain);
+  my $cfl_workgroup = &be_xml_plain_to_entities(\$cf_workgroup);
+  my $cfl_description = &be_xml_plain_to_entities(\$cf_description);
+  my $cfl_winsserver = &be_xml_plain_to_entities(\$cf_winsserver);
+  my $cfl_hostname_reverse = &be_xml_plain_to_entities(\$cf_hostname_reverse);
+  my $cfl_domain_reverse = &be_xml_plain_to_entities(\$cf_domain_reverse);
+  my ($elem, $elem2);
+
+  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
+  print "<!DOCTYPE network []>\n\n";
+  print "<network>\n";
+  &be_xml_vspace ();
+  &be_xml_enter ();
+
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- Configuration starts here -->\n");
+  &be_xml_vspace ();
+
+  # Hostname, domain, search domains, nameservers.
+
+  if ($cfl_hostname ne "") { &be_xml_print ("<hostname>$cfl_hostname</hostname>\n"); }
+  if ($cfl_domain ne "") { &be_xml_print ("<domain>$cfl_domain</domain>\n"); }
+  if ($cfl_workgroup ne "") { &be_xml_print ("<workgroup>$cfl_workgroup</workgroup>\n"); }
+  if ($cfl_description ne "") { &be_xml_print ("<description>$cfl_description</description>\n"); }
+  &be_xml_vspace ();
+  if ($cfl_winsserver ne "") { &be_xml_print ("<winsserver>$cfl_winsserver</winsserver>\n"); }
+  &be_xml_vspace ();
+
+  for $elem (@cf_searchdomains)
+  {
+    $elem = &be_xml_plain_to_entities(\$elem);
+    &be_xml_print ("<searchdomain>$elem</searchdomain>\n");
+  }
+
+  &be_xml_vspace ();
+
+  for $elem (@cf_nameservers)
+  {
+    $elem = &be_xml_plain_to_entities(\$elem);
+    &be_xml_print ("<nameserver>$elem</nameserver>\n");
+  }
+
+  # Static hosts.
+
+  my @iplist = @cf_statichosts;
+  while (@iplist)
+  {
+    if ($iplist[0] ne "")
+    {
+      &be_xml_vspace ();
+      &be_xml_print ("<statichost enabled='" . &be_print_boolean_truefalse($iplist[0]) .
+                    "'>\n");
+      &be_xml_enter ();
+
+      $iplist[1] = &be_xml_plain_to_entities(\$iplist[1]);
+
+      &be_xml_print ("<ip>$iplist[1]</ip>\n");
+
+      my $aliaslist = $iplist[2];
+      for $alias (@$aliaslist)
+      {
+        $alias = &be_xml_plain_to_entities(\$alias);
+        &be_xml_print ("<alias>$alias</alias>\n");
+      }
+
+      &be_xml_leave ();
+      &be_xml_print ("</statichost>\n");
+    }
+
+    shift @iplist;
+    shift @iplist;
+    shift @iplist;
+  }
+
+  &be_xml_vspace ();
+  &be_xml_print ("<network>\n");
+  &be_xml_enter ();
+  foreach $elem (keys (%{$cf_nw_global}))
+  {
+    &be_xml_print ("<$elem>$$cf_nw_global{$elem}</$elem>\n");
+  }
+  &be_xml_leave ();
+  &be_xml_print ("</network>\n");
+  
+  foreach $elem (keys (%{$cf_nw_interfaces}))
+  { 
+    &be_xml_vspace ();
+    &be_xml_print ("<interface>\n");
+    &be_xml_enter ();
+    &be_xml_print ("<dev>$elem</dev>\n");
+    
+    my %interface = %{$ { $cf_nw_interfaces}{$elem}};
+    foreach $elem2 (keys (%interface))
+    {
+      &be_xml_print ("<$elem2>$interface{$elem2}</$elem2>\n");
+    }
+    
+    &be_xml_leave ();
+    &be_xml_print ("</interface>\n");
+  } 
+
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- You shouldn't have to modify anything below this line -->\n");
+  &be_xml_vspace ();
+
+  # Search order and host matches (multi).
+
+  &be_xml_print ("<order>");
+  for $elem (@cf_order) { print "<$elem/>"; }
+  print "</order>\n";
+
+  &be_xml_indent ();
+  if ($cf_hostmatch) { print "<hostmatch return='first'/>\n"; }
+  else               { print "<hostmatch return='all'/>\n"; }
+
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- You cannot modify anything below this line -->\n");
+  &be_xml_vspace ();
+
+  if ($cfl_hostname_reverse ne "")
+  {
+    &be_xml_print ("<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n");
+  }
+
+  if ($cfl_domain_reverse ne "")
+  {
+    &be_xml_print ("<domainreverse>$cfl_domain_reverse</domainreverse>\n");
+  }
+
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- End of configuration -->\n");
+  &be_xml_vspace ();
+
+  &be_xml_leave ();
+  &be_xml_print ("</network>\n");
+}
+
+
+# --- Get (read) config --- #
+
+
+sub get_active_interfaces
+{
+  my $dev;
+  my $interface;
+
+  open IFCONFIG, "$tool_ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
+	 open IFCONFIG, "$tool_ifconfig | sed 's/:* .*//;/^\$/D' |";
+  # another possibility, instead of sed: awk '/^[a-z]/{print $1}'
+
+  while (<IFCONFIG>)
+  {
+    chomp;
+    $dev = $_;
+    $interface = $$cf_nw_interfaces{$dev};
+    $$interface{"enabled"} = 1;
+  }
+
+  close IFCONFIG;
+}
+
+sub get_immediate
+{
+  # This is rather unethical. Have to find some reasonable defaults on non-(GNU/Linux)
+  # systems. It'll have to do for now.
+
+  # If any of this fails, the worst that can happen is that the reverse names
+  # &get &set to empty strings, which is the expected action when they're unknown.
+
+  my $ip = "$tool_ifconfig eth0 2>/dev/null";
+  if ($ip eq "") { $ip = "$tool_ifconfig ppp0 2>/dev/null"; }
+
+  $ip =~ /^.*addr:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/m;
+  $ip = $1;
+
+  if ($ip eq "")
+  {
+    &be_report_warning(01, "Couldn't find a configured network device");
+    return(0);
+  }
+
+  # Succeeds only if we &get an FQDN. This is probably the right thing to do.
+
+  &be_report_info(3, "Looking up reverse names");
+
+  $temp = `nslookup -timeout=1 -retry=2 $ip 2>/dev/null`;
+  $temp =~ /^Name:[ \t]+([a-zA-Z0-9]+)\.([a-zA-Z0-9.]+)/mg;
+
+  if ($1 ne $ip) { $cf_hostname_reverse = $1; }  # Appalling.
+  $cf_domain_reverse = $2;
+
+  if (($cf_domain_reverse eq "" || $cf_hostname_reverse eq ""))
+  {
+    &be_report_warning(02, "Couldn't get reverse names for this host");
+  }
+
+  &get_active_interfaces ()
+}
+
+
+sub get
+{
+  # nameresolution stuff
+  &read_host_conf (); &be_print_progress ();
+  &read_hosts (); &be_print_progress ();
+  &read_resolv_conf (); &be_print_progress ();
+  &read_sysconfig_network (); &be_print_progress ();
+  &read_rc_config (); &be_print_progress ();
+  &read_defaultdomain (); &be_print_progress ();
+  &read_hostname (); &be_print_progress ();
+  &read_smb_conf (); &be_print_progress ();
+
+  # network interface stuff
+  &read_interfaces (); &be_print_progress ();
+  
+  &get_immediate (); &be_print_progress ();
+  
+  &be_end();
+  &xml_print ();
+}
+
+
+# --- Set (write) config --- #
+
+
+sub set_interface_up
+{
+  my $dev = $_[0];
+
+  # RedHat
+
+  system ("$tool_ifup $dev");
+}
+
+sub set_interface_down
+{
+  my $dev = $_[0];
+
+  system ("$tool_ifconfig $dev down");
+}
+
+sub set_active_interfaces
+{
+  my (%ifaces, %interface, $elem);
+  
+  open IFCONFIG, "ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
+	 open IFCONFIG, "ifconfig | sed 's/:* .*//;/^\$/D' |";
+  # another possibility, instead of sed: awk '/^[a-z]/{print $1}'
+
+  while (<IFCONFIG>)
+  {
+    chomp;
+    $ifaces{$_} = 1;
+  }
+
+  close IFCONFIG;
+
+  foreach $elem (keys (%{$cf_nw_interfaces}))
+  {
+    %interface = %{$ { $cf_nw_interfaces}{$elem}};
+    if ($ifaces{$elem} && ! $$interface{"enabled"})
+    {
+	 &set_interface_down ($elem);
+	 next;
+    }
+
+    if (!$ifaces{$elem} && $$interface{"enabled"})
+    {
+	 &set_interface_up ($elem);
+    }
+  }
+}
+
+sub set_immediate
+{
+  # Set hostname via utility, in case the config files aren't enough.
+
+  if ($cf_hostname ne "")
+  {
+    if (&be_run("hostname $cf_hostname >/dev/null 2>/dev/null"))
+    {
+      &be_report_warning(3, "Failed to set runtime hostname");
+    }
+    else
+    {
+      &be_report_info(1, "Runtime hostname set");
+    }
+  }
+  else
+  {
+    &be_report_warning(4, "No hostname specified; runtime hostname not set");
+  }
+
+  # Reload SMB configuration.
+  
+  &be_service_restart(80, "-D", "samba", "smb", "smbd");
+
+  # Activate or deactivate network interfaces
+
+  &set_active_interfaces ();
+}
+
+
+# sub &set_local_host_entry
+# {
+#   # Temporary solution to find IP address. Ideally we want to define the
+#   # hostname for all IPs we have.
+# 
+#   my $ip = `ifconfig eth0 2>/dev/null`;
+#   if ($ip eq "") { $ip = `ifconfig ppp0 2>/dev/null`; }
+# 
+#   $ip =~ /^.*addr:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)/m;
+#   $ip = $1;
+# 
+#   if ($ip eq "")
+#   {
+#     &be_report_warning(01, "Couldn't find a configured network device");
+#     return(0);
+#   }
+# 
+#   &be_ensure_local_host_entry ($ip, $cf_hostname);
+# }
+
+
+sub set
+{
+  &xml_parse ();
+
+  &write_smb_conf (); &be_progress(10);
+  &write_rc_config (); &be_progress(20);
+  &write_sysconfig_network (); &be_progress(30);
+  &write_defaultdomain (); &be_progress(40);
+  &write_hostname (); &be_progress(50);
+  &write_resolv_conf (); &be_progress(60);
+  &write_hosts (); &be_progress(70);
+  &write_host_conf (); &be_progress(80);
+  &be_ensure_local_host_entry ($cf_hostname); &be_progress(90);
+
+  if ($be_do_immediate)
+  {
+    &set_immediate;
+  }
+
+  &be_end();
+}
+
+
+# --- Filter config: XML in, XML out --- #
+
+
+sub filter
+{
+  &xml_parse ();
+  &be_end();
+  &xml_print ();
+}
+
+
+# --- Main --- #
+
+be_init($name, $version, $description, @ARGV);
+
+# Do our thing.
+
+if    ($be_operation eq "get")    { &get; }
+elsif ($be_operation eq "set")    { &set; }
+elsif ($be_operation eq "filter") { &filter; }

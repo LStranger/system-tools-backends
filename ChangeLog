@@ -2,6 +2,8 @@
 
 	* new_network-conf.in, network.pl.in, parse.pl.in: completly new
 	  network code and parsing routines.
+	* network-conf.in: overwrote with new_network-conf.in and cvs
+	  removing new_network-conf.in. Saving a backup, though.
 
 2001-01-22  Arturo Espinosa  <arturo@ximian.com>
 
