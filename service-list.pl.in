@@ -33,6 +33,7 @@ sub gst_service_list_get_info
 	(
     # please, keep this list sorted
 		# service => [long_name, description]
+    "acpid"             =>  [ _("ACPI event handler"), _("Notifies user-space programs of ACPI events: executes arbitrary commands in response to ACPI events such as power buttons.") ],
     "alsa"              =>  [ _("Advanced Linux Sound Architecture"), _("Advanced Linux Sound Architecture") ],
     "apache"            =>	[ _("web server"),  _("Apache is a World Wide Web server.  It is used to serve HTML files and CGI.") ],
     "anacron"           =>      [ _("Run missed scheduled jobs at startup"), _("Run cron jobs that were left out due to downtime") ],
@@ -64,6 +65,7 @@ sub gst_service_list_get_info
     "irda"              =>      [ "", _("IrDA stack for Linux") ],
     "isakmpd"           =>  [ _("The Internet Key Exchange protocol"), _("The Internet Key Exchange protocol openbsd implementation") ],
     "isdn"              =>      [ "", _("start and stop ISDN services") ],
+    "joystick"          =>  [ _("Check and fix joystick device nodes"), _("Runs joystick-device-check.  joystick-device-check is a program which ensures that the /dev/js* device nodes are correct for the kernel version in use.") ],
     "keytable"          =>      [ "", _("This package loads the selected keyboard map as set in /etc/sysconfig/keyboard.  This can be selected using the kbdconfig utility.  You should leave this enabled for most machines.") ],
 		"klogd"             =>	[ ("Kernel Log Daemon"), _("klogd is a system daemon which intercepts and logs Linux kernel messages.") ],
     "kudzu"             =>      [ "", _("This runs the hardware probe, and optionally configures changed hardware.") ],
@@ -78,6 +80,7 @@ sub gst_service_list_get_info
     "nfs"               =>      [ "", _("NFS is a popular protocol for file sharing across TCP/IP networks. This service provides NFS server functionality, which is configured via the /etc/exports file.") ],
     "nfslock"           =>      [ "", _("NFS is a popular protocol for file sharing across TCP/IP networks. This service provides NFS file locking functionality.") ],
     "ntpd"              =>      [ "", _("ntpd is the NTPv4 daemon.") ],
+    "ntpdate"           =>      [ _("Update the system time over the network"), _("Checks the time from a Network Time Protocol (ntp) server and adjusts the system time accordingly.") ],
     "oops"              =>      [ _("HTTP caching proxy"), _("HTTP caching proxy") ],
     "pcmcia"            =>      [ _("PCMCIA Services"), _("PCMCIA Services") ],
     "pdnsd"             =>      [ _("Caching-Only DNS Server"), _("Caching-Only DNS Server") ],

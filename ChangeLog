@@ -1,5 +1,10 @@
 2004-04-05  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* service-list.pl.in: added descriptions for "joystick", "acpid" and
+	  "ntpdate" from John Spray <jcs116@york.ac.uk>
+
+2004-04-05  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* file.pl.in (gst_file_copy): added
 	* service.pl.in (gst_service_gentoo_get_service_status): added.
 	  (gst_service_gentoo_set_status): added a $force var for 
