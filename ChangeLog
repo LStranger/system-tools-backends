@@ -1,3 +1,9 @@
+2001-03-31  Hans Petter Jansson  <hpj@ximian.com>
+
+	* filesys.pl.in: Added. Implements parsing of fstab and mtab files,
+	  and manipulating the information presented by these as in-memory
+	  structures.
+
 2001-03-30  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* report.pl.in (xst_report): new "::" separated report format.
