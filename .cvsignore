@@ -25,3 +25,4 @@ debug.pl
 print.pl
 gettext.pl
 print-conf
+mouse-conf
