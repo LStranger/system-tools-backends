@@ -51,7 +51,7 @@ sub xst_ishare_get_linux22_forward_support
 {
   my ($hash) = @_;
   my ($forward_file, $masq_file) =
-      ("/proc/sys/net/ipv4/ip_forward", "/proc/sys/net/ipv4/ip_masq_debug");
+      ("/proc/sys/net/ipv4/ip_forward", "/proc/net/ip_masquerade");
 
   $$hash{"forwarding"}   = (-f $forward_file)? 1: 0;
   $$hash{"masquerading"} = (-f $masq_file)?    1: 0;

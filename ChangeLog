@@ -1,3 +1,8 @@
+2001-08-30  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* ishare.pl.in (xst_ishare_get_linux22_forward_support):
+	Changed masquerading support to check for /proc/net/ip_masquerade.
+
 2001-08-28  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* ishare.pl.in (xst_ishare_fwrules_get_ipchains): typo
