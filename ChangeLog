@@ -1,3 +1,8 @@
+2001-04-20  Arturo Espinosa  <arturo@ximian.com>
+
+	* report.pl.in (xst_report): As we are killing the format strings
+	  from the frontend common code, we pass it in the report now.
+	
 2001-04-19  Arturo Espinosa  <arturo@ximian.com>
 
 	* file.pl.in (xst_file_run): return -1 if command fails to be found.

@@ -112,7 +112,7 @@ sub xst_report
   }
 
   # Report (-r) output is machine-readable.
-  print STDOUT join ("::", $key, @args) . "\n" if $xst_do_report;
+  print STDOUT join ("::", $key, $str, @args) . "\n" if $xst_do_report;
 
   # Verbose (-v) output is human-readable only.
   $format = "$str\n";
@@ -134,8 +134,8 @@ sub xst_report
      "compat"   => ["info", "%s."],
 
      "platform_list"            => ["sys",   "Supported: [%s]"],
-     "platform_unsup"           => ["fatal", "Your platform is not supported."],
-     "platform_undet"           => ["fatal", "Unable to determine host platform."],
+     "platform_unsup"           => ["error", "Your platform is not supported."],
+     "platform_undet"           => ["error", "Unable to determine host platform."],
      "platform_success"         => ["sys",   "Configuring for platform [%s]."],
 
      "xml_unexp_tag"            => ["error", "Unexpected tag [%s]."],
