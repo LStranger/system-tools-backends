@@ -1,5 +1,10 @@
 2004-08-01  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* platform.pl.in: Black Panther linux has changed it's name to
+	"Black Panther OS", reflect this
+
+2004-08-01  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* platform.pl.in: /etc/debian_release in Sarge now contains "3.1".
 	Updated
 
