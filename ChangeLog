@@ -1,3 +1,9 @@
+2001-07-24  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in: we use strict from now on. Only for this file.
+	Fixed damned bug that ruined $sections variable and crashed
+	display tool.
+
 2001-07-20  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* platform.pl.in (xst_platform_ensure_supported): Don't

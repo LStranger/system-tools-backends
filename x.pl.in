@@ -27,6 +27,7 @@ require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
 
 use Text::ParseWords;
+use strict;
 
 # XFree86 version 4 sections:
 # Files
@@ -46,11 +47,11 @@ use Text::ParseWords;
 # Keywords are hashes with name as key, and values containing lists of:
 # function_to_parse_from_conf, function_to_parse_from_xml, quoted (1/0).
 
-$sections = {};
+my $sections = {};
 
 $sections = {
   Monitor => {
-    KEY => Identifier,
+    KEY => 'Identifier',
     keywords => {
       Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
       VendorName => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
@@ -62,7 +63,7 @@ $sections = {
     options => {},
   },
   Device => {
-    KEY => Identifier,
+    KEY => 'Identifier',
     keywords => {
       Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
       Driver     => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
@@ -82,7 +83,7 @@ $sections = {
     options => {},
   },
   Screen => {
-    KEY => Identifier,
+    KEY => 'Identifier',
     keywords => {
       Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
       Device     => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
@@ -92,7 +93,7 @@ $sections = {
     },
     options => {},
     Display => {
-      KEY => Depth,
+      KEY => 'Depth',
       keywords => {
         Depth   => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
         Modes   => [ \&parse_kw_list, \&xml_parse_display_modes, 1 ],
@@ -101,7 +102,7 @@ $sections = {
     }
   },
   ServerLayout => {
-    KEY => Identifier,
+    KEY => 'Identifier',
     keywords => {
       Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
       Screen     => [ \&parse_serverlayout_screen, \&xml_parse_kw_unique, 1 ],
@@ -574,6 +575,7 @@ sub x_xml_print_modelines
 {
   my $key = shift;
   my $modelines = shift;
+  my ($mode);
   my @kws = qw(name dotclock hdisp hsyncstart hsyncend htotal
                vdisp vsyncstart vsyncend vtotal);
 
@@ -705,17 +707,17 @@ sub x_xml_parse_section
   my ($config, $tree, $section_desc, $section) = @_;
   my ($keywords) = $section_desc->{'keywords'};
   my ($options) = $section_desc->{'options'};
-  my ($val, $type);
 
   my $hash = bless {}, "XstX" . $section;
   shift @$tree;
 
   while (@$tree) {
     my ($ref, $func);
-
+    
     if (exists $keywords->{$$tree[0]}) {
       $func = $keywords->{$$tree[0]}[1];
-      $ref = &$func ($$tree[0], $$tree[1]);
+      if ($func eq "") { print STDERR "$tree->[0]\n"; }
+      else { $ref = &$func ($$tree[0], $$tree[1]); }
     }
     
     elsif (exists $options->{$$tree[0]}) {
@@ -749,7 +751,7 @@ sub x_xml_parse
   
   while (@$tree) {
     my ($section);
-
+    
     if ($section = &xst_x_keyword_in_list ($$tree[0], keys %$sections)) {
       &x_xml_parse_section ($config, $$tree[1], $sections->{$section}, $section);
     }
@@ -915,11 +917,19 @@ sub x_add_keyword
   my ($outfd, $new_section, $pre_space, $val_col, $section_list) = @_;
   my ($key);
 
+  if (scalar keys %$new_section == 0) {
+    return;
+  }
+  
   foreach $key (keys %$new_section) {
-    my ($kw, $val);
-    my $quote = $section_list->{keywords}{$key}[2] ? "\"" : "";
-    my $type = ref ($new_section->{$key});
+    my $quote;    
+    if (exists $section_list->{'keywords'}{$key}) {
+      $quote = $section_list->{'keywords'}{$key}[2] ? "\"" : "";
+    }    
 
+    my ($kw, $val);
+    my $type = ref ($new_section->{$key});
+    
     if (!$type) {
       $kw = "$key";
       $val = $quote . "$new_section->{$key}". $quote;
@@ -968,7 +978,7 @@ sub x_add_keyword
 sub x_update_section
 {
   my ($infd, $outfd, $config, $xml_config, $section_name, $section_list, $sub_sec, $section_start) = @_;
-  my ($section, $new_section, $ident_str);
+  my ($section, $new_section, $ident_str, $line, $s);
   my ($pre_space, $val_col);
   
   my $section = shift @{$config->{$section_name}};
@@ -991,8 +1001,9 @@ sub x_update_section
   
   while ($line = <$infd>) {
     if (&x_section_end ($line, $sub_sec)) {
-
-      &x_add_keyword ($outfd, $new_section, $pre_space, $val_col, $section_list->{$section_name});
+      if (scalar keys %$new_section) {
+        &x_add_keyword ($outfd, $new_section, $pre_space, $val_col, $section_list->{$section_name});
+      }
       
       print $outfd $line;
       return;
@@ -1050,8 +1061,8 @@ sub x_config_set
     # TODO: Give warning.
     return;
   }
-    
-  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($fname);
+
+  my ($infd, $outfd) = &xst_file_open_filter_write_from_names ($fname);
   return undef unless $outfd;
 
   while (<$infd>)
@@ -1061,7 +1072,7 @@ sub x_config_set
       next;
     }
 
-    $section = &x_section_start ($_, 0);
+    my $section = &x_section_start ($_, 0);
     if ($section) {
       &x_update_section ($infd, $outfd, $config, $xml_config, $section, $sections, 0, $_);
       next;

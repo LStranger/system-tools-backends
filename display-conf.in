@@ -36,10 +36,11 @@ require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/x.pl";
 }
 
+# use strict;
 
 # --- Tool information --- #
 
-$name = "Display";
+$name = "display";
 $version = "0.1.0";
 @platforms = qw(redhat-7.0 redhat-7.1 turbolinux-7.0 debian-woody);
 
@@ -84,7 +85,7 @@ sub xml_parse
   }
 
   while (@$tree) {
-    if ($$tree[0] eq "Display") { $hash = &x_xml_parse ($$tree[1], $hash); }
+    if ($$tree[0] eq $name) { $hash = &x_xml_parse ($$tree[1], $hash); }
     
     shift @$tree;
     shift @$tree;
@@ -145,7 +146,7 @@ sub set
 {
   my $config = &x_parse (&distro_file ());
   my $xml_config = &xml_parse ();
-  
+
   &x_config_set (&distro_file (), $config, $xml_config);
   &xst_end ();
 }
@@ -160,7 +161,6 @@ sub filter
 
 sub test
 {
-  # TODO: $testX_cmd should be something better (obviously :)
   my $testX_cmd = "___scriptsdir___/testX";
   my $tmp_file = "/tmp/XF86Config-tmp";
   my $real_file = &distro_file ();
