@@ -1,3 +1,9 @@
+2001-08-30  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* internetsharing.xsd: Changed minOccurs of fwrules and dhcp
+	elements, to be compatible to the get_interfaces directive
+	XML output.
+
 Fri Aug 24 12:33:12 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* internetsharing.xsd: Corrected types for landev and dev elements.

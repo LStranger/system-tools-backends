@@ -26,8 +26,8 @@
 
   <complexType name="internetsharingType">
     <sequence>
-      <element type="fwrulesType"   name="fwrules"/>
-	 <element type="dhcpType"      name="dhcp"/>
+      <element type="fwrulesType"   name="fwrules"   minOccurs="0"/>
+	 <element type="dhcpType"      name="dhcp"      minOccurs="0"/>
 	 <element type="interfaceType" name="interface" minOccurs="0" maxOccurs="unbounded"/>
     </sequence>
   </complexType>
