@@ -271,17 +271,114 @@ sub xml_parse_interface
 
 # --- XML printing --- #
 
+sub quote
+{
+  my $ret = $_[0];
+  my $i;
+ 
+  for ($i = 1; @be_xml_entities[$i] ne undef; $i += 2)
+  {
+    $ret =~ s/$be_xml_entities[$i]/$be_xml_entities[$i - 1]/g;
+  }
+
+  return $ret;
+}
+
+sub unquote
+{
+  my $ret = $_[0];
+  my $i;
+ 
+  for ($i = 0; @be_xml_entities[$i] ne undef; $i += 2)
+  {
+    $ret =~ s/$be_xml_entities[$i]/$be_xml_entities[$i + 1]/g;
+  }
+
+  return $ret;
+}
+
+sub xml_print_scalars
+{
+  my ($h, @scalar_keys) = @_;
+  my $i;
+
+  while ($i = shift @scalar_keys)
+  {
+    &be_xml_print ("<$i>$$h{$i}</$i>\n") if exists $$h{$i};
+  }
+}
+
+sub xml_print_arrays
+{
+  my ($h, @array_keys) = @_;
+  my $i, $j;
+  
+  foreach $i (@array_keys)
+  {
+    if (exists $$h{$i})
+    {
+	 &be_xml_vspace ();
+	 foreach $j (@{$$h{$i}})
+	 {
+	   &be_xml_print ("<$i>$j</$i>\n");
+	 }
+    }
+  }
+}
+
+sub xml_print_statichost
+{
+  my ($h) = $_[0];
+  my $i, $j, $statichost;
+  
+  foreach $i (keys %{$$h{"statichost"}})
+  {
+    $statichost = $ {$$h{"statichost"}}{$i};
+    &be_xml_vspace ();
+    &be_xml_print ("<statichost>\n");
+    &be_xml_enter ();
+    &be_xml_print ("<ip>$i</ip>\n");
+    foreach $j (@$statichost)
+    {
+	 &be_xml_print ("<alias>$j</alias>\n");
+    }
+    &be_xml_leave ();
+    &be_xml_print ("</statichost>\n");
+  }
+}
+
+sub xml_print_interfaces
+{
+  my ($h) = $_[0];
+  my $interface, $i, $j;
+  
+  foreach $i (keys %{$$h{"interface"}})
+  { 
+    $interface = $ {$$h{"interface"}}{$i};
+    &be_xml_vspace ();
+    &be_xml_print ("<interface>\n");
+    &be_xml_enter ();
+    
+    foreach $j (keys (%$interface))
+    {
+      &be_xml_print ("<$j>$$interface{$j}</$j>\n");
+    }
+    
+    &be_xml_leave ();
+    &be_xml_print ("</interface>\n");
+  } 
+}
 
 sub xml_print
 {
-  my $cfl_hostname = &be_xml_plain_to_entities(\$cf_hostname);
-  my $cfl_domain = &be_xml_plain_to_entities(\$cf_domain);
-  my $cfl_workgroup = &be_xml_plain_to_entities(\$cf_workgroup);
-  my $cfl_description = &be_xml_plain_to_entities(\$cf_description);
-  my $cfl_winsserver = &be_xml_plain_to_entities(\$cf_winsserver);
-  my $cfl_hostname_reverse = &be_xml_plain_to_entities(\$cf_hostname_reverse);
-  my $cfl_domain_reverse = &be_xml_plain_to_entities(\$cf_domain_reverse);
-  my ($elem, $elem2);
+  my $h = $_[0];
+  my @scalar_keys =
+	 (auto, forward, hostname, gateway, gateway_dev, domain, domainname,
+	  hostmatch, workgroup, description, winsserver);
+  my @array_keys =
+	 (nameserver, searchdomain, order);
+  my @hash_keys =
+	 (statichost);
 
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE network []>\n\n";
@@ -295,115 +392,11 @@ sub xml_print
 
   # Hostname, domain, search domains, nameservers.
 
-  if ($cfl_hostname ne "") { &be_xml_print ("<hostname>$cfl_hostname</hostname>\n"); }
-  if ($cfl_domain ne "") { &be_xml_print ("<domain>$cfl_domain</domain>\n"); }
-  if ($cfl_workgroup ne "") { &be_xml_print ("<workgroup>$cfl_workgroup</workgroup>\n"); }
-  if ($cfl_description ne "") { &be_xml_print ("<description>$cfl_description</description>\n"); }
-  &be_xml_vspace ();
-  if ($cfl_winsserver ne "") { &be_xml_print ("<winsserver>$cfl_winsserver</winsserver>\n"); }
-  &be_xml_vspace ();
-
-  for $elem (@cf_searchdomains)
-  {
-    $elem = &be_xml_plain_to_entities(\$elem);
-    &be_xml_print ("<searchdomain>$elem</searchdomain>\n");
-  }
-
-  &be_xml_vspace ();
-
-  for $elem (@cf_nameservers)
-  {
-    $elem = &be_xml_plain_to_entities(\$elem);
-    &be_xml_print ("<nameserver>$elem</nameserver>\n");
-  }
-
-  # Static hosts.
-
-  my @iplist = @cf_statichosts;
-  while (@iplist)
-  {
-    if ($iplist[0] ne "")
-    {
-      &be_xml_vspace ();
-      &be_xml_print ("<statichost enabled='" . &be_print_boolean_truefalse($iplist[0]) .
-                    "'>\n");
-      &be_xml_enter ();
-
-      $iplist[1] = &be_xml_plain_to_entities(\$iplist[1]);
-
-      &be_xml_print ("<ip>$iplist[1]</ip>\n");
-
-      my $aliaslist = $iplist[2];
-      for $alias (@$aliaslist)
-      {
-        $alias = &be_xml_plain_to_entities(\$alias);
-        &be_xml_print ("<alias>$alias</alias>\n");
-      }
-
-      &be_xml_leave ();
-      &be_xml_print ("</statichost>\n");
-    }
-
-    shift @iplist;
-    shift @iplist;
-    shift @iplist;
-  }
-
-  &be_xml_vspace ();
-  &be_xml_print ("<network>\n");
-  &be_xml_enter ();
-  foreach $elem (keys (%{$cf_nw_global}))
-  {
-    &be_xml_print ("<$elem>$$cf_nw_global{$elem}</$elem>\n");
-  }
-  &be_xml_leave ();
-  &be_xml_print ("</network>\n");
+  &xml_print_scalars ($h, @scalar_keys);
+  &xml_print_arrays ($h, @array_keys);
+  &xml_print_statichost ($h);
+  &xml_print_interfaces ($h);
   
-  foreach $elem (keys (%{$cf_nw_interfaces}))
-  { 
-    &be_xml_vspace ();
-    &be_xml_print ("<interface>\n");
-    &be_xml_enter ();
-    &be_xml_print ("<dev>$elem</dev>\n");
-    
-    my %interface = %{$ { $cf_nw_interfaces}{$elem}};
-    foreach $elem2 (keys (%interface))
-    {
-      &be_xml_print ("<$elem2>$interface{$elem2}</$elem2>\n");
-    }
-    
-    &be_xml_leave ();
-    &be_xml_print ("</interface>\n");
-  } 
-
-  &be_xml_vspace ();
-  &be_xml_print ("<!-- You shouldn't have to modify anything below this line -->\n");
-  &be_xml_vspace ();
-
-  # Search order and host matches (multi).
-
-  &be_xml_print ("<order>");
-  for $elem (@cf_order) { print "<$elem/>"; }
-  print "</order>\n";
-
-  &be_xml_indent ();
-  if ($cf_hostmatch) { print "<hostmatch return='first'/>\n"; }
-  else               { print "<hostmatch return='all'/>\n"; }
-
-  &be_xml_vspace ();
-  &be_xml_print ("<!-- You cannot modify anything below this line -->\n");
-  &be_xml_vspace ();
-
-  if ($cfl_hostname_reverse ne "")
-  {
-    &be_xml_print ("<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n");
-  }
-
-  if ($cfl_domain_reverse ne "")
-  {
-    &be_xml_print ("<domainreverse>$cfl_domain_reverse</domainreverse>\n");
-  }
-
   &be_xml_vspace ();
   &be_xml_print ("<!-- End of configuration -->\n");
   &be_xml_vspace ();

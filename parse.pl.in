@@ -26,6 +26,31 @@
 
 require "___scriptsdir___/be.pl";
 
+sub xst_parse_from_table
+{
+  my ($fn, $table) = @_;
+  my %hash;
+  my ($key, $proc, @param);
+  my ($i, @cp);
+
+  foreach $i (@$table)
+  {
+    @cp = @$i;
+    $key = shift (@cp);
+    $proc = shift (@cp);
+    $cp[0] = $$fn{$cp[0]};
+
+    $hash{$key} = &$proc (@cp) if ($hash{$key} eq undef);
+  }
+
+  foreach $i (keys (%hash))
+  {
+    delete $hash{$i} if (($hash{$i} eq undef) || ($hash{$i} eq ""));
+  }
+  
+  return \%hash;
+}
+
 # Parse a $file, wich is assumed to have a column-based format, with $re matching field separators
 # and one record per line. Search for $key, and return either a scalar with the first ocurrence,
 # or an array with all the found ocurrences.
@@ -47,7 +72,7 @@ sub xst_parse_split
     if (shift (@line) eq $key)
     {
 	 if ($all) {
-	   push @res, $line[1];
+	   push @res, $line[0];
 	 }
 	 else
 	 {
@@ -169,5 +194,91 @@ sub xst_parse_chat
 
   # Oops: not found.
   return undef;
+}
+
+sub xst_parse_split_hash
+{
+  my ($file, $key_re, $value_re) = @_;
+  my ($fd, @line, %res, $key);
+
+  $fd = be_open_read_from_names ($file);
+  
+  while (<$fd>)
+  {
+    chomp;
+    s/^[ \t]+//;
+    s/[ \t]+$//;
+    next if (/^$/);
+    @line = split ($key_re, $_, 2);
+
+    $key = shift (@line);
+    $res{$key} = [ split ($value_re, $line[0]) ];
+  }
+
+  close $fd;
+  return undef if (scalar keys (%res) == 0);
+  return \%res;
+}
+
+sub xst_parse_ini_line_clean
+{
+  $_ = $_[0];
+  
+  chomp;
+  s/\#.*//;
+  s/;.*//;
+  s/^[ \t]+//;
+  s/[ \t]+$//;
+
+  return $_;
+}
+
+sub xst_parse_ini_line_read
+{
+  my $fd = $_[0];
+  my $l;
+
+  $l = <$fd>;
+  return -1 if ($l eq undef);
+  
+  $l = &xst_parse_ini_line_clean ($l);
+  while ($l =~ /\\$/)
+  {
+    $l =~ s/\\$//;
+    $l .= &xst_parse_ini_line_clean (scalar <$fd>);
+  }
+
+  return $l;
+}
+
+sub xst_parse_ini
+{
+  my ($file, $section, $var) = @_;
+  my ($fd, $res);
+  my $found_section_flag = 0;
+
+  $fd = be_open_read_from_names ($file);
+  $res = undef;
+  
+  while (($_ = &xst_parse_ini_line_read ($fd)) != -1)
+  {
+    next if (/^$/);
+    if (/\[[ \t]*$section[ \t]*\]/i)
+    {
+	 s/\[[ \t]*$section[ \t]*\][ \t]*//i;
+	 $found_section_flag = 1;
+    }
+
+    if ($found_section_flag && /^$var[ \t]*=/i)
+    {
+      s/^$var[ \t]*=[ \t]*//i;
+	 $res = $_;
+	 last;
+    }
+  }
+
+  close $fd;
+
+  return $res;
 }
 

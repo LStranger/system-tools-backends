@@ -370,35 +370,35 @@ sub be_xml_entities_to_plain
 
 
 sub be_xml_plain_to_entities
+{
+  my $in = $_[0];
+  my $out = "";
+  my @xe;
+  my $joined = 0;
+  
+  $in = $$in;
+  
+  my @clist = split(//, $in);
+  
+  while (@clist)
   {
-    my $in = $_[0];
-    my $out = "";
-    my @xe;
-    my $joined = 0;
-    
-    $in = $$in;
-    
-    my @clist = split(//, $in);
-    
-    while (@clist)
-      {
-	# Find character and join its entity equivalent.
-	# If none found, simply join the character.
+    # Find character and join its entity equivalent.
+    # If none found, simply join the character.
 	
-	$joined = 0;		# Cumbersome.
-	
-	for (@xe = @be_xml_entities; @xe && !$joined; )
-	  {
-	    if ($xe[1] eq $clist[0]) { $out = join('', $out, $xe[0]); $joined = 1; }
-	    shift @xe; shift @xe;
-	  }
-	
-	if (!$joined) { $out = join('', $out, $clist[0]); }
-	shift @clist;
-      }
+    $joined = 0;		# Cumbersome.
     
-    return($out);
+    for (@xe = @be_xml_entities; @xe && !$joined; )
+    {
+	 if ($xe[1] eq $clist[0]) { $out = join('', $out, $xe[0]); $joined = 1; }
+	 shift @xe; shift @xe;
+    }
+	
+    if (!$joined) { $out = join('', $out, $clist[0]); }
+    shift @clist;
   }
+  
+  return($out);
+}
 
 
 # --- Utilities for strings, arrays and other data structures --- #

@@ -27,16 +27,55 @@
 require "___scriptsdir___/be.pl";
 require "___scriptsdir___/parse.pl";
 
+sub xst_network_active_interfaces_get
+{
+  local *IFCONFIG;
+  my $dev;
+  my $interface;
+  my @ret = ();
+  
+  open IFCONFIG, "$tool_ifconfig -au | sed 's/:* .*//;/^\$/D' |" ||
+	 open IFCONFIG, "$tool_ifconfig | sed 's/:* .*//;/^\$/D' |";
+  
+  while (<IFCONFIG>)
+  {
+    chomp;
+    push @ret, $_;
+  }
+
+  close IFCONFIG;
+
+  return @ret;
+}
+  
+sub xst_network_interface_active
+{
+  my $search_iface = $_[0];
+  my @ifaces = &xst_network_active_interfaces_get ();
+
+  while ($ifaces[0])
+  {
+    return 1 if (shift (@ifaces) eq $search_iface);
+  }
+
+  return 0;
+}
+
 sub xst_network_sysconfig_ifaces_get_existing
 {
   local *IFACE_DIR;
-  my @ret, $i;
+  my @ret, $i, $name;
   
   if (opendir IFACE_DIR, "/etc/sysconfig/network-scripts")
   {
     foreach $i (readdir (IFACE_DIR))
     {
-	 push @ret, $i if $i =~ /ifcfg-[a-z0-9]+/;
+	 if ($i =~ /ifcfg-[a-z0-9]+$/)
+	 {
+	   $name = $i;
+	   $name =~ s/ifcfg-//;
+	   push @ret, $name;
+	 }
     }
 
     closedir (IFACE_DIR);
@@ -63,33 +102,16 @@ sub xst_map_dist
   return undef;
 }
 
-sub xst_network_conf_actual_get
-{
-  my ($fn, $table) = @_;
-  my %hash;
-  my ($key, $proc, @param);
-
-  foreach $i (@$table)
-  {
-    $key = shift (@$i);
-    $proc = shift (@$i);
-    $$i[0] = $$fn{$$i[0]};
-
-    $hash{$key} = &$proc (@$i) if ($hash{$key} eq undef);
-  }
-
-  return \%hash;
-}
-
 sub xst_network_interfaces_get
 {
   my %dist_attrib =
 	 (
 	  redhat62 => {
-	    ifaces_get => \&xst_network_sysconfig_ifaces_get,
+	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
 	    fn => {
 		 IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-	      CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" },
+	      CHAT => "/etc/sysconfig/network-scripts/chat-#iface#" ,
+		 IFACE => "#iface#"},
 	    table => [
 			    [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
 			    [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
@@ -114,35 +136,34 @@ sub xst_network_interfaces_get
 			    [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
 			    [ serial_defabort,    \&xst_parse_sh_bool, IFCFG, DEFABORT ],
 			    [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
-			    [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+			    [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
+			    [ enabled,            \&xst_network_interface_active, IFACE ]
 			    ]
 				 }
 	  );
   my %dist_cmp = (
 			   "^redhat.*" => "redhat62"
 			   );
-  my ($dist, %hash, %fn, $value, $i, $j, @ifaces, $file);
+  my (%hash, %fn, @ifaces);
+  my ($dist, $value, $file, $proc);
+  my ($i, $j);
   
   $dist = &xst_map_dist (%dist_cmp);
   
   %fn = %{$ {$dist_attrib{$dist}}{"fn"}};
-  @ifaces = &$ {$dist_attrib{$dist}}{"ifaces_get"} ();
+  $proc = $ {$dist_attrib{$dist}}{"ifaces_get"};
+  @ifaces = &$proc ();
   foreach $i (@ifaces)
   {
     foreach $j (keys (%fn))
     {
-	 $value = $fn{$i};
+	 $value = $fn{$j};
 	 $value =~ s/\#iface\#/$i/;
 	 $ {$ {$dist_attrib{$dist}}{"fn"}}{$j} = $value;
     }
     
-    $hash{$i} = &xst_network_conf_actual_get ($ {$dist_attrib{$dist}}{"fn"},
-									 $ {$dist_attrib{$dist}}{"table"});
-    
-    foreach $j (keys (%{$hash{$i}}))
-    {
-	 delete $$hash{$i}{$j} if $$hash{$i}{$j} eq undef;
-    }
+    $hash{$i} = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
+							    $ {$dist_attrib{$dist}}{"table"});
   }
 
   return \%hash;
@@ -156,18 +177,26 @@ sub xst_network_conf_get
 	    fn => {
 		 SYSCONFIG_NW => "/etc/sysconfig/network",
 		 RESOLV_CONF  => "/etc/resolv.conf",
-		 HOST_CONF    => "/etc/host.conf" },
+		 HOST_CONF    => "/etc/host.conf",
+		 HOSTS        => "/etc/hosts",
+	      SMB_CONF     => "/etc/smb.conf" },
 	    table => [
+			    [ auto,          \&xst_parse_sh_bool,           SYSCONFIG_NW, NETWORKING ],
 			    [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
 			    [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
 			    [ gateway,       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY],
-			    [ gatewaydev,    \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
+			    [ gateway_dev,   \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
 			    [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
-			    [ dns_server,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]" ],
-			    [ searchdomains, \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]", "[ \t]" ],
-			    [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]" ],
-			    [ dns_order,     \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]", "," ],
-			    [ dns_multi,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]" ],
+			    [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
+			    [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
+			    [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
+			    [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
+			    [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
+			    [ statichost,    \&xst_parse_split_hash,        HOSTS, "[ \t]+", "[ \t]+" ],
+			    [ workgroup,     \&xst_parse_ini,               SMB_CONF, "global", "workgroup" ],     
+			    [ description,   \&xst_parse_ini,               SMB_CONF, "global", "server string" ],    
+			    [ winsserver,    \&xst_parse_ini,               SMB_CONF, "global", "wins server" ],
+			    [ interface,    \&xst_network_interfaces_get ]
 			    ]
 				 }
 	  );
@@ -181,13 +210,11 @@ sub xst_network_conf_get
 
   my ($dist, $hash);
 
-  $dist = &xst_map_dist ();
+  $dist = &xst_map_dist (%dist_cmp);
   return undef if ($dist eq undef);
 
-  $hash = &xst_network_conf_actual_get ($ {$dist_attrib{$dist}}{"fn"},
-								$ {$dist_attrib{$dist}}{"table"});
-  $$hash{"interfaces"} = &xst_network_interfaces_get ();
-  
+  $hash = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
+						   $ {$dist_attrib{$dist}}{"table"});
   return $hash;
 }
 
