@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: setup-tools-backends HEAD\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2005-01-31 15:45+0200\n"
-"PO-Revision-Date: 2005-01-31 15:58+0200\n"
+"PO-Revision-Date: 2005-02-01 01:41+0200\n"
 "Last-Translator: Žygimantas Beručka <uid0@akl.lt>\n"
 "Language-Team: Lithuanian <komp_lt@konferencijos.lt>\n"
 "MIME-Version: 1.0\n"
@@ -855,11 +855,11 @@ msgstr "Išjungia sistemą"
 
 #: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
-msgstr "Tekstinis režimas"
+msgstr "Tekstinė veiksena"
 
 #: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
-msgstr "Grafinis režimas"
+msgstr "Grafinis veiksena"
 
 #: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
@@ -867,15 +867,15 @@ msgstr "Perkrauna sistemą"
 
 #: service.pl.in:236
 msgid "Starts all system neccesary services"
-msgstr "Paleidžia visss reikalingas sistemos tarnybas"
+msgstr "Paleidžia visas reikalingas sistemos tarnybas"
 
 #: service.pl.in:237
 msgid "Default runlevel"
-msgstr ""
+msgstr "Įprastas veikimo lygmuo"
 
 #: service.pl.in:238
 msgid "Networkless runlevel"
-msgstr ""
+msgstr "Betinklis veikimo lygmuo"
 
 #: users-conf.in:179
 msgid "Monitor system logs"
