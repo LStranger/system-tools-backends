@@ -2284,6 +2284,7 @@ sub be_map_dist
   return undef;
 }
 
+
 # --- Argument parsing --- #
 
 sub be_init
@@ -2341,7 +2342,8 @@ sub be_init
     exit(1);
   }
 
-  &be_begin();
+  &be_begin ();
+
   if (!$be_dist) { &be_guess_system (); }
 
   if ($be_dist)
@@ -2350,7 +2352,8 @@ sub be_init
   }
   else
   {
-    be_report_fatal (95, "Unknown or unsupported platform");
+    &be_report_fatal (95, "Unknown or unsupported platform");
+    &be_end ();
     die;
   }
 }
