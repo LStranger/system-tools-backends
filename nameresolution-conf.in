@@ -286,12 +286,22 @@ sub read_hosts
 
   while (<FILE>)
   {
+    my $enabled = 1;
+
     @line = split(/[ \n\r\t]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (be_ignore_line($line[0]))
+    {
+      $enabled = 0;
+      $line[0] =~ tr/\#//d;
+      if (@line[0] eq "") { shift @line; }
+    }
 
     if ($line[0] ne "" && (not be_ignore_line($line[0])) &&
         ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/))
     {
+      push(@cf_statichosts, $enabled);  # Boolean; 1 = enabled.
       push(@cf_statichosts, $line[0]);  # IP.
       shift @line;
 
@@ -327,10 +337,18 @@ sub write_hosts
 
   my @iplist = @cf_statichosts;
 
+  # Weed out existing lines that are relevant for configuration.
+
   while (<INFILE>)
   {
     @line = split(/[ \n\r\t]+/, $_);
-    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+    if ($line[0] eq "") { shift @line; }  # Leading whitespace. He.
+
+    if (be_ignore_line($line[0]))
+    {
+      $line[0] =~ tr/\#//d;
+      if (@line[0] eq "") { shift @line; }
+    }
 
     if ($line[0] ne "" && (not be_ignore_line($line[0])) &&
         ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/))
@@ -346,14 +364,16 @@ sub write_hosts
   {
     if ($iplist[0] ne "")
     {
-      printf OUTFILE ("%-16s", $iplist[0]);
+      if (!$iplist[0]) { print OUTFILE "# "; }  # Disabled entry.
+      printf OUTFILE ("%-16s", $iplist[1]);
 
-      my $aliaslist = $iplist[1];
+      my $aliaslist = $iplist[2];
       for $alias (@$aliaslist) { print OUTFILE " $alias"; }
 
       print OUTFILE "\n";
     }
 
+    shift @iplist;
     shift @iplist;
     shift @iplist;
   }
@@ -872,7 +892,8 @@ sub xml_parse_statichost
   my $ip;
   my @alias;
 
-  shift @$tree;  # Skip attributes.
+  push(@cf_statichosts, be_read_boolean($$tree[0]->{enabled}));
+  shift @$tree;
 
   while (@$tree)
   {
@@ -981,14 +1002,15 @@ sub xml_print
     if ($iplist[0] ne "")
     {
       be_xml_vspace ();
-      be_xml_print ("<statichost>\n");
+      be_xml_print ("<statichost enabled='" . be_print_boolean_truefalse($iplist[0]) .
+                    "'>\n");
       be_xml_enter ();
 
-      $iplist[0] = be_xml_plain_to_entities(\$iplist[0]);
+      $iplist[1] = be_xml_plain_to_entities(\$iplist[1]);
 
-      be_xml_print ("<ip>$iplist[0]</ip>\n");
+      be_xml_print ("<ip>$iplist[1]</ip>\n");
 
-      my $aliaslist = $iplist[1];
+      my $aliaslist = $iplist[2];
       for $alias (@$aliaslist)
       {
         $alias = be_xml_plain_to_entities(\$alias);
@@ -999,6 +1021,7 @@ sub xml_print
       be_xml_print ("</statichost>\n");
     }
 
+    shift @iplist;
     shift @iplist;
     shift @iplist;
   }
