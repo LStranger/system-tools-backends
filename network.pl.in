@@ -5997,8 +5997,11 @@ sub gst_network_get_interface_replace_table
            [ "address",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "address" ],
            [ "netmask",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "netmask" ],
            [ "gateway",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "gateway" ],
-           [ "essid",              \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "wireless_essid" ],
-           [ "key",                \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "wireless_key"   ],
+           [ "essid",              \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "wireless-essid" ],
+           [ "key",                \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "wireless-key"   ],
+           # ugly hack for deleting undesired options (due to syntax duality)
+           [ "essid",              \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "wireless_essid", "" ],
+           [ "key",                \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "wireless_key", ""   ],
            [ "section",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "provider" ],
            [ "remote_address",     \&gst_network_debian_replace_remote_address, [INTERFACES, IFACE]],
            # Modem stuff
