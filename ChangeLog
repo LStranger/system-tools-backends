@@ -1,3 +1,8 @@
+2001-04-23  Arturo Espinosa  <arturo@ximian.com>
+
+	* parse.pl.in (xst_parse_interfaces_option_str/kw): this code
+	  was passing invalid xst_report keys. How did this get here?
+	
 2001-04-20  Arturo Espinosa  <arturo@ximian.com>
 
 	* report.pl.in (xst_report): As we are killing the format strings

@@ -716,7 +716,7 @@ sub xst_parse_interfaces_option_kw
   my $tuple;
 
   &xst_report_enter ();
-  &xst_report ("parse_interfaces_kw", $kw, $file);
+  &xst_report ("parse_ifaces_kw", $kw, $file);
   $tuple = &xst_parse_interfaces_option_tuple ($file, $iface, $kw);
   &xst_report_leave ();
 
@@ -746,7 +746,7 @@ sub xst_parse_interfaces_option_str
   my $tuple;
 
   &xst_report_enter ();
-  &xst_report ("parse_interfaces_str", $kw, $file);
+  &xst_report ("parse_ifaces_str", $kw, $file);
   $tuple = &xst_parse_interfaces_option_tuple ($file, $iface, $key);
   &xst_report_leave ();
 
