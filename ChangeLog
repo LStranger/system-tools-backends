@@ -1,3 +1,7 @@
+2001-03-29  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_fstab): Implement.
+
 2001-03-29  Kenneth Christiansen  <kenneth@gnu.org>
 
         * internet-share: replacement for ishare-launc.pl. Try to follow
