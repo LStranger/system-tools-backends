@@ -1,3 +1,9 @@
+2001-06-14  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_cap_line_clean): Implement.
+	  (xst_parse_cap_line_read): Implement.
+	  (xst_parse_cap_sections): Implement.
+
 2001-06-14  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* font.pl.in (regexp_cmp_foreach): helper.

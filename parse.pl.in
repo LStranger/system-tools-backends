@@ -729,6 +729,55 @@ sub xst_parse_ini_bool
   return (&xst_read_boolean ($ret)? 1: 0);
 }
 
+sub xst_parse_cap_line_clean
+{
+  $_ = $_[0];
+
+  chomp;
+  s/\#.*//;
+  s/;.*//;
+  s/^[ \t]+//;
+  s/[ \t]+$//;
+
+  return $_; 
+}
+
+sub xst_parse_cap_line_read
+{
+  my $fd = $_[0];
+  my $l;
+
+  $l = <$fd>;
+  return -1 if ($l eq undef);
+  
+  $l = &xst_parse_cap_line_clean ($l);
+  while ($l =~ /\\$/)
+  {
+    $l =~ s/\\$//;
+    $l .= &xst_parse_cap_line_clean (scalar <$fd>);
+  }
+
+  return \$l;
+}
+
+sub xst_parse_cap_sections
+{
+  my ($file) = @_;
+  my (@sections, $line);
+
+  $fd = &xst_file_open_read_from_names ($file);
+  
+  while (($line = &xst_parse_cap_line_read ($fd)) != -1)
+  {
+    $_ = $$line;
+    next if (/^$/);
+    push @sections, $1 if (/^([^:|]+)/i);
+  }
+
+  close $fd;
+  return @sections;
+}
+
 # Debian interfaces(5) states that files starting with # are comments.
 # Also, leading and trailing spaces are ignored.
 sub xst_parse_interfaces_line_clean
