@@ -52,18 +52,59 @@ require "___scriptsdir___/share.pl";
 
 $name = "shares";
 $version = "0.1.0";
-@platforms = ("debian-2.2",
-              "redhat-5.2",
-              "redhat-6.0",
-              "redhat-6.1",
-              "redhat-6.2",
-              "redhat-7.0",
-              "mandrake-7.2");
+@platforms =
+(
+  "debian-2.2",
+  "redhat-5.2",
+  "redhat-6.0",
+  "redhat-6.1",
+  "redhat-6.2",
+  "redhat-7.0",
+  "mandrake-7.2"
+);
 
 $description =<<"end_of_description;";
        Configures network shares for import or export.
 end_of_description;
 
+# --- Platform handling --- #
+
+$platmap =
+{
+  "debian-2.2"   => "redhat-7.0",
+  "redhat-5.2"   => "redhat-6.2",
+  "redhat-6.0"   => "redhat-6.2",
+  "redhat-6.1"   => "redhat-6.2",
+  "redhat-6.2"   => "redhat-6.2",
+  "redhat-7.0"   => "redhat-7.0",
+  "redhat-7.1"   => "redhat-7.0",
+  "mandrake-7.2" => "redhat-7.0"
+};
+
+$filemap =
+{
+  "redhat-6.2" =>
+  {
+    "fstab"    => "/etc/fstab",
+    "mtab"     => "/etc/mtab",
+    "exports"  => "/etc/exports",
+    "smb.conf" => "/etc/smb.conf"
+  },
+
+  "redhat-7.0" =>
+  {
+    "fstab"    => "/etc/fstab",
+    "mtab"     => "/etc/mtab",
+    "exports"  => "/etc/exports",
+    "smb.conf" => "/etc/samba/smb.conf"
+  }
+};
+
+sub distro_file
+{
+  my ($file) = @_;
+  return $$filemap{$$platmap{$xst_dist}}->{$file};
+}
 
 # --- XML parsing ---
 
@@ -444,27 +485,17 @@ sub xml_print
 
 # Configuration handling.
 
-sub remove_local_from_filesys_table
-{
-  return;
-}
-
-sub remove_network_from_filesys_table
-{
-}
-
 sub get_configured_imports
 {
   my ($imports, $listed_imports, $mounted_imports);
 
-  $listed_imports  = &xst_filesys_fstab_parse ("/etc/fstab");
-  $mounted_imports = &xst_filesys_mtab_parse  ("/etc/mtab");
+  $listed_imports  = &xst_filesys_fstab_parse (&distro_file ("fstab"));
+  $mounted_imports = &xst_filesys_mtab_parse  (&distro_file ("mtab"));
 
   &xst_filesys_table_set_permanent_true ($listed_imports);
   &xst_filesys_table_set_mounted_true   ($mounted_imports);
 
   $imports = &xst_filesys_table_merge_superset ($mounted_imports, $listed_imports);
-  &remove_local_from_filesys_table ($imports);
   return $imports;
 }
 
@@ -472,8 +503,8 @@ sub get_configured_exports
 {
   my ($smb_exports, $nfs_exports);
 
-  $smb_exports = &xst_share_parse_smb_conf    ("/etc/samba/smb.conf");
-  $nfs_exports = &xst_share_parse_nfs_exports ("/etc/exports");
+  $smb_exports = &xst_share_parse_smb_conf    (&distro_file ("smb.conf"));
+  $nfs_exports = &xst_share_parse_nfs_exports (&distro_file ("exports"));
 
   return ($smb_exports, $nfs_exports);
 }
@@ -503,15 +534,15 @@ sub set
 
   $config = &xml_parse ();
 
-  &xst_filesys_mount_sync_all ("/etc/mtab", $$config{"imports"});
+  &xst_filesys_mount_sync_all (&distro_file ("mtab"), $$config{"imports"});
 
-  $fs = &xst_filesys_fstab_parse ("/etc/fstab");
+  $fs = &xst_filesys_fstab_parse (&distro_file ("fstab"));
   &xst_filesys_table_set_permanent_true ($fs);
   $fs = &xst_filesys_table_merge_superset ($$config{"imports"}, $fs);
 
-  &xst_filesys_fstab_replace     ("/etc/fstab",    $fs);
-  &xst_share_replace_smb_conf    ("/etc/smb.conf", $$config{"smb_exports"});
-  &xst_share_replace_nfs_exports ("/etc/exports",  $$config{"nfs_exports"});
+  &xst_filesys_fstab_replace     (&distro_file ("fstab"),    $fs);
+  &xst_share_replace_smb_conf    (&distro_file ("smb.conf"), $$config{"smb_exports"});
+  &xst_share_replace_nfs_exports (&distro_file ("exports"),  $$config{"nfs_exports"});
 
   &xst_end ();
 }

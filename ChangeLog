@@ -1,5 +1,12 @@
 2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
 
+	* shares-conf.in: Multiplatformize.
+	  (distro_file): Implement.
+	  (remove_local_from_filesys_table): Remove.
+	  (remove_network_from_filesys_table): Remove.
+
+2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
+
 	* disks-conf.in (update_partition): Fix breakage, call
 	  xst_filesys_ext2_device_to_label().
 
