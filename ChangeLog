@@ -5,6 +5,7 @@
 	launching ifup/ifdown almost at the same time doesn't seem like
 	a good idea.
 	(xst_network_suse70_interface_activate_by_dev): same.
+	(xst_network_suse70_ppp_iface_activate): same.
 
 	* users-conf.in (xml_parse_users): Ignore files and shells
 	tags when parsing, instead of complaining.
