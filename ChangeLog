@@ -1,3 +1,9 @@
+2004-04-22  Carlos García Campos <elkalmail@yahoo.es>
+
+	* disks-conf.in: added bit present to all devices to represent a
+	device listed in fstab but no present in the current system, usually
+	removable devices. For the moment only work for hard disk devices
+
 2004-04-22  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* services-conf.in: made it to end the report correctly when writing 

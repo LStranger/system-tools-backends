@@ -336,7 +336,35 @@ sub get_cdrom_settings
                        "write-dvdr", "write-dvdram");
    my @opts = ("Can play audio", "Can write CD-R", "Can write CD-RW", "Can read DVD", 
                "Can write DVD-R", "Can write DVD-RAM");
+  
+   if ($^O eq 'linux') {
+      $CDROM_GET_CAPABILITY = 0x5331;
+      
+      $CDC_PLAY_AUDIO = 0x100;
+      $CDC_CD_R       = 0x2000;
+      $CDC_CD_RW      = 0x4000;
+      $CDC_DVD        = 0x8000;
+      $CDC_DVD_R      = 0x10000;
+      $CDC_DVD_RAM    = 0x20000;
+   }
+
+   $device = "/dev/hdc";
+   if (!open (RD, "<$device")) {
+      return;
+   }
    
+   my $drivetype = ioctl (RD, $CDROM_GET_CAPABILITY, 0);
+
+   &update_disk_data ($device, "play-audio", ($drivetype & $CDC_PLAY_AUDIO) ? 1 : 0);
+   &update_disk_data ($device, "write-cdr", ($drivetype & $CDC_CD_R) ? 1 : 0);
+   &update_disk_data ($device, "write-cdrw", ($drivetype & $CDC_CD_RW) ? 1 : 0);
+   &update_disk_data ($device, "read-dvd", ($drivetype & $CDC_DVD) ? 1 : 0);
+   &update_disk_data ($device, "write-dvdr", ($drivetype & $CDC_DVD_R) ? 1 : 0);
+   &update_disk_data ($device, "write-dvdram", ($drivetype & $CDC_DVD_RAM) ? 1 : 0);
+   
+   close (RD);
+   return;
+
    my $proc_cdrom_file;
    local *PROC_CDROM_FILE;
    $proc_cdrom_file = &gst_file_open_read_from_names ("/proc/sys/dev/cdrom/info");
@@ -465,6 +493,13 @@ sub read_fstab
     if ($disk eq "/dev/fd" || ($disk ne "" && $disk eq $device))
     {
       next;  # Skip floppies and CD-ROMs.
+    }
+
+    if (sysopen (HANDLE, $disk, O_RDONLY|O_NONBLOCK)) {
+       &update_disk_data ($disk, "present", 1);
+       close HANDLE;
+    } else {
+       &update_disk_data ($disk, "present", 0);
     }
 
     $media_type = &get_media_type ($disk);
@@ -753,6 +788,7 @@ sub get_fdisk
 
     # First of all we get the global disk data: size, unit
     foreach (@fdisk_data) {
+        &update_disk_data ($dev, "present", 1);
         if (/^Block size/) {
 	    # fdisk in Debian PowerPC
             # Block size=512, Number of Blocks=78140160
@@ -1200,6 +1236,7 @@ sub xml_print
       }
       if (%$disk->{media}) { &gst_xml_print_line ("<media>" . %$disk->{media} . "</media>\n"); }
       if (%$disk->{model}) { &gst_xml_print_line ("<model>" . %$disk->{model} . "</model>\n"); }
+      &gst_xml_print_state_tag ("present", %$disk->{present}); 
       if (%$disk->{media} =~ /cdrom/) { 
 	 #&get_cdrom_disc_info (%$disk->{device});
 	 &gst_xml_print_state_tag ("play-audio",   %$disk->{"play-audio"});
@@ -1406,9 +1443,20 @@ sub get_cdrom_disc_info
       return;
    }
 
-   &gst_xml_print_state_tag ("empty", 0);
-
    if ($^O eq 'linux') {
+      $CDS_AUDIO  = 100;
+      $CDS_DATA_1 = 101;
+      $CDS_DATA_2 = 102;
+      $CDS_XA_2_1 = 103;
+      $CDS_XA_2_2 = 104;
+      $CDS_MIXED  = 105;
+
+      $CDROM_DATA_TRACK = 0x04;
+      $CDROM_LEADOUT    = 0xAA;
+      $CDROM_MSF = 0x02;
+      
+      $CDROM_DISC_STATUS = 0x5327;
+
       $CDROMREADTOCHDR   = 0x5305;
       $CDROMREADTOCENTRY = 0x5306;
    } elsif ($^O =~ /bsd/) {
@@ -1420,10 +1468,21 @@ sub get_cdrom_disc_info
    } else {
       return;
    }
-
-   $CDROM_DATA_TRACK = 0x04;
-   $CDROM_MSF = 0x02;
    
+   my $cdtype;
+   my $disctype = ioctl (RD, $CDROM_DISC_STATUS, 0);
+   if ($disctype eq $CDS_AUDIO) { 
+      $cdtype = "audio"; 
+   } elsif (($disctype eq $CDS_DATA_1) || ($disctype eq $CDS_DATA_2) ||
+           ($disctype eq $CDS_XA_2_1) || ($disctype eq $CDS_XA_2_2)) {
+      $cdtype = "data";
+   } elsif ($disctype eq $CDS_MIXED) {
+      $cdtype = "mixed";
+   } else {
+      $cdtype = "unknown";
+   }
+	 
+   &gst_xml_print_state_tag ("empty", 0);
 
    if (!ioctl (RD, $CDROMREADTOCHDR, $tochdr)) {
       &gst_xml_print_line ("<type-content>" . "blank"  . "</type-content>\n");
@@ -1443,7 +1502,7 @@ sub get_cdrom_disc_info
    for (my $i = $start; $i <= $end; $i++ ) {
       push @tracks, $i;
    }
-   push @tracks, 0xAA;
+   push @tracks, $CDROM_LEADOUT;
 
    my $min = 0;
    my $sec = 0;
@@ -1512,16 +1571,14 @@ sub get_cdrom_disc_info
       $data --;
    }
    
-   if ($data gt 0) {
-      if ($audio gt 0) {
-	 &gst_xml_print_line ("<type-content>" . "mixed"  . "</type-content>\n");
-	 &gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
-         &gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
-	 &gst_xml_print_line ("<data-tracks>" . $data . "</data-tracks>\n");
-      } else {
-	 &gst_xml_print_line ("<type-content>" . "data"  . "</type-content>\n");
-      }
-      
+   &gst_xml_print_line ("<type-content>" . $cdtype  . "</type-content>\n");
+   if (($cdtype eq "audio") || ($cdtype eq "mixed")) {
+      &gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
+      &gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
+      &gst_xml_print_line ("<data-tracks>" . $data . "</data-tracks>\n");
+   }
+
+   if (($cdtype eq "data") || ($cdtype eq "mixed")) {
       if (`mount | grep $device`) {
 	 &gst_xml_print_state_tag ("mounted", 1);
 	 my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
@@ -1531,12 +1588,33 @@ sub get_cdrom_disc_info
       } else {
 	 &gst_xml_print_state_tag ("mounted", 0);
       }
-
-   } else {
-      &gst_xml_print_line ("<type-content>" . "audio"  . "</type-content>\n");
-      &gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
-      &gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
    }
+   
+   #if ($data gt 0) {
+      #   if ($audio gt 0) {
+	 # &gst_xml_print_line ("<type-content>" . "mixed"  . "</type-content>\n");
+	 #&gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
+	 #&gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
+	 #&gst_xml_print_line ("<data-tracks>" . $data . "</data-tracks>\n");
+	 #} else {
+	    #&gst_xml_print_line ("<type-content>" . "data"  . "</type-content>\n");
+	    #}
+      
+	    #if (`mount | grep $device`) {
+	       #&gst_xml_print_state_tag ("mounted", 1);
+	       #my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
+	       #if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+	       #my ($size) = `df $device | grep $device | awk  '/\\/dev/ {print \$2}'`;
+	       #if ($size) { &gst_xml_print_line ("<size>" . $size . "</size>\n"); }
+	       #} else {
+		  #&gst_xml_print_state_tag ("mounted", 0);
+		  #}
+
+		  #} else {
+		     #&gst_xml_print_line ("<type-content>" . "audio"  . "</type-content>\n");
+		     #&gst_xml_print_line ("<audio-tracks>" . $audio . "</audio-tracks>\n");
+		     #&gst_xml_print_line ("<duration>" . $min . ":" . $sec . "</duration>\n");
+		     #}
 }
   
 sub cdrom_disc_info
