@@ -1,3 +1,9 @@
+2001-01-22  Arturo Espinosa  <arturo@ximian.com>
+
+	* add_amp.sh: dumb program that fixes missing & when calling
+	  functions in perl code.
+	* *-conf.in and be.pl.in: passed through add_amp.sh.
+
 2001-01-18  Chema Celorio  <chema@celorio.com>
 
 	* TODO: deleted
@@ -6,6 +12,8 @@
 
 	* be.pl.in: be_network_get_redhat now gives away more info. Same
 	  should be done for debian and SuSE.
+	* network-conf.in: be_ppp_get_phone_redhat is called from
+	  be_network_get_redhat to obtain the phone pppd dials.
 	
 2001-01-17 Tambet Ingo  <tambet@ximian.com>
 

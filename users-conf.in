@@ -70,13 +70,13 @@ $progress_max = 3;
 
 # Where are the tools?
 
-$cmd_usermod  = be_locate_tool ("usermod");
-$cmd_userdel  = be_locate_tool ("userdel");
-$cmd_useradd  = be_locate_tool ("useradd");	
-$cmd_groupdel = be_locate_tool ("groupdel");
-$cmd_groupadd = be_locate_tool ("groupadd");
-$cmd_groupmod = be_locate_tool ("groupmod");
-$cmd_gpasswd  = be_locate_tool ("gpasswd");	
+$cmd_usermod  = &be_locate_tool ("usermod");
+$cmd_userdel  = &be_locate_tool ("userdel");
+$cmd_useradd  = &be_locate_tool ("useradd");	
+$cmd_groupdel = &be_locate_tool ("groupdel");
+$cmd_groupadd = &be_locate_tool ("groupadd");
+$cmd_groupmod = &be_locate_tool ("groupmod");
+$cmd_gpasswd  = &be_locate_tool ("gpasswd");	
 
 
 # --- Internal configuration variables --- #
@@ -150,7 +150,7 @@ for ($i = 0; $groups_prop_array[$i] ne ""; $i += 2)
   "UID_MAX" , "new_user_max_id",
   "GID_MIN" , "new_group_min_id",
   "GID_MAX" , "new_group_max_id",
-  "USERDEL_CMD" , "del_user_additional_command",
+  "USERDEL_CMD" , "&del_user_additional_command",
   "CREATE_HOME" , "create_home", 
 	"", "");
 
@@ -183,7 +183,7 @@ sub arr_cmp_recurse
 	
 	for ($i = 0; $i <= $#$a1; $i++) {
 	  if (ref ($$a1[$i]) eq "ARRAY") { # see if this is a reference.
-		  return -1 if arr_cmp_recurse ($$a1[$i], $$a2[$i]); # we assume it is a ref to an array.
+		  return -1 if &arr_cmp_recurse ($$a1[$i], $$a2[$i]); # we assume it is a ref to an array.
 		} elsif ($$a1[$i] ne $$a2[$i]) {
 		  return -1;
 		}
@@ -201,7 +201,7 @@ sub read_login_defs
   local *FILE;
   my @line;
 	
-  $ifh = be_open_read_from_names(@login_defs_names);
+  $ifh = &be_open_read_from_names(@login_defs_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
 
@@ -227,10 +227,10 @@ sub read_passwd_shadow
 
   # Find the passwd file.
 
-  $ifh = be_open_read_from_names(@passwd_names);
+  $ifh = &be_open_read_from_names(@passwd_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
-    $passwd_last_modified = (stat (FILE))[9]; # get the mtime.
+    $passwd_last_modified = (stat (FILE))[9]; # &get the mtime.
 
   # Parse the file.
 
@@ -254,7 +254,7 @@ sub read_passwd_shadow
 	
   # Find the shadow file.
 
-  *FILE = be_open_read_from_names(@shadow_names);
+  *FILE = &be_open_read_from_names(@shadow_names);
   if (*FILE) {
     my ($login, $passwd);
     my $passwd_pos = $users_prop_map{"password"};
@@ -283,10 +283,10 @@ sub read_group
 
   # Find the file.
 
-  $ifh = be_open_read_from_names(@group_names);
+  $ifh = &be_open_read_from_names(@group_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
-  $group_last_modified = (stat (FILE))[9]; # get the mtime.
+  $group_last_modified = (stat (FILE))[9]; # &get the mtime.
 
   # Parse the file.
 	
@@ -320,13 +320,13 @@ sub write_group_passwd
   @parse_users = @users;
   $parse_passwd_last_modified = $passwd_last_modified;
   &read_passwd_shadow;
-  be_progress(10);
+  &be_progress(10);
 
   %parse_groups_hash = %groups_hash;
   @parse_groups = @groups;
   $parse_group_last_modified = $group_last_modified;
   &read_group;
-  be_progress(20);
+  &be_progress(20);
 	
 #	if ($passwd_last_modified > $parse_passwd_last_modified) 
 #	{
@@ -354,35 +354,35 @@ sub write_group_passwd
 	  $groups_all{$i} |= 2;
 	}
 	
-	be_progress(25);
+	&be_progress(25);
 	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  &del_user ($users_hash{$i}) if ($users_all{$i} == 1);
 	}
 	
-	be_progress(35);
+	&be_progress(35);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
 	  &del_group ($groups_hash{$i}) if ($groups_all{$i} == 1);
 	}
 	
-	be_progress(45);
+	&be_progress(45);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
 	  &add_group ($parse_groups_hash{$i}) if ($groups_all{$i} == 2);
 	}
 	
-	be_progress(55);
+	&be_progress(55);
 	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  &add_user ($parse_users_hash{$i}) if ($users_all{$i} == 2);
 	}
 
-	be_progress(70);
+	&be_progress(70);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
@@ -392,7 +392,7 @@ sub write_group_passwd
 		}
 	}
 	
-	be_progress(85);
+	&be_progress(85);
 	
 	foreach $i (sort (keys (%users_all)))
 	{
@@ -402,7 +402,7 @@ sub write_group_passwd
 		}
 	}
 	
-	be_progress(95);
+	&be_progress(95);
 }
 
 sub del_user
@@ -410,7 +410,7 @@ sub del_user
 	my $data = $_[0];
 	
 	$command = "$cmd_userdel -r \'" . $$data[$users_prop_map{"login"}] . "\'";
-	my_system ($command);
+	&my_system ($command);
 }
 
 sub add_user
@@ -424,7 +424,7 @@ sub add_user
 	  "\' -s \'" . $$data[$users_prop_map{"shell"}] .
 	  "\' -u \'" . $$data[$users_prop_map{"uid"}] .
 	  "\' \'" . $$data[$users_prop_map{"login"}] . "\'";
-	my_system ($command);
+	&my_system ($command);
 }
 
 sub change_user
@@ -440,7 +440,7 @@ sub change_user
 	  "\' -u \'" . $$new_data[$users_prop_map{"uid"}] .
 	  "\' -l \'" . $$new_data[$users_prop_map{"login"}] .
 	  "\' \'" . $$old_data[$users_prop_map{"login"}] . "\'";
-	my_system ($command);
+	&my_system ($command);
 }
 
 sub del_group
@@ -448,7 +448,7 @@ sub del_group
 	my $data = $_[0];
 
 	$command = "$cmd_groupdel \'" . $$data[$groups_prop_map{"name"}] . "\'";
-	my_system ($command);
+	&my_system ($command);
 }
 
 sub add_group
@@ -457,19 +457,19 @@ sub add_group
 	
 	$command = "$cmd_groupadd -g \'" . $$data[$groups_prop_map{"gid"}] .
 	  "\' " . $$data[$groups_prop_map{"name"}];
-	my_system ($command);
+	&my_system ($command);
 }
 
 sub change_group
 {
 	my $old_data = $_[0];
 	my $new_data = $_[1];
-	my ($n, $o, $i, $j, $max_n, $max_o, $r, @tmp); # for iterations
+	my ($n, $o, $i, $j, $&max_n, $&max_o, $r, @tmp); # for iterations
 
 	$command = "$cmd_groupmod -g \'" . $$new_data[$groups_prop_map{"gid"}] .
 	  "\' -n \'" . $$new_data[$groups_prop_map{"name"}] . "\'" 
 		. " \'" . $$old_data[$groups_prop_map{"name"}] . "\'";
-	my_system ($command);
+	&my_system ($command);
 	
 	# Let's see if the users that compose the group have changed.
 	if (&arr_cmp_recurse ($$new_data[$groups_prop_map{"users"}],
@@ -478,9 +478,9 @@ sub change_group
 		$n = [ @{$$new_data[$groups_prop_map{"users"}]} ]; sort @$n;
 		$o = [ @{$$old_data[$groups_prop_map{"users"}]} ]; sort @$o;
 		
-		$max_n = $#$n;
-		$max_o = $#$o;
-		for ($i = 0, $j = 0; $i <= &max ($max_n, $max_o); ) {
+		$&max_n = $#$n;
+		$&max_o = $#$o;
+		for ($i = 0, $j = 0; $i <= &max ($&max_n, $&max_o); ) {
 		  $r = $$n[$i] cmp $$o[$j];
 			$r *= -1 if (($$o[$j] eq "") || ($$n[$i] eq ""));
 		  if ($r < 0) { # add this user to the group.
@@ -488,13 +488,13 @@ sub change_group
 				  $$new_data[$groups_prop_map{"name"}] . "\'";
 				$i ++;
 				
-				my_system ($command);
+				&my_system ($command);
 			} elsif ($r > 0) { # delete the user from the group.
 			  $command = "$cmd_gpasswd -d \'" . $$o[$j] . "\' \'" . 
 				  $$new_data[$groups_prop_map{"name"}] . "\'";
 				$j ++;
 				
-				my_system ($command);
+				&my_system ($command);
 			} else { # The information is the same. Go to next tuple.
 			  $i ++; $j ++;
 			}	
@@ -544,7 +544,7 @@ sub xml_parse_users
 		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1]); }
 		else
 		{
-		  be_report_warning(1, "Unexpected tag " . $$tree[0] . " while parsing users");
+		  &be_report_warning(1, "Unexpected tag " . $$tree[0] . " while parsing users");
 		}
 
     shift @$tree;
@@ -566,7 +566,7 @@ sub xml_parse_login_defs
 		}
 		else
 		{
-		  be_report_warning(2, "Unexpected tag " . $$tree[0] . " while parsing logindefs");
+		  &be_report_warning(2, "Unexpected tag " . $$tree[0] . " while parsing logindefs");
 		}
 		
 		shift @$tree;
@@ -580,7 +580,7 @@ sub xml_parse_passwd_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	be_report_warning(3, "passwd_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
+	&be_report_warning(3, "passwd_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
 	$passwd_last_modified = $$tree[1];
 }	
 
@@ -590,7 +590,7 @@ sub xml_parse_group_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	be_report_warning(4, "group_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
+	&be_report_warning(4, "group_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
 	$group_last_modified = $$tree[1];
 }	
 
@@ -605,7 +605,7 @@ sub xml_parse_userdb
 	  if ($$tree[0] eq "user") { &xml_parse_user ($$tree[1]); }
 		else
 		{
-		  be_report_warning(5, "Unexpected tag " . $$tree[0] . " while parsing userdb");
+		  &be_report_warning(5, "Unexpected tag " . $$tree[0] . " while parsing userdb");
 		}
 
     shift @$tree;
@@ -628,7 +628,7 @@ sub xml_parse_user
 		}
 		else
 		{
-		  be_report_warning(6, "Unexpected tag " . $$tree[0] . " while parsing user");
+		  &be_report_warning(6, "Unexpected tag " . $$tree[0] . " while parsing user");
 		}
 		
 		shift @$tree;
@@ -650,7 +650,7 @@ sub xml_parse_groupdb
     if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1]); }
     else
     {
-      be_report_warning(7, "Unexpected tag " . $$tree[0] . " while parsing groupdb");
+      &be_report_warning(7, "Unexpected tag " . $$tree[0] . " while parsing groupdb");
     }
 
     shift @$tree;
@@ -674,7 +674,7 @@ sub xml_parse_group
 		}
 		else
 		{
-		  be_report_warning(9, "Unexpected tag " . $$tree[0] . " while parsing group");
+		  &be_report_warning(9, "Unexpected tag " . $$tree[0] . " while parsing group");
 		}
 		
 		shift @$tree;
@@ -690,7 +690,7 @@ sub xml_parse_group
 		}
 		else
 		{
-		  be_report_warning(8, "Unexpected tag " . $$a[0] . " while parsing users");
+		  &be_report_warning(8, "Unexpected tag " . $$a[0] . " while parsing users");
 		}
 		shift @$a;
 		shift @$a;
@@ -799,7 +799,7 @@ sub xml_print
 
 sub get
 {
-  be_report_info(1, "Getting user database");
+  &be_report_info(1, "Getting user database");
 
   &read_login_defs (); &be_print_progress ();
   &read_group (); &be_print_progress ();
@@ -839,6 +839,6 @@ sub filter
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { &get; }
-elsif ($be_operation eq "set")    { &set; }
-elsif ($be_operation eq "filter") { &filter; }
+if    ($be_operation eq "&get")    { &get; }
+elsif ($be_operation eq "&set")    { &set; }
+elsif ($be_operation eq "&filter") { &filter; }

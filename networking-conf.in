@@ -90,7 +90,7 @@ $cf_forward = 0;
 
 # Debian 2.[2|3]+ style /etc/network/interfaces
 #
-# <filtered lines>
+# <&filtered lines>
 # iface <interface> inet <static|dhcp|bootp|ppp>
 #     address <ip>
 #     netmask <ip mask>
@@ -100,7 +100,7 @@ $cf_forward = 0;
 #     noauto (this is only used to not enable the interface on boot)
 #     up <command to run when the interface is brought up>
 #     down <command to run when the interface is brought down>
-# <filtered lines>
+# <&filtered lines>
 # (more interfaces may follow)
 #
 # A "#" character at the very beginning of a line causes that line to be
@@ -108,7 +108,7 @@ $cf_forward = 0;
 # A "\" character at the very end of a line causes that line to continue onto
 # the next line.
 #
-# read_network_interfaces_into_hash will read the contents of
+# &read_network_interfaces_into_hash will read the contents of
 # /etc/network/interfaces into a hash table of references to hash tables.  For
 # example:
 #
@@ -133,7 +133,7 @@ sub read_network_interfaces_into_hash
   local *FILE;
   my (%ifaces, $current_name, $current_iface);
 
-  *FILE = be_open_read_from_names(@network_interfaces_names);
+  *FILE = &be_open_read_from_names(@network_interfaces_names);
   if (not *FILE) { return; }
 
   # Build a list of all interfaces
@@ -163,27 +163,27 @@ sub read_network_interfaces_into_hash
     }
 
     # Make sure this line isn't a comment.
-    if (be_ignore_line($line[0])) { next; }
+    if (&be_ignore_line($line[0])) { next; }
 
     # Check if the line specifies a new interface.
-    if ($line[0] eq "iface" && not be_ignore_line($line[1]))
+    if ($line[0] eq "iface" && not &be_ignore_line($line[1]))
     {
-      # Make sure the device was detected via ifconfig (see "get_immediate").
+      # Make sure the device was detected via ifconfig (see "&get_immediate").
       # NOTE: This will weed out any loopback or dummy interfaces.
-      if (not be_item_is_in_list($line[1], @cf_interface_list))
+      if (not &be_item_is_in_list($line[1], @cf_interface_list))
       {
-        be_report_warning(01, "$line[1] isn't an available, " .
+        &be_report_warning(01, "$line[1] isn't an available, " .
                               "configured interface");
         next;
       }
 
-      # Make sure the interface is set up for IPv4/internet networking
+      # Make sure the interface is &set up for IPv4/internet networking
       if ($line[2] ne "inet") { next; }
 
-      # Also make sure there is a set configuration method.
-      if ($line[3] eq "" || be_ignore_line($line[3]))
+      # Also make sure there is a &set configuration method.
+      if ($line[3] eq "" || &be_ignore_line($line[3]))
       {
-        be_report_warning(02, "Warning: Interface $line[1] has no " .
+        &be_report_warning(02, "Warning: Interface $line[1] has no " .
                               "config method");
         next;
       }
@@ -198,12 +198,12 @@ sub read_network_interfaces_into_hash
       # Set the interface's method
       $$current_iface{"method"} = $line[3];
     }
-    else  # Add an attribute to an already set interface.
+    else  # Add an attribute to an already &set interface.
     {
-      # Make sure an interface has been set.
+      # Make sure an interface has been &set.
       if (not $current_iface) { next; }
 
-      # Make sure the attribute has been properly set
+      # Make sure the attribute has been properly &set
       # if (not $line[1]) { next; }
 
       # Set the attribute
@@ -220,7 +220,7 @@ sub read_network_interfaces_into_hash
 
 # Debian 2.[2|3]+ style /etc/network/interfaces
 #
-# (See 'read_network_interfaces_into_hash()' for information on
+# (See '&read_network_interfaces_into_hash()' for information on
 # /etc/network/interfaces as well as the structure of %ifaces.
 #
 # Takes network interface information and places them into the correct
@@ -235,7 +235,7 @@ sub read_network_interfaces
   my (%ifaces, $current_name, $current_iface);
   my $chosen_name;
 
-  %ifaces = read_network_interfaces_into_hash();
+  %ifaces = &read_network_interfaces_into_hash();
 
   # Now, a "primary" interface will be selected.  The selection order is as
   # follows:
@@ -251,7 +251,7 @@ sub read_network_interfaces
   {
     $chosen_name = (keys(%ifaces))[0];
 
-    be_report_info(2, "Only one interface, $chosen_name, exists.  It is being " .
+    &be_report_info(2, "Only one interface, $chosen_name, exists.  It is being " .
                       "selected as the primary interface");
   }
 
@@ -264,12 +264,12 @@ sub read_network_interfaces
   else
   {
     # Look for an interface with a preset gateway.
-    $chosen_name = be_get_key_for_subkeys(\%ifaces, ["gateway"]);
+    $chosen_name = &be_get_key_for_subkeys(\%ifaces, ["gateway"]);
 
     # If need be, look for an interface with a dynamic configuration "method".
     if ($chosen_name eq "")
     {
-      $chosen_name = be_get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
+      $chosen_name = &be_get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
     }
 
     # If an interface hasn't been chosen, then just pick the first available one.
@@ -279,7 +279,7 @@ sub read_network_interfaces
     }
   }
 
-  # Now that a "primary" interface has been chosen, set the proper global
+  # Now that a "primary" interface has been chosen, &set the proper global
   # variables.
   %current_iface = %{$ifaces{$chosen_name}};
 
@@ -315,12 +315,12 @@ sub write_network_interfaces
   my $cfl_broadcast = "";
 
   # Find and open the needed files.
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@network_interfaces_names);
+  (*INFILE, *OUTFILE) = &be_open_filter_write_from_names(@network_interfaces_names);
   if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Generate $cfl_network and $cfl_broadcast
-  $cfl_network = ip_calc_network($cf_hostip, $cf_netmask);
-  $cfl_broadcast = ip_calc_broadcast($cf_hostip, $cf_netmask);
+  $cfl_network = &ip_calc_network($cf_hostip, $cf_netmask);
+  $cfl_broadcast = &ip_calc_broadcast($cf_hostip, $cf_netmask);
 
   # Write the file, preserving as much as possible from INFILE.
   while (<INFILE>)
@@ -468,7 +468,7 @@ sub write_network_interfaces
   {
     foreach $output_line (@iface_lines)
     {
-      # Make sure noauto gets removed if $cf_onboot = TRUE.
+      # Make sure noauto &gets removed if $cf_onboot = TRUE.
       if (!(($output_line =~ /noauto/) && $cf_onboot eq 1))
       { print OUTFILE "$output_line"; }
     }
@@ -491,11 +491,11 @@ sub write_network_interfaces
 
 # Debian 2.[2|3] style /etc/network/options
 #
-# <filtered lines>
+# <&filtered lines>
 # ip_forward=<yes|no>
 # spoofprotect=<yes|no>
 # syncookies=<yes|no>
-# <filtered lines>
+# <&filtered lines>
 #
 # Reads in relevant network options that aren't found in
 # /etc/network/interfaces.  NOTE: None of these options are interface specific.
@@ -508,7 +508,7 @@ sub read_network_options
 {
   local *FILE;
 
-  *FILE = be_open_read_from_names(@network_options_names);
+  *FILE = &be_open_read_from_names(@network_options_names);
   if (not *FILE) { return; }
 
   # Build a list of all interfaces
@@ -521,11 +521,11 @@ sub read_network_options
     if ($line[0] eq "") { shift(@line); }
 
     # Make sure this line isn't a comment;
-    if (be_ignore_line($line[0])) { next; }
+    if (&be_ignore_line($line[0])) { next; }
 
     # Set any relevant global configuration variables.
-    if ($line[0] eq "ip_forward" && not be_ignore_line($line[1]))
-    { $cf_forward = be_read_boolean($line[1]); }
+    if ($line[0] eq "ip_forward" && not &be_ignore_line($line[1]))
+    { $cf_forward = &be_read_boolean($line[1]); }
   }
 
   # All done.  Clean up before returning.
@@ -539,7 +539,7 @@ sub write_network_options
   local *OUTFILE;
   my $wrote_forward;
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@network_options_names);
+  (*INFILE, *OUTFILE) = &be_open_filter_write_from_names(@network_options_names);
   if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -554,7 +554,7 @@ sub write_network_options
     # Modify and write-out any known variables.
     if ($line[0] eq "ip_forward")
     {
-      print OUTFILE "ip_forward=" . be_print_boolean_yesno($cf_forward) . "\n";
+      print OUTFILE "ip_forward=" . &be_print_boolean_yesno($cf_forward) . "\n";
       $wrote_forward = 1;
     }
     else { print OUTFILE; }
@@ -562,7 +562,7 @@ sub write_network_options
 
   # Make sure that unwritten, non-empty variables are written to OUTFILE.
   if (not $wrote_forward)
-  { print OUTFILE "ip_forward=" . be_print_boolean_yesno($cf_forward) . "\n"; }
+  { print OUTFILE "ip_forward=" . &be_print_boolean_yesno($cf_forward) . "\n"; }
 
   # All done.  Clean up before returning.
   close (OUTFILE);
@@ -572,14 +572,14 @@ sub write_network_options
 
 # Red Hat style /etc/sysconfig/network-scripts/ifcfg-*
 #
-# <filtered lines>
+# <&filtered lines>
 # IPADDR=<ip>
 # NETMASK=<ip mask>
 # NETWORK=<network ip>
 # BROADCAST=<broadcast ip>
 # BOOTPROTO=<bootp|dhcp|none>
 # ONBOOT=<boolean>
-# <filtered lines>
+# <&filtered lines>
 #
 # Determines the configuration of a specific network interface. First
 # argument must be the name of the interface.
@@ -594,7 +594,7 @@ sub read_sysconfig_network_scripts_ifcfg
 
   # Find the file.
 
-  *FILE = be_open_read_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
+  *FILE = &be_open_read_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
   if (not *FILE) { return; }
 
   # Parse the file.
@@ -604,18 +604,18 @@ sub read_sysconfig_network_scripts_ifcfg
     @line = split(/[ \n\r\t\"\'=]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "IPADDR" && not be_ignore_line($line[1]))
+    if ($line[0] eq "IPADDR" && not &be_ignore_line($line[1]))
     { $cf_hostip = $line[1]; }
-    elsif ($line[0] eq "NETMASK" && not be_ignore_line($line[1]))
+    elsif ($line[0] eq "NETMASK" && not &be_ignore_line($line[1]))
     { $cf_netmask = $line[1]; }
-    elsif ($line[0] eq "BOOTPROTO" && not be_ignore_line($line[1]))
+    elsif ($line[0] eq "BOOTPROTO" && not &be_ignore_line($line[1]))
     {
       if ($line[1] eq "bootp")   { $cf_method = "bootp"; }
       elsif ($line[1] eq "dhcp") { $cf_method = "dhcp"; }
       else                       { $cf_method = "static"; }
     }
-    elsif ($line[0] eq "ONBOOT" && not be_ignore_line($line[1]))
-    { $cf_onboot = be_read_boolean($line[1]); }
+    elsif ($line[0] eq "ONBOOT" && not &be_ignore_line($line[1]))
+    { $cf_onboot = &be_read_boolean($line[1]); }
   }
 
   close(FILE);
@@ -637,13 +637,13 @@ sub write_sysconfig_network_scripts_ifcfg
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
+  (*INFILE, *OUTFILE) = &be_open_filter_write_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
   if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Generate $cfl_network and $cfl_broadcast.
 
-  $cfl_network = ip_calc_network($cf_hostip, $cf_netmask);
-  $cfl_broadcast = ip_calc_broadcast($cf_hostip, $cf_netmask);
+  $cfl_network = &ip_calc_network($cf_hostip, $cf_netmask);
+  $cfl_broadcast = &ip_calc_broadcast($cf_hostip, $cf_netmask);
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -679,7 +679,7 @@ sub write_sysconfig_network_scripts_ifcfg
     }
     elsif ($line[0] eq "ONBOOT")
     {
-      print OUTFILE join('', "ONBOOT=", be_print_boolean_yesno($cf_onboot), "\n");
+      print OUTFILE join('', "ONBOOT=", &be_print_boolean_yesno($cf_onboot), "\n");
       $wrote_onboot = 1;
     }
     else { print OUTFILE; }
@@ -690,7 +690,7 @@ sub write_sysconfig_network_scripts_ifcfg
   if (not $wrote_network)   { print OUTFILE "NETWORK=$cfl_network\n"; }
   if (not $wrote_broadcast) { print OUTFILE "BROADCAST=$cfl_broadcast\n"; }
   if (not $wrote_method)    { print OUTFILE "BOOTPROTO=$cf_method\n"; }
-  if (not $wrote_onboot)    { print OUTFILE join('', "ONBOOT=", be_print_boolean_yesno($cf_onboot), "\n"); }
+  if (not $wrote_onboot)    { print OUTFILE join('', "ONBOOT=", &be_print_boolean_yesno($cf_onboot), "\n"); }
 
   close(OUTFILE);
   if (*INFILE) { close(INFILE); }
@@ -700,9 +700,9 @@ sub write_sysconfig_network_scripts_ifcfg
 # Red Hat style primary interface reader.
 #
 # Tries to figure out what the "primary" interface is, and calls
-# read_sysconfig_network_scripts_ifcfg on that interface.
+# &read_sysconfig_network_scripts_ifcfg on that interface.
 #
-# Must run after get_immediate and read_sysconfig_network, which will
+# Must run after &get_immediate and &read_sysconfig_network, which will
 # (hopefully) provide information to identify the primary device.
 
 sub read_primary_interface
@@ -725,10 +725,10 @@ sub read_primary_interface
   {
     for $elem (@cf_interface_list)
     {
-      read_sysconfig_network_scripts_ifcfg($elem);
+      &read_sysconfig_network_scripts_ifcfg($elem);
       if ($cf_netmask eq "") { next; }
 
-      if (ip_calc_network($cf_gateway, $cf_netmask) eq ip_calc_network($cf_hostip, $cf_netmask))
+      if (&ip_calc_network($cf_gateway, $cf_netmask) eq &ip_calc_network($cf_hostip, $cf_netmask))
       {
         $cf_interface = $elem;
 	last;
@@ -756,7 +756,7 @@ sub read_primary_interface
     }
   }
 
-  if ($cf_interface ne "") { read_sysconfig_network_scripts_ifcfg($cf_interface); }
+  if ($cf_interface ne "") { &read_sysconfig_network_scripts_ifcfg($cf_interface); }
 }
 
 
@@ -765,19 +765,19 @@ sub write_primary_interface
   # If the primary interface is not supplied, we can't assume anything,
   # so configuration is not written.
 
-  if ($cf_interface ne "") { write_sysconfig_network_scripts_ifcfg($cf_interface); }
-  else { be_report_warning(04, "No primary interface specified - config unwritten"); }
+  if ($cf_interface ne "") { &write_sysconfig_network_scripts_ifcfg($cf_interface); }
+  else { &be_report_warning(04, "No primary interface specified - config unwritten"); }
 }
 
 
 # Red Hat style /etc/sysconfig/network
 #
-# <filtered lines>
+# <&filtered lines>
 # NETWORKING=<boolean>
 # FORWARD_IPV4=<boolean>
 # GATEWAY=<ip>
 # GATEWAYDEV=<interface>
-# <filtered lines>
+# <&filtered lines>
 #
 # Determines the primary network configuration. BEWARE: This is actually a
 # sourced shell script. We rely on some lenience from the user (and the distro)
@@ -793,7 +793,7 @@ sub read_sysconfig_network
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@sysconfig_network_names);
+  *FILE = &be_open_read_from_names(@sysconfig_network_names);
   if (not *FILE) { return; }  # We didn't find it.
 
   # Parse the file.
@@ -803,13 +803,13 @@ sub read_sysconfig_network
     @line = split(/[ \n\r\t\"\'=]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "NETWORKING" && not be_ignore_line($line[1]))
-    { $cf_networking = be_read_boolean($line[1]); }
-    elsif ($line[0] eq "FORWARD_IPV4" && not be_ignore_line($line[1]))
-    { $cf_forward = be_read_boolean($line[1]); }
-    elsif ($line[0] eq "GATEWAY" && not be_ignore_line($line[1]))
+    if ($line[0] eq "NETWORKING" && not &be_ignore_line($line[1]))
+    { $cf_networking = &be_read_boolean($line[1]); }
+    elsif ($line[0] eq "FORWARD_IPV4" && not &be_ignore_line($line[1]))
+    { $cf_forward = &be_read_boolean($line[1]); }
+    elsif ($line[0] eq "GATEWAY" && not &be_ignore_line($line[1]))
     { $cf_gateway = $line[1]; }
-    elsif ($line[0] eq "GATEWAYDEV" && not be_ignore_line($line[1]))
+    elsif ($line[0] eq "GATEWAYDEV" && not &be_ignore_line($line[1]))
     { $cf_interface = $line[1]; }
   }
 
@@ -828,7 +828,7 @@ sub write_sysconfig_network
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@sysconfig_network_names);
+  (*INFILE, *OUTFILE) = &be_open_filter_write_from_names(@sysconfig_network_names);
   if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Write the file, preserving as much as possible from INFILE.
@@ -840,12 +840,12 @@ sub write_sysconfig_network
 
     if ($line[0] eq "NETWORKING")
     {
-      print OUTFILE join('', "NETWORKING=", be_print_boolean_yesno($cf_networking), "\n");
+      print OUTFILE join('', "NETWORKING=", &be_print_boolean_yesno($cf_networking), "\n");
       $wrote_networking = 1;
     }
     elsif ($line[0] eq "FORWARD_IPV4")
     {
-      print OUTFILE join('', "FORWARD_IPV4=", be_print_boolean_truefalse($cf_forward), "\n");
+      print OUTFILE join('', "FORWARD_IPV4=", &be_print_boolean_truefalse($cf_forward), "\n");
       $wrote_forward = 1;
     }
     elsif ($line[0] eq "GATEWAY")
@@ -862,9 +862,9 @@ sub write_sysconfig_network
   }
 
   if (not $wrote_networking)
-  { print OUTFILE join('', "NETWORKING=", be_print_boolean_yesno($cf_networking), "\n"); }
+  { print OUTFILE join('', "NETWORKING=", &be_print_boolean_yesno($cf_networking), "\n"); }
   if (not $wrote_forward)
-  { print OUTFILE join('', "FORWARD_IPV4=", be_print_boolean_truefalse($cf_forward), "\n"); }
+  { print OUTFILE join('', "FORWARD_IPV4=", &be_print_boolean_truefalse($cf_forward), "\n"); }
   if (not $wrote_gateway)
   { print OUTFILE "GATEWAY=$cf_gateway\n"; }
   if (not $wrote_interface)
@@ -877,11 +877,11 @@ sub write_sysconfig_network
 
 # SuSE style /etc/rc.config
 #
-# <filtered lines>
+# <&filtered lines>
 # NETDEV_0="<dev>"
 # IPADDR_0="<ip>"
 # IFCONFIG_0="<ip> broadcast <broadcast> netmask <netmask>"
-# <filtered lines>
+# <&filtered lines>
 #
 # Determines the local hostname.domain, searchdomains and nameservers.
 # BEWARE: This is actually a sourced shell script. We rely on some lenience
@@ -899,7 +899,7 @@ sub read_rc_config
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@rc_config_names);
+  *FILE = &be_open_read_from_names(@rc_config_names);
   if (not *FILE) { return; }  # We didn't find it.
 
   # Parse the file.
@@ -909,7 +909,7 @@ sub read_rc_config
     @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    if ($line[0] eq "NETDEV_0" && not be_ignore_line($line[1]))
+    if ($line[0] eq "NETDEV_0" && not &be_ignore_line($line[1]))
     {
       $cf_interface = $line[1];
     }
@@ -923,7 +923,7 @@ sub read_rc_config
 
       while (@line)
       {
-        if (be_ignore_line($line[0])) { last; }
+        if (&be_ignore_line($line[0])) { last; }
 	
 	if ($line[0] eq "broadcast")
 	{
@@ -972,12 +972,12 @@ sub write_rc_config
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@rc_config_names);
+  (*INFILE, *OUTFILE) = &be_open_filter_write_from_names(@rc_config_names);
   if (not *OUTFILE) { return; }  # No point if we can't write.
 
   # Generate broadcast address.
   
-  $cfl_broadcast = ip_calc_broadcast($cf_hostip, $cf_netmask);
+  $cfl_broadcast = &ip_calc_broadcast($cf_hostip, $cf_netmask);
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -1079,7 +1079,7 @@ sub xml_parse
 
   while (@$tree)
   {
-    if ($$tree[0] eq "networking") { xml_parse_networking($$tree[1]); }
+    if ($$tree[0] eq "networking") { &xml_parse_networking($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
@@ -1099,16 +1099,16 @@ sub xml_parse_networking
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "primaryinterface") { $cf_interface = be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "knowninterface")   { push(@cf_interface_list, be_xml_get_word($$tree[1])); }
-    elsif ($$tree[0] eq "hostip")           { $cf_hostip = be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "netmask")          { $cf_netmask = be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "gateway")          { $cf_gateway = be_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "enabled")          { xml_parse_enabled($$tree[1]); }
-    elsif ($$tree[0] eq "forward")          { xml_parse_forward($$tree[1]); }
+    if    ($$tree[0] eq "primaryinterface") { $cf_interface = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "knowninterface")   { push(@cf_interface_list, &be_xml_get_word($$tree[1])); }
+    elsif ($$tree[0] eq "hostip")           { $cf_hostip = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "netmask")          { $cf_netmask = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "gateway")          { $cf_gateway = &be_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "enabled")          { &xml_parse_enabled($$tree[1]); }
+    elsif ($$tree[0] eq "forward")          { &xml_parse_forward($$tree[1]); }
     elsif ($$tree[0] eq "method")
     {
-      $cf_method = be_xml_get_word($$tree[1]);
+      $cf_method = &be_xml_get_word($$tree[1]);
       if (($cf_method ne "dhcp") && ($cf_method ne "bootp")) { $cf_method = "static"; }
     }
 
@@ -1123,7 +1123,7 @@ sub xml_parse_enabled
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  $cf_onboot = be_read_boolean($$tree[0]->{state});
+  $cf_onboot = &be_read_boolean($$tree[0]->{state});
 }
 
 
@@ -1133,7 +1133,7 @@ sub xml_parse_forward
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  $cf_forward = be_read_boolean($$tree[0]->{state});
+  $cf_forward = &be_read_boolean($$tree[0]->{state});
 }
 
 
@@ -1142,61 +1142,61 @@ sub xml_parse_forward
 
 sub xml_print
 {
-  my $cfl_interface = be_xml_plain_to_entities(\$cf_interface);
-  my $cfl_hostip = be_xml_plain_to_entities(\$cf_hostip);
-  my $cfl_netmask = be_xml_plain_to_entities(\$cf_netmask);
-  my $cfl_gateway = be_xml_plain_to_entities(\$cf_gateway);
-  my $cfl_method = be_xml_plain_to_entities(\$cf_method);
+  my $cfl_interface = &be_xml_plain_to_entities(\$cf_interface);
+  my $cfl_hostip = &be_xml_plain_to_entities(\$cf_hostip);
+  my $cfl_netmask = &be_xml_plain_to_entities(\$cf_netmask);
+  my $cfl_gateway = &be_xml_plain_to_entities(\$cf_gateway);
+  my $cfl_method = &be_xml_plain_to_entities(\$cf_method);
 
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE networking []>\n\n";
   print "<networking>\n";
-  be_xml_enter ();
+  &be_xml_enter ();
 
-  be_xml_vspace ();
-  be_xml_print ("<!-- Configuration starts here -->\n");
-  be_xml_vspace ();
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- Configuration starts here -->\n");
+  &be_xml_vspace ();
 
   # Hostname, domain, search domains, nameservers.
 
-  be_xml_indent ();
+  &be_xml_indent ();
   if ($cf_onboot) { print "<enabled state='yes'/>\n"; }
   else            { print "<enabled state='no'/>\n"; }
 
-  be_xml_vspace ();
+  &be_xml_vspace ();
 
-  if ($cfl_interface ne "") { be_xml_print ("<primaryinterface>$cfl_interface</primaryinterface>\n"); }
-  if ($cfl_hostip ne "") { be_xml_print ("<hostip>$cfl_hostip</hostip>\n"); }
-  if ($cfl_netmask ne "") { be_xml_print ("<netmask>$cfl_netmask</netmask>\n"); }
-  if ($cfl_gateway ne "") { be_xml_print ("<gateway>$cfl_gateway</gateway>\n"); }
-  be_xml_vspace ();
-  if ($cfl_method ne "") { be_xml_print ("<method>$cfl_method</method>\n"); }
-  be_xml_vspace ();
+  if ($cfl_interface ne "") { &be_xml_print ("<primaryinterface>$cfl_interface</primaryinterface>\n"); }
+  if ($cfl_hostip ne "") { &be_xml_print ("<hostip>$cfl_hostip</hostip>\n"); }
+  if ($cfl_netmask ne "") { &be_xml_print ("<netmask>$cfl_netmask</netmask>\n"); }
+  if ($cfl_gateway ne "") { &be_xml_print ("<gateway>$cfl_gateway</gateway>\n"); }
+  &be_xml_vspace ();
+  if ($cfl_method ne "") { &be_xml_print ("<method>$cfl_method</method>\n"); }
+  &be_xml_vspace ();
 
-  be_xml_vspace ();
-  be_xml_print ("<!-- You shouldn't have to modify anything below this line -->\n");
-  be_xml_vspace ();
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- You shouldn't have to modify anything below this line -->\n");
+  &be_xml_vspace ();
 
-  be_xml_indent (); 
+  &be_xml_indent (); 
   if ($cf_forward) { print "<forward state='yes'/>\n"; }
   else             { print "<forward state='no'/>\n"; }
 
-  be_xml_vspace ();
-  be_xml_print ("<!-- You cannot modify anything below this line -->\n");
-  be_xml_vspace ();
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- You cannot modify anything below this line -->\n");
+  &be_xml_vspace ();
 
   for $elem (@cf_interface_list)
   {
-    $elem = be_xml_plain_to_entities(\$elem);
+    $elem = &be_xml_plain_to_entities(\$elem);
     if ($elem ne $cfl_interface)  # Hack: Don't list primary interface here.
-    { be_xml_print ("<knowninterface>$elem</knowninterface>\n"); }
+    { &be_xml_print ("<knowninterface>$elem</knowninterface>\n"); }
   }
 
-  be_xml_vspace ();
-  be_xml_print ("<!-- End of configuration -->\n");
-  be_xml_vspace ();
+  &be_xml_vspace ();
+  &be_xml_print ("<!-- End of configuration -->\n");
+  &be_xml_vspace ();
 
-  be_xml_leave ();
+  &be_xml_leave ();
   print "</networking>\n";
 }
 
@@ -1213,14 +1213,14 @@ sub get_immediate
   # Get a list of all interfaces, both configured and unconfigured.
   # Should work on both GNU and Solaris.
 
-  $if_cmd = be_locate_tool("ifconfig");
+  $if_cmd = &be_locate_tool("ifconfig");
   $iftext = `$if_cmd -a 2>/dev/null`;
 
   @list = ($iftext =~ /^([a-z0-9]+)[ :\t].*/mg);
 
   if (not @list)
   {
-    be_report_warning(05, "Could not find any network devices");
+    &be_report_warning(05, "Could not find any network devices");
     return(0);
   }
   
@@ -1235,17 +1235,17 @@ sub get_immediate
 
 sub get
 {
-  be_report_info(01, "Finding interfaces");
-  get_immediate;
+  &be_report_info(01, "Finding interfaces");
+  &get_immediate;
 
-  read_rc_config; be_print_progress ();
-  read_sysconfig_network; be_print_progress ();
-  read_network_interfaces; be_print_progress ();
-  read_network_options; be_print_progress ();
-  read_primary_interface; be_print_progress ();
+  &read_rc_config; &be_print_progress ();
+  &read_sysconfig_network; &be_print_progress ();
+  &read_network_interfaces; &be_print_progress ();
+  &read_network_options; &be_print_progress ();
+  &read_primary_interface; &be_print_progress ();
 
-  be_end();
-  xml_print ();
+  &be_end();
+  &xml_print ();
 }
 
 
@@ -1257,8 +1257,8 @@ sub set_immediate
   my $ifup_cmd;
   my $ifdown_cmd;
   
-  $ifup_cmd = be_locate_tool("ifup");
-  $ifdown_cmd = be_locate_tool("ifdown");
+  $ifup_cmd = &be_locate_tool("ifup");
+  $ifdown_cmd = &be_locate_tool("ifdown");
   
   # Restart primary interface, so configuration can take effect.
   # FIXME: Slightly bogus if be_service_*() does its job.
@@ -1272,33 +1272,33 @@ sub set_immediate
       if (!(system "$ifdown_cmd $cf_interface >/dev/null 2>/dev/null" &&
             system "$ifup_cmd $cf_interface >/dev/null 2>/dev/null"))
       {
-        be_report_warning(6, "Could not configure network interface");
+        &be_report_warning(6, "Could not configure network interface");
       }
       else
       {
-        be_report_info(3, "Primary interface configured");
+        &be_report_info(3, "Primary interface configured");
       }
     }
     else
     {
-      be_report_warning(7, "No primary interface given");
+      &be_report_warning(7, "No primary interface given");
     }
   }
   else
   {
-    be_report_warning(8, "No interface control utilities found");
+    &be_report_warning(8, "No interface control utilities found");
   }
 
   # Ensure that network is (en|dis)abled according to user's wishes.
 
-  if ($cf_networking) { be_service_enable(47, "", "network"); }
-  else                { be_service_disable(90, "", "network"); }
+  if ($cf_networking) { &be_service_enable(47, "", "network"); }
+  else                { &be_service_disable(90, "", "network"); }
 }
 
 
 sub set
 {
-  xml_parse ();
+  &xml_parse ();
 
   # FIXME: This should really be calculated from the old value and $cf_onboot.
   # This hack will make it work, possibly with a few extra boot messages, if
@@ -1306,18 +1306,18 @@ sub set
 
   $cf_networking = 1;
 
-  write_rc_config;
-  write_sysconfig_network;
-  write_network_interfaces;
-  write_network_options;
-  write_primary_interface;
+  &write_rc_config;
+  &write_sysconfig_network;
+  &write_network_interfaces;
+  &write_network_options;
+  &write_primary_interface;
 
   if ($be_do_immediate)
   {
-    set_immediate;
+    &set_immediate;
   }
   
-  be_end();
+  &be_end();
 }
 
 
@@ -1326,9 +1326,9 @@ sub set
 
 sub filter
 {
-  xml_parse ();
-  be_end();
-  xml_print ();
+  &xml_parse ();
+  &be_end();
+  &xml_print ();
 }
 
 
@@ -1338,6 +1338,6 @@ be_init($name, $version, $description, @ARGV);
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { get; }
-elsif ($be_operation eq "set")    { set; }
-elsif ($be_operation eq "filter") { filter; }
+if    ($be_operation eq "&get")    { &get; }
+elsif ($be_operation eq "&set")    { &set; }
+elsif ($be_operation eq "&filter") { &filter; }

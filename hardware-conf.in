@@ -31,7 +31,7 @@
 # Running programs affected/used:
 #
 # /sbin/modprobe /sbin/rmmod /sbin/depmod /bin/uname /sbin/mknod
-# /bin/setserial
+# /bin/&setserial
 
 # Other files used for information:
 #
@@ -165,7 +165,7 @@ sub xml_parse
     
     while (@$tree)
       {
-	if ($$tree[0] eq "memory") { xml_parse_memory($$tree[1]); }
+	if ($$tree[0] eq "memory") { &xml_parse_memory($$tree[1]); }
 	
 	shift @$tree;
 	shift @$tree;
@@ -187,7 +187,7 @@ sub xml_parse_memory
       {
 	if ($$tree[0] eq "swapdev") 
 	  { 
-	    push @cf_swapinfo, xml_parse_swapinfo ($$tree[1]); 
+	    push @cf_swapinfo, &xml_parse_swapinfo ($$tree[1]); 
 	  }
 	
 	shift @$tree;
@@ -210,30 +210,30 @@ sub xml_parse_swapinfo
       {
 	if ($$tree[0] eq 'device') 
 	  { 
-	    $entry->{device} = be_xml_get_word ($$tree[1]);
+	    $entry->{device} = &be_xml_get_word ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'enabled') 
 	  {
 	    $node = $$tree[1];
-	    $entry->{enabled} = be_read_boolean ($$node[0]->{state});
+	    $entry->{enabled} = &be_read_boolean ($$node[0]->{state});
 	  }
 	elsif ($$tree[0] eq 'priority') 
 	  { 
-	    $entry->{priority} = be_xml_get_word ($$tree[1]);
+	    $entry->{priority} = &be_xml_get_word ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'size') 
 	  { 
-	    $entry->{size} = be_xml_get_word ($$tree[1]);
+	    $entry->{size} = &be_xml_get_word ($$tree[1]);
 	  }
 	elsif ($$tree[0] eq 'isfile') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_file} = be_read_boolean ($$node[0]->{state});
+	    $entry->{is_file} = &be_read_boolean ($$node[0]->{state});
 	  }
 	elsif ($$tree[0] eq 'isnew') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_new} = be_read_boolean ($$node[0]->{state});
+	    $entry->{is_new} = &be_read_boolean ($$node[0]->{state});
 	  }
 	
 	shift @$tree;
@@ -252,15 +252,15 @@ sub xml_print
     print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
     print "<!DOCTYPE memory []>\n\n";
     print "<hardware>\n";
-    be_xml_enter ();
+    &be_xml_enter ();
 
-    be_xml_vspace ();
-    be_xml_print ("<!-- Configuration starts here -->\n");
-    be_xml_vspace ();
+    &be_xml_vspace ();
+    &be_xml_print ("<!-- Configuration starts here -->\n");
+    &be_xml_vspace ();
 
     foreach $entry (@cf_hardware)
       {
-	be_xml_print ("<device id='$entry->{id}'>\n");
+	&be_xml_print ("<device id='$entry->{id}'>\n");
 
       LOOP: while (($key, $value) = each %$entry)
 	  {
@@ -275,7 +275,7 @@ sub xml_print
 		  &be_xml_enter;
 		  foreach $range (@$value)
 		    {
-		      be_xml_print ("<io low='$range->{low}' high='$range->{high}'/>\n");
+		      &be_xml_print ("<io low='$range->{low}' high='$range->{high}'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -283,7 +283,7 @@ sub xml_print
 		{
 		  foreach $number (@$value)
 		    {
-		      be_xml_print ("<interrupt number='$number'/>\n");
+		      &be_xml_print ("<interrupt number='$number'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -291,7 +291,7 @@ sub xml_print
 		{
 		  foreach $channel (@$value)
 		    {
-		      be_xml_print ("<dma channel='$channel'/>\n");
+		      &be_xml_print ("<dma channel='$channel'/>\n");
 		    }
 		  last SWITCH;
 		};
@@ -299,25 +299,25 @@ sub xml_print
 		{
 		  foreach $mode (@$value)
 		    {
-		      be_xml_print ("<mode>$mode</mode>\n");
+		      &be_xml_print ("<mode>$mode</mode>\n");
 		    }
 		  last SWITCH;
 		};
 	      (/^id/ || /^io/ || /^irq/) && next LOOP;
 
-	      be_xml_print ("<$key>$value</$key>\n");
+	      &be_xml_print ("<$key>$value</$key>\n");
 				&be_xml_leave;
 	    }
 	  }
 
-	be_xml_print ("</device>\n");
-	be_xml_vspace ();
+	&be_xml_print ("</device>\n");
+	&be_xml_vspace ();
       }
 
-    be_xml_print ("<!-- End of configuration -->\n");
-    be_xml_vspace ();
+    &be_xml_print ("<!-- End of configuration -->\n");
+    &be_xml_vspace ();
 
-    be_xml_leave ();
+    &be_xml_leave ();
     print "</hardware>\n";
   }
 
@@ -325,7 +325,7 @@ sub xml_print
 # --- Get (read) config --- #
 
 ###############################################################################
-# Reading and parsing configuration files, running programs to get
+# Reading and parsing configuration files, running programs to &get
 # configuration info, etc.
 ###############################################################################
 
@@ -338,7 +338,7 @@ sub read_conf_modules
     local (*CONF_MODULES_FILE);
     my (%real_names);
 
-    *CONF_MODULES_FILE = be_open_read_from_names (@conf_modules_names);
+    *CONF_MODULES_FILE = &be_open_read_from_names (@conf_modules_names);
 
   LINE: while (<CONF_MODULES_FILE>)
       {
@@ -398,7 +398,7 @@ sub read_XF86Config
     my (%section_handler_table) = 
       ( 'InputDevice' => \&handle_input_device );
 
-    *XF86CONFIG_FILE = be_open_read_from_names (@XF86Config_names);
+    *XF86CONFIG_FILE = &be_open_read_from_names (@XF86Config_names);
 
     while (<XF86CONFIG_FILE>)
       {
@@ -543,7 +543,7 @@ sub read_proc_parport
     closedir PARPORT_DIR;
   }
 
-# Find all serial ports by running setserial -g on /dev/ttyS*
+# Find all serial ports by running &setserial -g on /dev/ttyS*
 
 sub get_serial_ports
   {
@@ -551,7 +551,7 @@ sub get_serial_ports
 
     foreach $i ('/dev/ttyS0', '/dev/ttyS1', '/dev/ttyS2', '/dev/ttyS3')
       {
-	$line = `setserial -g $i`;
+	$line = `&setserial -g $i`;
 	$entry = {};
 	($entry->{id}, $entry->{uart}, $port, $irq) =
 	  ($line =~ /\/dev\/(ttyS[0-9]+), UART: ([0-9A-Za-z]+), Port: (0x[0-9a-f]+), IRQ: ([0-9]+)/);
@@ -623,7 +623,7 @@ sub combine
 	  {
 	   'type' => "Serial port",
 	   'id' => $entry->{id},
-	   'ports' => [ find_port_record ($entry->{io}->[0], $entry->{id}) ],
+	   'ports' => [ &find_port_record ($entry->{io}->[0], $entry->{id}) ],
 	   'interrupts' => $entry->{irq},
 	   'name' => "$words[$index] serial port"
 	  };
@@ -641,7 +641,7 @@ sub combine
 	  {
 	   'type' => "Parallel port",
 	   'id' => $entry->{id},
-	   'ports' => [ find_port_record ($entry->{io}->[0], $entry->{id}) ],
+	   'ports' => [ &find_port_record ($entry->{io}->[0], $entry->{id}) ],
 	   'interrupts' => $entry->{irq},
 	   'name' => "$words[$index] parallel port"
 	  };
@@ -717,7 +717,7 @@ sub combine
 
     foreach $entry (@cf_ioports)
       {
-	be_push_unique ($hardware{$entry->{device}}->{ports}, $entry)
+	&be_push_unique ($hardware{$entry->{device}}->{ports}, $entry)
 	  if exists $hardware{$entry->{device}};
       }
 
@@ -725,7 +725,7 @@ sub combine
       {
 	foreach $device (@$devices)
 	  {
-	    be_push_unique ($hardware{$device}->{interrupts}, $irq)
+	    &be_push_unique ($hardware{$device}->{interrupts}, $irq)
 	      if exists $hardware{$device};
 	  }
       }
@@ -734,7 +734,7 @@ sub combine
       {
 	foreach $device (@$devices)
 	  {
-	    be_push_unique ($hardware{$device}->{dma}, $channel)
+	    &be_push_unique ($hardware{$device}->{dma}, $channel)
 	      if exists $hardware{$device};
 	  }
       }
@@ -758,23 +758,23 @@ sub get
     # We're going to replace this with a more extensible, modular
     # system soon, but for now, we'll just hardcode everything.
 
-    read_conf_modules;
-    read_isapnp_conf;
-    read_XF86Config;
-    read_proc_ioports;
-    read_proc_interrupts;
-    read_proc_dma;
-    read_proc_pci;
-    read_proc_ide;
-    read_proc_scsi;
-    read_proc_parport;
-    get_serial_ports;
-    get_network_interfaces;
+    &read_conf_modules;
+    &read_isapnp_conf;
+    &read_XF86Config;
+    &read_proc_ioports;
+    &read_proc_interrupts;
+    &read_proc_dma;
+    &read_proc_pci;
+    &read_proc_ide;
+    &read_proc_scsi;
+    &read_proc_parport;
+    &get_serial_ports;
+    &get_network_interfaces;
 
-    combine;
+    &combine;
 
     if ($be_verbose) { print STDERR "Printing XML.\n"; }
-    xml_print ();
+    &xml_print ();
   }
 
 
@@ -790,7 +790,7 @@ sub set
       }
 
     if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-    xml_parse ();
+    &xml_parse ();
     
     if ($be_do_immediate)
       {
@@ -809,8 +809,8 @@ sub set
 
 sub filter
   {
-    xml_parse ();
-    xml_print ();
+    &xml_parse ();
+    &xml_print ();
   }
 
 
@@ -820,9 +820,9 @@ sub filter
 
 while (@ARGV)
   {
-    if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { be_set_operation("get"); }
-    elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { be_set_operation("set"); }
-    elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { be_set_operation("filter"); }
+    if    ($ARGV[0] eq "--&get"    || $ARGV[0] eq "-g") { &be_set_operation("&get"); }
+    elsif ($ARGV[0] eq "--&set"    || $ARGV[0] eq "-s") { &be_set_operation("&set"); }
+    elsif ($ARGV[0] eq "--&filter" || $ARGV[0] eq "-f") { &be_set_operation("&filter"); }
     elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print STDERR $Usage; exit(0); }
     elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
       {
@@ -856,9 +856,9 @@ while (@ARGV)
 
 # Do our thing.
 
-if    ($be_operation eq "get")    { get; }
-elsif ($be_operation eq "set")    { set; }
-elsif ($be_operation eq "filter") { filter; }
+if    ($be_operation eq "&get")    { &get; }
+elsif ($be_operation eq "&set")    { &set; }
+elsif ($be_operation eq "&filter") { &filter; }
 else
   {
     print STDERR "Error: No operation specified.\n\n";
