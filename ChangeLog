@@ -1,3 +1,11 @@
+2004-05-12  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network-conf.in, network.pl.in, platform.pl.in, service.pl.in:
+	  added network-admin support for conectiva. I think that the patch
+	  is from Helio Chissini de Castro <helio@conectiva.com.br>, but
+	  Juan Luis (the Knetworkconf maintainer) is who forwarded them to
+	  me...
+
 2004-05-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* boot-conf.in, boot-grub.pl.in, boot.pl.in, partition.pl.in:

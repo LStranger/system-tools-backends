@@ -266,10 +266,12 @@ sub gst_network_get_broadcast_ping_cmd
        "mandrake-9.0" => "debian-2.2",
        "mandrake-9.1" => "debian-2.2",
        "mandrake-9.2" => "debian-2.2",
-       "suse-7.0"     => "debian-2.2", # FIXME: assumed that only redhat distros use -b.
+       "suse-7.0"     => "debian-2.2",
        "pld-1.0"      => "redhat-6.2",
        "pld-1.1"      => "redhat-6.2",
        "pld-1.99"     => "redhat-6.2",
+       "conectiva-9"  => "debian-2.2",
+       "conectiva-10" => "debian-2.2",
        "fedora-1"     => "redhat-6.2",
        "slackware-9.1.0" => "redhat-6.2",
        "gentoo"       => "debian-2.2",
@@ -1409,6 +1411,8 @@ sub gst_network_get_file
 		"mandrake-9.0" => \&gst_network_rh62_get_file,
 		"mandrake-9.1" => \&gst_network_rh62_get_file,
 		"mandrake-9.2" => \&gst_network_rh62_get_file,
+ 		"conectiva-9"  => \&gst_network_rh62_get_file,
+ 		"conectiva-10" => \&gst_network_rh62_get_file,
     "debian-2.2"   => \&gst_network_deb22_get_file,
     "debian-3.0"   => \&gst_network_deb22_get_file,
     "debian-sarge" => \&gst_network_deb22_get_file,
@@ -3147,6 +3151,8 @@ sub gst_network_ensure_loopback_interface
 	  "mandrake-9.0" => "lo",
 	  "mandrake-9.1" => "lo",
 	  "mandrake-9.2" => "lo",
+ 	  "conectiva-9"  => "lo",
+    "conectiva-10" => "lo",
 	  "debian-2.2"   => "lo",
     "debian-3.0"   => "lo",
     "debian-sarge" => "lo",
@@ -3258,6 +3264,8 @@ sub gst_network_get_parse_table
     "mandrake-9.0" => "redhat-7.0",
     "mandrake-9.1" => "redhat-7.0",
     "mandrake-9.2" => "redhat-7.0",
+    "conectiva-9"  => "redhat-7.0", 
+    "conectiva-10" => "redhat-7.0", 
     "debian-2.2"   => "debian-2.2",
     "debian-3.0"   => "debian-2.2",
     "debian-sarge" => "debian-2.2",
@@ -3623,6 +3631,8 @@ sub gst_network_get_interface_parse_table
     "mandrake-9.0" => "mandrake-9.0",
     "mandrake-9.1" => "mandrake-9.0",
     "mandrake-9.2" => "mandrake-9.0",
+    "conectiva-9"  => "conectiva-9",
+    "conectiva-10" => "conectiva-9",
     "debian-2.2"   => "debian-2.2",
     "debian-3.0"   => "debian-3.0",
     "debian-sarge" => "debian-3.0",
@@ -3850,7 +3860,58 @@ sub gst_network_get_interface_parse_table
                                                                    \&gst_network_active_interfaces_get ],
            [ "enabled",            \&gst_parse_trivial, 0 ]
            ]
-             },
+    },
+
+    "conectiva-9" =>
+    {
+      ifaces_get => \&gst_network_sysconfig_rh62_ifaces_get_existing,
+      fn =>
+ 	    {
+        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT  => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE => "#iface#",
+        PAP   => "/etc/ppp/pap-secrets",
+        CHAP  => "/etc/ppp/chap-secrets",
+        PUMP  => "/etc/pump.conf"
+      },
+      table =>
+      [
+       [ "bootproto",          \&gst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
+       [ "auto",               \&gst_parse_sh_bool, IFCFG, ONBOOT ],
+       [ "user",               \&gst_parse_sh_bool, IFCFG, USERCTL ],
+       [ "name",               \&gst_parse_sh,      IFCFG, NAME ],
+       [ "dev",                \&gst_parse_sh,      IFCFG, DEVICE ],
+       [ "address",            \&gst_parse_sh,      IFCFG, IPADDR ],
+       [ "netmask",            \&gst_parse_sh,      IFCFG, NETMASK ],
+       [ "broadcast",          \&gst_parse_sh,      IFCFG, BROADCAST ],
+       [ "network",            \&gst_parse_sh,      IFCFG, NETWORK ],
+       [ "gateway",            \&gst_parse_sh,      IFCFG, GATEWAY ],
+       [ "essid",              \&gst_parse_sh,      IFCFG, WIRELESS_ESSID ],
+       [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
+       [ "update_dns",         \&gst_parse_sh_bool, IFCFG, PEERDNS ],
+       [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
+       [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
+       [ "mtu",                \&gst_parse_sh,      IFCFG, MTU ],
+       [ "mru",                \&gst_parse_sh,      IFCFG, MRU ],
+       [ "remote_address",     \&gst_parse_sh,      IFCFG, REMIP ],
+       [ "login",              \&gst_parse_sh,      IFCFG, PAPNAME ],
+       [ "password",           \&gst_network_get_pap_passwd, PAP,  "%login%" ],
+       [ "password",           \&gst_network_get_pap_passwd, CHAP, "%login%" ],
+       [ "serial_port",        \&gst_parse_sh,      IFCFG, MODEMPORT ],
+       [ "serial_speed",       \&gst_parse_sh,      IFCFG, LINESPEED ],
+       [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
+       [ "wvsection",          \&gst_parse_sh,      IFCFG, WVDIALSECT ],
+       [ "set_default_gw",     \&gst_parse_sh_bool, IFCFG, DEFROUTE ],
+       [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
+       [ "persist",            \&gst_parse_sh_bool, IFCFG, PERSIST ],
+       [ "serial_escapechars", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+       [ "serial_hwctl",       \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+       [ "phone_number",       \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+       [ "enabled",            \&gst_network_interface_active, IFACE,
+                                                               \&gst_network_active_interfaces_get ],
+       [ "enabled",            \&gst_parse_trivial, 0 ]
+      ]
+    },
 
 	  "debian-2.2" =>
 	  {
@@ -4199,6 +4260,8 @@ sub gst_network_get_replace_table
 	  "mandrake-9.0" => "redhat-7.0",
 	  "mandrake-9.1" => "redhat-7.0",
 	  "mandrake-9.2" => "redhat-7.0",
+ 	  "conectiva-9"  => "redhat-7.0",
+ 	  "conectiva-10" => "redhat-7.0",
     "debian-2.2"   => "debian-2.2",
     "debian-3.0" => "debian-2.2",
     "debian-sarge" => "debian-2.2",
@@ -4554,6 +4617,8 @@ sub gst_network_get_interface_replace_table
     "mandrake-9.0" => "mandrake-9.0",
     "mandrake-9.1" => "mandrake-9.0",
     "mandrake-9.2" => "mandrake-9.0",
+    "conectiva-9"  => "conectiva-9",
+    "conectiva-10" => "conectiva-9",
     "debian-2.2"   => "debian-2.2",
     "debian-3.0"   => "debian-3.0",
     "debian-sarge" => "debian-3.0",
@@ -4761,7 +4826,54 @@ sub gst_network_get_interface_replace_table
       ]
     },
 
-    "debian-2.2" =>
+   "conectiva-9" =>
+   {
+     iface_set    => \&gst_network_rh62_interface_activate,
+     iface_delete => \&gst_network_rh62_interface_delete,
+     ifaces_get   => \&gst_network_sysconfig_rh62_ifaces_get_existing,
+     fn =>
+     {
+       IFCFG  => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+       CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
+       IFACE  => "#iface#",
+       WVDIAL => "/etc/wvdial.conf",
+       PUMP   => "/etc/pump.conf"
+     },
+     table =>
+     [
+      [ "bootproto",          \&gst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
+      [ "auto",               \&gst_replace_sh_bool, IFCFG, ONBOOT ],
+      [ "user",               \&gst_replace_sh_bool, IFCFG, USERCTL ],
+      [ "name",               \&gst_replace_sh,      IFCFG, NAME ],
+      [ "dev",                \&gst_replace_sh,      IFCFG, DEVICE ],
+      [ "address",            \&gst_replace_sh,      IFCFG, IPADDR ],
+      [ "netmask",            \&gst_replace_sh,      IFCFG, NETMASK ],
+      [ "broadcast",          \&gst_replace_sh,      IFCFG, BROADCAST ],
+      [ "network",            \&gst_replace_sh,      IFCFG, NETWORK ],
+      [ "gateway",            \&gst_replace_sh,      IFCFG, GATEWAY ],
+      [ "essid",              \&gst_replace_sh,      IFCFG, WIRELESS_ESSID ],
+      [ "update_dns",         \&gst_network_pump_set_nodns, PUMP, "%dev%", "%bootproto%" ],
+      [ "update_dns",         \&gst_replace_sh_bool, IFCFG, PEERDNS ],
+      [ "dns1",               \&gst_replace_sh,      IFCFG, DNS1 ],
+      [ "dns2",               \&gst_replace_sh,      IFCFG, DNS2 ],
+      [ "mtu",                \&gst_replace_sh,      IFCFG, MTU ],
+      [ "mru",                \&gst_replace_sh,      IFCFG, MRU ],
+      [ "remote_address",     \&gst_replace_sh,      IFCFG, REMIP ],
+      [ "login",              \&gst_replace_sh,      IFCFG, PAPNAME ],
+      [ "serial_port",        \&gst_replace_sh,      IFCFG, MODEMPORT ],
+      [ "serial_speed",       \&gst_replace_sh,      IFCFG, LINESPEED ],
+      [ "ppp_options",        \&gst_replace_sh,      IFCFG, PPPOPTIONS ],
+      [ "wvsection",          \&gst_replace_sh,      IFCFG, WVDIALSECT ],
+      [ "set_default_gw",     \&gst_replace_sh_bool, IFCFG, DEFROUTE ],
+      [ "debug",              \&gst_replace_sh_bool, IFCFG, DEBUG ],
+      [ "persist",            \&gst_replace_sh_bool, IFCFG, PERSIST ],
+      [ "serial_escapechars", \&gst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+      [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+      [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+     ]
+   },
+
+   "debian-2.2" =>
 	  {
       iface_set    => \&gst_network_rh62_interface_activate, # They use the same ifup/ifdown cmds.
       iface_delete => \&gst_network_deb22_interface_delete,
