@@ -282,7 +282,7 @@ sub gst_boot_get_entry_parse_table
               ["label",  \&gst_parse_trivial,          [LABEL]],
               ["root",   \&gst_boot_grub_parse_root,   [GRUB_CONF, DEVICE_MAP, KEY]],
               ["type",   \&gst_boot_grub_parse_type,   [GRUB_CONF, KEY, PARTITION], "%root%"],
-              ["image",  \&gst_boot_grub_parse_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY], "%root%"],
+              ["image",  \&gst_boot_grub_parse_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
               ["other",  \&gst_boot_grub_parse_other,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
               ["append", \&gst_boot_grub_parse_append, [GRUB_CONF, KEY]],
               ["initrd", \&gst_boot_grub_parse_initrd, [GRUB_CONF, KEY]],
