@@ -1,3 +1,21 @@
+2001-12-20  Tambet Ingo  <tambet@ximian.com>
+
+	* service.pl.in (xst_service_sysv_remove_link): Close dir also after
+	opening it.
+	(xst_service_sysv_set_links_active): Use stricter regexps to remove
+	only service we need (xfs vs xfstt).
+	(xst_service_sysv_set_links_inactive): Ditto.
+	(xst_service_sysv_restart): Actually see what parameters got passed and
+	use them. doh!
+
+	* font.pl.in (xfs_reload): Use more compatible way to restart xfs.
+	(x_font_set): Restart xfs only when needed.
+
+2001-12-19  Tambet Ingo  <tambet@ximian.com>
+
+	* shares-conf.in (get_installed_tools): Implement.
+	(xml_print): Print tools.
+
 2001-12-19  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_get_replace_table): Use the
@@ -22,6 +40,7 @@
 	* network.pl.in (xst_network_debian_woody_get_auto): Hmm... this
 	should return 1/0. Fixes #12983
 
+>>>>>>> 1.477
 2001-12-16  Chema Celorio  <chema@celorio.com>
 
 	* network-conf.in: remove rh 7.2 from supported list

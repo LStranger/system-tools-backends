@@ -368,7 +368,8 @@ sub xst_service_sysv_remove_link
       unlink ("$dir/$link");
     }
   }
-  
+
+  closedir (RC_DIR);
   &xst_report_leave ();
 }
 
@@ -380,8 +381,8 @@ sub xst_service_sysv_set_links_active
 
   foreach $runlevel (&xst_service_sysv_get_runlevels ())
   {
-    &xst_service_sysv_remove_link ($runlevel, "K[0-9]+$service");
-    &xst_service_sysv_remove_link ($runlevel, "S[0-9]+$service");
+    &xst_service_sysv_remove_link ($runlevel, "^K[0-9]+$service\$");
+    &xst_service_sysv_remove_link ($runlevel, "^S[0-9]+$service\$");
     &xst_service_sysv_add_link ($runlevel, "S" . sprintf ("%02d", $pri), $service);
   }
 }
@@ -393,7 +394,7 @@ sub xst_service_sysv_set_links_inactive
 
   foreach $runlevel (&xst_service_sysv_get_runlevels ())
   {
-    &xst_service_sysv_remove_link ($runlevel, "S[0-9]+$service");
+    &xst_service_sysv_remove_link ($runlevel, "^S[0-9]+$service\$");
     &xst_service_sysv_add_link ($runlevel, "K" . sprintf ("%02d", $pri), $service);
   }
 }
@@ -455,8 +456,8 @@ sub xst_service_sysv_run_initd_script
 
 sub xst_service_sysv_restart
 {
-  my ($pri, $service);
-  
+  my ($pri, $service) = @_;
+
   &xst_service_sysv_set_links ($pri, $service, 1);
   &xst_service_sysv_run_initd_script ($service, "restart");
 }

@@ -31,6 +31,7 @@ if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 }
 
 require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/service.pl$DOTIN";
 
 use File::Copy;
 use File::Basename;
@@ -504,6 +505,19 @@ sub xfs_parse
 #                              #
 ################################
 
+BEGIN {
+  &xst_report_table ({
+    'font_install_success'    => ['info',  _('Font [%s] installed successfully.')],
+    'font_install_fail'       => ['warn',  _('File [%s] not installed.')],
+    'font_remove_success'     => ['info',  _('Font [%s] removed successfully.')],
+    'font_dir_update_success' => ['info',  _('Font dir [%s] updated successfully.')],
+    'font_dir_update_fail'    => ['warn',  _('Couldn\'t update font dir [%s].')],
+
+    'font_list'               => ['info',  _('[%s] fonts read successfully.')],
+
+  });
+}
+
 my $cmd = 'gnome-font-install';
 
 my $GNOME_PRINT_DATADIR;
@@ -526,19 +540,6 @@ unless ($GNOME_PRINT_DATADIR || $GNOME_PRINT_SYSCONFDIR)
 {
   print ("Can't find gnome-print's \$DATADIR or \$SYSCONFDIR.\n");
   return;
-}
-
-BEGIN {
-  &xst_report_table ({
-    'font_install_success'    => ['info',  _('Font [%s] installed successfully.')],
-    'font_install_fail'       => ['warn',  _('File [%s] not installed.')],
-    'font_remove_success'     => ['info',  _('Font [%s] removed successfully.')],
-    'font_dir_update_success' => ['info',  _('Font dir [%s] updated successfully.')],
-    'font_dir_update_fail'    => ['warn',  _('Couldn\'t update font dir [%s].')],
-
-    'font_list'               => ['info',  _('[%s] fonts read successfully.')],
-
-  });
 }
 
 my $font_map = {
@@ -1033,7 +1034,7 @@ sub xfs_add_fontpath
 
 sub xfs_reload
 {
-  &xst_file_run ('/etc/rc.d/init.d/xfs restart') if (-f '/var/run/xfs.pid');
+  &xst_service_sysv_restart (90, 'xfs');
 }
 
 
@@ -1280,6 +1281,10 @@ sub x_font_set
 {
   my $del = shift;
   my $add = shift;
+
+  return unless ($del && $add);
+  return if (scalar (keys (%$del)) == 0 &&
+             scalar (keys (%$add)) == 0);
 
   # FIXME: Report.
 

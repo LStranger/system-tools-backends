@@ -477,13 +477,20 @@ sub xml_print_export_smb
 sub xml_print
 {
   my ($config) = @_;
-  my ($import_table, $smb_export_table, $nfs_export_table);
+  my ($tools, $import_table, $smb_export_table, $nfs_export_table, $i);
 
+  $tools            = $$config{"tools"};
   $import_table     = $$config{"imports"};
   $smb_export_table = $$config{"smb_exports"};
   $nfs_export_table = $$config{"nfs_exports"};
 
   &xst_xml_print_begin ();
+
+  foreach $i (keys (%$tools))
+  {
+    &xst_xml_print_pcdata ($i, $$tools{$i});
+  }
+  &xst_xml_print_vspace ();
 
   if (scalar @$import_table)
   {
@@ -544,6 +551,65 @@ sub remove_shares_from_filesys_table
 
 # Configuration handling.
 
+sub get_installed_tools
+{
+  my $tools = {};
+  my $dist;
+
+  my $dist_table =
+  {
+    'redhat' =>
+    {
+      'smbserver' => 'smb',
+      'smbmount'  => 'smbmount',
+    },
+
+    'debian' =>
+    {
+      'smbserver' => 'samba',
+      'smbmount'  => 'smbmount',
+    },
+
+    'mandrake' =>
+    {
+      'smbserver' => 'smb',
+      'smbmount'  => 'smbmount',
+    },
+
+    'suse' =>
+    {
+      'smbserver' => 'smb',
+      'smbmount'  => 'smbmount',
+    },
+
+    'turbolinux' =>
+    {
+      'smbserver' => 'smb',
+      'smbmount'  => 'smbmount',
+    },
+  };
+
+  foreach (keys (%$dist_table))
+  {
+    if ($tool->{'platform'} =~ /$_/)
+    {
+      $dist = $dist_table->{$_};
+      last;
+    }
+  }
+
+  unless ($dist)
+  {
+    &xst_debug_print_line ("get_installed_tools: error.");
+    return;
+  }
+
+  $tools->{'smbserver'} = &xst_service_sysv_installed ($dist->{'smbserver'});
+  $tools->{'smbmount'} = &xst_file_locate_tool ($dist->{'smbmount'});
+
+  return $tools;
+}
+
 sub get_configured_imports
 {
   my ($imports, $listed_imports, $mounted_imports);
@@ -572,12 +638,14 @@ sub get_configured_exports
 
 sub get
 {
-  my ($imports, $smb_exports, $nfs_exports);
+  my ($tools, $imports, $smb_exports, $nfs_exports);
   my $config = {};
 
+  $tools = &get_installed_tools ();
   $imports = &get_configured_imports ();
   ($smb_exports, $nfs_exports) = &get_configured_exports ();
 
+  $$config{"tools"}       = $tools;
   $$config{"imports"}     = $imports;
   $$config{"smb_exports"} = $smb_exports;
   $$config{"nfs_exports"} = $nfs_exports;
