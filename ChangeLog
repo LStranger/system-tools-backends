@@ -1,3 +1,8 @@
+2005-02-25  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* share.pl.in: avoid print$ section as well in smb.conf, it has much
+	more to do with printing than with file sharing
+
 2005-02-24  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* network-conf.in: added "set_gateway" directive

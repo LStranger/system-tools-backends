@@ -367,7 +367,7 @@ sub gst_share_parse_smb_conf
 
   for $section (@sections)
   {
-    next if ($section =~ /^(global)|(homes)|(printers)$/);
+    next if ($section =~ /^(global)|(homes)|(printers)|(print\$)$/);
     next if (&gst_parse_ini_bool ($smb_conf_name, $section, "printable"));
 
     my $sesi = &gst_share_smb_info_new ();
@@ -460,7 +460,7 @@ sub gst_share_replace_smb_conf
 
   for $section (@sections)
   {
-    next if ($section =~ /^(global)|(homes)|(printers)$/);
+    next if ($section =~ /^(global)|(homes)|(printers)|(print\$)$/);
     next if (&gst_parse_ini_bool ($file, $section, "printable"));
 
     if (!&gst_share_smb_table_find ($table, $section))
