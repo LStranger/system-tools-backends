@@ -215,7 +215,8 @@ sub gst_service_get_verbose_runlevels
 
      "gentoo"         => "gentoo",
 
-     "freebsd-5"      => "freebsd-5"
+     "freebsd-5"      => "freebsd-5",
+     "freebsd-6"      => "freebsd-5",
     );
 
   %runlevels=
@@ -1091,7 +1092,7 @@ sub gst_get_init_type
   {
     return "bsd";
   }
-  elsif ($gst_dist =~ /freebsd-5/)
+  elsif ($gst_dist =~ /freebsd/)
   {
     return "rcng";
   }
@@ -1591,7 +1592,8 @@ sub gst_service_get_status
 
        "gentoo"       => \&gst_service_gentoo_get_status,
 
-       "freebsd-5"    => \&gst_service_rcng_get_status
+       "freebsd-5"    => \&gst_service_rcng_get_status,
+       "freebsd-6"    => \&gst_service_rcng_get_status,
       );
   my $proc;
 

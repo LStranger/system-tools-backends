@@ -1,3 +1,10 @@
+2004-08-24  Joe Marcus Clarke  <marcus@freebsd.org>
+
+	* network-conf.in, network.pl.in, platform.pl.in, service.pl.in,
+	services-conf.in, shares-conf.in, time-conf.in, users-conf.in:
+	Added support for the recently forked FreeBSD 6, at the moment it's
+	the same than 5.X
+
 2004-08-21  Kjartan Maraas  <kmaraas@gnome.org>
 
 	* configure.in: Added «nb» to ALL_LINGUAS.
