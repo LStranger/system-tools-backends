@@ -537,6 +537,7 @@ sub xst_network_get_parse_table
 		    [ workgroup,     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
 		    [ description,   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
 		    [ winsserver,    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+		    [ winsuse,       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
 		    [ dialing,       \&xst_network_dialing_get,     WVDIAL ],
 		    [ interface,     \&xst_network_interfaces_get ]
 		    ]
@@ -659,6 +660,7 @@ sub xst_network_get_replace_table
            [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
            [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
            [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+           [ winsuse,       \&xst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
            [ dialing,       \&xst_network_dialing_set,      WVDIAL ],
            [ interface,     \&xst_network_interfaces_set,		OLD_HASH ]
            ]

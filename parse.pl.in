@@ -345,3 +345,15 @@ sub xst_parse_ini
 
   return $res;
 }
+
+sub xst_parse_ini_bool
+{
+    my ($file, $section, $var) = @_;
+    my $ret;
+    
+    $ret = &xst_parse_ini ($file, $section, $var);
+
+    return undef if ($ret eq undef);
+    return (&xst_read_boolean ($ret)? 1: 0);
+}
+

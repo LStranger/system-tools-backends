@@ -118,6 +118,7 @@ sub xml_parse_network
     elsif ($$tree[0] eq "workgroup")       { $$hash{"workgroup"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "description")     { $$hash{"description"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "winsuse")         { $$hash{"winsuse"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "interface")       { &xml_parse_interface ($$tree[1], \%interface); }
     elsif ($$tree[0] eq "dialing")         { &xml_parse_dialing ($$tree[1], \%dialing); }
 
@@ -288,7 +289,7 @@ sub xml_print
   my $h = $_[0];
   my @scalar_keys =
 	 (auto, forward, hostname, gateway, gateway_dev, domain, domainname,
-	  hostmatch, workgroup, description, winsserver);
+	  hostmatch, workgroup, description, winsserver, winsuse);
   my @array_keys =
 	 (nameserver, searchdomain, order);
 

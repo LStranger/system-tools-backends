@@ -1,3 +1,11 @@
+2001-02-27  Arturo Espinosa  <arturo@ximian.com>
+
+	* network-conf.in (xml_parse_network): support winsuse boolean.
+	* network.pl.in (xst_network_get_replace_table, parse_table): winsuse.
+	* parse.pl.in (xst_parse_ini_bool): get a boolean from an ini file.
+	* replace.pl.in (xst_replace_ini_bool): save a boolean...
+	* xml.pl.in (xml_get_pcdata): return "" if tag doesn't have contents.
+	
 2001-02-26  Chema Celorio  <chema@celorio.com>
 
 	* Makefile.am (perl_libs): remove be.pl

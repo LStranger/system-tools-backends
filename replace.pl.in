@@ -186,7 +186,6 @@ sub xst_replace_sh
 sub xst_replace_sh_bool
 {
   my ($file, $key, $value) = @_;
-  my $i;
 
   $value = ($value == 1)? "yes": "no";
   
@@ -344,3 +343,14 @@ sub xst_replace_ini
   return &xst_buffer_save ($buff, $file);
 }
 
+sub xst_replace_ini_bool
+{
+  my ($file, $section, $var, $value) = @_;
+
+  $value = ($value == 1)? "yes": "no";
+
+  return &xst_replace_ini ($file, $section, $var, $value);
+}
+
+
+  

@@ -237,6 +237,8 @@ sub xst_xml_get_pcdata
     shift @$tree;
     shift @$tree;
   }
+
+  return "";
 }
 
 # Compresses node into a word and returns it.
