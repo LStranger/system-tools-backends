@@ -263,12 +263,14 @@ sub update_disk_size
 
 sub read_fstab
 {
+  my $fstab_file;
   local *FSTAB_FILE;
 
   # Find the file.
 
-  *FSTAB_FILE = be_open_read_from_names(@fstab_names);
-  if (not *FSTAB_FILE) { return; }  # We didn't find it.
+  $fstab_file = be_open_read_from_names(@fstab_names);
+  if (not $fstab_file) { return; }  # We didn't find it.
+  *FSTAB_FILE = $fstab_file;
 
   # Parse the file.
 
@@ -311,10 +313,12 @@ sub read_fstab
 
 sub write_fstab
 {
+  my ($ifh, $ofh);
   local (*INFILE, *OUTFILE);
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@fstab_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@fstab_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
 
   while (<INFILE>)
   {

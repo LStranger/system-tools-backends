@@ -118,13 +118,15 @@ $cf_hostmatch = 0;  # 0 = all, 1 = first
 
 sub read_resolv_conf
 {
+  my $ifh;
   local *FILE;
   my @line = ();
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@resolv_conf_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@resolv_conf_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -161,12 +163,14 @@ sub read_resolv_conf
 
 sub write_resolv_conf
 {
+  my $ofh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_write_from_names(@resolv_conf_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ofh = be_open_write_from_names(@resolv_conf_names);
+  if (not $ofh) { return; }  # We didn't find it.
+  *FILE = $ofh;
 
   # Write the file.
 
@@ -192,12 +196,14 @@ sub write_resolv_conf
 
 sub read_host_conf
 {
+  my $ifh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@host_conf_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@host_conf_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -226,12 +232,14 @@ sub read_host_conf
 
 sub write_host_conf
 {
+  my $ofh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_write_from_names(@host_conf_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ofh = be_open_write_from_names(@host_conf_names);
+  if (not $ofh) { return; }  # We didn't find it.
+  *FILE = $ofh;
 
   # Write the file.
 
@@ -263,14 +271,16 @@ sub write_host_conf
 
 sub read_hosts
 {
+  my $ifh;
   local *FILE;
   my @alias = ();
   my @line = ();
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@hosts_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@hosts_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -301,13 +311,14 @@ sub read_hosts
 
 sub write_hosts
 {
-  local *INFILE;
-  local *OUTFILE;
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@hosts_names);
-  if (not *OUTFILE) { return; }  # We didn't find it.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@hosts_names);
+  if (not $ofh) { return; }  # We didn't find it.
+  *INFILE = $ifh; *OUTFILE = $ofh;
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -364,12 +375,14 @@ sub write_hosts
 
 sub read_hostname
 {
+  my $ifh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@hostname_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@hostname_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -387,13 +400,15 @@ sub read_hostname
 
 sub write_hostname
 {
-  local *OUTFILE;
-  local *INFILE;
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@hostname_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@hostname_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
   print OUTFILE "$cf_hostname\n";
 
   close(OUTFILE);
@@ -415,12 +430,14 @@ sub write_hostname
 
 sub read_defaultdomain
 {
+  my $ifh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@defaultdomain_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@defaultdomain_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -437,13 +454,15 @@ sub read_defaultdomain
 
 sub write_defaultdomain
 {
-  local *OUTFILE;
-  local *INFILE;
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@defaultdomain_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@defaultdomain_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
+
   print OUTFILE "$cf_domain\n";
 
   close(OUTFILE);
@@ -468,12 +487,14 @@ sub write_defaultdomain
 
 sub read_sysconfig_network
 {
+  my $ifh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@sysconfig_network_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@sysconfig_network_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -494,15 +515,16 @@ sub read_sysconfig_network
 
 sub write_sysconfig_network
 {
-  local *INFILE;
-  local *OUTFILE;
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
   my $wrote_hostname = 0;
   my $wrote_domain = 0;
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@sysconfig_network_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@sysconfig_network_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -552,12 +574,14 @@ sub write_sysconfig_network
 
 sub read_rc_config
 {
+  my $ifh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@rc_config_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@rc_config_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -602,16 +626,17 @@ sub read_rc_config
 
 sub write_rc_config
 {
-  local *INFILE;
-  local *OUTFILE;
+  my ($ifh, $ofh);
+  local (*INFILE, *OUTFILE);
   my $wrote_hostname = 0;
   my $wrote_searchdomains = 0;
   my $wrote_nameservers = 0;
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@rc_config_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@rc_config_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -661,12 +686,14 @@ sub write_rc_config
 
 sub read_smb_conf
 {
+  my $ifh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@smb_conf_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@smb_conf_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -705,8 +732,8 @@ sub read_smb_conf
 
 sub write_smb_conf
 {
-  local *INFILE;
-  local *OUTFILE;
+  my $ifh, $ofh;
+  local (*INFILE, *OUTFILE);
   my $wrote_workgroup = 0;
   my $wrote_description = 0;
   my $wrote_winsserver = 0;
@@ -714,8 +741,9 @@ sub write_smb_conf
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@smb_conf_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@smb_conf_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
 
   # Write the file, preserving as much as possible from INFILE.
 

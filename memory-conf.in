@@ -343,11 +343,12 @@ sub get_swap_size
 
 sub get_swap_entries
   {
+    my $fstab_file;
     local *FSTAB_FILE;
 
-    *FSTAB_FILE = be_open_read_from_names (@fstab_names);
-
-    if (not *FSTAB_FILE) { return; }
+    $fstab_file = be_open_read_from_names (@fstab_names);
+    if (!$fstab_file) { return; }
+    *FSTAB_FILE = $fstab_file;
 
     while (<FSTAB_FILE>)
       {
@@ -462,12 +463,15 @@ sub setup_swap_files
 
 sub set_swap_entries
   {
+    my ($fstab_in_file, $fstab_out_file);
     local (*FSTAB_IN_FILE, *FSTAB_OUT_FILE);
     my (@lines);
     my ($priority_str);
 
-    (*FSTAB_IN_FILE, *FSTAB_OUT_FILE) = 
+    ($fstab_in_file, $fstab_out_file) = 
       be_open_filter_write_from_names (@fstab_names);
+    if (!$fstab_out_file) { return; }
+    *FSTAB_IN_FILE = $fstab_in_file; *FSTAB_OUT_FILE = $fstab_out_file;
 
     while (<FSTAB_IN_FILE>)
       {

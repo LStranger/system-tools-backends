@@ -197,11 +197,13 @@ sub arr_cmp_recurse
 
 sub read_login_defs
 {
+  my $ifh;
   local *FILE;
   my @line;
 	
-  *FILE = be_open_read_from_names(@login_defs_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@login_defs_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   while (<FILE>)
   {
@@ -217,6 +219,7 @@ sub read_login_defs
 		
 sub read_passwd_shadow
 {
+  my $ifh;
   local *FILE;
   my (@line, $copy, %tmphash);
   my $login_pos = $users_prop_map{"login"};
@@ -224,8 +227,9 @@ sub read_passwd_shadow
 
   # Find the passwd file.
 
-  *FILE = be_open_read_from_names(@passwd_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@passwd_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
     $passwd_last_modified = (stat (FILE))[9]; # get the mtime.
 
   # Parse the file.
@@ -272,14 +276,16 @@ sub read_passwd_shadow
 
 sub read_group
 {
+  my $ifh;
   local *FILE;
   my (@line, $copy, @a);
   my $i = 0;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@group_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@group_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
   $group_last_modified = (stat (FILE))[9]; # get the mtime.
 
   # Parse the file.

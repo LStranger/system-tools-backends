@@ -811,16 +811,16 @@ sub be_ensure_local_host_entry
   my $local_ip = "127.0.0.1";
   my $local_hostname = @_[0];
   my ($ifh, $ofh);
-  local *INFILE;
-  local *OUTFILE;
+  local (*INFILE, *OUTFILE);
   my $written = 0;
 
   if ($local_hostname eq "") { return; }
 
   # Find the file.
-  
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@hosts_names);
-  if (!*OUTFILE) { return; }  # We didn't find it.
+
+  ($ifh, $ofh) = be_open_filter_write_from_names(@hosts_names);
+  if (!$ofh) { return; }  # We didn't find it.
+  *INFILE = $ifh; *OUTFILE = $ofh;
 
   # Write the file, preserving as much as possible from INFILE.
 

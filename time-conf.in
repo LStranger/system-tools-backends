@@ -92,13 +92,15 @@ $cf_sync_active = 0;
 
 sub read_ntp_conf
 {
+  my $ifh;
   local *FILE;
   
   # Find the file.
   
-  *FILE = be_open_read_from_names(@ntp_conf_names);
-  if (not *FILE) { return; }
-  
+  $ifh = be_open_read_from_names(@ntp_conf_names);
+  if (not $ifh) { return; }
+  *FILE = $ifh;
+
   # Parse the file.
   
   be_report_info(13, "Reading time server list");
@@ -116,13 +118,15 @@ sub read_ntp_conf
 
 sub write_ntp_conf
 {
+  my ($ifh, $ofh);
   local (*INFILE, *OUTFILE);
   my $wrote_servers = 0;
 
   # Find the file.
 
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@ntp_conf_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@ntp_conf_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
 
   # Write the file, preserving as much as possible from INFILE.
 
@@ -172,12 +176,14 @@ sub write_ntp_conf
 
 sub write_ntp_step_tickers
 {
+  my $ofh;
   local *FILE;
 
   # Find the file (it might very well not exist beforehand).
 
-  *FILE = be_open_write_from_names(@ntp_step_tickers_names);
-  if (not *FILE) { return; }
+  $ofh = be_open_write_from_names(@ntp_step_tickers_names);
+  if (not $ofh) { return; }
+  *FILE = $ofh;
 
   # Write the file.
 

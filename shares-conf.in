@@ -739,12 +739,14 @@ sub write_smb_conf
 
 sub read_fstab
 {
+  my $ifh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@fstab_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@fstab_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -827,10 +829,12 @@ sub read_fstab
 
 sub write_fstab
 {
+  my ($ifh, $ofh);
   local (*INFILE, *OUTFILE);
   
-  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@fstab_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
+  ($ifh, $ofh) = be_open_filter_write_from_names(@fstab_names);
+  if (not $ofh) { return; }  # No point if we can't write.
+  *INFILE = $ifh; *OUTFILE = $ofh;
 
   while (<INFILE>)
   {
@@ -1039,12 +1043,14 @@ sub write_fstab
 
 sub read_exports
 {
+  my $ifh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_read_from_names(@exports_names);
-  if (not *FILE) { return; }  # We didn't find it.
+  $ifh = be_open_read_from_names(@exports_names);
+  if (not $ifh) { return; }  # We didn't find it.
+  *FILE = $ifh;
 
   # Parse the file.
 
@@ -1080,12 +1086,14 @@ sub read_exports
 
 sub write_exports
 {
+  my $ofh;
   local *FILE;
 
   # Find the file.
 
-  *FILE = be_open_write_from_names(@exports_names);
-  if (not *FILE) { return; }
+  $ofh = be_open_write_from_names(@exports_names);
+  if (not $ofh) { return; }
+  *FILE = $ofh;
 
   # We rewrite everything, as we have complete command of the things to go
   # in this file.
