@@ -6,6 +6,7 @@
 # Copyright (C) 2000 Helix Code, Inc.
 #
 # Authors: Hans Petter Jansson <hpj@helixcode.com>
+#          Michael Vogt <mvo@debian.org> (Debian Support)
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -100,7 +101,7 @@ End_of_Usage;
 
 $version = "0.1.0";
 
-$progress_max = 7;
+$progress_max = 9;
 
 # --- System config file locations --- #
 
@@ -115,6 +116,8 @@ $progress_max = 7;
 @hosts_names =             ( "/etc/hosts" );
 @sysconfig_network_names = ( "/etc/sysconfig/network" );
 @rc_config_names =         ( "/etc/rc.config" );
+@defaultdomain_names =     ( "/etc/defaultdomain");
+@hostname_names =          ( "/etc/hostname");
 @smb_conf_names =          ( "/etc/smb.conf", "/etc/samba/smb.conf" );
 
 
@@ -393,6 +396,106 @@ sub write_hosts
   }
 
   close(OUTFILE);
+}
+
+# Debian style /etc/hostname
+#
+# <empty>
+# <hostname>
+# <empty> 
+#
+# Determines the local hostname. 
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent: ?
+
+sub read_hostname
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@hostname_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  # mvo: debug
+  while (<FILE>)
+  {
+    chop($_);
+    if ( not be_is_line_comment_start($_) )
+    { $cf_hostname = $_; }
+  }
+
+  close(FILE);
+}
+
+
+sub write_hostname
+{
+  local *OUTFILE;
+  local *INFILE;
+
+  # Find the file.
+
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@hostname_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
+  print OUTFILE "$cf_hostname\n";
+
+  close(OUTFILE);
+  if (*INFILE) { close(INFILE); }
+}
+
+
+# Debian style /etc/defaultdomain
+#
+# <empty>
+# <domainname>
+# <empty> 
+#
+# Determines the local domain. 
+#
+# Exists: Debian 2.[2|3]
+#
+# Absent: ?
+
+sub read_defaultdomain
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@defaultdomain_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    chop($_);
+    if (not be_is_line_comment_start($_))
+    { $cf_domain = $_; }
+  }
+
+  close(FILE);
+}
+
+
+sub write_defaultdomain
+{
+  local *OUTFILE;
+  local *INFILE;
+
+  # Find the file.
+
+  (*INFILE, *OUTFILE) = be_open_filter_write_from_names(@defaultdomain_names);
+  if (not *OUTFILE) { return; }  # No point if we can't write.
+  print OUTFILE "$cf_domain\n";
+
+  close(OUTFILE);
+  if (*INFILE) { close(INFILE); }
 }
 
 
@@ -1005,6 +1108,8 @@ sub get
   read_resolv_conf (); be_print_progress ();
   read_sysconfig_network (); be_print_progress ();
   read_rc_config (); be_print_progress ();
+  read_defaultdomain (); be_print_progress ();
+  read_hostname (); be_print_progress ();
   read_smb_conf (); be_print_progress ();
 
   if ($be_verbose) { print STDERR "Getting reverse names.\n"; }
@@ -1082,6 +1187,8 @@ sub set
   write_smb_conf ();
   write_rc_config ();
   write_sysconfig_network ();
+  write_defaultdomain ();
+  write_hostname ();
   write_resolv_conf ();
   write_hosts ();
   write_host_conf ();
