@@ -262,7 +262,7 @@ sub be_push_unique
 	    if ($elem eq $_[$i]) { $found = $elem; last; }
 	  }
 	
-	if ($found eq "") { push(@$arr, $_[$i]); }
+	if ($found eq "") { push($$arr, $_[$i]); }
       }
   }
 
@@ -500,11 +500,11 @@ sub be_xml_get_word
     
     while (@$tree)
       {
-	if (@$tree[0] == 0)
+	if ($$tree[0] == 0)
 	  {
 	    my $retval;
 	    
-	    ($retval = @$tree[1]) =~ tr/ \n\r\t\f//d;
+	    ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
 	    $retval = be_xml_entities_to_plain(\$retval);
 	    return($retval);
 	  }
@@ -526,11 +526,11 @@ sub be_xml_get_size
 
     while (@$tree)
       {
-        if (@$tree[0] == 0)
+        if ($$tree[0] == 0)
           {
             my $retval;
 
-            ($retval = @$tree[1]) =~ tr/ \n\r\t\f//d;
+            ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
             $retval = be_xml_entities_to_plain(\$retval);
             if ($retval =~ /Mb$/)
               {
@@ -556,9 +556,9 @@ sub be_xml_get_text
     
     while (@$tree)
       {
-	if (@$tree[0] = 0)
+	if ($$tree[0] = 0)
 	  {
-	    ($retval = @$tree[1]) =~ tr/\n\r\t\f/    /;
+	    ($retval = $$tree[1]) =~ tr/\n\r\t\f/    /;
 	    $retval = be_xml_entities_to_plain(\$retval);
 	    return($retval);
 	  }
