@@ -352,30 +352,43 @@ BEGIN {
 
 sub x_version
 {
-  unless ($x_version) {
-    my $command = &xst_file_locate_tool ("/usr/X11R6/bin/XFree86");
-#   my $command = &xst_file_locate_tool ("/usr/X11R6/bin/XF86_SVGA");
+  return $x_version if $x_version; # Cache
 
-    my ($number, $driver) = (0, "");
+  my ($command, $number, $driver);
+  my @paths = qw (/etc/X11/X /usr/X11R6/bin/XFree86 /usr/X11R6/bin/X);
 
-    open (FD, "$command -version 2>&1 |");
-    while (<FD>) {
-      if (/^XFree86 Version (\d+)\.(\d+)\.(\d+)/) {
-        $number = $1 . $2 . $3;
-      }
-      elsif ($number > 0 && $number < 400 && /^[ \t]*(\w+): (accelerated)?[ ]*server/) {
-        $driver = $1;
-        $driver = 'Accel' if $2;
-        last;
-      }
+  foreach my $tmp (@paths) {
+    if (-x $tmp) {
+      $command = $tmp;
+      last;
     }
-    close (FD);
-
-    &xst_report ('x_version', $number);
-    $x_version->{'sections'} = ($number >= 400) ? $x4_sections : $x3_sections;
-    $x_version->{'number'} = $number;
-    $x_version->{'driver'} = $driver if $driver;
   }
+
+  unless ($command) {
+    # TODO: add report;
+    &xst_debug_print_line ("Couldn't find X binary.");
+    return;
+  }
+
+  open (FD, "$command -version 2>&1 |");
+  while (<FD>) {
+    if (/^XFree86 Version (\d+)\.(\d+)\.(\d+)/) {
+      $number = $1 . $2 . $3;
+    }
+    elsif ($number > 0 && $number < 400 && /^[ \t]*(\w+): (accelerated)?[ ]*server/) {
+      $driver = $1;
+      $driver = 'Accel' if $2;
+      last;
+    }
+  }
+  close (FD);
+
+  &xst_report ('x_version', $number);
+
+  $x_version->{'command'} = $command;
+  $x_version->{'sections'} = ($number >= 400) ? $x4_sections : $x3_sections;
+  $x_version->{'number'} = $number;
+  $x_version->{'driver'} = $driver if $driver;
 
   return $x_version;
 }
@@ -1172,6 +1185,8 @@ sub x_parse
   my $fname = shift;
   my ($tmp);  
 
+  $x_version = &x_version () unless $x_version;
+
   my $buf = &xst_file_buffer_load ($fname);
   return unless $buf;
   
@@ -1631,54 +1646,79 @@ sub x_config_set
 # ------------------------------------------------------
 
 # internal.
-sub x3_get_active_screen
+sub x_get_active_screen
 {
   my $config = shift;
-  
   return unless $config;
 
-  unless (exists ($config->{'Screen'})) {
+  # Make sure there is at least one screen
+  unless (exists ($config->{'Screen'}) || scalar @{$config->{'Screen'}} > 0) {
     # TODO: No 'Screen's found. give error or add one.
     return;
   }
-  
-  my $section = $config->{'Screen'};
-  foreach my $screen (@$section) {
-    # Find screen with right 'Identifier'.
-    return $screen if ($screen->{'Identifier'} =~ /$x_version->{'driver'}/i);
+
+  # First try to get it from ServerLayout.
+  if (exists ($config->{'ServerLayout'}) &&
+      scalar @{$config->{'ServerLayout'}} > 0) {
+    my $active_screen = $config->{'ServerLayout'}[0]{'Screen'};
+    foreach my $screen (@{$config->{'Screen'}}) {
+      if ($screen->{'Identifier'} eq $active_screen) {
+        return $screen;
+      }
+    }
+    # TODO: give error that Screen found at ServerLayout doesn;t exist.
   }
-  
+
+  # Get active Screen:
+
+  my $section = $config->{'Screen'};
+  if ($x_version->{'number'} < 400) {
+    foreach my $screen (@$section) {
+      # Find screen with right 'Identifier'.
+      return $screen if ($screen->{'Identifier'} =~ /$x_version->{'driver'}/i);
+    }
+  }
+  else {
+    return $$section[0];
+  }
+
   # Didn't find screen.
   # TODO: give error or add a screen
-  
+
   return;
 }
 
-# internal. X versions before 4.0 didn't have section "ServerLayout",
-# this functions 'fixes' old config.
-sub x3_fix_serverlayout
+# ServerLayout is optional, compose one if none present
+sub x_check_get_serverlayout
 {
   my $config = shift;
-  my $get = shift;
-  
   return unless $config;
-  
-  if ($get) {
-    my $section = "ServerLayout";
-    my $hash = {};
 
-    # Add 'Identifier'
-    $hash->{'Identifier'} = 'Xst Configured';
+  # No need to 'fix' anything.
+  return if ($config->{'ServerLayout'});
 
-    # Add 'Screen'
-    my $ref = &x3_get_active_screen ($config, $x_version);
-    if ($ref) {
-      $hash->{'Screen'} = $ref->{'Identifier'};
-    }
+  my $section = "ServerLayout";
+  my $hash = {};
 
-    push @{$config->{$section}}, $hash;
-  } else {
-    # SET
+  # Add 'Identifier'
+  $hash->{'Identifier'} = 'Xst Configured';
+
+  # Add 'Screen'
+  my $ref = &x_get_active_screen ($config, $x_version);
+  if ($ref) {
+    $hash->{'Screen'} = $ref->{'Identifier'};
+  }
+
+  push @{$config->{$section}}, $hash;
+}
+
+# X3 doesn't have ServerLayout keyword
+sub x_check_set_serverlayout
+{
+  my $config = shift;
+  return unless $config;
+
+  if ($x_version->{'number'} < 400) {
     delete $config->{'XstXServerLayout'} if (exists ($config->{'XstXServerLayout'}));
   }
 }
@@ -1689,9 +1729,9 @@ sub x3_fix_screen
 {
   my $config = shift;
   my $get = shift;
-  
+
   return unless $config;
-  
+
   unless (exists ($config->{'Screen'})) {
     # TODO: No 'Screen's found. give error or add one.
     return;
@@ -1735,9 +1775,8 @@ sub x_get_active_serverlayout
   my $config = shift;
   return unless $config;
 
-  unless (exists ($config->{'ServerLayout'}) ||
-          scalar @{$config->{'Servelayout'}} < 1) {
-    &xst_debug_print_line ("x_get_active_serverlayout: No 'ServerLayout''s found.");
+  if (! $config->{'ServerLayout'} ||
+          scalar @{$config->{'ServerLayout'}} < 1) {
     return;
   }
 
@@ -1749,30 +1788,6 @@ sub x_get_active_serverlayout
   }
 
   return $active;
-}
-
-# Internal.
-sub x_get_active_screen
-{
-  my $config = shift;  
-  return unless $config;
-
-  unless (exists ($config->{'Screen'}) ||
-          scalar @{$config->{'Screen'}} < 1) {
-    &xst_debug_print_line ("x_get_active_screen: No screens found.");
-    return;
-  }
-
-  my $serverlayout = &x_get_active_serverlayout ($config);
-  return unless $serverlayout;
-
-  my $screen_name = $serverlayout->{'Screen'};
-  foreach my $screen (@{$config->{'Screen'}}) {
-    return $screen if $screen_name eq $screen->{'Identifier'};
-  }
-
-  &xst_debug_print_line ("x_get_active_screen: Can't find screen '$screen_name'.");
-  return;
 }
 
 # Internal
@@ -1832,13 +1847,18 @@ sub x_config_fix
 {
   my $config = shift;
   my $get = shift;
-
   return unless $config;
 
+  $x_version = &x_version () unless $x_version;
+
   if ($x_version->{'number'} < 400) {
-    # Order of calling these functions is IMPORTANT. Some sections depend on others...
-    &x3_fix_screen ($config, $get);
-    &x3_fix_serverlayout ($config, $get);
+    &x3_fix_screen ($config, $get);    
+  }
+
+  if ($get) {
+    &x_check_get_serverlayout ($config);
+  } else {
+    &x_check_set_serverlayout ($config);
   }
 
   &x_check_display ($config);
@@ -1863,24 +1883,6 @@ sub x_probe_get_modelines
   }
 
   return $std_modelines;
-}
-
-# Internal
-sub x_probe_get_screen
-{
-  my $config = shift;
-  my $screen;
-
-  return unless $config;
-
-  my $active_screen = $config->{'ServerLayout'}[0]{'Screen'};
-  foreach my $screen (@{$config->{'Screen'}}) {
-    if ($screen->{'Identifier'} eq $active_screen) {
-      return $screen;
-    }
-  }
-
-  return;
 }
 
 # Internal
@@ -1980,11 +1982,12 @@ sub x_probe_scan
 {
   my $cfg_file = shift;
   my $depth = shift;
+  my $depth_cmd = ($x_version->{'number'} >= 400) ? "-depth " : "-bpp ";
+  $depth_cmd .= $depth;
 
-  my $command = &xst_file_locate_tool ("/usr/X11R6/bin/XFree86");
-  return unless $command;
-
-  open (FD, "$command :9 -xf86config $cfg_file -probeonly -depth $depth -screen XstTestScreen 2>&1 |");
+  my $command = $x_version->{'command'};
+  &xst_debug_print_line ("$command :9 -xf86config $cfg_file -probeonly $depth_cmd -screen XstTestScreen 2>&1 |");
+  open (FD, "$command :9 -xf86config $cfg_file -probeonly $depth_cmd -screen XstTestScreen 2>&1 |");
   if (FD) {
     my @content = (<FD>);
     close (FD);
@@ -2130,7 +2133,7 @@ sub x_probe
   }
 
   my $modes = &x_probe_get_modelines ($config);
-  my $screen = &x_probe_get_screen ($config);
+  my $screen = &x_get_active_screen ($config);
   my $monitor = &x_probe_get_monitor ($config, $screen);
 
   $monitor = &x_probe_add_monitor ($config, $monitor, $modes);
@@ -2138,7 +2141,7 @@ sub x_probe
 
   my $cfg_file = &x_probe_save ($orig_file, $config);
   my $list = &x_probe_run ($cfg_file, $modes);
-  unlink ($cfg_file);
+#  unlink ($cfg_file);
 
   if ($list) {
     &x_probe_store ($config, $list);

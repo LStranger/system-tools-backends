@@ -63,8 +63,8 @@ end_of_description;
 $standard_locations =
 {
   'XFree3' => '/etc/X11/XF86Config',
-#  'XFree4' => '/etc/X11/XF86Config-4',
   'XFree4' => '/etc/X11/XF86Config-4',
+#  'XFree4' => '/home/tambet/XF86Config-4-seth',
 };
 
 # Most of these (well, all but Red Hat) could, and probably are
@@ -184,7 +184,7 @@ sub test
   my $config = &x_parse ($tmp_file);
   my $xml_config = &xml_parse ();
   &x_config_fix ($xml_config, 0);
-  
+
   &x_config_set ($tmp_file, $config, $xml_config);
 
   $res = &xst_file_run ("$testX_cmd --config=$tmp_file");
@@ -200,6 +200,7 @@ sub probe
   return unless $cfg_file;
 
   my $config = &x_parse ($cfg_file);
+  &x_config_fix ($config, 0);
   &x_probe ($cfg_file, $config, $direct);
 }
 
