@@ -1,5 +1,11 @@
 2001-04-30  Hans Petter Jansson  <hpj@ximian.com>
 
+	* shares-conf.in (write_fstab): Don't leave unaccounted-for shares lying
+	  around.
+	  (set_immediate): Use new service calls. Interim fix.
+
+2001-04-30  Hans Petter Jansson  <hpj@ximian.com>
+
 	* shares-conf.in (print_xml): Fixed an output problem in <allow> tags.
 
 2001-04-27  Hans Petter Jansson  <hpj@ximian.com>

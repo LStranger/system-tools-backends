@@ -987,7 +987,7 @@ sub write_fstab
                        # password, point, printed, listed.
       }
 
-      if (!$found) { print OUTFILE; }
+#      if (!$found) { print OUTFILE; }
     }
   }
 
@@ -1893,7 +1893,9 @@ sub set_immediate
 
   # Update exports.
 
-  &xst_service_restart(80, "-D", "samba", "smb", "smbd");
+  &xst_service_sysv_run_initd_script ("samba", "restart");
+  &xst_service_sysv_run_initd_script ("smb",   "restart");
+
   &xst_progress(60);
 
   if ($exportfs_tool eq "")
