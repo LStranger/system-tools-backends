@@ -117,9 +117,11 @@ sub update_partition
   my ($listed, $bootable, $detected);
   my ($disk_found, $point_found) = (0, 0);
   my $label;
+  my ($start, $end);
 
   ($disk, $device, $point, $fs, $options, $check, $size, $listed,
-   $bootable, $detected, $label) = @_;
+   $bootable, $detected, $label, $start, $end) = @_;
+
 
   if ($fs eq "auto") { $fs = ""; }
   if ($label eq "")
@@ -205,6 +207,10 @@ sub update_partition
         if ($check) { %partition->{check} = 1; }
         %partition->{size} = $size;
         %partition->{label} = $label;
+	if ($start < $end) {
+	   %partition->{start} = $start;
+	   %partition->{end} = $end;
+	}
 
         $bleh = $cf_disks[$i]->{partitions};
         push(@$bleh, \%partition);
@@ -232,6 +238,10 @@ sub update_partition
     if ($check) { %partition->{check} = 1; }
     %partition->{size} = $size;
     %partition->{label} = $label;
+    if ($start < $end) {
+       %partition->{start} = $start;
+       %partition->{end} = $end;
+    }
 
     %disk->{device} = $disk;
     %disk->{partitions} = [];
@@ -383,7 +393,7 @@ sub update_disk_data
     my (%disk);
 
     %disk->{device} = $disk;
-    %disk->{$data} = $value;        
+    %disk->{$data} = $value;
     %disk->{partitions} = [];
 
     push(@cf_disks, \%disk);
@@ -465,9 +475,20 @@ sub read_fstab
     
     # (Find and update) or (add) our internal disk/partition record.
 
-    if ($disk ne "" || $label ne "")
-    {
-      &update_partition ($disk, $device, $point, $fs, $options, $check, "", 1, 0, "", $label);
+    for ($i = 0; $cf_disks[$i]; $i++) {
+       if ($cf_disks[$i]->{device} eq $disk) {
+	  for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++) {
+	     if ($cf_disks[$i]->{partitions}[$j]->{device} eq $device) {
+		$type = $cf_disks[$i]->{partitions}[$j]->{type};
+		last;
+	     }
+	  }
+	  last;
+       }
+    }
+    
+    if (($disk ne "" || $label ne "") && $type ne "empty") {
+      &update_partition ($disk, $device, $point, $fs, $options, $check, "", 1, 0, "", $label, 0, 0);
     }
   }
 
@@ -671,6 +692,11 @@ sub get_cdroms
 #
 # <blocksize>
 
+sub sort_by_start
+{
+   return ($a->{'start'} <=> $b->{'start'});
+}
+
 sub get_fdisk
 {
   my $fdisk_tool;
@@ -688,6 +714,7 @@ sub get_fdisk
                      "/dev/xda", "/dev/xdb" );
 
   $fdisk_tool = &gst_file_locate_tool("fdisk");
+  #my @check_devs = ("/dev/hdc"); # debug
 
   for $dev (@check_devs)
   {
@@ -696,15 +723,25 @@ sub get_fdisk
     &gst_report ("disks_partition_probe", $dev);
 
     $fd = &gst_file_run_pipe_read ("fdisk -l $dev");
+    #$fd = &gst_file_open_read_from_names ("/tmp/fdisk"); # debug
     # We want to cache fdisk work!
-    my @fdisk_data = <$fd>;
+    
+    my @fdisk_data = <$fd>; 
+    #close ($fd); # debug
     my ($block_size, $dev_size);
+    my $unit = "";
 
+    # First of all we get the global disk data: size, unit
     foreach (@fdisk_data) {
-        # fdisk in Debian PowerPC
         if (/^Block size/) {
+	    # fdisk in Debian PowerPC
             # Block size=512, Number of Blocks=78140160
             ($block_size, $dev_size) = ($_ =~ /^Block size=([0-9]*)[^0-9]*([0-9]*).*$/);
+	    $last_end = $dev_size;
+	    # $unit must be 1024
+	    # my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
+	    # we need ($unit / 1024) = 1
+	    $unit = 1024;
             &update_disk_data ($dev, "size", $dev_size);
             &update_disk_data ($dev, "block_size", $block_size);
             
@@ -719,82 +756,224 @@ sub get_fdisk
             if ($dev_size eq "") {
                 $dev_size = `fdisk -s $dev`;
                 $dev_size = $dev_size * $block_size;
+		($last_end) = ($_ =~ /^Disk [^0-9]* [0-9]+ heads, [0-9]+ sectors, ([0-9]+) cylinders$/);
             } 
             
             &update_disk_data ($dev, "size", $dev_size/$block_size);
             &update_disk_data ($dev, "block_size", $block_size);
-        }
+        } elsif (/^Units/) {
+	   # i386
+	   # Units = cylinders * 512
+	   
+	   # fdisk in Debian i386
+	   # Units = cylinders of 16065 * 512 = 8225280 bytes
+	   ($unit) = ($_ =~ /^Units = cylinders of [0-9]+ \* [0-9]+ = ([0-9]+) bytes$/);
+
+	   if ($unit eq "") {
+	      # fdisk in Suse Desktop i386
+	      # Units = cylinders of 16065 * 512 bytes
+	      my ($a, $b) = ($_ =~ /^Units = cylinders of ([0-9]+) \* ([0-9]+) bytes$/);
+	      $unit = $a * $b;
+	   }
+	} elsif (/^[0-9]+ heads/) {
+	   # i386
+	   # fdisk in Debian i386
+	   # 255 heads, 63 sectors/track, 1222 cylinders
+	   ($last_end) = ($_ =~ /^[0-9]+ heads, [0-9]+ sectors\/track, ([0-9]+) cylinders$/);
+	}
 
     }
-
+    
+    # Now we get the data of each partition
+    my @fdisk_hash = ();
     foreach (@fdisk_data)
     {
       if (/^\/dev/)
       {
         @line = split(/[ \n\r\t]+/, $_);
 
+	my (%parts);
 
+	# fdisk i386
+	#    Device Boot    Start       End    Blocks   Id  System
+	# /dev/hda3           694      1046   2835472+  83  Linux
+	#
+	# fdisk powerpc
+	#         #                    type name                 length   base     ( size )  system
+	# /dev/hdc3          Apple_Driver43 Macintosh                56 @ 120      ( 28.0k)  Driver 4.3
+
+	
         # fdisk in Debian PowerBook gives the disks as the first line 
         next if scalar @line == 1;
 
+	# device file
+	%parts->{'device'} = $line[0];
         $device = $line[0]; shift @line;
         ($disk) = ($device =~ /([a-zA-Z\/]+)/);
         if ($line[0] eq "\*") {
           # NOTE: Currently unused.
+	  %parts->{'bootable'} = 1;
           $bootable = 1; shift @line;
         }
-        else { $bootable = 0; }
+        else { %parts->{'bootable'} = 0; $bootable = 0; }
+	
+	# first cylinder of the partition
+	($start) = ($line[0] =~ /^([0-9]+)/);
+	if ($start eq "") {
+	   # there is no start cylinder, we are in powerpc
+	   # look for length @ base
+	   while ($line[0] ne "@") {
+	      ($length) = ($line[0] =~ /^([0-9]+)/);
+	      shift @line;
+	   }
+	   # skip @
+	   shift @line;
+	   #print "start $line[0]\n";
+	   ($start) = ($line[0] =~ /^([0-9]+)/);
+	   %parts->{'start'} = $start;
+	   $end = $start + $length - 1;
+	   %parts->{'end'} = $end;
+	   %parts->{'size'} = $length;
+	   %parts->{'type'} = "";
+	   push (@fdisk_hash, \%parts);
+	   # go to next device
+	   next;
+	}
+	%parts->{'start'} = $start;
+	shift @line;
 
-        shift @line; shift @line;  # Start and end clusters.
+	# last cylinder of the partition
+	($end) = ($line[0] =~ /^([0-9]+)/);
+	%parts->{'end'} = $end;
+	shift @line;
 
-        ($size) = ($line[0] =~ /([0-9]+)/);
+	# size of partition in blocks
+	($size) = ($line[0] =~ /([0-9]+)/);
+	%parts->{'size'} = $size;
         shift @line;
 
-        # FIXME: add new popular ones, such as reiser and xfs and add
-        # those documented by fdisk.
-        # if    ($line[0] eq "82" || $line[0] eq "5"  ||
-        if    ($line[0] eq "5"  ||
-               $line[0] eq "f"  || $line[0] eq "85")  { next; }  # extended.
-        elsif ($line[0] eq "82")                     { $type = "swap"; }
-        elsif ($line[0] eq "83")                     { $type = "ext2"; }
-        elsif ($line[0] eq "e")                      { $type = "vfat"; }
-        elsif ($line[0] eq "c")                      { $type = "fat32"; }
-        elsif ($line[0] eq "b")                      { $type = "fat32"; }
-        elsif ($line[0] eq "6")                      { $type = "msdos"; }
-        elsif ($line[0] eq "4")                      { $type = "msdos"; }
-        elsif ($line[0] eq "1")                      { $type = "msdos"; }
-        elsif ($line[0] eq "7")                      { $type = "ntfs"; }
-        else  { $type = ""; }
+	# FIXME: add new popular ones, such as reiser and xfs and add
+	# those documented by fdisk.
+	if ($line[0] eq "5"  || $line[0] eq "f"  || $line[0] eq "85") { next; } # extended.
+	elsif ($line[0] eq "82") { $type = "swap"; }
+	elsif ($line[0] eq "83") { $type = "ext2"; }
+	elsif ($line[0] eq "e")  { $type = "vfat"; }
+	elsif ($line[0] eq "c" || $line[0] eq "b") { $type = "fat32"; }
+	elsif ($line[0] eq "6" || $line[0] eq "4" || $line[0] eq "1") { $type = "msdos"; }
+	elsif ($line[0] eq "7")  { $type = "ntfs"; }
+	else  { $type = ""; }
 
-        &update_partition($disk, $device, "", $type, "noauto", 0, $size, 0,
-                          $bootable, 1);
-      } 
-
-      # Time to get the model and media type
-      # We support IDE, SCSI and USB medias in general
-      # For the moment, we fix a IDE device
-
-      $media_type = &get_media_type ($dev);
-      if ($media_type eq "disk-ide") {
-         ($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
-         $model = `cat /proc/ide/$dev_clean/model 2>/dev/null`;
-         if ($model ne "") { &update_disk_data ($dev, "model", $model); }
-         $media = `cat /proc/ide/$dev_clean/media 2>/dev/null`;
-         if ($media ne "") {
-	    &update_disk_data ($dev, "media", $media);
-	 }
-         $dma = &get_ide_setting ($dev_clean, "using_dma");
-         if ($dma ne "") { &update_disk_data ($dev, "dma", $dma); }
-      } elsif ($media_type eq "disk-scsi") {
-	 $head = `fdisk -l $dev 2>/dev/null`;
-         if ($head ne "") {
-	    &update_disk_data ($dev, "media", "disk");
-	 }
-      } elsif ($media_type eq "usb-storage") {
+	# fs type
+	%parts->{'type'} = $type;
+	push (@fdisk_hash, \%parts);
       }
     }
+
+    my ($prev_end) = 0; # last cylinder of previous partition
+    my $max_cyl = 0; # bigest cylinder found
+    
+    # In order to find empty partitions we have to sort 
+    # the array by start (first cylinder)
+    @ord = sort sort_by_start (@fdisk_hash);
+    my $empty_count = 1;
+
+    # Now we update the data and detect empty partitions
+    foreach $partition (@ord)
+    {
+       if ($partition->{'end'} > $max_cyl) {
+	  $max_cyl = $partition->{'end'};
+       }
+       
+       if ($prev_end ne 0){
+	  if ($partition->{'start'} - 1 ne $prev_end) {
+	     # There is no partition, free space found
+	     my $fstart = $prev_end + 1;
+	     my $fend;
+	     $fend = $partition->{'start'} - 1;
+	     # size = (number of cylinders) * (unit in bloks)
+	     # number of cylinders = last cylinder - first cylinder + 1
+	     my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
+             if ($fend > $max_cyl) { 
+	        $max_cyl = $fend; 
+	     }
+             if ($fstart ne $fend) {
+	        &update_partition ($disk, "/dev/empty$empty_count", "", "empty", "noauto", 0, $fsize, 0,
+	                           0, 1, "", $fstart, $fend);
+		$empty_count ++;
+	     }
+	  }
+       } else {
+	  if ($partition->{'start'} ne 1) {
+	     # There is no partition, free space found in the top of the disk
+	     my $fstart = 1;
+             my $fend = $partition->{'start'} - 1;
+	     # size = (number of cylinders) * (unit in bloks)
+	     # number of cylinders = last cylinder - first cylinder + 1
+             my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
+             if ($fend > $max_cyl) {
+		$max_cyl = $fend;
+	     }
+	     if ($fend ne $fstart) {
+		&update_partition ($disk, "/dev/empty$empty_count", "", "empty", "noauto", 0, $fsize, 0,
+	                           0, 1, "", $fstart, $fend);
+		$empty_count ++;
+	     }
+	  }
+       }
+
+       # partition found update it
+       if ($partition->{'end'} ne $partition->{'start'}) {
+	  &update_partition ($disk, $partition->{'device'}, "", $partition->{'type'}, "noauto", 0, 
+	                     $partition->{'size'}, 0, $partition->{'bootable'}, 1, "", 
+			     $partition->{'start'}, $partition->{'end'});
+       }
+       
+       if ($partition->{'end'} eq $last_end) {
+	  $prev_end = 0;
+       } else {
+	  $prev_end = $partition->{'end'};
+       }	
+    } 
+    
+    # Now we are out of the loop and we have to check if the current disk is 
+    # valid
+    if ($disk ne "") {
+       if ($max_cyl lt $last_end and $max_cyl lt ($last_end - 1)) {
+	  # There is no partition, free space found in the bottom of the disk
+	  my $fstart = $max_cyl + 1;
+          my $fend = $last_end;
+          # size = (number of cylinders) * (unit in bloks)
+          # number of cylinders = last cylinder - first cylinder + 1
+          my $fsize = ($fend - $fstart + 1) * ($unit / 1024);
+          &update_partition ($disk, "/dev/empty$empty_count", "", "empty", "noauto", 0, $fsize, 0,
+                             0, 1, "", $fstart, $fend);
+       }
+    }
+
+    # Time to get the model and media type
+    # We support IDE, SCSI and USB medias in general
+    # For the moment, we fix a IDE device
+
+    $media_type = &get_media_type ($dev);
+    if ($media_type eq "disk-ide") {
+       ($dev_clean) = ($dev =~ /^\/dev\/([a-zA-Z0-9]*)$/);
+       $model = `cat /proc/ide/$dev_clean/model 2>/dev/null`;
+       if ($model ne "") { &update_disk_data ($dev, "model", $model); }
+       $media = `cat /proc/ide/$dev_clean/media 2>/dev/null`;
+       if ($media ne "") {
+	  &update_disk_data ($dev, "media", $media);
+       }
+       $dma = &get_ide_setting ($dev_clean, "using_dma");
+       if ($dma ne "") { &update_disk_data ($dev, "dma", $dma); }
+    } elsif ($media_type eq "disk-scsi") {
+       $head = `fdisk -l $dev 2>/dev/null`;
+       if ($head ne "") {
+	  &update_disk_data ($dev, "media", "disk");
+       }
+    } elsif ($media_type eq "usb-storage") {
+    }
     &gst_file_close ($fd);
-                                                                                  
+
     &gst_report ("disks_size_query", $dev);
     
     # Floppy disk support
@@ -1012,9 +1191,12 @@ sub xml_print
         if (%$partition->{label}) { &gst_xml_print_line ("<label>" . %$partition->{label} . "</label>\n"); }
         if (%$partition->{size})
         {
-          # The frontend wants KB  
+          # The frontend wants KB 
           &gst_xml_print_line ("<size>" . %$partition->{size}*(%$disk->{block_size}/1024) . "</size>\n");
         }
+
+	if (%$partition->{start}) { &gst_xml_print_line ("<start>" . %$partition->{start} . "</start>\n"); }
+	if (%$partition->{end}) { &gst_xml_print_line ("<end>" . %$partition->{end} . "</end>\n"); }
 
         &gst_xml_print_state_tag ("bootable", %$partition->{bootable});
         &gst_xml_print_state_tag ("integritycheck", %$partition->{check});
