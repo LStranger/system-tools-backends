@@ -252,8 +252,8 @@ sub xml_print
 {
   my $h = $_[0];
   my @scalar_keys =
-      qw(auto forward hostname domain domainname hostmatch
-         workgroup description winsserver winsuse smbuse smbinstalled);
+      qw(auto forward hostname domain domainname hostmatch workgroup
+         description winsserver winsuse smbuse smbinstalled dialinstalled);
   my @array_keys =
       qw(nameserver searchdomain order);
 

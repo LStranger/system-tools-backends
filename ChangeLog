@@ -1,5 +1,8 @@
 2001-05-08  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network-conf.in (xml_print): Oops: print dialinstalled
+	tag too.
+
 	* parse.pl.in (xst_parse_split_ref): Do a regexp comparison,
 	which is more flexible.
 
