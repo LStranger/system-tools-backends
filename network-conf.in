@@ -50,8 +50,8 @@ require "___scriptsdir___/network.pl";
 
 
 # Debug stuff
-#$xst_prefix = "/tmp/y";
-#open STDERR, ">/tmp/err";
+$xst_prefix = "/tmp/y";
+open STDERR, ">/tmp/err";
 
 # --- Tool information --- #
 
@@ -297,10 +297,6 @@ sub xml_print
   &xst_xml_vspace ();
   &xst_xml_enter ();
 
-  &xst_xml_vspace ();
-  &xst_xml_print ("<!-- Configuration starts here -->\n");
-  &xst_xml_vspace ();
-
   # Hostname, domain, search domains, nameservers.
 
   &xml_print_scalars ($h, @scalar_keys);
@@ -310,11 +306,8 @@ sub xml_print
   &xml_print_hash ($$h{"interface"}, "interface");
   &xml_print_hash ($$h{"dialing"}, "dialing");
   
-  &xst_xml_vspace ();
-  &xst_xml_print ("<!-- End of configuration -->\n");
-  &xst_xml_vspace ();
-
   &xst_xml_leave ();
+  &xst_xml_vspace ();
   &xst_xml_print ("</network>\n");
 }
 

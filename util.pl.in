@@ -121,7 +121,7 @@ sub xst_item_is_in_list
 # Recursively compare a structure made of nested arrays and hashes, diving
 # into references, if necessary. Circular references will cause a loop.
 # Watch it: arrays must have elements in the same order to be equal.
-sub xst_util_struct_cmp
+sub xst_util_struct_eq
 {
   my ($a1, $a2) = @_;
   my $type1, $type2;

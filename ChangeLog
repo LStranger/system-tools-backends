@@ -1,3 +1,11 @@
+2001-02-24  Arturo Espinosa  <arturo@ximian.com>
+
+	* network-conf.in (xml_print): cosmetic changes.
+	* network.pl.in (xst_network_rh62_interface_set_by_dev,
+	xst_network_rh62_interface_set) better criterion for device activation.
+	* network.pl.in: chap support, lots of bug fixes to activation stuff.
+	* util.pl.in (xst_util_struct_eq): renamed from cmp due to different semantic.
+	
 2001-02-23  Hans Petter Jansson  <hpj@ximian.com>
 
 	* file.pl.in (xst_file_get_base_path): Implement.
