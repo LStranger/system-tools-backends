@@ -1,5 +1,9 @@
 2003-03-08  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* Release 0.24.0
+
+2003-03-08  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* boot-conf.in, boot.pl.in, partition.pl.in: modified to include
 	  partition list info in the xml (it sends the device and partition
 	  type for each partition)
