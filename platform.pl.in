@@ -58,6 +58,8 @@ $PLATFORM_INFO = {
   "mandrake-9.0"    => "Linux Mandrake 9.0 Dolphin",
   "mandrake-9.1"    => "Linux Mandrake 9.1 Bamboo",
   "mandrake-9.2"    => "Linux Mandrake 9.2 FiveStar",
+  "mandrake-10.0"   => "Linux Mandrake 10.0",
+  "mandrake-10.1"   => "Linux Mandrake 10.1",
   "conectiva-9"     => "Conectiva Linux 9",
   "conectiva-10"    => "Conectiva Linux 10",
   "suse-7.0"        => "SuSE Linux 7.0",
@@ -190,10 +192,10 @@ sub check_mandrake
       close MANDRAKE;
       return "mandrake-$1";
     }
-    elsif ($ver =~ /^Mandrake Linux release ([0-9\.]+)/)
+    elsif ($ver =~ /^Mandrake( L|l)inux release ([\d\.]+)/i)
     {
       close MANDRAKE;
-      return "mandrake-$1";
+      return "mandrake-$2";
     }
   }
   close MANDRAKE;

@@ -47,7 +47,8 @@ $version = "@VERSION@";
               "openna-1.0",
               
               "mandrake-7.1", "mandrake-7.2", "mandrake-9.0", "mandrake-9.1", "mandrake-9.2",
-
+              "mandrake-10.0", "mandrake-10.1",
+              
               "debian-2.2", "debian-3.0", "debian-sarge",
 
               "suse-7.0", "turbolinux-7.0", "fedora-1",

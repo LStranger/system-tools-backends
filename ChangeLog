@@ -1,3 +1,10 @@
+2004-05-17  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network.pl.in, platform.pl.in, network-conf.in, users-conf.in,
+	  service.pl.in, time-conf.in, services-conf.in: added support for
+	  Mandrakelinux 10.0 and 10.1. Patch by Goetz Waschk
+	  <waschk@informatik.uni-rostock.de>
+
 2004-05-15  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Release 0.33.0
