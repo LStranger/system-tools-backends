@@ -1,3 +1,19 @@
+2001-04-27  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* parse.pl.in (xst_parse_process_sh_line): sepparated from
+	shell parsing code for reusability.
+
+	* boot.pl.in (xst_boot_conf_replace_image): simplified function.
+	Still too big, but not as much. Fixed bug that appeared when two
+	sections using the same image but different label. No values
+	come out with the quotes inside. This are added/deleted now at
+	the backend level.
+
+	* boot-conf.in (xml_parse_boot): Added keytable support, guided by
+	some unexplained impulse.
+	(xml_print): replaced xml_print_globals with xst_xml_print_scalars.
+	
+
 2001-04-26  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot-conf.in: removed useless commented debug code.

@@ -131,15 +131,9 @@ sub xst_parse_chomp_line_std
   return \$line;
 }
 
-sub xst_parse_chomp_line_hash_comment
+sub xst_parse_process_sh_line
 {
-  my ($fd) = @_;
-  my $line;
-
-  $line = &xst_parse_chomp_line_std ($fd);
-  return -1 if $line == -1;
-
-  $line = $$line;
+  my ($line) = @_;
 
   # This will put escaped hashes out of danger.
   $line =~ s/([\"\'][^\#]*)\#([^\"\']*[\"\'])/$1__hash__$2/g;
@@ -153,7 +147,20 @@ sub xst_parse_chomp_line_hash_comment
 
   # Bye bye trailing spaces.
   $line =~ s/[ \t]+$//;
-  
+
+  return $line;
+}
+
+sub xst_parse_chomp_line_hash_comment
+{
+  my ($fd) = @_;
+  my $line;
+
+  $line = &xst_parse_chomp_line_std ($fd);
+  return -1 if $line == -1;
+
+  $line = &xst_parse_process_sh_line ($$line);
+
   return \$line;
 }
 

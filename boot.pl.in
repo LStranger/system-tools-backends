@@ -64,18 +64,20 @@ sub xst_boot_parse_global
   $re = "[ \t]*=[ \t]*";
   $fd = &xst_file_open_read_from_names ($file);
 
-  while (<$fd>)
+  while (($line = <$fd>))
   {
-    chomp;
-    s/^[ \t]+//;
-    next if (/^\#/ || /^$/);
-    last if (/^(image|other)/);
-    @line = split ($re, $_, 2);
+    chomp $line;
+    $line =~ s/^[ \t]+//;
+    $line = &xst_parse_process_sh_line ($line);
+    
+    next if ($line eq "");
+    last if ($line =~ /^(image|other)/);
+    @line = split ($re, $line, 2);
 
     if (shift (@line) eq $key)
     {
       close $fd;
-      return $line[0];
+      return &xst_shell_escape ($line[0]);
     }
   }
 
@@ -88,32 +90,34 @@ sub xst_boot_parse_images
 {
   my $file = $_[0];
   my ($fd, @line, $found, $hash, @images);
-  my ($key, $val);
+  my ($key, $val, $line);
 
   $found = -1;
   $fd = &xst_file_open_read_from_names ($file);
 
-  while (<$fd>)
+  while (($line = <$fd>))
   {
-    chomp;
-    s/^[ \t]+//;
+    chomp $line;
+    $line =~ s/^[ \t]+//;
 
-    $found++ if (/^(image|other)/);
+    $found++ if ($line =~ /^(image|other)/);
     next if $found < 0;
     
-    if (/^\#[ \t]*(\w+)/)
+    if ($line =~ /^\#[ \t]*(\w+)/)
     {
       next if $1 ne "XstPartitionType";
 
-      s/^\#[ \t]*//;
+      $line =~ s/^\#[ \t]*//;
     }
 
-    s/\#.*//;
-    next if (/^$/);
+    $line = &xst_parse_process_sh_line ($line);
+    next if ($line =~ /^$/);
     
-    @line = split ("[ \t]*=[ \t]*", $_, 2);    
+    @line = split ("[ \t]*=[ \t]*", $line, 2);    
     $key = $line[0];
-    $val = $line[1];
+    $val = &xst_shell_escape ($line[1]);
+    $val =~ s/^[ \t]+//;
+    $val =~ s/[ \t]+$//;
 
     $images[$found]{$key} = $val;
   }
@@ -270,47 +274,55 @@ sub xst_boot_conf_set_images
 }
 
 
+sub xst_boot_conf_search_label
+{
+  my ($label, @buff) = @_;
+  my $i;
+
+  foreach $i (@buff)
+  {
+    return 1 if $i =~ /^[ \t]*label[ \t]*=[ \t]*$label/;
+    return 0 if $i =~ /^[ \t]*(image|other)/;
+  }
+
+  return 0;
+}
+
+
 sub xst_boot_conf_replace_image
 {
   my ($file, %image) = @_;
-  my ($buff, $i, $found);
+  my ($buff, $i, $found, $lineno);
   my ($pre_space, $post_comment);
   my (@line, $key, $op, $txt);
 
   $buff = &xst_file_buffer_load ($file);
   &xst_file_buffer_join_lines ($buff);
   
-  $found = 0;
+  $lineno = $found = 0;
 
   $name = 'image' if exists $image{'image'};
   $name = 'other' if exists $image{'other'};
 
   foreach $i (@$buff)
   {
-    if ($i =~ /$name[ \t]*=[ \t]*$image{$name}\s+/) # Found the image.
+    $lineno ++;
+    
+    if (!$found && $i =~ /^[ \t]*$name[ \t]*=[ \t]*$image{$name}\s+/)
     {
-      $found++;
+      # Ugly Perl.
+      if (&xst_boot_conf_search_label ($image{"label"},
+                                       @$buff[$lineno .. $#$buff]))
+      {
+        $found ++;
+        delete $image{$name};
+      }
+      
       next;
     }
     
-    if ($i =~ /(image|other)/ && $found == 1) # Next image, let's add pending stuff.
-    {
-      delete $image{$name};
-      $found++;
-      foreach $key (keys %image)
-      {
-        $txt = "$key\n" unless $image{$key};
-        $txt = "$key = $image{$key}\n" if $image{$key};
-        
-        if ($key eq "XstPartitionType") { $txt = "\t# " . $txt; }
-        else { $txt = "\t". $txt; }
-
-        $i = $txt . $i;
-      }
-      last;
-    }
-    
-    next if ($found != 1);
+    next if (!$found);
+    last if ($i =~ /^[ \t]*(image|other)/); # Next image.
 
     $pre_space = $post_comment = "";
     
@@ -334,11 +346,15 @@ sub xst_boot_conf_replace_image
 
     if (exists $image{$key} && $image{$key})
     {
-      $i = $pre_space . $key . $op . $image{$key} . $post_comment . "\n";
+      my $value;
+          
+      $value = $image{$key};
+      $value = "\"$value\"" if ($value =~ /[ \t]/);
+      
+      $i = $pre_space . $key . $op . $value . $post_comment . "\n";
       delete $image{$key};
       next;
     }
-
     elsif (exists $image{$key} && !$image{$key})
     {
       $i = $pre_space . $key . $post_comment . "\n";
@@ -359,35 +375,34 @@ sub xst_boot_conf_replace_image
     }
   }
 
-  if (keys %image && $found) #end of file reached, let's add pending tags.
+  # end of file or new section reached, let's add pending tags.
+  if (keys %image) 
   {
-    delete $image{$name};
-    foreach $key (keys %image)
+    if (!$found) 
     {
-      $i = "$key\n" unless $image{$key};
-      $i = "$key = $image{$key}\n" if $image{$key};
-
-      if ($key eq "XstPartitionType") { $i = "\t# " . $i; }
-      else { $i = "\t". $i; }
-      
-      push @$buff, $i;
+      splice (@$buff, $line_no++, 0, "\n$name=$image{$name}\n");
+      delete $image{$name};
     }
-  }
-
-  elsif (!$found) # We didn't find image, lets add it to the end of file.
-  {
-    push @$buff, "\n$name=$image{$name}\n";
-    delete $image{$name};
     
     foreach $key (keys %image)
     {
-      $i = "$key\n" unless $image{$key};
-      $i = "$key = $image{$key}\n" if $image{$key};
-
-      if ($key eq "XstPartitionType") { $i = "\t# " . $i; }
-      else { $i = "\t". $i; }
+      if ($image{$key})
+      {
+        my $value;
+        
+        $value = $image{$key};
+        $value = "\"$value\"" if ($value =~ /[ \t]/);
+        $txt = "$key = $value\n";
+      }
+      else
+      {
+        $txt = "$key\n";
+      }
       
-      push @$buff, $i;
+      if ($key eq "XstPartitionType") { $txt = "\t# " . $txt; }
+      else { $txt = "\t". $txt; }
+      
+      splice (@$buff, $line_no++, 0, $i);
     }
   }
   
@@ -445,17 +460,18 @@ sub xst_boot_conf_set
 	    fn => {
 		 LILO_CONF => "/etc/lilo.conf"},
 	    table => [
-                [ 'prompt',  \&xst_boot_set_global_kw, LILO_CONF, 'prompt' ],
-                [ 'lba32',   \&xst_boot_set_global_kw, LILO_CONF, 'lba32' ],
-                [ 'root',    \&xst_boot_set_global, LILO_CONF, 'root' ],
-                [ 'delay',   \&xst_boot_set_global, LILO_CONF, 'delay' ],
-                [ 'timeout', \&xst_boot_set_global, LILO_CONF, 'timeout' ],
-                [ 'default', \&xst_boot_set_global, LILO_CONF, 'default' ],
-                [ 'append',  \&xst_boot_set_global, LILO_CONF, 'append' ],
-                [ 'boot',    \&xst_boot_set_global, LILO_CONF, 'boot' ],
-                [ 'map',     \&xst_boot_set_global, LILO_CONF, 'map' ],
-                [ 'install', \&xst_boot_set_global, LILO_CONF, 'install' ],
-                [ 'images',  \&xst_boot_conf_set_images, LILO_CONF, 'image' ],
+                [ 'prompt',   \&xst_boot_set_global_kw, LILO_CONF, 'prompt' ],
+                [ 'lba32',    \&xst_boot_set_global_kw, LILO_CONF, 'lba32' ],
+                [ 'root',     \&xst_boot_set_global, LILO_CONF, 'root' ],
+                [ 'delay',    \&xst_boot_set_global, LILO_CONF, 'delay' ],
+                [ 'timeout',  \&xst_boot_set_global, LILO_CONF, 'timeout' ],
+                [ 'default',  \&xst_boot_set_global, LILO_CONF, 'default' ],
+                [ 'append',   \&xst_boot_set_global, LILO_CONF, 'append' ],
+                [ 'boot',     \&xst_boot_set_global, LILO_CONF, 'boot' ],
+                [ 'map',      \&xst_boot_set_global, LILO_CONF, 'map' ],
+                [ 'install',  \&xst_boot_set_global, LILO_CONF, 'install' ],
+                [ 'keytable', \&xst_boot_set_global, LILO_CONF, 'keytable' ],
+                [ 'images',   \&xst_boot_conf_set_images, LILO_CONF, 'image' ],
 			    ] 
 				 }
 	  );
@@ -488,17 +504,18 @@ sub xst_boot_conf_get
 	    fn => {
         LILO_CONF => "/etc/lilo.conf" },
 	    table => [
-                [ 'prompt',  \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
-                [ 'lba32',   \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],
-                [ 'root',    \&xst_boot_parse_global, LILO_CONF, 'root' ],
-                [ 'delay',   \&xst_boot_parse_global, LILO_CONF, 'delay' ],
-                [ 'timeout', \&xst_boot_parse_global, LILO_CONF, 'timeout' ],
-                [ 'default', \&xst_boot_parse_global, LILO_CONF, 'default' ],
-                [ 'append',  \&xst_boot_parse_global, LILO_CONF, 'append' ],
-                [ 'boot',    \&xst_boot_parse_global, LILO_CONF, 'boot' ],
-                [ 'map',     \&xst_boot_parse_global, LILO_CONF, 'map' ],
-                [ 'install', \&xst_boot_parse_global, LILO_CONF, 'install' ],
-                [ 'images',  \&xst_boot_parse_images, LILO_CONF ],
+                [ 'prompt',   \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
+                [ 'lba32',    \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],
+                [ 'root',     \&xst_boot_parse_global, LILO_CONF, 'root' ],
+                [ 'delay',    \&xst_boot_parse_global, LILO_CONF, 'delay' ],
+                [ 'timeout',  \&xst_boot_parse_global, LILO_CONF, 'timeout' ],
+                [ 'default',  \&xst_boot_parse_global, LILO_CONF, 'default' ],
+                [ 'append',   \&xst_boot_parse_global, LILO_CONF, 'append' ],
+                [ 'boot',     \&xst_boot_parse_global, LILO_CONF, 'boot' ],
+                [ 'map',      \&xst_boot_parse_global, LILO_CONF, 'map' ],
+                [ 'install',  \&xst_boot_parse_global, LILO_CONF, 'install' ],
+                [ 'keytable', \&xst_boot_parse_global, LILO_CONF, 'keytable' ],
+                [ 'images',   \&xst_boot_parse_images, LILO_CONF ],
                 ] 
                   }
     );
