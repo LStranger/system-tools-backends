@@ -960,9 +960,9 @@ sub write_sysconfig_network
 # SuSE style /etc/rc.config
 #
 # <filtered lines>
-# FQHOSTNAME="<fully qualified hostname>"
-# SEARCHLIST="<space separated list of searchdomains>"
-# NAMESERVER="<space separated list of nameservers>"
+# NETDEV_0="<dev>"
+# IPADDR_0="<ip>"
+# IFCONFIG_0="<ip> broadcast <broadcast> netmask <netmask>"
 # <filtered lines>
 #
 # Determines the local hostname.domain, searchdomains and nameservers.
