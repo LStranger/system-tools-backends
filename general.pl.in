@@ -262,8 +262,8 @@ sub xst_merge_std_directives
   my %std_directives =
       (
 # platforms directive to do later.       
-#       "platforms"    => [ \&xst_print_platforms, [],
-#                           "Print XML showing platforms supported by backend." ],
+       "platforms"    => [ \&xst_platform_list, [],
+                           "Print XML showing platforms supported by backend." ],
        "platform_set" => [ \&xst_platform_set,    ["platform"],
                            "Force the selected platform. platform arg must be one of the listed in the" .
                            "reports." ],

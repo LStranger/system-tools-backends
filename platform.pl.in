@@ -34,8 +34,24 @@ if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 }
 
 require "$SCRIPTSDIR/parse.pl$DOTIN";
+require "$SCRIPTSDIR/xml.pl$DOTIN";
 
 
+$PLATFORM_INFO = {
+  "debian-2.2"     => "Debian GNU/Linux 2.2 Potato",
+  "debian-woody"   => "Debian GNU/Linux Woody",
+  "redhat-5.2"     => "Red Hat Linux 5.2 Apollo",
+  "redhat-6.0"     => "Red Hat Linux 6.0 Hedwig",
+  "redhat-6.1"     => "Red Hat Linux 6.1 Cartman",
+  "redhat-6.2"     => "Red Hat Linux 6.2 Zoot",
+  "redhat-7.0"     => "Red Hat Linux 7.0 Guiness",
+  "redhat-7.1"     => "Red Hat Linux 7.1 Seawolf",
+  "mandrake-7.1"   => "Linux Mandrake 7.1",
+  "mandrake-7.2"   => "Linux Mandrake 7.2 Odyssey",
+  "suse-7.0"       => "SuSE Linux 7.0",
+  "turbolinux-7.0" => "Turbolinux 7.0"
+    };
+  
 sub check_lsb
 {
   my ($ver, $dist);
@@ -315,6 +331,32 @@ sub xst_platform_set
 
   &xst_report ("platform_unsup", $platform);
   &xst_report_end ();
+}
+
+sub xst_platform_print_list
+{
+  my ($platforms) = @_;
+  my ($platform, $name);
+
+  &xst_xml_print_begin ("platforms");
+  foreach $platform (sort @$platforms)
+  {
+    $name = $$PLATFORM_INFO{$platform};
+
+    &xst_xml_container_enter ("platform");
+    &xst_xml_print_line ("<key>$platform</key>");
+    &xst_xml_print_line ("<name>$name</name>");
+    &xst_xml_container_leave ();
+  }
+  &xst_xml_print_end ("platforms");
+}
+
+sub xst_platform_list
+{
+  my ($tool) = @_;
+
+  &xst_report_end ();
+  &xst_platform_print_list ($$tool{"platforms"});
 }
 
 1;

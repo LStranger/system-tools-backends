@@ -1,3 +1,15 @@
+2001-10-15  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* general.pl.in (xst_merge_std_directives): Added the
+	"platforms" directive.
+
+	* platform.pl.in (xst_platform_print_list): Print an XML of
+	the supported platforms.
+	(xst_platform_list): Directive handler.
+
+	* xml.pl.in (xst_xml_print_begin): Removed cosmetic comments.
+	(xst_xml_print_end): same.
+
 2001-10-06  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_interfaces_get_info): It's better

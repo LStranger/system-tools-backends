@@ -72,8 +72,6 @@ sub xst_xml_print_begin
   &xst_xml_enter ();
 
   &xst_xml_print_vspace ();
-  &xst_xml_print_comment ('Configuration starts here');
-  &xst_xml_print_vspace ();
 }
 
 
@@ -90,12 +88,9 @@ sub xst_xml_print_end
 
   $name = $xst_name if !$name;
   
-  &xst_xml_print_vspace ();
-  &xst_xml_print_comment ('End of configuration');
-  &xst_xml_print_vspace ();
-
   &xst_xml_leave ();
 
+  &xst_xml_print_vspace ();
   &xst_xml_print_string ("</$name>\n");
 }
 
