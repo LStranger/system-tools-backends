@@ -1,3 +1,9 @@
+2004-03-17  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* replace.pl.in: (gst_replace_chat): added the possibility of not
+	  using quotes in the file, I'm not sure if they are needed at all
+	  in any distro's chatfile, so I won't remove that bit until I'm sure
+
 2004-03-16  James Ogley <james@usr-local-bin.org>
 
 	* service.pl.in, time-conf.in: added support for SuSE 9.0 for the

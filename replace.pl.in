@@ -470,6 +470,7 @@ sub gst_replace_chat
   {
     $bak = "";
     $found = "";
+    my ($quoted);
     chomp $i;
 
     while ($i ne "")
@@ -479,11 +480,13 @@ sub gst_replace_chat
 	 {
 	   $i =~ s/\'([^\']*)\' ?//;
 	   $found = $1;
+	   $quoted = 1;
 	 }
 	 else
 	 {
 	   $i =~ s/([^ \t]*) ?//;
 	   $found = $1;
+	   $quoted = 0;
 	 }
 	 
 	 # If it looks like what we're looking for,
@@ -492,11 +495,28 @@ sub gst_replace_chat
 	 {
 	   $substr = $1;
 	   $found =~ s/$substr/$value/i;
-	   $i = $bak . "\'$found\' " . $i . "\n";
+
+	   if ($quoted == 1)
+	   {
+	     $i = $bak . "\'$found\' " . $i . "\n";
+	   }
+	   else
+	   {
+	     $i = $bak . "$found " . $i . "\n";
+	   }
+
 	   last SCAN;
 	 }
 
-	 $bak .= "\'$found\'";
+	 if ($quoted == 1)
+	 {
+	   $bak .= "\'$found\'";
+	 }
+	 else
+	 {
+	   $bak .= "$found";
+	 }
+
 	 $bak .= " " if $bak ne "";
     }
     
