@@ -1,3 +1,12 @@
+2001-04-11  Bradford Hovinen  <hovinen@ximian.com>
+
+	* xml.pl.in (xst_xml_scan): Call &xst_archive_data
+
+	* general.pl.in (xst_archive_data): Implement. Archive data with
+	the Ximian archiver
+
+	* Makefile.am ($(perl_libs)): Add substitution for bin directory
+
 2001-04-03  Hans Petter Jansson  <hpj@ximian.com>
 
 	* shares-conf.in (read_fstab): Fix detection of username for SMB imports.

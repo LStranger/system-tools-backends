@@ -45,6 +45,11 @@ $xst_debug = 0;
 $xst_do_immediate = 1;
 
 
+# Location management stuff
+$xst_location = "";
+$xst_no_archive = 0;
+
+
 # --- Generic part of usage text --- #
 
 
@@ -160,6 +165,26 @@ sub xst_set_operation
 }
 
 
+sub xst_archive_data
+{
+  my ($xml_data) = @_;
+  my ($location_str) = "";
+  my ($backend_id) = $0;
+  local (*OUTPUT);
+
+  return if $xst_no_archive;
+
+  $location_str = "--location=\"$xst_location\"" if $xst_location;
+  $backend_id = $1 if $backend_id =~ /\/([^\/]+)\Z/;
+
+  print STDERR "Outputting data for $backend_id\n";
+
+  open OUTPUT, "|___bindir___/ximian-archiver --global --store --backend=\"$backend_id\" " . $location_str;
+  print OUTPUT $xml_data;
+  close OUTPUT;
+}
+
+
 sub xst_init
 {
   my @args = @_;
@@ -214,6 +239,8 @@ sub xst_init
       $xst_do_report = 1;
       &xst_report_set_threshold (99);
     }
+    elsif ($args[0] eq "--location")                    { $xst_location = $args[1]; shift @args; }
+    elsif ($args[0] eq "--no-archive")                  { $xst_no_archive = 1; }
     elsif ($args[0] eq "--debug")                       { $xst_debug = 1; }
     else
     {
