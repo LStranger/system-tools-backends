@@ -175,17 +175,20 @@ sub xst_boot_set_global_kw
   return &xst_file_buffer_save ($buff, $file);
 }
 
-
 sub xst_boot_set_global
 {
   my ($file, $key, $val) = @_;
   my ($buff, $i, $found);
+  my $quote = '"';
   my $lineno = 0;
 
   # quote globals with spaces if neccecary (append=mem=128 param2=122)
   if ($val =~ /^\S+\s+\S+/ && !($val =~ /^\".+\"/)) {
-    $val = "\"" . $val . "\"";
+    $val = $quote . $val . $quote;
   }
+
+  # Stupid, but neccecary hack, append lines ALWAYS need to be quoted.
+  $val = $quote . $val . $quote if $key =~ /image/;  
   
   $buff = &xst_file_buffer_load ($file);
   $found = 0;
@@ -362,6 +365,7 @@ sub xst_boot_conf_edit_image
         $found++;
         $value = $$image{$key};
         $value = "\"$value\"" if ($value =~ /[ \t]/);
+        $value = "\"$value\"" if ($key =~ /append/); # Stupid hack to quote append= values.
 
         $$line = $pre_space . $key . $1 . "=" . $2 . $value . $post_comment . "\n";
         $$line = "# " . $$line if $key eq "XstPartitionType";

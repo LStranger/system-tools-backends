@@ -1,3 +1,8 @@
+2001-07-15  Tambet Ingo  <tambet@ximian.com>
+
+	* boot.pl.in (xst_boot_conf_edit_image): Always quote 'append' lines.
+	(xst_boot_set_global): ditto. Fixes bug #3805.
+
 Thu Jul 12 12:44:15 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* report.pl.in (xst_report): Better reporting of errors.
