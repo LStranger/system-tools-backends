@@ -26,14 +26,22 @@ require "___scriptsdir___/general.pl";
 require "___scriptsdir___/file.pl";
 
 
+%xst_debug_fd_hash = ();
+
+
 sub xst_debug_open_output_file
 {
   local *FILE;
   my $debug_path = &xst_file_get_debug_path () . "/$xst_name/1/$_[0]";
 
-  &xst_debug_rotate_try ();
-  open (FILE, ">>$debug_path");
-  return *FILE;
+  if (!exists $xst_debug_fd_hash{$debug_path})
+  {
+    &xst_debug_rotate_try ();
+    open (FILE, ">>$debug_path");
+    $xst_debug_fd_hash{$debug_path} = *FILE;
+  }
+  
+  return $xst_debug_fd_hash{$debug_path};
 }
 
 
@@ -43,8 +51,6 @@ sub xst_debug_print_string_to_file
 
   $debug_file = &xst_debug_open_output_file ($_[0]);
   print $debug_file $_[1];
-
-  close $debug_file;
 }
 
 
@@ -66,7 +72,7 @@ sub xst_debug_print_indent
   my $indent = $_[0];
   my $indent_string = "";
   
-  $indent_string = "  " x  $indent;
+  $indent_string = "  " x $indent;
   &xst_debug_print_string ($indent_string);
 }
 
