@@ -1590,6 +1590,8 @@ sub gst_parse_startif
 
   while (<$fd>)
   {
+    chomp;
+
     # ignore comments
     next if (/^\#/);
                  
@@ -1606,4 +1608,135 @@ sub gst_parse_startif
   }
 
   return $val;
+}
+
+# functions for parsing /etc/ppp/ppp.conf sections in FreeBSD
+sub gst_parse_pppconf_find_next_stanza
+{
+  my ($buff, $line_no) = @_;
+
+  $line_no = 0 if ($line_no eq undef);
+
+  while ($$buff[$line_no] ne undef)
+  {
+    if ($$buff[$line_no] !~ /^[\#\n]/)
+    {
+      return $line_no if ($$buff[$line_no] =~ /^[^ \t]+/);
+    }
+
+    $line_no++;
+  }
+
+  return -1;
+}
+
+sub gst_parse_pppconf_find_stanza
+{
+  my ($buff, $section) = @_;
+  my ($line_no) = 0;
+  
+  while (($line_no = &gst_parse_pppconf_find_next_stanza ($buff, $line_no)) != -1)
+  {
+    return $line_no if ($$buff[$line_no] =~ /^$section\:/);
+    $line_no++;
+  }
+
+  return -1;
+}
+
+sub gst_parse_pppconf_common
+{
+  my ($file, $section, $key) = @_;
+  my ($fd, $val);
+
+  $fd = &gst_file_open_read_from_names ($file);
+  return undef if ($fd eq undef);
+
+  $val = undef;
+
+  # First of all, we must find the line where the section begins
+  while (<$fd>)
+  {
+    chomp;
+    last if (/^$section\:[ \t]*/);
+  }
+
+  while (<$fd>)
+  {
+    chomp;
+
+    # read until the next section arrives
+    last if (/^[^ \t]/);
+
+    next if (/^\#/);
+
+    if (/^[ \t]+(add|set|enable|disable)[ \t]+$key/)
+    {
+      $val = $_;
+      last;
+    }
+  }
+
+  # this is done because commands can be multiline
+  while (<$fd>)
+  {
+    last if (/^[^ \t]/);
+    last if ($val !~ /\\$/);
+
+    s/^[ \t]*/ /;
+    $val =~ s/\\$//;
+    $val .= $_;
+  }
+
+  &gst_file_close ($fd);
+
+  if ($val eq undef)
+  {
+    return undef if ($section eq "default");
+    return &gst_parse_pppconf_common ($file, "default", $key);
+  }
+  else
+  {
+    $val =~ s/\#[^\#]*$//;
+    $val =~ s/[ \t]*$//;
+    $val =~ s/^[ \t]*//;
+    return $val;
+  }
+}
+
+sub gst_parse_pppconf
+{
+  my ($file, $section, $key) = @_;
+  my ($val);
+
+  $val = &gst_parse_pppconf_common ($file, $section, $key);
+
+  if ($val =~ /$key[ \t]+(.+)/)
+  {
+    return $1;
+  }
+}
+
+sub gst_parse_pppconf_bool
+{
+  my ($file, $section, $key) = @_;
+  my ($val);
+
+  $val = &gst_parse_pppconf_common ($file, $section, $key);
+
+  return 1 if ($val ne undef);
+  return 0;
+}
+
+sub gst_parse_pppconf_re
+{
+  my ($file, $section, $key, $re) = @_;
+  my ($val);
+
+  $val = &gst_parse_pppconf_common ($file, $section, $key);
+
+  if ($val =~ /$re/i)
+  {
+    return $1;
+  }
 }

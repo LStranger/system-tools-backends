@@ -1625,3 +1625,69 @@ sub gst_replace_wireless_opts
   &gst_file_buffer_clean ($buff);
   return &gst_file_buffer_save ($buff, $file);
 }
+
+# Functions for replacing in FreeBSD's /etc/ppp/ppp.conf
+sub gst_replace_pppconf_common
+{
+  my ($pppconf, $section, $key, $string) = @_;
+  my ($buff, $line_no, $end_line_no, $i, $found);
+
+  $buff = &gst_file_buffer_load ($pppconf);
+
+  $line_no = &gst_parse_pppconf_find_stanza ($buff, $section);
+
+  if ($line_no ne -1)
+  {
+    # The stanza exists
+    $line_no++;
+
+    $end_line_no = &gst_parse_pppconf_find_next_stanza ($buff, $line_no);
+    $end_line_no = scalar @$buff + 1 if ($end_line_no == -1);
+    $end_line_no--;
+
+    for ($i = $line_no; $i <= $end_line_no; $i++)
+    {
+      if ($$buff[$i] =~ /[ \t]+$key/)
+      {
+        if ($string ne undef)
+        {
+          $$buff[$i] = " $string\n";
+          $found = 1;
+        }
+        else
+        {
+          delete $$buff[$i];
+        }
+      }
+    }
+
+    if ($found != 1)
+    {
+      $$buff[$end_line_no] .= " $string\n" if ($string ne undef);
+    }
+  }
+  else
+  {
+    if ($string ne undef)
+    {
+      push @$buff, "$section:\n";
+      push @$buff, " $string\n";
+    }
+  }
+
+  &gst_file_buffer_clean ($buff);
+  return &gst_file_buffer_save ($buff, $pppconf);
+}
+
+sub gst_replace_pppconf
+{
+  my ($pppconf, $section, $key, $value) = @_;
+  &gst_replace_pppconf_common ($pppconf, $section, $key, "set $key $value");
+}
+
+sub gst_replace_pppconf_bool
+{
+  my ($pppconf, $section, $key, $value) = @_;
+  &gst_replace_pppconf_common ($pppconf, $section, $key,
+                               ($value == 1)? "enable $key" : "disable $key");
+}
