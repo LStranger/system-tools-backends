@@ -100,11 +100,13 @@ sub gst_file_get_cmd_path
    return ("LC_ALL=C PATH=\$PATH:/sbin:/usr/sbin $command 2> /dev/null");
 }
 
+# necessary for some programs that output info through stderr
 sub gst_file_get_cmd_path_with_stderr
 {
    my ($cmd) = @_;
 
-   return ("LC_ALL=C PATH=\$PATH:/sbin:/usr/sbin " . &get_cmd_path ($cmd));
+   my $command = &get_cmd_path ($cmd);
+   return ("LC_ALL=C PATH=\$PATH:/sbin:/usr/sbin $command 2>&1");
 }
 
 
@@ -454,10 +456,13 @@ sub gst_file_run_pipe
 
   &gst_report_enter ();
   
-  if ($stderr) {
-     $command = &gst_file_get_cmd_path_with_stderr ($cmd);
-  } else {
-     $command = &gst_file_get_cmd_path ($cmd);
+  if ($stderr)
+  {
+    $command = &gst_file_get_cmd_path_with_stderr ($cmd);
+  }
+  else
+  {
+    $command = &gst_file_get_cmd_path ($cmd);
   }
   
   if ($command == -1)
