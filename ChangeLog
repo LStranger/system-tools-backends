@@ -2,6 +2,9 @@
 
 	* boot.pl.in (xst_boot_conf_replace_image): We are #XstPartitionType aware.
 	(xst_boot_parse_images): We too!
+	(xst_boot_conf_del_images): Taught deleting images.
+	(xst_boot_conf_set_images): Use copy of data, not data itself, call del_images.
+	(xst_boot_conf_replace_image): Made image matching stronger.
 
 2001-02-22  Arturo Espinosa  <arturo@ximian.com>
 

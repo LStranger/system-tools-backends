@@ -225,30 +225,46 @@ sub xst_boot_del_global
 sub xst_boot_conf_del_images
 {
   my ($fn, $images) = @_;
-
+  
   $buf = &xst_buffer_load ($fn);
 
-  $found = -1;
+  $found = 1;
   foreach $i (@$buf)
   {
-    $found++ if ($i =~ /^[ \t]*(image|other)/);
-    next if ($found < 0);
+    if ($i =~ /^[ \t]*(image|other)[ \t]*=[ \t]*([\S]+)/)
+    {
+      $found = 0;
+      foreach $a (@$images)
+      {
+        %hash = %$a;
 
+        $found = 1 if (exists $hash{$1} && $hash{$1} eq $2);
+      }
+    }
+    
+    next if ($found);
+
+    $i = "";
   }
+
+  &xst_buffer_clean ($buf);
+  return &xst_buffer_save ($buf, $fn);
 }
-                   
 
 
 sub xst_boot_conf_set_images
 {
   my ($fn, $key, $images) = @_;
-  my %hash, $i;
+  my %hash, $i, @tmp_images;
 
-  foreach $i (@$images)
+  @tmp_images = @$images;
+  
+  foreach $i (@tmp_images)
   {
     %hash = %$i;
     &xst_boot_conf_replace_image ($fn, %hash);
   }
+  &xst_boot_conf_del_images ($fn, $images);
 }
 
 
@@ -269,7 +285,7 @@ sub xst_boot_conf_replace_image
 
   foreach $i (@$buff)
   {
-    if ($i =~ /$name[ \t]*=[ \t]*$image{$name}/) # Found the image.
+    if ($i =~ /$name[ \t]*=[ \t]*$image{$name}\s+/) # Found the image.
     {
       delete $image{$name};
       $found++;
