@@ -34,21 +34,23 @@ require "___scriptsdir___/file.pl";
 
 sub xst_replace_from_table
 {
-  my ($fn, $table, $values_hash) = @_;
+  my ($fn, $table, $values_hash, $old_hash) = @_;
   my ($key, $proc, @param);
   my ($i, @cp, $res, $res2);
 
+  $$fn{"OLD_HASH"} = $old_hash;
+  
   foreach $i (@$table)
   {
     @cp = @$i;
     $key = shift (@cp);
     if (exists $$values_hash{$key})
     {
-	 $proc = shift (@cp);
-	 $cp[0] = $$fn{$cp[0]} if $cp[0] ne undef;
-	 push (@cp, $$values_hash{$key});
+      $proc = shift (@cp);
+      $cp[0] = $$fn{$cp[0]} if $cp[0] ne undef;
+      push (@cp, $$values_hash{$key});
 	 
-	 $res = -1 if &$proc (@cp);
+      $res = -1 if &$proc (@cp);
     }
   }
 
@@ -335,7 +337,7 @@ sub xst_replace_ini
 
   if (!$found_flag)
   {
-    push @$buff, "[$section]\n";
+    push @$buff, "\n[$section]\n";
     push @$buff, "$var = $value\n";
   }
   

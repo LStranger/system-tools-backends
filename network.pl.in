@@ -130,7 +130,7 @@ sub xst_network_sysconfig_ifaces_get_existing
   local *IFACE_DIR;
   my @ret, $i, $name;
   
-  if (opendir IFACE_DIR, "/etc/sysconfig/network-scripts")
+  if (opendir IFACE_DIR, "$xst_prefix/etc/sysconfig/network-scripts")
   {
     foreach $i (readdir (IFACE_DIR))
     {
@@ -150,7 +150,7 @@ sub xst_network_sysconfig_ifaces_get_existing
 
 sub xst_network_interfaces_get
 {
-  my (%dist_attrib, %hash, %fn, @ifaces);
+  my (%dist_attrib, %hash, %fn, @ifaces, $iface);
   my ($dist, $value, $file, $proc);
   my ($i, $j);
 
@@ -169,8 +169,10 @@ sub xst_network_interfaces_get
       $ {$dist_attrib{"fn"}}{$j} = $value;
     }
 
-    $hash{$i} = &xst_parse_from_table ($dist_attrib{"fn"},
-                                       $dist_attrib{"table"});
+    $iface = &xst_parse_from_table ($dist_attrib{"fn"},
+                                    $dist_attrib{"table"});
+    $$iface{"file"} = $i;
+    $hash{$i} = $iface;
   }
 
   return \%hash;
@@ -287,9 +289,25 @@ sub xst_network_rh62_interface_delete
   unlink ($file);
 }
 
+sub xst_network_interfaces_down_changed
+{
+  my ($proc, $old_hash, $values_hash) = @_;
+
+  @ifaces = &xst_network_active_interfaces_get ();
+  foreach $i (@ifaces)
+  {
+    if (&xst_util_struct_cmp ($old_hash{$i}, $values_hash{$i}))
+    {
+      return -1 if &$proc ($i, 0);
+    }
+  }
+
+  return 0;
+}
+
 sub xst_network_interfaces_set
 {
-  my $values_hash = $_[0]; 
+  my ($old_hash, $values_hash) = @_; 
   my (%dist_attrib, @ifaces, %fn);
   my ($value, $proc);
   my ($i, $j);
@@ -297,14 +315,11 @@ sub xst_network_interfaces_set
 
   %dist_attrib = &xst_network_get_interface_replace_table ();
 
+  $old_hash = $$old_hash{"interface"};
   # Disable all running interfaces. fixme: this is ugly: should only
   # down those that have been changed, downed or deleted.
   $proc = $dist_attrib{"iface_set"};
-  @ifaces = &xst_network_active_interfaces_get ();
-  foreach $i (@ifaces)
-  {
-    return -1 if &$proc ($i, 0);
-  }
+  return -1 if &xst_network_interfaces_down_changed ($proc, $old_hash, $values_hash);
 
   # Delete all existing interfaces that are not in the hash.
   $proc = $dist_attrib{"ifaces_get"};
@@ -320,16 +335,16 @@ sub xst_network_interfaces_set
   {
     foreach $j (keys (%fn))
     {
-	 $value = $fn{$j};
-	 $value =~ s/\#iface\#/$i/;
-	 $ {$dist_attrib{"fn"}}{$j} = $value;
+      $value = $fn{$j};
+      $value =~ s/\#iface\#/$i/;
+      $ {$dist_attrib{"fn"}}{$j} = $value;
     }
     
-    $tmp = &xst_replace_from_table ($dist_attrib{"fn"},
-							 $dist_attrib{"table"}, $$values_hash {$i});
+    $tmp = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+                                    $$values_hash{$i}, $$old_hash{$i});
     if (!$tmp) # if success saving the settings for the interface, set up immediatly.
     {
-	 $tmp = &$proc ($ {$$values_hash{$i}}{"dev"}, 1) if ($ {$$values_hash{$i}}{"enabled"});
+      $tmp = &$proc ($ {$$values_hash{$i}}{"dev"}, 1) if ($ {$$values_hash{$i}}{"enabled"});
     }
     
     $res = $tmp if !$res;
@@ -341,13 +356,15 @@ sub xst_network_interfaces_set
 sub xst_network_conf_set
 {
   my $values_hash = $_[0];
+  my $old_hash;
   my %dist_attrib;
   
   &xst_network_ensure_local_host_entry ($values_hash, "127.0.0.1");
-  
+
+  $old_hash = &xst_network_conf_get ();
   %dist_attrib = &xst_network_get_replace_table ();
-  $res = &xst_replace_from_table ($dist_attrib{"fn"},
-						    $dist_attrib{"table"}, $values_hash);
+  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+                                  $values_hash, $old_hash);
   return $res;
 }
 
@@ -549,34 +566,34 @@ sub xst_network_get_replace_table
 	  {
 	    fn =>
 	    {
-		 SYSCONFIG_NW => "/etc/sysconfig/network",
-		 RESOLV_CONF  => "/etc/resolv.conf",
-		 HOST_CONF    => "/etc/host.conf",
-		 HOSTS        => "/etc/hosts",
-		 SMB_CONF     => "/etc/smb.conf",
-		 WVDIAL       => "/etc/wvdial.conf" },
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf" },
 	    table =>
-		   [
-		    [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
-		    [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
-		    [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
-        [ hostname,      \&xst_network_run_hostname ],
-		    [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
-		    [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
-		    [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
-		    [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-		    [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-		    [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-		    [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-		    [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
-		    [ statichost,    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-		    [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
-		    [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
-		    [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
-		    [ dialing,       \&xst_network_dialing_set,      WVDIAL ],
-		    [ interface,     \&xst_network_interfaces_set ]
-		    ]
-			 }
+          [
+           [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+           [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
+           [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+           [ hostname,      \&xst_network_run_hostname ],
+           [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+           [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+           [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+           [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
+           [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
+           [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
+           [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
+           [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
+           [ statichost,    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+           [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
+           [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
+           [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+           [ dialing,       \&xst_network_dialing_set,      WVDIAL ],
+           [ interface,     \&xst_network_interfaces_set,		OLD_HASH ]
+           ]
+             }
 	  );
   
   my $dist = $dist_map{$xst_dist};

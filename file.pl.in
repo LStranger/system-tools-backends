@@ -132,7 +132,7 @@ sub xst_open_read_from_names
     if (open (FILE, "$xst_prefix/$name"))
     {
       # FIXME: Remove debug.
-      print STDERR "xst_open_read_from_names:$name\n" if $xst_verbose;
+      print STDERR "xst_open_read_from_names:$xst_prefix/$name\n" if $xst_verbose;
       $fname = $name;
       last;
     }

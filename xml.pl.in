@@ -218,24 +218,18 @@ sub xst_xml_unquote
 # --- XML parsing --- #
 
 
-# Compresses node into a word and returns it.
-
-sub xst_xml_get_word
+sub xst_xml_get_pcdata
 {
   my $tree = $_[0];
+  my $retval;
   
-  shift @$tree;		# Skip attributes.
+  shift @$tree;  # Skip attributes.
   
   while (@$tree)
   {
     if ($$tree[0] == 0)
     {
-      my $retval;
-
-      ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
-      #$retval = &xst_xml_entities_to_plain (\$retval);
-      #Lets see if this works.. Chema
-      $retval = &xst_xml_unquote ($retval);
+      $retval = &xst_xml_unquote ($$tree[1]);
       print STDERR "*$retval*\n";
       return ($retval);
     }
@@ -243,8 +237,18 @@ sub xst_xml_get_word
     shift @$tree;
     shift @$tree;
   }
-    
-  return ("");
+}
+
+# Compresses node into a word and returns it.
+
+sub xst_xml_get_word
+{
+  my $tree = $_[0];
+  my $retval;
+
+  $retval = &xst_xml_get_pcdata ($tree);
+  $retval =~ tr/ \n\r\t\f//d;
+  return $retval
 }
 
 
@@ -253,32 +257,16 @@ sub xst_xml_get_word
 sub xst_xml_get_size
 {
   my $tree = $_[0];
+  my $retval;
 
-  shift @$tree;  # Skip attributes.
-
-  while (@$tree)
+  $retval = &xst_xml_get_word ($tree);
+  if ($retval =~ /Mb$/)
   {
-    if ($$tree[0] == 0)
-    {
-      my $retval;
-
-      ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
-      #$retval = &xst_xml_entities_to_plain (\$retval);
-      #lets see if this works.. Chema
-      $retval = &xst_xml_unquote ($retval);
-      if ($retval =~ /Mb$/)
-      {
-        $retval =~ tr/ Mb//d; 
-        $retval *= 1024;
-      }
-      return ($retval);
-    }
-
-    shift @$tree;
-    shift @$tree;
+    $retval =~ tr/ Mb//d; 
+    $retval *= 1024;
   }
 
-  return ("");
+  return $retval;
 }
 
 
@@ -287,24 +275,11 @@ sub xst_xml_get_size
 sub xst_xml_get_text
 {
   my $tree = $_[0];
-  
-  shift @$tree;  # Skip attributes.
-  
-  while (@$tree)
-  {
-    if ($$tree[0] == 0)
-    {
-      ($retval = $$tree[1]) =~ tr/\n\r\t\f/    /;
-      #$retval = &xst_xml_entities_to_plain (\$retval);
-      #lets see if this works.. Chema
-      $retval = &xst_xml_unquote ($retval);
-      print STDERR "*$retval*\n";
-      return ($retval);
-    }
-    
-    shift @$tree;
-    shift @$tree;
-  }
+  my $retval;
+
+  $retval = &xst_xml_get_pcdata ($tree);
+  $retval =~ tr/\n\r\t\f/    /;
+  return $retval
 }
 
 1;

@@ -49,6 +49,8 @@ require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/network.pl";
 
 
+$xst_prefix = "/tmp/y";
+
 # --- Tool information --- #
 
 $name = "network";
@@ -99,21 +101,21 @@ sub xml_parse_network
 
   while (@$tree)
   {
-       if ($$tree[0] eq "auto")            { $$hash{"auto"} = &xst_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "forward")         { $$hash{"forward"} = &xst_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "gateway")         { $$hash{"gateway"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "gateway_dev")     { $$hash{"gateway_dev"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "nameserver")      { push (@nameserver, &xst_xml_get_word ($$tree[1])); }
-    elsif ($$tree[0] eq "searchdomain")    { push (@searchdomain, &xst_xml_get_word ($$tree[1])); }
-    elsif ($$tree[0] eq "domainname")      { $$hash{"domainname"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "order")           { push (@order, &xst_xml_get_word ($$tree[1])); }
-    elsif ($$tree[0] eq "hostmatch")       { $$hash{"hostmatch"} = &xst_xml_get_text ($$tree[1]); }
+       if ($$tree[0] eq "auto")            { $$hash{"auto"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "forward")         { $$hash{"forward"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "gateway")         { $$hash{"gateway"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "gateway_dev")     { $$hash{"gateway_dev"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "nameserver")      { push (@nameserver, &xst_xml_get_pcdata ($$tree[1])); }
+    elsif ($$tree[0] eq "searchdomain")    { push (@searchdomain, &xst_xml_get_pcdata ($$tree[1])); }
+    elsif ($$tree[0] eq "domainname")      { $$hash{"domainname"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "order")           { push (@order, &xst_xml_get_pcdata ($$tree[1])); }
+    elsif ($$tree[0] eq "hostmatch")       { $$hash{"hostmatch"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "statichost")      { &xml_parse_statichost ($$tree[1], \%statichost); }
-    elsif ($$tree[0] eq "workgroup")       { $$hash{"workgroup"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "description")     { $$hash{"description"} = &xst_xml_get_text ($$tree[1]); }
-    elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "workgroup")       { $$hash{"workgroup"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "description")     { $$hash{"description"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "interface")       { &xml_parse_interface ($$tree[1], \%interface); }
     elsif ($$tree[0] eq "dialing")         { &xml_parse_dialing ($$tree[1], \%dialing); }
 
@@ -142,8 +144,8 @@ sub xml_parse_statichost
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "ip")    { $ip = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "alias") { push(@alias, &xst_xml_get_word($$tree[1])); }
+    if    ($$tree[0] eq "ip")    { $ip = &xst_xml_get_pcdata($$tree[1]); }
+    elsif ($$tree[0] eq "alias") { push(@alias, &xst_xml_get_pcdata($$tree[1])); }
 
     shift @$tree;
     shift @$tree;
@@ -168,13 +170,13 @@ sub xml_parse_interface
   
   while (@$tree)
   {
-    $hash{$$tree[0]} = &xst_xml_get_word ($$tree[1]);
+    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
 
     shift @$tree;
     shift @$tree;
   }
 
-  $dev = $hash{"dev"};
+  $dev = $hash{"file"};
   $$interface{$dev} = \%hash;
 }
 
@@ -189,7 +191,7 @@ sub xml_parse_dialing
   
   while (@$tree)
   {
-    $hash{$$tree[0]} = &xst_xml_get_word ($$tree[1]);
+    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
 
     shift @$tree;
     shift @$tree;

@@ -1,3 +1,31 @@
+2001-02-23  Arturo Espinosa  <arturo@ximian.com>
+
+	* file.pl.in (xst_open_read_from_names): debug reporting opened file,
+	  but with the xst_prefix also.
+	* network-conf.in: use xst_xml_get_pcdata instead of get_word.
+	* network.pl.in (xst_network_sysconfig_ifaces_get_existing): use xst_prefix
+	  to open directory.
+	* network.pl.in: added "file" attrib to interface structures, to know from
+	  which file an interface configuration came. This tag could be the same
+	  value accross all interfaces for some distros (RH required, dunno others).
+	* network.pl.in (xst_network_interfaces_down_changed): get active interfaces
+	  and deactivate only those whose data have changed.
+	* network.pl.in (xst_network_interfaces_set): now requires the OLD_HASH
+	  structure, so that interfaces_down_changed can compare.
+	* network.pl.in (xst_network_conf_set): call xst_network_conf_get to get the
+	  $old_hash, and pass it to replace_from_table.
+	* replace.pl.in (xst_replace_from_table): $$fn{"OLD_HASH"} = $old_hash;, so
+	  if you ask for the OLD_HASH file key, you get a reference to the $old_hash.
+	  See network.pl.in (xst_network_get_replace_table) for an example.
+	* replace.pl.in (xst_replace_ini): cosmetic change to new section appending.
+	* util.pl.in (xst_util_struct_cmp): recursively compare two references,
+	  diving into any references to scalars, arrays or to see if structs are equal.
+	* xml.pl.in (xst_xml_get_pcdata): get the contents of the element, with no
+	  processing, except for entity unquoting.
+	* xml.pl.in (xst_xml_get_word, xst_xml_get_text, xst_xml_get_size): they now
+	  call get_pcdata and then process that to their need, then return.
+	
+	
 2001-02-23  Hans Petter Jansson  <hpj@ximian.com>
 
 	* file.pl.in (xst_backup_file): Add permanent archival of first-ever
