@@ -167,6 +167,8 @@ sub xst_xml_print_scalars
   my ($h, @scalar_keys) = @_;
   my ($i, $val);
 
+  @scalar_keys = sort @scalar_keys;
+
   while ($i = shift @scalar_keys)
   {
     $val = &xst_xml_quote ($$h{$i});
@@ -181,7 +183,7 @@ sub xst_xml_print_arrays
   my ($h, @array_keys) = @_;
   my ($i, $j, $val);
   
-  foreach $i (@array_keys)
+  foreach $i (sort @array_keys)
   {
     if (exists $$h{$i})
     {
@@ -206,7 +208,7 @@ sub xst_xml_print_hash
   &xst_xml_print_line ("<$tag>\n");
   &xst_xml_enter ();
   
-  foreach $j (keys (%$hash))
+  foreach $j (sort keys (%$hash))
   {
     $val = &xst_xml_quote ($$hash{$j});
     &xst_xml_print_line ("<$j>$val</$j>\n");
@@ -221,7 +223,7 @@ sub xst_xml_print_hash_hash
   my ($h, $tag) = @_;
   my $i;
   
-  foreach $i (keys %$h)
+  foreach $i (sort keys %$h)
   {
     &xst_xml_print_hash ($$h{$i}, $tag);
   } 

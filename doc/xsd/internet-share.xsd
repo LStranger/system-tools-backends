@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml:lang="en">
+  
+  <annotation>
+    <documentation>
+	 
+	 Internet share configurator XML format for the ximian-setup-tool backends.
+	 
+	 Copyright (C) 2001 Ximian, Inc.
+	 
+	 Authors: Arturo Espinosa [arturo@ximian.com]
+	 
+	 This is intended mainly as a means for documentation, not validation,
+	 but I hope to be able to validate the XML we get and return to
+	 backends with these files some day.
+    </documentation>
+  </annotation>
+
+  <!-- Include file with useful types and stuff -->
+  <include schemaLocation="xst.xsd"/>
+    
+  <element type="internet-shareType" name="internet-share"/>
+
+  <complexType name="internet-shareType">
+    <sequence>
+	 <element type="optionsType" name="options"/>
+	 <element type="timeoutType" name="timeout"/>
+	 <element type="forwardType" name="forward"/>
+    </sequence>
+  </complexType>
+
+  <complexType name="optionsType">
+    <sequence>
+	 <element type="xstBoolState" name="raudio"     minOccurs="0"/>
+	 <element type="xstBoolState" name="ip_forward" minOccurs="0"/>
+	 <element type="quakeType"    name="quake"      minOccurs="0"/>
+    </sequence>
+  </complexType>
+
+  <complexType name="quakeType">
+    <complexContent>
+	 <extension base="xstBoolState">
+	   <sequence>
+		<element type="unsignedInt" name="port"/>
+	   </sequence>
+	 </extension>
+    </complexContent>
+  </complexType>
+
+  <complexType name="timeoutType">
+    <sequence>
+	 <element type="unsignedInt" name="tcp"    minOccurs="0">
+	 <element type="unsignedInt" name="tcpfin" minOccurs="0">
+	 <element type="unsignedInt" name="udp"    minOccurs="0">
+    </sequence>
+  </complexType>
+
+  <complexType name="forwardType">
+    <sequence>
+	 <element type="ip_addressType" name="ip_address">
+    </sequence>
+  </complexType>
+
+  <complexType name="ip_addressType">
+    <complexContent>
+	 <extension base="xstIPv4">
+	   <attribute name="masq" type="xstKeyword">
+	 </extension>
+    </complexContent>
+  </complexType>
+
+</schema>

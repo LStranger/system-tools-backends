@@ -1,0 +1,231 @@
+<?xml version="1.0"?>
+<schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml:lang="en">
+  
+  <annotation>
+    <documentation>
+	 
+	 Package installer XML format for the ximian-setup-tool backends.
+	 
+	 Copyright (C) 2001 Ximian, Inc.
+	 
+	 Authors: Arturo Espinosa [arturo@ximian.com] (translation to xsd)
+               Kent Nguyen
+	 
+	 This is intended mainly as a means for documentation, not validation,
+	 but I hope to be able to validate the XML we get and return to
+	 backends with these files some day.
+    </documentation>
+  </annotation>
+
+  <!-- Include file with useful types and stuff -->
+  <include schemaLocation="xst.xsd"/>
+
+<!--    An installer document consists the following attributes:
+
+            editor:         The program this file was written with.
+            mime:           The MIME type (must always have the value
+                            application/x-kinstaller).
+            version:  Integer version of the DTD.
+
+-->
+  <element name="install">
+    <complexType>
+	 <attribute type="string" name="editor"/>
+	 <attribute type="string" name="mime"    fixed="application/x-installer"/>
+	 <attribute type="string" name="version" use="required"/>
+	 <sequence>
+	   <element type="securityType"      name="security"/>
+	   <element type="compatibilityType" name="compatibility"/>
+	   <element type="applicationType"   name="application"/>
+	   <element type="pluginType"        name="plugin"/>
+	   <element type="patchType"         name="patch"/>
+	   <element type="postType"          name="post"/>
+	   <element type="swarmType"         name="swarm"
+			  minOccurs="0"            maxOccurs="unbounded"/>
+	 </sequence>
+    </complexType>
+  </element>
+
+<!--
+          author:  The person who created this XML file
+          company:  The company to the guy who wrorte the XML file.
+          publickey:  A public key
+          certificate:  Usually signed by a trusted party to verify the source
+to the link, whether it is to be trusted or not.  Great to enusre the safety of
+the installed package.
+
+-->
+  <complexType name="securityType">
+    <attribute type="string" name="author"/>
+    <attribute type="string" name="email"/>
+    <attribute type="string" name="company"/>
+    <attribute type="string" name="publickey"/>
+    <attribute type="string" name="certificate"/>
+  </complexType>
+
+<!--
+          id: enumerated field, id=0 work on all distro, id=1 work on Mandrake 8.0, id=2 work on Redhat 7.1, id=3 work on SuSE 7.1
+          distro:  An example may be Mandrake, Redhat, SUSE, thekompany.com,
+linuxtoday.com, FreeBSD, Debian, or ALL
+          os:  Operating system, i.e. Linux, BSD, or ALL
+          version:  The version this installation will be compatibile with.
+-->
+  <complexType name="compatibilityType">
+    <attribute type="unisgnedInt" name="id"/>
+    <attribute type="string"      name="distro"/>
+    <attribute type="string"      name="os"/>
+    <attribute type="string"      name="version"/>
+  </complexType>
+
+<!--
+          largeimage:  An image of the size 400x250 pixels
+          smallimage:  An image of the size 32x32 pixels, normal icon.  A
+standard icon dimension by the KDE UI Styleguide.  http://developer.kde.org/documentation/standards/kde/icon-style.html
+          category:  Choose a category this type of application belongs to.  An
+example would be Office Application
+          name:  Give a to the application being installed.
+          date:  the date that this application is released
+          time:  the time that this application is released
+-->
+  <complexType name="applicationType">
+    <attribute type="string" name="largeimage"/>
+    <attribute type="string" name="smallimage"/>
+    <attribute type="string" name="url"/>
+    <attribute type="string" name="category"/>
+    <attribute type="string" name="version"  use="required"/>
+    <attribute type="string" name="name"     use="required"/>
+    <attribute type="string" name="date"     use="required"/>
+    <attribute type="string" name="time"     use="required"/>
+    <sequence>
+	 <element type="packageType" name="package"/>
+    </sequence>
+  </complexType>
+
+<!--
+          checksum:  Determine the md5sum digest of the file
+          image:  a small 22x22 pixels image corresponding to this package
+          author:  who wrote this program
+          company:  the company involved in this program
+          date:  The date when the package is created.
+          time:  The time when the package is created.
+          order:  give an ordinal number when this package will be installed
+amongst the other packages within this application.
+          name:  The name of this package.  Be consistent because this is the
+name that will be used for uninstall and installing patches.
+          file:  i.e. thispackage.rpm, thispacakge.deb, or /usr/bin/kinstaller
+          size:  how big is this package, specify in bytes
+          description:  Give a brief description what tihs package does.
+          packagedby:  Who package this package.
+-->
+  <complexType name="package">
+    <attribute type="string"      name="checksum"/>
+    <attribute type="string"      name="image"/>
+    <attribute type="string"      name="author"/>
+    <attribute type="string"      name="company"/>
+    <attribute type="string"      name="url"/>
+    <attribute type="string"      name="date"/>
+    <attribute type="string"      name="time"/>
+    <attribute type="string"      name="order"       use="required"/>
+    <attribute type="string"      name="name"        use="required"/>
+    <attribute type="string"      name="file"        use="required"/>
+    <attribute type="unsignedInt" name="size"        use="required"/>
+    <attribute type="string"      name="description"/>
+    <attribute type="string"      name="packagedby"/>
+    <sequence>
+	 <element type="versionType"    name="version"/>
+	 <element type="dependencyType" name="dependency"/>
+    </sequence>
+  </complexType>
+
+<!--
+          version example:  Linux 2.4.34-03
+          major: based on the above example, the number 2
+          minor:  based on the above exmaple, the number 4
+          mini:  based on the above example, the number 34
+          minuscule:  based on the above example, the number 03
+-->
+  <complexType name="versionType">
+    <attribute type="string" name="major"     use="required"/>
+    <attribute type="string" name="minor"     use="required"/>
+    <attribute type="string" name="mini"      use="required"/>
+    <attribute type="string" name="minuscule"/>
+  </complexType>
+
+<!--
+          id: the id of this package.
+          name:  is the name of this package.
+          url:  is the url where this package is
+          file:  the file name of this package
+-->
+  <complexType name="dependencyType">
+    <attribute type="string" name="id"   use="required"/>
+    <attribute type="string" name="name" use="required"/>
+    <attribute type="string" name="url"  />
+    <attribute type="string" name="file" />
+    <sequence>
+	 <element type="versionType" name="version" minOccurs="0"/>
+    </sequence>
+  </complexType>
+
+<!--
+          image:  32x32 pixels image.  Standard KDE normal icon
+          date:  date the patch is released
+          time:  time the patch is released
+          checksum:  md5sum digest of the file
+          name:  the name given to the patch
+          id:  ID of the patch, Need to increment from previous patch.  This is
+required to do rollback.
+          file:  the file of the patch, can be in /usr/bin/startkde,
+thiskde.rpm, or thatkde.deb
+          description:  Give a details description of this patch.  Inform the
+user why this patch is necessary or encouraged to be installed.
+          severity:  Rate the severity if this patch is not installed.  Risk
+assesement.  A number between 1-5, 5 being that it's the most severe case.
+Severity 5 is assigned when a remote exploit is found, confirm, and many mirror
+sites have them.  A 4 is like a local root exploit, it's a 5 if it's a machine
+accessible by users or the public.
+
+-->
+  <complexType name="patchType">
+    <attribute type="string" name="image"/>
+    <attribute type="string" name="url"/>
+    <attribute type="string" name="date"        use="required"/>
+    <attribute type="string" name="time"        use="required"/>
+    <attribute type="string" name="checksum"    use="required"/>
+    <attribute type="string" name="name"        use="required"/>
+    <attribute type="string" name="id"          use="required"/>
+    <attribute type="string" name="file"        use="required"/>
+    <attribute type="string" name="description" use="required"/>
+    <attribute type="string" name="severity"/>
+    <sequence>
+	 <element type="dependencyType" name="dependency"/>
+	 <element type="versionType"    name="version"/>
+    </sequence>
+  </complexType>
+
+<!--
+     After the install has been successful.  A dialog to ask if this application can be launched.
+     name:  Name of the application
+     file:  The binary where this application reside, or a text file.
+     comment:  "Launch KWord Now"  "Would you like to view the README"
+
+     Usually the launching of the application should handle the configuration setup, not the package
+     install script.
+-->
+  <complexType name="postType">
+    <attribute type="string" name="name"    use="required"/>
+    <attribute type="string" name="file"    use="required"/>
+    <attribute type="string" name="comment" />
+  </complexType>
+
+<!--
+          host:  hosts that are part of the swarm network.  this is good during
+peak traffic hours.  host can take the form of michael.linux.com or
+234.238.12.34
+
+-->
+  <Complextype name="swarmType">
+    <attribute type="xstHostname" name="host" use="required"/>
+  </complexType>
+
+</schema>

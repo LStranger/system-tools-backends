@@ -1,3 +1,11 @@
+Tue Jun 12 04:41:33 2001  Arturo Espinosa  <arturo@ximian.com>
+
+	* xml.pl.in (xst_xml_print_hash_hash): Sort the tags to print, to
+	make schema documentation easier.
+	(xst_xml_print_hash): same
+	(xst_xml_print_arrays): same
+	(xst_xml_print_scalars): same
+
 2001-06-27  Hans Petter Jansson  <hpj@ximian.com>
 
 	* print-conf.in: Update supported platforms.

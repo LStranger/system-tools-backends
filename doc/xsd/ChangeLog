@@ -1,0 +1,6 @@
+Wed Jun 27 11:16:51 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* xst.xsd: Common types go here.
+	* boot.xsd install.xsd memory.xsd shares.xsd disks.xsd
+	  internet-share.xsd network.xsd: Schemas documenting
+	  most of the backends. users, time and print still missing.

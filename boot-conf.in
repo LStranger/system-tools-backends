@@ -151,7 +151,7 @@ sub xml_parse_image
 sub xml_print_global_kws
 {
   my $h = $_[0];
-  my @tags = ('prompt', 'lba32', 'compact', 'linear', 'lock');
+  my @tags = sort ('prompt', 'lba32', 'compact', 'linear', 'lock');
   my $i;
 
   while ($i = shift @tags)
@@ -164,7 +164,7 @@ sub xml_print_global_kws
 sub xml_print_images
 {
   my ($h, $image) = @_;
-  my ($i, $val, $array);
+  my ($i, $val, $array, $entry, %tmp);
 
   $array = $$h{$image};
 
@@ -173,10 +173,16 @@ sub xml_print_images
     &xst_xml_print_vspace ();
     &xst_xml_print_line ("<entry>\n");
     &xst_xml_enter ();
+    %tmp = %$entry;
+        
+    &xst_xml_print_line ("<image>$tmp{image}</image>") if exists $tmp{"image"};
+    &xst_xml_print_line ("<other>$tmp{other}</other>") if exists $tmp{"other"};
+    delete $tmp{"image"};
+    delete $tmp{"other"};
     
-    foreach $i (keys %$entry)
+    foreach $i (sort keys %tmp)
     {
-      $val = &xst_xml_quote ($$entry{$i});
+      $val = &xst_xml_quote ($tmp{$i});
 
       if ($val eq "") { &xst_xml_print_line ("<$i/>\n"); }
       else { &xst_xml_print_line ("<$i>$val</$i>\n"); }
@@ -194,7 +200,7 @@ sub xml_print
 {
   my $h = $_[0];
   my @scalars = qw(boot default delay install keytable map
-                   message timeout verbose append root);
+                   message timeout append root);
 
   &xst_xml_print_begin ();
 

@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml:lang="en">
+  
+  <annotation>
+    <documentation>
+	 
+	 Network configurator XML format for the ximian-setup-tool backends.
+	 
+	 Copyright (C) 2001 Ximian, Inc.
+	 
+	 Authors: Arturo Espinosa [arturo@ximian.com]
+	 
+	 This is intended mainly as a means for documentation, not validation,
+	 but I hope to be able to validate the XML we get and return to
+	 backends with these files some day.
+    </documentation>
+  </annotation>
+  
+  <!-- Include file with useful types and stuff -->
+  <include schemaLocation="xst.xsd"/>
+
+  <element type="sharesType" name="shares"/>
+
+  <complexType name="sharesType">
+    <sequence>
+      <element type="importsType" name="imports"/>
+      <element type="exportsType" name="exports"/>
+    </sequence>
+  </complexType>
+
+  <complexType name="importsType">
+    <sequence>
+      <element type="importType" name="import" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+
+  <complexType name="importsType">
+    <sequence>
+      <element type="importtypeType" name="import"/>
+      <element type="string"         name="host"/>
+      <element type="string"         name="path"/>
+      <element type="xstFilePath"    name="point"/>
+      <element type="xstBoolState"   name="listed"/>
+      <element type="xstBoolState"   name="mounted"/>
+      <element type="xstBoolState"   name="detected"/>
+    </sequence>
+  </complexType>
+
+  <complexType name="importtypeType">
+    <restriction base="string">
+      <enumeration value="nfs"/>
+      <enumeration value="smb"/>
+    </restriction>
+  </complexType>
+
+  <complex
+
+</schema>
+        
