@@ -1,3 +1,11 @@
+2001-10-02  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network-conf.in (list_ifaces): directive that lists
+	instantaneous info about all interfaces (ifconfig -a).
+
+	* network.pl.in (xst_network_interfaces_get_info): Collect
+	more info: active and dev, and include inactive interfaces.
+
 2001-10-02  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in: Use full paths to XFree86, don't try to depend on links.

@@ -293,18 +293,38 @@ sub filter
   &xml_print ($hash);
 }
 
+
 sub enable_iface
 {
-    my ($tool, $iface, $enabled) = @_;
-    my (%dist_attrib, $iface_set);
-    my %hash = ("file" => $iface);
-    
-    %dist_attrib = &xst_network_get_interface_replace_table ();
-    $iface_set = $dist_attrib{"iface_set"};
-    &$iface_set (\%hash, undef, $enabled, 1);
-    # Don't forget to do xst_end when the reports are over!
-    &xst_report_end ();
-    # XML output would come here, but this directive returns no XML.
+  my ($tool, $iface, $enabled) = @_;
+  my (%dist_attrib, $iface_set);
+  my %hash = ("file" => $iface);
+  
+  %dist_attrib = &xst_network_get_interface_replace_table ();
+  $iface_set = $dist_attrib{"iface_set"};
+  &$iface_set (\%hash, undef, $enabled, 1);
+  # Don't forget to do xst_end when the reports are over!
+  &xst_report_end ();
+  # XML output would come here, but this directive returns no XML.
+}
+
+
+sub list_ifaces
+{
+  my ($tool) = @_;
+  my ($ifaces, $iface, @arr);
+
+  $ifaces = &xst_network_interfaces_get_info ();
+  
+  foreach $iface (keys %$ifaces)
+  {
+    push @arr, $$ifaces{$iface};
+  }
+  
+  &xst_report_end ();
+  &xst_xml_print_begin ("network-ifaces");
+  &xst_xml_print_structure (\@arr, "interface");
+  &xst_xml_print_end ("network-ifaces");
 }
 
 
@@ -317,6 +337,8 @@ $directives = {
   "get"          => [ \&get,          [], "" ],
   "set"          => [ \&set,          [], "" ],
   "filter"       => [ \&filter,       [], "" ],
+  "list_ifaces"  => [ \&list_ifaces,  [],
+                      "List interfaces and active/inactive status." ],
   "enable_iface" => [ \&enable_iface, [ "interface", "enabled" ],
                       "Immediatly enable or disable a given interface. " .
                       "interface is the file tag value, enabled is 1 or 0." ]
