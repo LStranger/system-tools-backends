@@ -414,7 +414,7 @@ sub xst_network_conf_set
   my $old_hash;
   my %dist_attrib;
   
-  &xst_network_ensure_local_host_entry ($values_hash, "127.0.0.1");
+  &xst_network_ensure_loopback ($values_hash);
 
   $old_hash = &xst_network_conf_get ();
   %dist_attrib = &xst_network_get_replace_table ();
@@ -469,32 +469,81 @@ sub xst_network_rh62_replace_bootproto
 	  );
 
   return &xst_replace_sh ($file, $key, $proto_name_to_rh62{$value});
-}  
+}
 
-# lo_ip is the ip for localhost (commonly 127.0.0.1).
-sub xst_network_ensure_local_host_entry
+sub xst_network_ensure_loopback_interface
 {
-  my $values_hash = $_[0];
-  my $lo_ip = $_[1];
-  my $hostname = $$values_hash{"hostname"};
-  my $statichost = $$values_hash{"statichost"};
+  my ($interface) = @_;
+  my $dev;
+  my %dist_map =
+	 (
+	  "redhat-6.0" => "lo",
+	  "redhat-6.1" => "lo",
+	  "redhat-6.2" => "lo",
+	  "redhat-7.0" => "lo"
+	  );
 
+  $dev = $dist_map {$xst_dist};
+
+  if (!exists $$interface{$dev})
+  {
+    my %iface = (
+                 "auto" => 1,
+                 "user" => 0,
+                 "dev" => "lo",
+                 "address" => "127.0.0.1",
+                 "netmask" => "255.0.0.0",
+                 "broadcast" => "127.255.255.255",
+                 "network" => "127.0.0.0",
+                 "bootproto" => "none"
+                 );
+
+    $$interface{$dev} = \%iface;
+  }
+}
+
+sub xst_network_statichost_add_alias
+{
+  my ($localhost, $alias) = @_;
+  my $i;
+
+  foreach $i (@$localhost)
+  {
+    return if ($i eq $alias);
+  }
+  
+  push @$localhost, $alias;
+}
+  
+sub xst_network_ensure_loopback_statichost
+{
+  my ($statichost, $hostname, $lo_ip) = @_;
   my $i;
 
   if (exists $$statichost{$lo_ip})
   {
     my $localhost = $$statichost{$lo_ip};
-    foreach $i (@$localhost)
-    {
-      return if ($i eq $hostname);
-    }
-
-    push @$localhost, $hostname;
+    &xst_network_statichost_add_alias ($localhost, $hostname);
+    &xst_network_statichost_add_alias ($localhost, "localhost");
+    &xst_network_statichost_add_alias ($localhost, "localhost.localdomain");
   }
   else
   {
-    $$statichost{$lo_ip} = [ ($hostname) ];
-  }  
+    $$statichost{$lo_ip} = [ ("localhost", "localhost.localdomain", $hostname) ];
+  }
+}
+
+# lo_ip is the ip for localhost (commonly 127.0.0.1).
+sub xst_network_ensure_loopback
+{
+  my $values_hash = $_[0];
+  my $lo_ip = "127.0.0.1";
+  my $interface = $$values_hash{"interface"};
+  my $hostname = $$values_hash{"hostname"};
+  my $statichost = $$values_hash{"statichost"};
+
+  &xst_network_ensure_loopback_statichost ($statichost, $hostname, $lo_ip);
+  &xst_network_enusre_loopback_interface ($interface, $lo_ip);
 }
 
 sub xst_network_get_parse_table
@@ -574,6 +623,8 @@ sub xst_network_get_interfaces_parse_table
         CHAP => "/etc/ppp/chap-secrets" },
 	    table =>
           [
+           [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
+           [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
            [ name,               \&xst_parse_sh,      IFCFG, NAME ],
            [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
            [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
@@ -598,8 +649,6 @@ sub xst_network_get_interfaces_parse_table
            [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
            [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
            [ wvsection,          \&xst_parse_sh,      IFCFG, WVDIALSECT ],
-           [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
-           [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
            [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
            [ debug,              \&xst_parse_sh_bool, IFCFG, DEBUG ],
            [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
@@ -699,6 +748,8 @@ sub xst_network_get_interface_replace_table
       },
       table =>
        [
+        [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
+        [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
         [ name,               \&xst_replace_sh,      IFCFG, NAME ],
         [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
         [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
@@ -721,8 +772,6 @@ sub xst_network_get_interface_replace_table
         [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
         [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
         [ wvsection,          \&xst_replace_sh,      IFCFG, WVDIALSECT ],
-        [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
-        [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
         [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
         [ debug,              \&xst_replace_sh_bool, IFCFG, DEBUG ],
         [ persist,            \&xst_replace_sh_bool, IFCFG, PERSIST ],

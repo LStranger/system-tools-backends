@@ -1,3 +1,9 @@
+2001-03-02  Arturo Espinosa  <arturo@ximian.com>
+
+	* network.pl.in: add loopback interface if it doesn't exist
+	  (ensure_loopback). Add "localhost" and "localhost.localdomain"
+	  entries to loopback statichost entry.
+	
 2001-03-01  Hans Petter Jansson  <hpj@ximian.com>
 
 	* debug.pl.in: Implemented basic debug functions.
