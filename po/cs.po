@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-setup-tools VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-09-05 12:20+0200\n"
-"PO-Revision-Date: 2004-09-05 16:48+0200\n"
+"POT-Creation-Date: 2004-12-24 20:41+0100\n"
+"PO-Revision-Date: 2004-12-25 15:58+0100\n"
 "Last-Translator: Miloslav Trmac <mitr@volny.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -99,7 +99,9 @@ msgstr "Záznamník zaváděcích zpráv"
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
-msgstr "Běží na pozadí a kopíruje všechny řetězce poslané na zařízení /dev/console do souboru záznamů"
+msgstr ""
+"Běží na pozadí a kopíruje všechny řetězce poslané na zařízení /dev/console "
+"do souboru záznamů"
 
 #: service-list.pl.in:45
 msgid ""
@@ -150,7 +152,11 @@ msgid ""
 "cron is a standard UNIX program that runs user-specified programs at "
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
-msgstr "cron je standardní program UNIXu, který spouští uživatelem určené programy periodicky v naplánovaných intervalech. vixie cron přidává k základnímu UNIXovému cronu další vlastnosti včetně lepšího zabezpečení a mocnějších možností nastavení."
+msgstr ""
+"cron je standardní program UNIXu, který spouští uživatelem určené programy "
+"periodicky v naplánovaných intervalech. vixie cron přidává k základnímu "
+"UNIXovému cronu další vlastnosti včetně lepšího zabezpečení a mocnějších "
+"možností nastavení."
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
@@ -795,7 +801,9 @@ msgstr "Spouští a ukončuje démon Samba winbind"
 msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
-msgstr "Umožnit uživatelům spouštět aplikace pro Windows™ jednoduše kliknutím na ně (nebo napsáním ./soubor.exe)"
+msgstr ""
+"Umožnit uživatelům spouštět aplikace pro Windows™ jednoduše kliknutím na ně "
+"(nebo napsáním ./soubor.exe)"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
@@ -855,3 +863,52 @@ msgstr "Implicitní úroveň běhu"
 #: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Úroveň běhu bez sítě"
+
+# FIXME: s/monitorize/monitor/
+#: users-conf.in:179
+msgid "Monitorize system logs"
+msgstr "Sledovat záznamy systému"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "Používat zařízení zvuku"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "Přístup k mechanikám CD-ROM"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "Přístup k zařízením modemu"
+
+#: users-conf.in:183
+msgid "Connect to internet through modem devices"
+msgstr "Připojit se k internetu zařízeními modemu"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "Posílat a přijímat faxy"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "Přístup k disketovým mechanikám"
+
+#: users-conf.in:186
+msgid "Mount removable devices automatically"
+msgstr "Automaticky připojovat výměnná zařízení"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "Přístup k páskovým mechanikám"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "Moci získat oprávnění správce"
+
+#: users-conf.in:458
+msgid "Default"
+msgstr "Implicitní"
+
+#: users-conf.in:459
+msgid "Default profile"
+msgstr "Implicitní profil"
