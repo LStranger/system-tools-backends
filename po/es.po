@@ -1,14 +1,14 @@
 # translation of es.po to Spanish
 # This file is distributed under the same license as the PACKAGE package.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
-# Francisco Javier F. Serrador <serrador@cvs.gnome.org>, 2003.
+# Francisco Javier F. Serrador <serrador@cvs.gnome.org>, 2003, 2004.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: es\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2003-12-27 00:09+0100\n"
-"PO-Revision-Date: 2003-12-28 17:57+0100\n"
+"PO-Revision-Date: 2004-01-01 20:10+0100\n"
 "Last-Translator: Francisco Javier F. Serrador <serrador@cvs.gnome.org>\n"
 "Language-Team: Spanish <traductores@es.gnome.org>\n"
 "MIME-Version: 1.0\n"
@@ -74,7 +74,7 @@ msgid ""
 "service."
 msgstr ""
 "Un servicio interno xinetd que genera caracteres. El servicio interno xinetd que genera caracteres continuamente hasta que la conexión de abandona. Esta es la versión "
-"tcp. Debe habilitar xinetd para usar este servicio."
+"tcp. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:43
 msgid ""
@@ -84,7 +84,7 @@ msgid ""
 "service."
 msgstr ""
 "Un servicio interno xinetd que genera caracteres. El servicio interno xinetd que genera caracteres continuamente hasta que la conexión de abandona. Esta es la versión "
-"udp. Debe habilitar xinetd para usar este servicio."
+"udp. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:44
 msgid "daemon to execute scheduled commands"
@@ -148,7 +148,7 @@ msgstr "Servicor de diccionario Dict"
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the tcp version. You must enable xinetd to use this service."
-msgstr "Un servicio interno xinetd que emite caracteres en forma de eco de vuelta a los clientes. Esta es la versión tcp. Debe habilitar xinetd para usar este servicio."
+msgstr "Un servicio interno xinetd que emite caracteres en forma de eco de vuelta a los clientes. Esta es la versión tcp. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:53
 msgid ""
@@ -407,38 +407,46 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
+"Este es un demonio que se encarga de conectarse periódicamente a los servidores "
+"de Red Hat Network para buscar actualizaciones, notificaciones y realizar tareas de "
+"monitorización del sistema de acuerdo con el  nivel de servicio con el que el servidor está "
+"suscrito."
 
 #: service-list.pl.in:93
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
+"El servidor rsync es una buena adición para un servicor ftp, ya que permite "
+"sumas de comprobación crc, etc. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:94
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
+"saslauthd es un proceso de servidor que se encarga de la autenticación en texto "
+"plano como parte de la biblioteca cyrus-sasl."
 
 #: service-list.pl.in:95
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
-"Sendmail es un agente de trransporte de correo, que es el programa que mueve correo desde una "
+"Sendmail es un agente de transporte de correo, que es el programa que mueve correo desde una "
 "máquina a otra."
 
 #: service-list.pl.in:96
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
-msgstr "Un servicio interno xinetd, listando servidores activos. Debe habilitar xinetd para usar este servicio."
+msgstr "Un servicio interno xinetd, listando servidores activos. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:97
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
-msgstr "Un servicio interno xinetd, listando servicios activos. Debe habilitar xinetd para usar este servicio."
+msgstr "Un servicio interno xinetd, listando servicios activos. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:98
 msgid "get/set serial port information"
@@ -458,7 +466,7 @@ msgid ""
 "change. You must enable xinetd to use this service."
 msgstr ""
 "FAM es un demonio de motitorización de archivos. Puede usarse para obtener informes acerca "
-"de cuando cambian los archivos. Debe habilitar xinetd para usar este servicio."
+"de cuando cambian los archivos. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:100
 msgid "control and monitor storage systems using S.M.A.R.T."
@@ -495,12 +503,16 @@ msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr ""
+"Sysklogd proporciona dos utilidades del sistema que proporcionan soporte para el "
+"registro del sistema y captura de los mensajes del núcleo."
 
 #: service-list.pl.in:106
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
+"Syslog es una utilidad que muchos demonios usan para registrar mensajes a varios "
+"archivos de registro del sistema. Es una buena idea ejecutar siempre syslog."
 
 #: service-list.pl.in:107
 msgid ""
@@ -509,6 +521,9 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"Un servidor de hora RFC 868. Este protocolo proporciona fecha y hora independiente "
+"de la zona. El servicio Time envía a la fuente el número de segundos desde el "
+"uno de enero de 1900. Esta es la versión tcp. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:108
 msgid ""
@@ -517,6 +532,9 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"Un servidor de hora RFC 868. Este protocolo proporciona fecha y hora independiente "
+"de la zona. El servicio Time envía a la fuente el número de segundos desde el "
+"uno de enero de 1900. Esta es la versión udp. Debe activar xinetd para usar este servicio."
 
 #: service-list.pl.in:109
 msgid "kernel random number source devices"
@@ -528,6 +546,9 @@ msgid ""
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
+"El generador de números aleatorios obtiene ruido ambiental desde los "
+"dispositivos y otras fuentes para crear un pool de entropía. Desde este "
+"pool de entropía se crean números aleatorios."
 
 #: service-list.pl.in:110
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -538,10 +559,12 @@ msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
+"El comando vmware inicia una máquina virtual basada en Intel X86. Este script "
+"gestiona los servicios necesarios para ejecutar el software VMWare."
 
 #: service-list.pl.in:111
 msgid "Web-based administration toolkit"
-msgstr ""
+msgstr "Conjunto de herramientas de administración por web"
 
 #: service-list.pl.in:112
 msgid "Starts and stops the Samba winbind daemon"
@@ -570,6 +593,10 @@ msgid ""
 "available based on time, and can place limits on the number of servers that "
 "can be started, among other things."
 msgstr ""
+"xinetd es un potente reemplazo de inetd. xinetd tiene control de accesom "
+"capacidades de registro ampliadas, la habilidad de hacer servicios disponibles "
+"basándose en la hora y puede poner límites al número de servidores "
+"que pueden iniciarse, entre otras cosas."
 
 #: service.pl.in:164 service.pl.in:169
 msgid "Halting the system"
