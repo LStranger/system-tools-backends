@@ -1131,16 +1131,16 @@ sub set_immediate
   {
     if (&be_run("hostname $cf_hostname >/dev/null 2>/dev/null"))
     {
-      &be_report_warning(3, "Failed to &set runtime hostname");
+      &be_report_warning(3, "Failed to set runtime hostname");
     }
     else
     {
-      &be_report_info(1, "Runtime hostname &set");
+      &be_report_info(1, "Runtime hostname set");
     }
   }
   else
   {
-    &be_report_warning(4, "No hostname specified; runtime hostname not &set");
+    &be_report_warning(4, "No hostname specified; runtime hostname not set");
   }
 
   # Reload SMB configuration.

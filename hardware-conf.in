@@ -820,9 +820,9 @@ sub filter
 
 while (@ARGV)
   {
-    if    ($ARGV[0] eq "--&get"    || $ARGV[0] eq "-g") { &be_set_operation("get"); }
-    elsif ($ARGV[0] eq "--&set"    || $ARGV[0] eq "-s") { &be_set_operation("set"); }
-    elsif ($ARGV[0] eq "--&filter" || $ARGV[0] eq "-f") { &be_set_operation("filter"); }
+    if    ($ARGV[0] eq "--get"    || $ARGV[0] eq "-g") { &be_set_operation("get"); }
+    elsif ($ARGV[0] eq "--set"    || $ARGV[0] eq "-s") { &be_set_operation("set"); }
+    elsif ($ARGV[0] eq "--filter" || $ARGV[0] eq "-f") { &be_set_operation("filter"); }
     elsif ($ARGV[0] eq "--help"   || $ARGV[0] eq "-h") { print STDERR $Usage; exit(0); }
     elsif ($ARGV[0] eq "--prefix" || $ARGV[0] eq "-p")
       {
