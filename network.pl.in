@@ -423,6 +423,23 @@ sub xst_network_interface_active
   return 0;
 }
 
+sub xst_network_interface_ensure_broadcast_and_network
+{
+  if (exists $$iface{"netmask"} &&
+      exists $$iface{"address"})
+  {
+    if (! exists $$iface{"broadcast"})
+    {
+      $$iface{"broadcast"} = &xst_network_ipv4_calc_bcast ($$iface{"address"}, $$iface{"netmask"});
+    }
+
+    if (! exists $$iface{"network"})
+    {
+      $$iface{"network"} = &xst_network_ipv4_calc_subnet ($$iface{"address"}, $$iface{"netmask"});
+    }
+  }
+}
+
 sub xst_network_sysconfig_ifaces_get_existing
 {
   local *IFACE_DIR;
@@ -819,6 +836,7 @@ sub xst_network_interfaces_get
 
     $iface = &xst_parse_from_table ($dist_attrib{"fn"},
                                     $dist_attrib{"table"});
+    &xst_network_interface_ensure_broadcast_and_network ($iface);
     $$iface{"file"} = $i;
     $hash{$i} = $iface;
   }
