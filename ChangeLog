@@ -1,5 +1,8 @@
 2001-10-15  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* platform.pl.in: Typo in PLATFORM_INFO and the codename
+	for mdk-8.0.
+
 	* general.pl.in (xst_merge_std_directives): Added the
 	"platforms" directive.
 

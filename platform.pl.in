@@ -44,10 +44,11 @@ $PLATFORM_INFO = {
   "redhat-6.0"     => "Red Hat Linux 6.0 Hedwig",
   "redhat-6.1"     => "Red Hat Linux 6.1 Cartman",
   "redhat-6.2"     => "Red Hat Linux 6.2 Zoot",
-  "redhat-7.0"     => "Red Hat Linux 7.0 Guiness",
+  "redhat-7.0"     => "Red Hat Linux 7.0 Guinness",
   "redhat-7.1"     => "Red Hat Linux 7.1 Seawolf",
   "mandrake-7.1"   => "Linux Mandrake 7.1",
   "mandrake-7.2"   => "Linux Mandrake 7.2 Odyssey",
+  "mandrake-8.0"   => "Linux Mandrake 8.0 Traktopel",
   "suse-7.0"       => "SuSE Linux 7.0",
   "turbolinux-7.0" => "Turbolinux 7.0"
     };
