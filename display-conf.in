@@ -63,7 +63,7 @@ sub distro_file
 # --- XML parsing ---
 # Scan XML from standard input to an internal tree.
 
-sub xml_print ($)
+sub xml_print
 {
   my $config = shift;
   my ($section, $hash);

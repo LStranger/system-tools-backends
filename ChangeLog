@@ -1,3 +1,19 @@
+2001-06-27  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* memory-conf.in (xml_print): No prototypes, thank-you. Read
+	http://www.perl.com/pub/language/misc/fmproto.html for enlightening.
+
+	* x.pl.in: same. Prototypes were invented to allow people to
+	call procedures as if they were Perl special functions. That's not
+	what we want to do with these functions. Perl is ugly, let's choose
+	"features" more carefuly. Same for shift and other abuses of the
+	implicit variable, but I'll kill those on the run.
+
+2001-06-21  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* general.pl.in (xst_print_interface): sort the keys to get a better
+	result.
+
 Tue Jun 12 04:41:33 2001  Arturo Espinosa  <arturo@ximian.com>
 
 	* xml.pl.in (xst_xml_print_hash_hash): Sort the tags to print, to

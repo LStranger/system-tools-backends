@@ -181,14 +181,7 @@ sub xml_parse_swapinfo
 
 sub xml_print
 {
-  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
-  print "<!DOCTYPE memory []>\n\n";
-  print "<memory>\n";
-  &xst_xml_enter ();
-
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
-  &xst_xml_print_vspace ();
+  &xst_xml_print_begin ();
 
   foreach $entry (@cf_memory) {
     &xst_xml_print_line ("<memsize>$entry->{MemTotal}</memsize>\n");
@@ -227,11 +220,7 @@ sub xml_print
     &xst_xml_print_line ("</swapdev>\n\n");
   }
 
-  &xst_xml_print_line ("<!-- End of configuration -->\n");
-  &xst_xml_print_vspace ();
-
-  &xst_xml_leave ();
-  print "</memory>\n";
+  &xst_xml_print_end ();
 }
 
 

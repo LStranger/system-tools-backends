@@ -396,7 +396,7 @@ sub xst_print_interface
   $directives = $$tool{"directives"};
 
   &xst_xml_print_begin ("interface");
-  foreach $key (keys %$directives)
+  foreach $key (sort keys %$directives)
   {
     my $comment = $ {$$directives{$key}}[2];
     my @args = @{ $ {$$directives{$key}}[1]};

@@ -44,7 +44,7 @@ require "___scriptsdir___/xml.pl";
 # Difference from xst_item_is_in_list is that XF86Config keywords are
 # case-insensitive and "_" characters are ignored.
 # Returns found value from list or 0.
-sub xst_x_keyword_in_list ($@)
+sub xst_x_keyword_in_list
 {
   my $keyword = shift @_;
 
@@ -58,7 +58,7 @@ sub xst_x_keyword_in_list ($@)
   return 0;
 }
 
-sub xst_x_option_in_list ($@)
+sub xst_x_option_in_list
 {
   my $keyword = shift @_;
 
@@ -74,7 +74,7 @@ sub xst_x_option_in_list ($@)
 }
 
 # Returns "SectionName" if $line is section beginning, 0 otherwise.
-sub x_section_start ($$@)
+sub x_section_start
 {
   my $line = shift;
   my $subsection = shift;
@@ -95,7 +95,7 @@ sub x_section_start ($$@)
   return 0;
 }
 
-sub x_section_end ($$)
+sub x_section_end
 {
   my $line = shift;
   my $subsection = shift;
@@ -111,7 +111,7 @@ sub x_section_end ($$)
   return 0;
 }
 
-sub general_parse_section ($)
+sub general_parse_section
 {
   my $buff = shift;
   my $tmp;
@@ -134,7 +134,7 @@ sub general_parse_section ($)
 }
 
 # Parse general unique value 
-sub general_parse_kw ($)
+sub general_parse_kw
 {  
   my ($line) = shift;
   my ($kw) = shift @$line;
@@ -152,7 +152,7 @@ sub general_parse_kw ($)
 }
 
 # Parse general value with non-unique value
-sub parse_kw_list ($)
+sub parse_kw_list
 {  
   my ($line) = shift;
   my ($kw) = shift @$line;
@@ -170,7 +170,7 @@ sub parse_kw_list ($)
 }
 
 # Parse VertRefresh and HorizSync
-sub parse_range_hz ($)
+sub parse_range_hz
 {
   my ($line) = shift;
   my (@array) = ();
@@ -193,7 +193,7 @@ sub parse_range_hz ($)
 #  $line - ref to array containing the actual line split by \s. 
 # Returns hash with one key (Option) containing hash with option
 # name as key and option value as val.
-sub parse_option ($)
+sub parse_option
 {
   my $line = shift;
   my ($name, $value);
@@ -227,7 +227,7 @@ sub parse_option ($)
   bless [ $name, $val ], "XstXOption";
 }
 
-sub parse_modeline ($)
+sub parse_modeline
 {
   my $line = shift;
   my (@array);
@@ -247,7 +247,7 @@ sub parse_modeline ($)
   bless \@array, "XstXModeLine";
 }
 
-sub section2config ($$$)
+sub section2config
 {
   my $config = shift;
   my $hash = shift;
@@ -265,7 +265,7 @@ sub section2config ($$$)
 }
 
 
-sub add2section ($$)
+sub add2section
 {
   my $dest = shift;
   my $source = shift;
@@ -309,7 +309,7 @@ sub add2section ($$)
 # Parses Sections from XF86Config.
 #
 # Returns hash containg the section.
-sub get_section ($$$$)
+sub get_section
 {
   my ($config, $buff, $section_desc, $section) = @_;
   my ($keywords) = $section_desc->{keywords};
@@ -343,7 +343,7 @@ sub get_section ($$$$)
   &section2config ($config, $hash, $section);
 }
 
-sub xst_xfree4_conf_get ($$)
+sub xst_xfree4_conf_get
 {
   my ($fname, $section_list) = @_;
   my ($file, $section);
@@ -375,7 +375,7 @@ sub xst_xfree4_conf_get ($$)
 # XML Printing.
 
 # Internal
-sub x_xml_print_array ($$)
+sub x_xml_print_array
 {
   my $key = shift;
   my $array = shift;
@@ -386,7 +386,7 @@ sub x_xml_print_array ($$)
 }
 
 # Internal
-sub x_xml_print_hash ($$)
+sub x_xml_print_hash
 {
   my $key = shift;
   my $hash = shift;
@@ -398,7 +398,7 @@ sub x_xml_print_hash ($$)
   }
 }
 
-sub x_xml_print_section ($)
+sub x_xml_print_section
 {
   my $hash = shift;
   my $section = shift;
