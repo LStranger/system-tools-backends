@@ -1,3 +1,8 @@
+2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* shares-conf.in: fixed paths extraction from XML, added some extra
+	info to the XML to know which sharing servers exist/are active
+
 2005-01-20  Carlos Garcia Campos  <carlosgc@gnome.org>
 
 	* disks-conf.in: fixed an important bug in the scsi bus scanning

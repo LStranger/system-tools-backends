@@ -243,7 +243,7 @@ sub xml_parse_export
 
     while (@$tree)
     {
-      if    ($$tree[0] eq "path")       { $path = &gst_xml_get_word ($$tree[1]);       }
+      if    ($$tree[0] eq "path")       { $path = &gst_xml_get_pcdata ($$tree[1]);     }
       elsif ($$tree[0] eq "allow")      { &xml_parse_allow ($$tree[1], $client_table); }
 
       shift @$tree;
@@ -266,13 +266,13 @@ sub xml_parse_export
 
     while (@$tree)
     {
-      if    ($$tree[0] eq "name")       { $name       = &gst_xml_get_word  ($$tree[1]); }
-      elsif ($$tree[0] eq "path")       { $path       = &gst_xml_get_word  ($$tree[1]); }
-      elsif ($$tree[0] eq "comment")    { $comment    = &gst_xml_get_text  ($$tree[1]); }
-      elsif ($$tree[0] eq "enabled")    { $enabled    = &gst_xml_get_state ($$tree[1]); }
-      elsif ($$tree[0] eq "browse")     { $browseable = &gst_xml_get_state ($$tree[1]); }
-      elsif ($$tree[0] eq "public")     { $public     = &gst_xml_get_state ($$tree[1]); }
-      elsif ($$tree[0] eq "write")      { $writeable  = &gst_xml_get_state ($$tree[1]); }
+      if    ($$tree[0] eq "name")       { $name       = &gst_xml_get_word   ($$tree[1]); }
+      elsif ($$tree[0] eq "path")       { $path       = &gst_xml_get_pcdata ($$tree[1]); }
+      elsif ($$tree[0] eq "comment")    { $comment    = &gst_xml_get_text   ($$tree[1]); }
+      elsif ($$tree[0] eq "enabled")    { $enabled    = &gst_xml_get_state  ($$tree[1]); }
+      elsif ($$tree[0] eq "browse")     { $browseable = &gst_xml_get_state  ($$tree[1]); }
+      elsif ($$tree[0] eq "public")     { $public     = &gst_xml_get_state  ($$tree[1]); }
+      elsif ($$tree[0] eq "write")      { $writeable  = &gst_xml_get_state  ($$tree[1]); }
 
       shift @$tree;
       shift @$tree;
@@ -510,63 +510,116 @@ sub remove_shares_from_filesys_table
 
 # Configuration handling.
 
-sub get_installed_tools
+sub gst_installed_daemons_parse_table
 {
-  my $tools = {};
-  my $dist;
+  my %dist_map =
+    (
+     "redhat-5.2"   => "redhat-6.2",
+     "redhat-6.0"   => "redhat-6.2",
+     "redhat-6.1"   => "redhat-6.2",
+     "redhat-6.2"   => "redhat-6.2",
+     "redhat-7.0"   => "redhat-6.2",
+     "redhat-7.1"   => "redhat-6.2",
+     "redhat-7.2"   => "redhat-6.2",
+     "redhat-8.0"   => "redhat-6.2",
+     "redhat-9"     => "redhat-6.2",
+     "openna-1.0"   => "redhat-6.2",
+     "mandrake-7.1" => "redhat-6.2",
+     "mandrake-7.2" => "redhat-6.2",
+     "mandrake-9.0" => "redhat-6.2",
+     "mandrake-9.1" => "redhat-6.2",
+     "mandrake-9.2" => "redhat-6.2",
+     "mandrake-10.0" => "redhat-6.2",
+     "mandrake-10.1" => "redhat-6.2",
+     "blackpanther-4.0" => "redhat-6.2",
+     "conectiva-9"  => "redhat-6.2", 
+     "conectiva-10" => "redhat-6.2", 
+     "debian-2.2"   => "debian-2.2",
+     "debian-3.0"   => "debian-2.2",
+     "debian-sarge" => "debian-2.2",
+     "suse-7.0"     => "redhat-6.2",
+     "suse-9.0"     => "suse-9.0",
+     "suse-9.1"     => "suse-9.0",
+     "turbolinux-7.0"  => "redhat-6.2",
+     "pld-1.0"      => "redhat-6.2",
+     "pld-1.1"      => "redhat-6.2",
+     "pld-1.99"     => "redhat-6.2",
+     "fedora-1"     => "redhat-6.2",
+     "fedora-2"     => "redhat-6.2",
+     "specifix"     => "redhat-6.2",
+     "vine-3.0"     => "redhat-6.2",
+     "vine-3.1"     => "redhat-6.2",
+     "slackware-9.1.0" => "slackware-9.1.0",
+     "slackware-10.0.0" => "slackware-9.1.0",
+     "gentoo"       => "gentoo",
+     "freebsd-5"    => "freebsd-5",
+     "freebsd-6"    => "freebsd-5",
+    );
 
-  my $dist_table =
-  {
-    'redhat' =>
-    {
-      'smbserver' => 'smb',
-      'smbmount'  => 'smbmount',
-    },
+  my %dist_table =
+    (
+     "redhat-6.2" => {
+       table => [
+         [ "smbuse",        \&gst_service_sysv_get_status_any, "smbd", "nmbd" ],
+         [ "smbinstalled",  \&gst_service_sysv_installed,      "smb" ],
+         [ "nfsuse",        \&gst_service_sysv_get_status,     "rpc.nfsd" ],
+         [ "nfsinstalled",  \&gst_service_installed,           "nfsserver" ],
+       ]},
 
-    'debian' =>
-    {
-      'smbserver' => 'samba',
-      'smbmount'  => 'smbmount',
-    },
+     "debian-2.2" => {
+       table => [
+         [ "smbuse",        \&gst_service_sysv_get_status_any, "smbd", "nmbd" ],
+         [ "smbinstalled",  \&gst_service_sysv_installed,      "samba" ],
+         [ "nfsuse",        \&gst_service_sysv_get_status,     "rpc.nfsd" ],
+         [ "nfsinstalled",  \&gst_service_list_any_installed,  "nfs-user-server", "nfs-kernel-server" ],
+       ]},
 
-    'mandrake' =>
-    {
-      'smbserver' => 'smb',
-      'smbmount'  => 'smbmount',
-    },
+     "suse-9.0" => {
+       table => [
+         [ "smbuse",        \&gst_service_get_status,         "smb" ],
+         [ "smbinstalled",  \&gst_service_installed,          "smb" ],
+         [ "nfsuse",        \&gst_service_sysv_get_status,    "rpc.nfsd" ],
+         [ "nfsinstalled",  \&gst_service_installed,          "nfsserver" ],
+       ]},
 
-    'suse' =>
-    {
-      'smbserver' => 'smb',
-      'smbmount'  => 'smbmount',
-    },
+     "slackware-9.1.0" => {
+       table => [
+         [ "smbuse",        \&gst_service_sysv_get_status_any, "smbd", "nmbd" ],
+         [ "smbinstalled",  \&gst_service_installed,           "/etc/rc.d/rc.samba" ],
+         [ "nfsuse",        \&gst_service_sysv_get_status,     "rpc.nfsd" ],
+         [ "nfsinstalled",  \&gst_service_installed,           "/etc/rc.d/rc.nfsd" ],
+       ]},
 
-    'turbolinux' =>
-    {
-      'smbserver' => 'smb',
-      'smbmount'  => 'smbmount',
-    },
-  };
+     "gentoo" => {
+       table => [
+         [ "smbuse",        \&gst_service_gentoo_get_status,  "samba" ],
+         [ "smbinstalled",  \&gst_service_installed,          "samba" ],
+         [ "nfsuse",        \&gst_service_sysv_get_status,    "rpc.nfsd" ],
+         [ "nfsinstalled",  \&gst_service_installed,          "nfs" ],
+       ]},
 
-  foreach (keys (%$dist_table))
-  {
-    if ($tool->{'platform'} =~ /$_/)
-    {
-      $dist = $dist_table->{$_};
-      last;
-    }
-  }
+     "freebsd-5" => {
+       table => [
+         [ "smbuse",        \&gst_service_rcng_get_status, "smbd" ],
+         [ "smbinstalled",  \&gst_service_installed,       "samba" ],
+         # FIXME: How's the nfs stuff in FreeBSD?
+       ]},
+    );
 
-  unless ($dist)
-  {
-    &gst_debug_print_line ("get_installed_tools: error.");
-    return;
-  }
+  my $dist = $dist_map{$gst_dist};
+  return %{$dist_table{$dist}} if $dist;
 
-  $tools->{'smbserver'} = &gst_service_sysv_installed ($dist->{'smbserver'});
-  $tools->{'smbmount'} = &gst_file_locate_tool ($dist->{'smbmount'});
+  &gst_report ("platform_no_table", $gst_dist);
+  return undef;
+}
 
-  return $tools;
+sub get_installed_daemons
+{
+  my ($hash, %dist_attrib);
+
+  %dist_attrib = &gst_installed_daemons_parse_table ();
+  $hash = &gst_parse_from_table (undef, $dist_attrib{"table"});
+  return $hash;
 }
 
 #sub get_configured_imports
@@ -631,7 +684,7 @@ sub get
   my ($tools, $smb_config, $imports, $smb_exports, $nfs_exports);
   my $config = {};
 
-  $tools = &get_installed_tools ();
+  $tools = &get_installed_daemons ();
   $smb_settings = &get_smb_config ();
 #  $imports = &get_configured_imports ();
   ($smb_exports, $nfs_exports) = &get_configured_exports ();
