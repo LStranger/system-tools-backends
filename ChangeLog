@@ -1,3 +1,9 @@
+2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network.pl.in: (gst_network_slackware91_interface_activate_by_dev), 
+	  (gst_network_slackware91_interface_activate): added functions to
+	  activate and deactivate interfaces in slackware
+
 2004-01-06  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network-conf.in, network.pl.in: added partial support for slackware 

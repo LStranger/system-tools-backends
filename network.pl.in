@@ -1363,14 +1363,12 @@ sub gst_network_suse70_interface_activate_by_dev
   {
     &gst_report ("network_iface_deactivate", $hash{"dev"});
     &gst_debug_print_string ("\n\nifup $dev\n\n");
-    print STDERR ("\n\nifup $dev\n\n");
     return -1 if &gst_file_run_bg ("$network start $dev");
   }
   else
   {
     &gst_report ("network_iface_activate", $hash{"dev"});
     &gst_debug_print_string ("\n\nifdown $dev\n\n");
-    print STDERR ("\n\nifup $dev\n\n");
     return -1 if &gst_file_run ("$network stop $dev");
   }
   
@@ -1385,7 +1383,44 @@ sub gst_network_suse70_interface_activate
 
   if ($force || &gst_network_interface_changed ($hash, $old_hash))
   {
-      &gst_network_rh62_interface_activate_by_dev ($$hash{"dev"}, $enabled);
+    &gst_network_rh62_interface_activate_by_dev ($$hash{"dev"}, $enabled);
+  }
+}
+
+sub gst_network_slackware91_interface_activate_by_dev
+{
+  my ($dev, $enabled) = @_;
+
+  &gst_report_enter ();
+                                                                                                                                                             
+  if ($enabled)
+  {
+    &gst_report ("network_iface_activate", $dev);
+    return -1 if &gst_file_run ("ifconfig $dev up");
+  }
+  else
+  {
+    &gst_report ("network_iface_deactivate", $dev);
+    return -1 if &gst_file_run ("ifconfig $dev down");
+  }
+
+  &gst_report_leave ();
+  return 0;
+}
+
+sub gst_network_slackware91_interface_activate
+{
+  my ($hash, $old_hash, $enabled, $force) = @_;
+  my $dev = $$hash{"file"};
+
+  if ($force || &gst_network_interface_changed ($hash, $old_hash))
+  {
+    &gst_network_slackware91_interface_activate_by_dev ($dev, $enabled);
+
+    if (exists $$hash{"gateway"})
+    {
+      &gst_file_run ("route add default gw $$hash{\"gateway\"} ");
+    }
   }
 }
 
@@ -3762,7 +3797,7 @@ sub gst_network_get_interface_replace_table
 
    "slackware-9.1.0" =>
    {
-     iface_set    => \&gst_network_rh62_interface_activate,
+     iface_set    => \&gst_network_slackware91_interface_activate,
      iface_delete => \&gst_network_slackware91_interface_delete,
      ifaces_get => \&gst_network_slackware91_ifaces_get_existing,
      fn =>
