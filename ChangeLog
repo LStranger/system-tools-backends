@@ -31,6 +31,8 @@
 	(xst_run): The function that makes the backend enter interactive
 	mode, or executes a directive, if given with -d at the prompt.
 	
+	* *-conf.in: Changed the "main" stuff with new boilerplate.
+	
 2001-06-14  Hans Petter Jansson  <hpj@ximian.com>
 
 	* parse.pl.in (xst_parse_cap_line_clean): Implement.
