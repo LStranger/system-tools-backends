@@ -1,7 +1,10 @@
+2001-02-15  Arturo Espinosa  <arturo@ximian.com>
+
+	* xml.pl.in: substitute &amp; entity too.
+
 2001-02-13  Hans Petter Jansson  <hpj@ximian.com>
 
 	* gen-reportcode-list.sh: Look in *.pl.in as well.
-
 	* general.pl.in, platform.pl.in: Report fixups.
 
 2001-02-12  Arturo Espinosa Aldama  <arturo@ximian.com>

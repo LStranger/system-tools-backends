@@ -164,7 +164,7 @@ sub xst_xml_scan
 }
 
 
-@xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\\\'', "&quot;", '"' );
+@xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\\\'', "&quot;", '"', "&amp;", '&' );
 
 
 sub xst_xml_entities_to_plain
