@@ -1,3 +1,11 @@
+2001-08-23  Hans Petter Jansson  <hpj@ximian.com>
+
+	* report.pl.in: Add report messages for filesys mount/unmount.
+	Fix a random typo I noticed.
+
+	* filesys.pl.in (xst_filesys_mount_on): Add error reporting.
+	(xst_filesys_mount_off): Add error reporting.
+
 2001-08-22  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_probe_load): use xst_file_* instead of open.

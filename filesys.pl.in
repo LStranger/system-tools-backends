@@ -1030,20 +1030,42 @@ sub xst_filesys_fstab_replace  # filename, table
 sub xst_filesys_mount_on
 {
   my ($info) = @_;
-  my $fs;
+  my ($dev, $point, $fs);
+
+  $dev   = &xst_filesys_info_print_device ($info);
+  $point = &xst_filesys_info_get_point ($info);
+
+  &xst_report_enter ();
+  &xst_report ("filesys_mount", $dev, $point);
 
   $fs = &xst_filesys_info_get_fs ($info);
   $fs = "auto" if ($fs eq "");
 
-  &xst_file_run ("mount -t " . $fs . " -o " . &xst_filesys_info_print_options ($info) . " " .
-                 &xst_filesys_info_print_device ($info) . " " . &xst_filesys_info_get_point ($info));
+  if (&xst_file_run ("mount -t " . $fs . " -o " . &xst_filesys_info_print_options ($info) . " " .
+                     $dev . " " . $point))
+  {
+    &xst_report ("filesys_mount_failed", $dev, $point);
+  }
+
+  &xst_report_leave ();
 }
 
 sub xst_filesys_mount_off
 {
   my ($info) = @_;
+  my ($point);
 
-  &xst_file_run ("umount -f " . &xst_filesys_info_get_point ($info));
+  $point = &xst_filesys_info_get_point ($info);
+
+  &xst_report_enter ();
+  &xst_report ("filesys_unmount", $point);
+
+  if (&xst_file_run ("umount -f " . $point))
+  {
+    &xst_report ("filesys_unmount_failed", $dev, $point);
+  }
+
+  &xst_report_leave ();
 }
 
 sub xst_filesys_mount_sync_all
