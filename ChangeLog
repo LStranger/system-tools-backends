@@ -1,3 +1,13 @@
+2001-11-19  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* boot.pl.in (xst_boot_conf_get): removed 'root' global param
+	support. Include boot-grub.pl.in. Some function renaming and
+	repositioning.
+
+	* Makefile.am (PERLBODY): added boot-grub.pl.in
+
+	* boot-grub.pl.in: File that contains all grub-related code.
+
 2001-11-16  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot-conf.in: Added redhat-7.2 as a supported distro, but this is

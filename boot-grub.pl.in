@@ -1,0 +1,194 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Boot manager configurator: grub-related routines.
+#
+# Copyright (C) 2001 Ximian, Inc.
+#
+# Authors: Arturo Espinosa <arturo@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+$SCRIPTSDIR = "___scriptsdir___";
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
+
+require "$SCRIPTSDIR/general.pl$DOTIN";
+require "$SCRIPTSDIR/util.pl$DOTIN";
+require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/xml.pl$DOTIN";
+require "$SCRIPTSDIR/parse.pl$DOTIN";
+require "$SCRIPTSDIR/replace.pl$DOTIN";
+
+
+# Grub device notation converters.
+sub xst_boot_grub_linux2grub
+{
+  my ($grubdir, $dev) = @_;
+  my ($fd, $line, $res, $path, $drive, $part);
+
+  if ($dev =~ /(.*\/)?(fd[0-9]|hd|sd|scd)([a-z]*)([0-9]*)/)
+  {
+    $path = "/dev/";
+    $path = $1 if $1 ne undef;
+    $drive = $2 . $3;
+    $part = $4 - 1 if $4 ne undef;
+  }
+  else
+  {
+    &xst_report ("boot_grub_convert_failed", $dev);
+    return undef;
+  }
+  
+  $fd = &xst_file_open_read_from_names ("$grubdir/device.map");
+  $res = undef;
+  
+  while ($line = <$fd>)
+  {
+    chomp $line;
+    if ($line =~ /\(([^\)]+)\)[ \t]+$path$drive$/)
+    {
+	 $res = $1;
+	 last;
+    }
+  }
+  close $fd;
+  
+  if ($res eq undef)
+  {
+    &xst_report ("boot_grub_convert_failed", $dev);
+    return undef;
+  }
+
+  $res .= ",$part" if $part ne undef;
+  return $res;
+}
+
+sub xst_boot_grub_grub2linux
+{
+  my ($grubdir, $grubdev) = @_;
+  
+  ($drive, $part, @add) = split (',', $grubdev);
+  
+  $dev = &xst_parse_split_first_str ("$grubdir/device.map", "\\($drive\\)", "[ \t]+");
+
+  $dev .= $part + 1 if $part ne undef;
+  return $dev;
+}
+
+sub xst_boot_grub_clean_line
+{
+  my ($line) = @_;
+
+  chomp $line;
+  $line =~ s/\#.*//;
+    
+  $line =~ s/^[ \t]+//;
+  $line =~ s/[ \t]+$//;
+
+  return $line;
+}
+
+sub xst_boot_grub_get_entries
+{
+  my ($grubconf) = @_;
+  my ($fd, $line, @res);
+  
+  $fd = &xst_file_open_read_from_names ("$grubconf");
+  return undef if !$fd;
+  
+  while ($line = <$fd>)
+  {
+    $line = &xst_boot_grub_clean_line ($line);
+    push @res, $1 if $line =~ /^title[= \t][ \t]*(.*)$/;
+  }
+  close $fd;
+
+  return \@res;
+}
+
+sub xst_boot_grub_parse_cmd
+{
+  my ($grubconf, $cmd, $entry) = @_;
+  my ($line, $fd);
+
+  $fd = &xst_file_open_read_from_names ("$grubconf");
+  return undef if !$fd;
+  
+  if ($entry ne undef)
+  {
+    while ($line = <$fd>)
+    {
+	 last if $line =~ /^[ \t]+title[= \t][ \t]*$entry[ \t]+$/;
+    }
+  }
+
+  while ($line = <$fd>)
+  {
+    $line = &xst_boot_grub_clean_line ($line);
+    next if $line eq "";
+    last if $line =~ /^title[= \t]/;
+
+    if ($line =~ /^$cmd[= \t][ \t]*(.*)/)
+    {
+	 close $fd;
+	 return $1;
+    }
+  }
+  close $fd;
+  
+  return undef;
+}
+
+sub xst_boot_grub_parse_timeout
+{
+  my ($grubconf) = @_;
+  my ($timeout);
+
+  $timeout = &xst_boot_grub_parse_cmd ($grubconf, "timeout");
+  return $timeout * 10 if $timeout ne undef;
+  return 0;
+}
+
+sub xst_boot_grub_parse_prompt
+{
+  my ($grubconf) = @_;
+  my ($timeout);
+
+  $timeout = &xst_boot_grub_parse_timeout ($grubconf);
+  return 1 if $timeout;
+  return 0;
+}
+
+sub xst_boot_grub_parse_default
+{
+  my ($grubconf) = @_;
+  my ($default, $entries);
+
+  $entries = &xst_boot_grub_get_entries ($grubconf);
+  return undef if (scalar @$entries) == 0;
+
+  $default = &xst_boot_grub_parse_cmd ($grubconf, "default");
+  $default = 0 if $default eq undef;
+
+  return $$entries[$default];
+}
+
+1;
+

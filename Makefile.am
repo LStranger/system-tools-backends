@@ -17,6 +17,7 @@ BACKENDSBODY = \
 
 PERLBODY = \
 	boot.pl.in     \
+	boot-grub.pl.in \
 	debug.pl.in    \
 	file.pl.in     \
 	filesys.pl.in  \

@@ -337,6 +337,7 @@ sub xst_report
      "boot_lilo_failed"         => ["warn",  _("Failed to run lilo.")],
      "boot_lilo_success"        => ["info",  _("Succesfully executed lilo.")],
      "boot_conf_read_failed"    => ["error", _("Failed to open boot configuration file [%s].")],
+     "boot_grub_convert_failed" => ["error", _("Conversion of [%s] failed.")],
 
      "disks_fstab_add"          => ["info",  _("Adding [%s] to fstab.")],
      "disks_partition_probe"    => ["info",  _("Looking for partitions on [%s].")],

@@ -35,6 +35,7 @@ require "$SCRIPTSDIR/file.pl$DOTIN";
 require "$SCRIPTSDIR/xml.pl$DOTIN";
 require "$SCRIPTSDIR/parse.pl$DOTIN";
 require "$SCRIPTSDIR/replace.pl$DOTIN";
+require "$SCRIPTSDIR/boot-grub.pl$DOTIN";
 
 my @global_vars = qw (default prompt timeout append root);
 my @common_image_vars = qw (label);
@@ -63,7 +64,7 @@ sub xst_boot_known_var
   return &xst_item_is_in_list ($key, @$list);
 }
 
-sub xst_boot_parse_lilo_global_kw
+sub xst_boot_lilo_parse_global_kw
 {
   my ($file, $key) = @_;
   my $fd;
@@ -96,7 +97,7 @@ sub xst_boot_parse_lilo_global_kw
 }
 
 
-sub xst_boot_parse_lilo_global
+sub xst_boot_lilo_parse_global
 {
   my ($file, $key) = @_;
   my ($fd, $line, $re);
@@ -196,7 +197,7 @@ sub xst_boot_parse_images
 }
 
 
-sub xst_boot_replace_lilo_global_kw
+sub xst_boot_lilo_replace_global_kw
 {
   my ($file, $key) = @_;
   my ($buff, $i, $found);
@@ -245,7 +246,7 @@ sub xst_boot_replace_lilo_global_kw
   return &xst_file_buffer_save ($buff, $file);
 }
 
-sub xst_boot_replace_lilo_global
+sub xst_boot_lilo_replace_global
 {
   my ($file, $key, $val) = @_;
   my ($buff, $i, $found);
@@ -568,6 +569,65 @@ sub xst_boot_replace_from_table
 }
 
 
+sub xst_boot_conf_get
+{
+  my %dist_map =
+  (
+   "redhat-6.0" => "redhat-6.2",
+   "redhat-6.1" => "redhat-6.2",
+   "redhat-6.2" => "redhat-6.2",
+   "redhat-7.0" => "redhat-6.2",
+   "redhat-7.1" => "redhat-6.2",
+   "redhat-7.2" => "redhat-7.2",
+   
+   "mandrake-7.1" => "redhat-6.2",
+   "mandrake-7.2" => "redhat-7.2",
+   
+   "debian-2.2"   => "redhat-6.2",
+   "debian-woody" => "redhat-6.2",
+
+   "suse-7.0"     => "redhat-6.2",
+
+   "turbolinux-7.0" => "redhat-6.2"
+   );
+  
+  my %dist_tables =
+      (
+       "redhat-6.2" => {
+         fn => { 'LILO_CONF' => "/etc/lilo.conf" },
+         table => [
+                   [ 'timeout',  \&xst_boot_lilo_parse_global,    LILO_CONF, 'timeout' ],
+                   [ 'prompt',   \&xst_boot_lilo_parse_global_kw, LILO_CONF, 'prompt' ],
+                   [ 'default',  \&xst_boot_lilo_parse_global,    LILO_CONF, 'default' ],
+                   [ 'images',   \&xst_boot_lilo_parse_images,    LILO_CONF ],
+                   ] 
+                     },
+
+       "redhat-7.2" => {
+         fn => { 'GRUB_CONF' => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
+                 'GRUB_DEV'  => "/boot/grub/device.map"
+                   },
+         table => [
+                   [ 'timeout',  \&xst_boot_grub_parse_timeout,  GRUB_CONF ],
+                   [ 'prompt',   \&xst_boot_grub_parse_prompt,   GRUB_CONF ],
+                   [ 'default',  \&xst_boot_grub_parse_default,  GRUB_CONF ],
+                   [ 'images',   \&xst_boot_grub_parse_images,  [GRUB_CONF, GRUB_DEV] ],
+                   ] 
+                     }
+       );
+  
+  my $table = $dist_map{$main::xst_dist};
+  if (!$table)
+  {
+      &xst_report ("platform_no_table", $main::xst_dist);
+      return undef;
+  }
+  
+  return &xst_parse_from_table ($ {$dist_tables{$table}}{"fn"},
+                                $ {$dist_tables{$table}}{"table"});
+}
+
+
 sub xst_boot_conf_set
 {
   my $values_hash = $_[0];
@@ -596,10 +656,9 @@ sub xst_boot_conf_set
        "redhat-6.2" => {
          fn => { 'LILO_CONF' => "/etc/lilo.conf"},
          table => [
-                   [ 'prompt',   \&xst_boot_replace_lilo_global_kw,   'LILO_CONF', 'prompt' ],
-                   [ 'root',     \&xst_boot_replace_lilo_global,      'LILO_CONF', 'root' ],
-                   [ 'timeout',  \&xst_boot_replace_lilo_global,      'LILO_CONF', 'timeout' ],
-                   [ 'default',  \&xst_boot_replace_lilo_global,      'LILO_CONF', 'default' ],
+                   [ 'timeout',  \&xst_boot_lilo_replace_global,      'LILO_CONF', 'timeout' ],
+                   [ 'prompt',   \&xst_boot_lilo_replace_global_kw,   'LILO_CONF', 'prompt' ],
+                   [ 'default',  \&xst_boot_lilo_replace_global,      'LILO_CONF', 'default' ],
                    [ 'images',   \&xst_boot_conf_set_images, 'LILO_CONF', 'image' ],
                    ] 
                      }
@@ -617,66 +676,6 @@ sub xst_boot_conf_set
 
 }
 
-
-sub xst_boot_conf_get
-{
-  my %dist_map =
-  (
-   "redhat-6.0" => "redhat-6.2",
-   "redhat-6.1" => "redhat-6.2",
-   "redhat-6.2" => "redhat-6.2",
-   "redhat-7.0" => "redhat-6.2",
-   "redhat-7.1" => "redhat-6.2",
-   "redhat-7.2" => "redhat-7.2",
-   
-   "mandrake-7.1" => "redhat-6.2",
-   "mandrake-7.2" => "redhat-7.2",
-   
-   "debian-2.2"   => "redhat-6.2",
-   "debian-woody" => "redhat-6.2",
-
-   "suse-7.0"     => "redhat-6.2",
-
-   "turbolinux-7.0" => "redhat-6.2"
-   );
-  
-  my %dist_tables =
-      (
-       "redhat-6.2" => {
-         fn => { 'LILO_CONF' => "/etc/lilo.conf" },
-         table => [
-                   [ 'prompt',   \&xst_boot_parse_lilo_global_kw, LILO_CONF, 'prompt' ],
-                   [ 'root',     \&xst_boot_parse_lilo_global,    LILO_CONF, 'root' ],
-                   [ 'timeout',  \&xst_boot_parse_lilo_global,    LILO_CONF, 'timeout' ],
-                   [ 'default',  \&xst_boot_parse_lilo_global,    LILO_CONF, 'default' ],
-                   [ 'images',   \&xst_boot_parse_lilo_images,    LILO_CONF ],
-                   ] 
-                     },
-
-       "redhat-7.2" => {
-         fn => { 'GRUB_CONF' => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
-                 'GRUB_DEV'  => "/boot/grub/device.map"
-                   },
-         table => [
-                   [ 'prompt',   \&xst_boot_parse_grub_prompt,   GRUB_CONF ],
-                   [ 'root',     \&xst_boot_parse_grub_root,    [GRUB_CONF, GRUB_DEV] ],
-                   [ 'timeout',  \&xst_boot_parse_grub_timeout,  GRUB_CONF ],
-                   [ 'default',  \&xst_boot_parse_grub_default,  GRUB_CONF ],
-                   [ 'images',   \&xst_boot_parse_grub_images,  [GRUB_CONF, GRUB_DEV] ],
-                   ] 
-                     }
-       );
-  
-  my $table = $dist_map{$main::xst_dist};
-  if (!$table)
-  {
-      &xst_report ("platform_no_table", $main::xst_dist);
-      return undef;
-  }
-  
-  return &xst_parse_from_table ($ {$dist_tables{$table}}{"fn"},
-                                $ {$dist_tables{$table}}{"table"});
-}
 
 # ----------------------------------------------------------------------------
 # Fix functions.
