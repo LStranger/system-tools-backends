@@ -885,6 +885,20 @@ sub xst_network_conf_get
   return $hash;
 }
 
+sub xst_network_rh_get_smb_desc
+{
+  my ($file, $section, $var, $hostname) = @_;
+  my $val;
+
+  $val = &xst_parse_ini ($file, $section, $var);
+  if (($val =~ /^Samba Server/) && ($hostname ne undef))
+  {
+    return $hostname;
+  }
+
+  return $val;
+}
+
 sub xst_network_rh62_get_file
 {
   my $dev = $_[0];
@@ -1929,7 +1943,7 @@ sub xst_network_get_parse_table
 		    [ "hostmatch",     \&xst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
 		    [ "statichost",    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
 		    [ "workgroup",     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
-		    [ "description",   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+		    [ "description",   \&xst_network_rh_get_smb_desc, SMB_CONF,   "global", "server string", "%hostname%" ],
 		    [ "winsserver",    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
 		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
         [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
@@ -1965,7 +1979,7 @@ sub xst_network_get_parse_table
 		    [ "hostmatch",     \&xst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
 		    [ "statichost",    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
 		    [ "workgroup",     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
-		    [ "description",   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+		    [ "description",   \&xst_network_rh_get_smb_desc, SMB_CONF,   "global", "server string", "%hostname%" ],
 		    [ "winsserver",    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
 		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
         [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
