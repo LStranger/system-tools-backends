@@ -164,6 +164,8 @@ sub gst_network_get_broadcast_ping_cmd
        "debian-sarge" => "debian-2.2",
        "mandrake-7.1" => "debian-2.2",
        "mandrake-7.2" => "debian-2.2",
+       "mandrake-9.0" => "debian-2.2",
+       "mandrake-9.1" => "debian-2.2",
        "suse-7.0"     => "debian-2.2", # FIXME: assumed that only redhat distros use -b.
        "pld-1.0"      => "redhat-6.2"
        );
@@ -1067,6 +1069,8 @@ sub gst_network_get_file
     "redhat-9"     => \&gst_network_rh72_get_file,
 	  "mandrake-7.2" => \&gst_network_rh62_get_file,
 		"mandrake-7.1" => \&gst_network_rh62_get_file,
+		"mandrake-9.0" => \&gst_network_rh62_get_file,
+		"mandrake-9.1" => \&gst_network_rh62_get_file,
     "debian-2.2"   => \&gst_network_deb22_get_file,
     "debian-woody" => \&gst_network_deb22_get_file,
     "debian-sarge" => \&gst_network_deb22_get_file,
@@ -1249,13 +1253,11 @@ sub gst_network_rh62_interface_activate_by_dev
   if ($enabled)
   {
     &gst_report ("network_iface_activate", $dev);
-    &gst_debug_print_string ("\n\nifup $dev\n\n");
     return -1 if &gst_file_run_bg ("ifup $dev");
   }
   else
   {
     &gst_report ("network_iface_deactivate", $dev);
-    &gst_debug_print_string ("\n\nifdown $dev\n\n");
     return -1 if &gst_file_run ("ifdown $dev");
   }
   
@@ -2122,6 +2124,8 @@ sub gst_network_ensure_loopback_interface
     "redhat-9"     => "",
 	  "mandrake-7.1" => "lo",
 	  "mandrake-7.2" => "lo",
+	  "mandrake-9.0" => "lo",
+	  "mandrake-9.1" => "lo",
 	  "debian-2.2"   => "lo",
     "debian-woody" => "lo",
     "debian-sarge" => "lo",
@@ -2223,6 +2227,8 @@ sub gst_network_get_parse_table
     "redhat-9"     => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
 	  "mandrake-7.2" => "redhat-6.2",
+    "mandrake-9.0" => "redhat-7.0",
+    "mandrake-9.1" => "redhat-7.0",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-2.2",
     "debian-sarge" => "debian-2.2",
@@ -2484,6 +2490,8 @@ sub gst_network_get_interface_parse_table
     "redhat-9"     => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
     "mandrake-7.2" => "redhat-6.2",
+    "mandrake-9.0" => "redhat-6.2",
+    "mandrake-9.1" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-woody",
     "debian-sarge" => "debian-woody",
@@ -2804,6 +2812,8 @@ sub gst_network_get_replace_table
     "redhat-9"     => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
 	  "mandrake-7.2" => "redhat-6.2",
+	  "mandrake-9.0" => "redhat-7.0",
+	  "mandrake-9.1" => "redhat-7.0",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-2.2",
     "debian-sarge" => "debian-2.2",
@@ -3058,6 +3068,8 @@ sub gst_network_get_interface_replace_table
     "redhat-9"     => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
     "mandrake-7.2" => "redhat-6.2",
+    "mandrake-9.0" => "redhat-6.2",
+    "mandrake-9.1" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-woody",
     "debian-sarge" => "debian-woody",

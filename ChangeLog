@@ -1,3 +1,14 @@
+2003-09-15  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* users-conf.in: added Mandrake 9.X support for the users tool
+	* time-conf.in: added Mandrake 9.X support for the time tool
+	* service.pl.in, services-conf.in: added Mandrake 9.X support for the
+	  services tool
+	* network.pl.in, network-conf.in: added Mandrake 9.X almost complete
+	  support for the network tool, configuring a PPP interface seems 
+	  to be curiously broken at least in mandrake 9.0, I need to find 
+	  out what's the problem.
+
 2003-09-13  Eduardo Garcia Cebollero <kiwnix@yahoo.es>
 
 	* *.pl.in, *-conf.in, configure.in, Makefile.am, Makefile.in:
