@@ -159,7 +159,11 @@ sub gst_network_enable_iface
 
   if ($bootproto eq "dhcp")
   {
-    if (&gst_file_locate_tool ("dhclient"))
+    if (&gst_file_locate_tool ("dhclient3"))
+    {
+      $command = "dhclient3 -pf /var/run/dhclient.$dev.pid $dev";
+    }
+    elsif (&gst_file_locate_tool ("dhclient"))
     {
       $command = "dhclient -pf /var/run/dhclient.$dev.pid -e $dev";
     }

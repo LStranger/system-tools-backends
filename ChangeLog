@@ -1,3 +1,8 @@
+2005-03-25  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+       * network.pl.in: Fixed a bug when dealing with dhclient v3, the -e
+       	option doesn't make the same than in dhclient v2.
+
 2005-03-15  Pawan Chitrakar  <pawan@nplinux.org>
 
 	* configure.in: Added ne in ALL_LINGUAS
