@@ -35,6 +35,7 @@ perl_libs = \
 	partition.pl \
 	platform.pl  \
 	print.pl     \
+	process.pl   \
 	replace.pl   \
 	report.pl    \
 	service.pl   \

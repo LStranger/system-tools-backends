@@ -27,6 +27,7 @@ partition.pl.in
 platform.pl.in
 print-conf.in
 print.pl.in
+process.pl.in
 removable-media.pl.in
 replace.pl.in
 report.pl.in

@@ -1,3 +1,8 @@
+2005-02-23  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* process.pl.in: added for basic process management
+	* Makefile.am, configure.in: added process.pl
+
 2005-02-13  Michael Vogt  <mvogt@acm.org>
 
 	* network.pl.in (gst_network_enable_isdn): made it really work with

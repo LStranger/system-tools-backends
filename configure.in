@@ -74,6 +74,7 @@ parse.pl
 partition.pl
 platform.pl
 print.pl
+process.pl
 removable-media.pl
 replace.pl
 report.pl
