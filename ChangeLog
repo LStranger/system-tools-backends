@@ -1,3 +1,8 @@
+2004-04-11  Carlos García Campos <elkalmail@yahoo.es>
+
+	* disks-conf.in: added <mounted> and <point> tags for data and mixed
+	cdrom
+
 2004-04-10  Carlos García Campos <elkalmail@yahoo.es>
 
 	* disks-conf.in: sorts devices by "media" to send it sorted to the

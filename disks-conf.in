@@ -1430,7 +1430,23 @@ sub get_removable_storage_info
 	 &gst_xml_print_line ("<type-content>" . "mixed"  . "</type-content>\n");
       } else {
 	 &gst_xml_print_line ("<type-content>" . "data"  . "</type-content>\n");
+	 #if (`mount | grep $device`) {
+	    #   &gst_xml_print_state_tag ("mounted", 1);
+	    #my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
+	    #if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+	    #} else {
+	       #&gst_xml_print_state_tag ("mounted", 0);
+	       #}
       }
+      
+      if (`mount | grep $device`) {
+	 &gst_xml_print_state_tag ("mounted", 1);
+	 my ($point) = `mount | grep $device` =~ /^$device on (.*) type .*$/;
+	 if ($point) { &gst_xml_print_line ("<point>" . $point . "</point>\n"); }
+      } else {
+	 &gst_xml_print_state_tag ("mounted", 0);
+      }
+
    } else {
       &gst_xml_print_line ("<type-content>" . "audio"  . "</type-content>\n");
    }
