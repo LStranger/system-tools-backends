@@ -1,3 +1,7 @@
+2005-04-03  Steve Murphy  <murf@e-tools.com>
+
+        * configure.in: Added "rw" to ALL_LINGUAS (again, sorry!). Must have glitched or stroked or something.
+
 2005-04-04  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* configure.in: Removed "rw" from ALL_LINGUAS, it seems it wasn't
