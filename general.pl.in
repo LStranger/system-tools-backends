@@ -304,8 +304,9 @@ sub gst_init
   print "\n";
 
   # Set the output autoflush.
-  $| = 1;
-  
+  $old_fh = select (STDOUT); $| = 1; select ($old_fh);
+  $old_fh = select (STDERR); $| = 1; select ($old_fh);
+
   $tool{"is_tool"} = 1;
 
   # Set backend descriptors.
@@ -315,7 +316,7 @@ sub gst_init
   $tool{"description"} = $description;
   $tool{"directives"} = $directives;
   
-  &textdomain ("ximian-setup-tools");
+  &textdomain ("gnome-system-tools");
   &gst_merge_std_directives (\%tool);
 
   # Parse arguments.

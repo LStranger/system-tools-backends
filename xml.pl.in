@@ -496,12 +496,14 @@ sub gst_xml_read_stdin
 {
   my ($i, $doc);
   
-  while (! ($i =~ /^<!-- GST: end of request -->$/))
-  {
-    $doc .= $i;
+  do {
     $i = <STDIN>;
-    last if $i eq undef;
-  }
+
+    if ($i ne undef)
+    {
+      $doc .=$i;
+    }
+  } while (! ($i =~ /^<!-- GST: end of request -->$/));
 
   return $doc;
 }
