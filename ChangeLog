@@ -20,6 +20,8 @@
 
 	* network.pl.in (xst_network_get_replace_table): Use the
 	new keyword for SuSE's suseconfig run.
+	(xst_network_get_interface_parse_table): Back to editting
+	/etc/sysconfig/network-scripts. :)
 
 	* replace.pl.in (xst_replace_run_entry): New "_always_" key
 	forces call of the function.

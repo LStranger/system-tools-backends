@@ -2265,7 +2265,8 @@ sub xst_network_get_interface_parse_table
 	    fn =>
 	    {
         IFCFG => ["/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
-                  "/etc/sysconfig/networking/devices/ifcfg-#iface#"],
+                  "/etc/sysconfig/networking/devices/ifcfg-#iface#",
+                  "/etc/sysconfig/network-scripts/ifcfg-#iface#"],
         CHAT  => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE => "#iface#",
         PAP   => "/etc/ppp/pap-secrets",
@@ -2740,7 +2741,8 @@ sub xst_network_get_interface_replace_table
       ifaces_get   => \&xst_network_sysconfig_rh72_ifaces_get_existing,
       fn =>
 	    {
-        IFCFG => ["/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
+        IFCFG => ["/etc/sysconfig/network-scripts/ifcfg-#iface#",
+                  "/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
                   "/etc/sysconfig/networking/devices/ifcfg-#iface#"],
         CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE  => "#iface#",
