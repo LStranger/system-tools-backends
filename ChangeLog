@@ -1,3 +1,8 @@
+2004-03-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network.pl.in (gst_network_slackware91_ifaces_get_existing): little
+	  improvement when parsing unknown interfaces
+
 2004-03-27  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* parse.pl.in: little parse improvement, now it's able to parse things

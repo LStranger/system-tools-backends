@@ -652,7 +652,7 @@ sub gst_network_slackware91_ifaces_get_existing
 
   while ($i = <$fd>)
   {
-    if ($i =~ /^[ \t]*(IPADDR|USE_DHCP)\[(\S+)\][ \t]*=[ \t]*"(.*)"/)
+    if ($i =~ /^[ \t]*(IPADDR|USE_DHCP)\[([0-9]+)\][ \t]*=[ \t]*"(.*)"/)
     {
       push @ret, "eth$2" if ($3 ne "");
     }
