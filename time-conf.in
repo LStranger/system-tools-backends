@@ -161,29 +161,29 @@ sub xml_print
   my $h = $_[0];
   my @sync;
 
-  @scalar_keys = (year, month, monthday, hour, minute, second, timezone);
+  @scalar_keys = (timezone);
   $sync = $$h{"sync"};
   
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE time []>\n\n";
   print "<time>\n";
   &xst_xml_enter ();
-
   &xst_xml_vspace ();
+
   &xst_xml_print_hash ($$h{"local_time"}, "local_time");
   &xst_xml_vspace ();
   
-  &xst_xml_vspace ();
   &xst_xml_print ("<sync active='" . &xst_print_boolean_yesno ($sync_active) . "'>\n");
-  
   &xst_xml_enter ();
   foreach $server (@$sync)
   {
     &xst_xml_print ("<server>$server</server>\n");
   }
   &xst_xml_leave ();
-  
   &xst_xml_print ("</sync>\n");
+  &xst_xml_vspace ();
+
+  &xst_xml_print_scalars ($h, @scalar_keys);
   &xst_xml_vspace ();
   
   &xst_xml_leave ();

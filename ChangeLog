@@ -10,6 +10,8 @@
 	Not tested yet.
 	* time-conf.in (time_get_local_time): bad order in scalar
 	assignment. fixed.
+	* time-conf.in (xml_print): mistakingly deleted timezone
+	printing. fixed.
 	
 2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
