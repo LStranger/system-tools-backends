@@ -1,3 +1,11 @@
+2001-02-25  Hans Petter Jansson  <hpj@ximian.com>
+
+	* general.pl.in (xst_begin): Don't break if platform unknown -
+	  let xst_platform_ensure_supported () handle that.
+
+	* platform.pl.in (xst_platform_ensure_supported): Make
+	  unknown-platform and unsupported-platform scenarios similar.
+
 2001-02-24  Arturo Espinosa  <arturo@ximian.com>
 
 	* network.pl.in: peerdns support.

@@ -211,10 +211,21 @@ sub xst_platform_ensure_supported
     &xst_report_info (96, "Supported: [$platform]");
   }
 
-  &xst_report_fatal (98, "Your platform is not supported");
-  if (!$xst_reporting && !$xst_verbose)
+  if ($xst_dist)
   {
-    print STDERR "Fatal error: Your platform is not supported.\n";
+    &xst_report_fatal (98, "Your platform is not supported");
+    if (!$xst_reporting && !$xst_verbose)
+    {
+      print STDERR "Fatal error: Your platform is not supported.\n";
+    }
+  }
+  else
+  {
+    &xst_report_fatal (99, "Unable to determine host platform");
+    if (!$xst_reporting && !$xst_verbose)
+    {
+      print STDERR "Fatal error: Unable to determine host platform.\n";
+    }
   }
 
   &xst_end ();

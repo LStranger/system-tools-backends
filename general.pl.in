@@ -138,12 +138,6 @@ sub xst_begin
   {
     &xst_report_info (95, "Configuring for platform [$xst_dist]");
   }
-  else
-  {
-    &xst_report_fatal (99, "Unable to determine host platform");
-    &xst_end ();
-    exit (2);
-  }
 }
 
 
