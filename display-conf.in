@@ -37,7 +37,7 @@ require "___scriptsdir___/x.pl";
 
 $name = "Display";
 $version = "0.1.0";
-@platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1);
+@platforms = qw(redhat-7.0 redhat-7.1);
 
 $description =<<"end_of_description;";
        Configures XFree86 verion 4.
@@ -47,13 +47,12 @@ end_of_description;
 
 $platmap =
 {
-  "redhat-6.2"   => XFree4,
   "redhat-7.0"   => XFree4,
   "redhat-7.1"   => XFree4,
 };
 
 $filemap = {
-  XFree4 => "/etc/X11/XF86Config",
+  XFree4 => "/etc/X11/XF86Config-4",
 };
 
 sub distro_file
@@ -115,6 +114,8 @@ my %sections = (
                     ( ModelName,   \&general_parse_kw ),
                     ( HorizSync,   \&parse_range_hz   ),
                     ( VertRefresh, \&parse_range_hz   ),
+                    ( Mode,        \&parse_modeline   ),
+                    ( ModeLine,    \&parse_modeline   ),
                   },
                   options => [(DPMS, SyncOnGreen)],
                 },

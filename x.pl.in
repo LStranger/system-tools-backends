@@ -195,7 +195,7 @@ sub parse_range_hz ($)
 # name as key and option value as val.
 sub parse_option ($)
 {
-  my ($line) = @_;
+  my $line = shift;
   my ($name, $value);
   my ($val, $bool);
 
@@ -227,6 +227,25 @@ sub parse_option ($)
   bless [ $name, $val ], "XstXOption";
 }
 
+sub parse_modeline ($)
+{
+  my $line = shift;
+  my (@array);
+
+  shift @$line; # Dump "ModeLine" keyword.  
+  my $name = shift @$line;
+
+  $name =~ s/\"//g;
+  push @array, $name;
+
+  # TODO: make it work with "Mode"s and multiline ModeLines
+
+  foreach (@$line) {
+    push @array, $_;
+  }
+  
+  bless \@array, "XstXModeLine";
+}
 
 sub section2config ($$$)
 {
@@ -258,21 +277,28 @@ sub add2section ($$)
 
   elsif ($type eq "XstXKeywordList") {    
     push @ {$dest->{$$source[0]}}, $$source[1];
-    bless $dest->{$$source[0]}, "XstXKeywordList";
+    bless $dest->{$$source[0]}, $type;
   }
 
   elsif ($type eq "XstXOption") {
     $dest->{'Option'}{$$source[0]} = $$source[1];
-    bless $dest->{'Option'}, "XstXOption";
+    bless $dest->{'Option'}, $type;
   }
 
   elsif ($type eq "XstXRange") {
     my $kw = shift @$source;
     
     foreach (@$source) { push @{$dest->{$kw}}, $_; }
-    bless $dest->{$kw}, "XstXRange";
+    bless $dest->{$kw}, $type;
   }
-    
+
+  elsif ($type eq "XstXModeLine") {
+    my ($name) = shift @$source;
+
+    foreach (@$source) { push @{$dest->{'ModeLine'}{$name}}, $_; }
+#    bless $dest->{'ModeLine'}{$name}, $type;
+  }    
+  
   else {
     # TODO: give warning
     1;
