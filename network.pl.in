@@ -27,7 +27,7 @@
 use Socket;
 
 
-$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "___scriptsdir___";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 {
     $SCRIPTSDIR = ".";

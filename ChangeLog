@@ -1,3 +1,8 @@
+Tue Sep 11 20:48:25 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* *.pl.in: changed SCRIPTSDIR that was broken in principle,
+	although in practice didn't matter.
+
 2001-09-13  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* ishare.pl.in: Too many changes to ennumerate: a general

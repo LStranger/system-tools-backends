@@ -28,7 +28,7 @@
 # --- Utilities for strings, arrays and other data structures --- #
 
 
-$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "___scriptsdir___";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 {
     $SCRIPTSDIR = ".";

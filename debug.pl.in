@@ -24,7 +24,7 @@
 use File::Path;
 use File::Copy;
 
-$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "___scriptsdir___";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 {
     $SCRIPTSDIR = ".";
