@@ -17,7 +17,7 @@
   </annotation>
   
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
 
   <element type="sharesType" name="shares"/>
 
@@ -39,10 +39,10 @@
       <element type="importtypeType" name="import"/>
       <element type="string"         name="host"/>
       <element type="string"         name="path"/>
-      <element type="xstFilePath"    name="point"/>
-      <element type="xstBoolState"   name="listed"/>
-      <element type="xstBoolState"   name="mounted"/>
-      <element type="xstBoolState"   name="detected"/>
+      <element type="gstFilePath"    name="point"/>
+      <element type="gstBoolState"   name="listed"/>
+      <element type="gstBoolState"   name="mounted"/>
+      <element type="gstBoolState"   name="detected"/>
     </sequence>
   </complexType>
 

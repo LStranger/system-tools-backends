@@ -65,13 +65,13 @@ end_of_desc;
 
 # Helper functions
 
-sub xst_mouse_conf_get
+sub gst_mouse_conf_get
 {
     my %hash;
     my $config_file;
     local *CONFIG_FILE;
 
-    $config_file = &xst_file_open_read_from_names (@conf_files);
+    $config_file = &gst_file_open_read_from_names (@conf_files);
     if (not $config_file) { return; }
     *CONFIG_FILE = $config_file;
 
@@ -108,14 +108,14 @@ sub xml_print ()
     my @tags = ('Protocol', 'Device', 'BaudRate', 'SampleRate', 'Emulate3Buttons', 'Emulate3Timeout', 'ChordMiddle');
     my $i;
 
-    &xst_xml_print_begin ();
+    &gst_xml_print_begin ();
     
     while ($i = shift @tags) {
-        if (exists $$h{$i} && $$h{$i} eq "on") { xst_xml_print_line ("<$i/>\n"); } 
-        elsif (exists $$h{$i}) { xst_xml_print_line ("<$i>$$h{$i}</$i>\n"); }
+        if (exists $$h{$i} && $$h{$i} eq "on") { gst_xml_print_line ("<$i/>\n"); } 
+        elsif (exists $$h{$i}) { gst_xml_print_line ("<$i>$$h{$i}</$i>\n"); }
     }
     
-    &xst_xml_print_end ();
+    &gst_xml_print_end ();
 }
 
 
@@ -129,7 +129,7 @@ sub set
 {
     print "Not implemented yet! \n";
     
-    &xst_report_end ();
+    &gst_report_end ();
     
 }
 
@@ -140,10 +140,10 @@ sub get
 {
     my $hash;
     
-    $hash = &xst_mouse_conf_get ();
+    $hash = &gst_mouse_conf_get ();
     
     &xml_print ($hash);
-    &xst_report_end ();
+    &gst_report_end ();
 
 }
 
@@ -154,13 +154,13 @@ sub filter
 {
     print "Not implemented yet! \n";
     
-    &xst_report_end ();
+    &gst_report_end ();
 }
 
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"    => [ \&get,    [], "" ],
@@ -168,6 +168,6 @@ $directives = {
   "filter" => [ \&filter, [], "" ]
     };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

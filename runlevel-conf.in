@@ -60,13 +60,13 @@ end_of_description;
 sub xml_parse
 {
   my ($tree, %hash, $elem);
-  $tree = &xst_xml_scan ();
+  $tree = &gst_xml_scan ();
 
   # Walk the tree recursively and extract configuration parameters.
   while ($elem = shift @$tree)
   {
     if   ($elem eq "sysv") { &xml_parse_sysv (shift @$tree, \%hash); }
-    else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   return (\%hash);
@@ -81,9 +81,9 @@ sub xml_parse_sysv
 
   while ($elem = shift @$tree)
   {
-    if ($elem eq "runlevel") { $$hash{"runlevel"} = &xst_xml_get_pcdata (shift @$tree); }
+    if ($elem eq "runlevel") { $$hash{"runlevel"} = &gst_xml_get_pcdata (shift @$tree); }
 	elsif ($elem eq "services") { push @$services, &xml_parse_services (shift @$tree); }
-	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"services"} = $services;
@@ -99,7 +99,7 @@ sub xml_parse_services
   while ($elem = shift @$tree)
   {
     if ($elem eq "service") { push @$service, &xml_parse_service (shift @$tree); }
-	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"service"} = $service unless scalar @$service == 0;
@@ -116,12 +116,12 @@ sub xml_parse_service
   while ($elem = shift @$tree)
   {
     if ($elem eq "actions") { push @$actions, &xml_parse_actions (shift @$tree); }
-	elsif ($elem eq "name") { $$hash{"name"} = &xst_xml_get_pcdata (shift @$tree); }
-	elsif ($elem eq "description") { $$hash{"description"} = &xst_xml_get_pcdata (shift @$tree); }
-	elsif ($elem eq "priority") { $$hash{"priority"} = &xst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "name") { $$hash{"name"} = &gst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "description") { $$hash{"description"} = &gst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "priority") { $$hash{"priority"} = &gst_xml_get_pcdata (shift @$tree); }
 	elsif ($elem eq "runlevels") { push @$runlevels, &xml_parse_runlevels (shift @$tree); }
-	elsif ($elem eq "script") { $$hash{"script"} = &xst_xml_get_pcdata (shift @$tree); }
-	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+	elsif ($elem eq "script") { $$hash{"script"} = &gst_xml_get_pcdata (shift @$tree); }
+	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
   
   $$hash{"actions"} = $actions unless $actions eq undef;
@@ -139,8 +139,8 @@ sub xml_parse_actions
 
   while ($elem = shift @$tree)
   {
-    if ($elem eq "action") { push @$action, &xst_xml_get_pcdata (shift @$tree); }
-	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    if ($elem eq "action") { push @$action, &gst_xml_get_pcdata (shift @$tree); }
+	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
   
   if (scalar @$action != 0)
@@ -160,7 +160,7 @@ sub xml_parse_runlevels
   while ($elem = shift @$tree)
   {
     if ($elem eq "runlevel") { push @$runlevel, &xml_parse_single_runlevel (shift @$tree); }
-	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   if (scalar @$runlevel != 0)
@@ -180,9 +180,9 @@ sub xml_parse_single_runlevel
   
   while ($elem = shift @$tree)
   {
-    if ($elem eq "number") { $number = &xst_xml_get_pcdata (shift @$tree); }
-	elsif ($elem eq "action") { $action = &xst_xml_get_pcdata (shift @$tree); }
-	else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    if ($elem eq "number") { $number = &gst_xml_get_pcdata (shift @$tree); }
+	elsif ($elem eq "action") { $action = &gst_xml_get_pcdata (shift @$tree); }
+	else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
   
   return { "number" => $number,
@@ -195,10 +195,10 @@ sub xml_print
 {
   my ($h) = @_;
 
-  &xst_xml_print_begin ();
-  &xst_xml_print_structure ($$h{"runlevel"}, "runlevel");
-  &xst_xml_print_structure ($$h{"services"}, "services");
-  &xst_xml_print_end ();
+  &gst_xml_print_begin ();
+  &gst_xml_print_structure ($$h{"runlevel"}, "runlevel");
+  &gst_xml_print_structure ($$h{"services"}, "services");
+  &gst_xml_print_end ();
 }
 
 
@@ -208,10 +208,10 @@ sub get
 {
   my %hash;
 
-  $hash{"services"} = &xst_service_sysv_get_services ();
-  $hash{"runlevel"} = &xst_service_sysv_get_default_runlevel ();
+  $hash{"services"} = &gst_service_sysv_get_services ();
+  $hash{"runlevel"} = &gst_service_sysv_get_default_runlevel ();
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print (\%hash);
 }
 
@@ -220,12 +220,12 @@ sub set
   my %hash;
 	
   $hash = xml_parse ();
-  &xst_report_end ();
+  &gst_report_end ();
 	
 	
   if ($hash)
   {
-    &xst_service_sysv_set_conf ($hash);
+    &gst_service_sysv_set_conf ($hash);
   }
 }
 
@@ -234,7 +234,7 @@ sub filter
 {
   my $hash = &xml_parse ();
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -244,32 +244,32 @@ sub service_parameters
   my ($tool, $service) = @_;
   my ($parameters);
 
-  $parameters = &xst_service_get_service_parameters ($service);
-  &xst_report_end ();
+  $parameters = &gst_service_get_service_parameters ($service);
+  &gst_report_end ();
   
-  &xst_xml_print_begin ("service_description");
-  &xst_xml_print_structure ($parameters, "parameter");
-  &xst_xml_print_end ("service_description");  
+  &gst_xml_print_begin ("service_description");
+  &gst_xml_print_structure ($parameters, "parameter");
+  &gst_xml_print_end ("service_description");  
 }
 
 # --- throw_service: throws a service with a parameter --- #
 sub throw_service
 {
   my ($tool, $service, $parameter) = @_;
-  my ($rcd_path, $initd_path, $relative_path) = &xst_service_sysv_get_paths ();
+  my ($rcd_path, $initd_path, $relative_path) = &gst_service_sysv_get_paths ();
 
-  xst_file_run ("$initd_path/$service $parameter >/dev/null 2>/dev/null");
-  &xst_report_end ();
+  gst_file_run ("$initd_path/$service $parameter >/dev/null 2>/dev/null");
+  &gst_report_end ();
 
   #FIXME: we could return if the call has successed of failed
-  &xst_xml_print_begin ("throw_service");
-  &xst_xml_print_end ("throw_service");
+  &gst_xml_print_begin ("throw_service");
+  &gst_xml_print_end ("throw_service");
 }
 
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"                => [ \&get,    [], "" ],
@@ -279,6 +279,6 @@ $directives = {
   "throw_service"      => [ \&throw_service, ["service", "parameter"], "Throws a service with a parameter (start, stop...)" ]
   };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

@@ -17,14 +17,14 @@
   </annotation>
   
   <!-- An empty tag -->
-  <simpleType name="xstKeyword"></simpleType>
+  <simpleType name="gstKeyword"></simpleType>
   
   <!-- Boolean value, empty content, true/false state attribute -->
-  <complexType name="xstBoolState">
-    <attribute name="state" type="xstTrueFalse" use="required"/>
+  <complexType name="gstBoolState">
+    <attribute name="state" type="gstTrueFalse" use="required"/>
   </complexType>
   
-  <simpleType name="xstTrueFalse">
+  <simpleType name="gstTrueFalse">
     <restriction base="string">
 	 <enumeration value="true"/>
 	 <enumeration value="false"/>
@@ -32,7 +32,7 @@
   </simpleType>
   
   <!-- Another boolean value, restricted to 1 or 0 -->
-  <simpleType name="xstBool">
+  <simpleType name="gstBool">
     <restriction base="string">
 	 <enumeration value="0"/>
 	 <enumeration value="1"/>
@@ -40,7 +40,7 @@
   </simpleType>
     
   <!-- An absolute path to a file, or similar -->
-  <simpleType name="xstFilePath">
+  <simpleType name="gstFilePath">
     <restriction base="string">
 	 <pattern value="^/.*">
     </restriction>
@@ -48,40 +48,40 @@
 
   <!-- This checks for a value of the form
        0-255.0-255.0-255.0-255 for IPv4: believe me. -->
-  <simpleType name="xstIPv4">
+  <simpleType name="gstIPv4">
     <restriction base="string">
       <pattern value="^((1[0-9][0-9]|2[0-4][0-9]|25[0-5]|0?[0-9][0-9]|[0-9])\.){3}(1[0-9][0-9]|2[0-4][0-9]|25[0-5]|0?[0-9][0-9]|[0-9])$"/>
     </restriction>
   </simpleType>
 
   <!-- IPv6: an aptempt -->
-  <simpleType name="xstIPv6">
+  <simpleType name="gstIPv6">
     <restriction base="string">
       <pattern value="^([0-9a-f][0-9a-f]::)+$"/>
     </restriction>
   </simpleType>
 
   <!-- An IP address, either v.4 or v.6 -->
-  <simpleType name="xstIP">
-    <union memberTypes="xstIPv4 xstIPv6"/>
+  <simpleType name="gstIP">
+    <union memberTypes="gstIPv4 xstIPv6"/>
   </simpleType>
   
   <!-- A hostname (warpig.hello.com, blah-blah, runes.com.mx.) -->
-  <simpleType name="xstHostname">
+  <simpleType name="gstHostname">
     <restriction base="string">
       <pattern value="^([a-zA-Z0-9_-]+\.?)+$"/>
     </restriction>
   </simpleType>
   
   <!-- An e-mail address -->
-  <simpleType name="xstEmail">
+  <simpleType name="gstEmail">
     <restriction base="string">
       <pattern value="^[A-Za-z0-9_]+@([a-zA-Z0-9_-]+\.?)+$"/>
     </restriction>
   </simpleType>
 
   <!-- TODO: an URL type -->
-  <simpleType name="xstUrl">
+  <simpleType name="gstUrl">
     <restriction base="string">
       <!-- could start with sth like this:
       <pattern value="^[a-zA-Z0-9]+://([A-Za-z0-9_]+:[^@]*@)?([a-zA-Z0-9_-]+\.?)+(:[0-9]+)?/"/>
@@ -91,7 +91,7 @@
 
   <!-- A Mime-type. Based on Potato's /etc/mime.types.
        Not completly accurate, but probably enough. -->
-  <simpleType name="xstMime">
+  <simpleType name="gstMime">
     <restriction base="string">
       <pattern value="^(application|audio|image|inode|message|multipart|text|video|x-[a-z0-9-]+)/(activemessage|andrew-inset|applefile|atomicmail|cu-seeme|dca-rft|dec-dx|dsptype|excel|futuresplash|ghostview|mac-binhex40|macwriteii|news-message-id|news-transmission|octet-stream|oda|pdf|pgp-signature|postscript|powerpoint|remote-printing|rtf|slate|wita|wordperfect5.1|zip|basic|midi|mpeg|mpegurl|gif|ief|jpeg|png|tiff|chardevice|blockdevice|directory-locked|directory|fifo|socket|external-body|news|partial|rfc822|alternative|appledouble|digest|mixed|parallel|comma-separated-values|english|html|mathml|plain|richtext|tab-separated-values|dl|fli|gl|mpeg|quicktime|x-[a-z0-9-]+)"/>
     </restriction>

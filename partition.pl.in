@@ -32,16 +32,16 @@ require "$SCRIPTSDIR/general.pl$DOTIN";
 require "$SCRIPTSDIR/report.pl$DOTIN";
 
 
-sub xst_partition_scan_info
+sub gst_partition_scan_info
 {
   my ($fd, $line);
   my (%hash);
   my (@table);
   
-  $fd = &xst_file_run_pipe ("sfdisk -d");
+  $fd = &gst_file_run_pipe ("sfdisk -d");
   if ($fd eq undef)
   {
-    &xst_report ("sfdisk_failed");
+    &gst_report ("sfdisk_failed");
     return undef;
   }
   
@@ -60,7 +60,7 @@ sub xst_partition_scan_info
 #                     "size"    => $3,
 #                     "id"      => $4,
 #                     "boot"    => $bootable,
-                      "type" => $XST_FILESYS_TYPES{$4}
+                      "type" => $GST_FILESYS_TYPES{$4}
                   };
       }
     }
@@ -72,7 +72,7 @@ sub xst_partition_scan_info
   return \%hash;
 }
 
-%XST_FILESYS_TYPES =
+%GST_FILESYS_TYPES =
     ("0" => "Empty",
 	"1" => "DOS 12-bit FAT",
 	"2" => "XENIX root",

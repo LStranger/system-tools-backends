@@ -17,7 +17,7 @@
   </annotation>
   
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
 
   <!-- Include the network-specific types. -->
   <include schemaLocation="networktypes.xsd"/>
@@ -39,28 +39,28 @@
 	 <!-- ignored during --set. -->
 
       <!-- active: If setting, start/stop ipchains 'service'. If getting, the state of the service. -->
-      <element type="xstBool" name="active"    minOccurs="0"/>
+      <element type="gstBool" name="active"    minOccurs="0"/>
 	 
 	 <!-- configured: Are there any ipchains/iptables/ipfwadm masq rules already in the kernel? -->
-      <element type="xstBool" name="configured"/>
+      <element type="gstBool" name="configured"/>
 
 	 <!-- forwarding: Is there forwarding kernel support? -->
-      <element type="xstBool" name="forwarding"/>
+      <element type="gstBool" name="forwarding"/>
 	 
 	 <!-- kerneltool: Is there kernel support for the (ipchains, iptables, ipfwadm) tool? -->
-      <element type="xstBool" name="kerneltool"/>
+      <element type="gstBool" name="kerneltool"/>
 	 
 	 <!-- landev: Those network adapters that will be used as landevs. -->
       <element type="string" name="landev"    minOccurs="0" maxOccurs="unbounded"/>
 	 
 	 <!-- masquerading: Is there kernel masquerading support? -->
-      <element type="xstBool" name="masquerading"/>
+      <element type="gstBool" name="masquerading"/>
 	 
 	 <!-- overwrite: set-only: overwrite existing forward-MASQ rules with our own? -->
-      <element type="xstBool" name="overwrite" minOccurs="0"/>
+      <element type="gstBool" name="overwrite" minOccurs="0"/>
 	 
 	 <!-- tools: are the (ipchains, iptables, ipfwadm) tools installed? (ie /sbin/ipchains) -->
-      <element type="xstBool" name="tools"/>
+      <element type="gstBool" name="tools"/>
     </sequence>
   </complexType>
 
@@ -70,20 +70,20 @@
 	 <!-- ignored during --set. -->
 
 	 <!-- active: If setting, start/stop dhcpd service. If getting, the state of the service. -->
-      <element type="xstBool" name="active"    minOccurs="0"/>
+      <element type="gstBool" name="active"    minOccurs="0"/>
 
 	 <!-- configured: Is there an /etc/dhcpd.conf or equivalent conf file? --> 
-      <element type="xstBool" name="configured"/>
+      <element type="gstBool" name="configured"/>
 
 	 <!-- dev: Those network adapters that will be listened to for dhcp requests. -->
 	 <!-- Must have HWaddr (mac or similar).-->
       <element type="string" name="dev"       minOccurs="0" maxOccurs="unbounded"/>
 
 	 <!-- installed: Is dhcpd or equivalent installed? -->
-      <element type="xstBool" name="installed"/>
+      <element type="gstBool" name="installed"/>
 
 	 <!-- overwrite: set-only: overwrite existing dhcp.conf or equivalent with our own stuff? -->
-      <element type="xstBool" name="overwrite" minOccurs="0"/>
+      <element type="gstBool" name="overwrite" minOccurs="0"/>
     </sequence>
   </complexType>
 

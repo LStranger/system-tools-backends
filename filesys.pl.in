@@ -48,17 +48,17 @@ sub merge_hashes
   }
 }
 
-sub xst_filesys_ext2_device_to_label  # device
+sub gst_filesys_ext2_device_to_label  # device
 {
   my ($device) = @_;
   my $label;
   my $fd;
 
-  $fd = &xst_file_run_pipe_read ("e2label $device");
+  $fd = &gst_file_run_pipe_read ("e2label $device");
   return undef if $fd eq undef;
   $label = <$fd>;
   chomp $label;
-  &xst_file_close ($fd);
+  &gst_file_close ($fd);
 
   return $label;
 }
@@ -67,7 +67,7 @@ sub xst_filesys_ext2_device_to_label  # device
 # --- filesys_info; information on a particular filesystem --- #
 
 
-sub xst_filesys_info_new
+sub gst_filesys_info_new
 {
   my $info = {};
   my $opthash = {};
@@ -80,7 +80,7 @@ sub xst_filesys_info_new
 #
 # Returns a newly allocated filesys_info, identical to the argument.
 
-sub xst_filesys_info_dup           # filesys_info
+sub gst_filesys_info_dup           # filesys_info
 {
   my $orig = $_[0];
   my $dup;
@@ -92,7 +92,7 @@ sub xst_filesys_info_dup           # filesys_info
   return $dup;
 }
 
-sub xst_filesys_info_match  # filesys_info, device, label, uuid, network_host, network_path
+sub gst_filesys_info_match  # filesys_info, device, label, uuid, network_host, network_path
 {
   my ($info, $device, $label, $uuid, $network_host, $network_path, $point) = @_;
 
@@ -110,25 +110,25 @@ sub xst_filesys_info_match  # filesys_info, device, label, uuid, network_host, n
   return 0;
 }
 
-sub xst_filesys_info_settings_to_options
+sub gst_filesys_info_settings_to_options
 {
   my ($info) = @_;
 
-  if (&xst_filesys_info_get_mounted ($info))
+  if (&gst_filesys_info_get_mounted ($info))
   {
-    &xst_filesys_info_remove_option ($info, "noauto");
+    &gst_filesys_info_remove_option ($info, "noauto");
   }
   else
   {
-    &xst_filesys_info_set_option ($info, "noauto", "");
+    &gst_filesys_info_set_option ($info, "noauto", "");
   }
 }
 
-sub xst_filesys_info_match_options  # filesys_info, filesys_info
+sub gst_filesys_info_match_options  # filesys_info, filesys_info
 {
   my ($info_a, $info_b) = @_;
 
-  if (&xst_filesys_info_print_options ($info_a) eq &xst_filesys_info_print_options ($info_b))
+  if (&gst_filesys_info_print_options ($info_a) eq &gst_filesys_info_print_options ($info_b))
   {
     return 1;
   }
@@ -136,15 +136,15 @@ sub xst_filesys_info_match_options  # filesys_info, filesys_info
   return 0;
 }
 
-sub xst_filesys_info_match_data  # filesys_info, filesys_info
+sub gst_filesys_info_match_data  # filesys_info, filesys_info
 {
   my ($info_a, $info_b) = @_;
 
-  if (&xst_filesys_info_get_point    ($info_a) eq &xst_filesys_info_get_point    ($info_b) &&
-      &xst_filesys_info_get_fs       ($info_a) eq &xst_filesys_info_get_fs       ($info_b) &&
-      &xst_filesys_info_get_dump     ($info_a) eq &xst_filesys_info_get_dump     ($info_b) &&
-      &xst_filesys_info_get_priority ($info_a) eq &xst_filesys_info_get_priority ($info_b) &&
-      &xst_filesys_info_match_options ($info_a, $info_b))
+  if (&gst_filesys_info_get_point    ($info_a) eq &gst_filesys_info_get_point    ($info_b) &&
+      &gst_filesys_info_get_fs       ($info_a) eq &gst_filesys_info_get_fs       ($info_b) &&
+      &gst_filesys_info_get_dump     ($info_a) eq &gst_filesys_info_get_dump     ($info_b) &&
+      &gst_filesys_info_get_priority ($info_a) eq &gst_filesys_info_get_priority ($info_b) &&
+      &gst_filesys_info_match_options ($info_a, $info_b))
   {
     return 1;
   }
@@ -153,7 +153,7 @@ sub xst_filesys_info_match_data  # filesys_info, filesys_info
 }
 
 # Merge options in B missing in A into A.
-sub xst_filesys_info_merge_options
+sub gst_filesys_info_merge_options
 {
   my ($info_a, $info_b) = @_;
   my ($opt_a, $opt_b, $key);
@@ -165,20 +165,20 @@ sub xst_filesys_info_merge_options
 }
 
 # Merge stuff in B missing in A into A.
-sub xst_filesys_info_merge
+sub gst_filesys_info_merge
 {
   my ($info_a, $info_b) = @_;
   my $key;
 
   &merge_hashes ($info_a, $info_b);
-  &xst_filesys_info_merge_options ($info_a, $info_b);
+  &gst_filesys_info_merge_options ($info_a, $info_b);
 }
 
 # Generic set function for filesys_info properties. We need this to
 # delete keys if they don't have meaningful values, otherwise an empty
 # value could override a perfectly good value in a merge.
 
-sub xst_filesys_info_set           # filesys_info, key, value
+sub gst_filesys_info_set           # filesys_info, key, value
 {
   my ($filesys_info, $key, $value) = @_;
   
@@ -192,133 +192,133 @@ sub xst_filesys_info_set           # filesys_info, key, value
   }
 }
 
-sub xst_filesys_info_get_device        # filesys_info
+sub gst_filesys_info_get_device        # filesys_info
 {
   return $_[0]->{'device'};
 }
 
-sub xst_filesys_info_set_device        # filesys_info, device
+sub gst_filesys_info_set_device        # filesys_info, device
 {
-  &xst_filesys_info_set ($_[0], 'device', $_[1]);
+  &gst_filesys_info_set ($_[0], 'device', $_[1]);
 }
 
-sub xst_filesys_info_get_label         # filesys_info
+sub gst_filesys_info_get_label         # filesys_info
 {
   return $_[0]->{'label'};
 }
 
-sub xst_filesys_info_set_label         # filesys_info, label
+sub gst_filesys_info_set_label         # filesys_info, label
 {
-  &xst_filesys_info_set ($_[0], 'label', $_[1]);
+  &gst_filesys_info_set ($_[0], 'label', $_[1]);
 }
 
-sub xst_filesys_info_get_network_host  # filesys_info
+sub gst_filesys_info_get_network_host  # filesys_info
 {
   return $_[0]->{'network_host'};
 }
 
-sub xst_filesys_info_set_network_host  # filesys_info, network_host
+sub gst_filesys_info_set_network_host  # filesys_info, network_host
 {
   my ($info, $host) = @_;
 
   $host =~ s/^\/+//;
-  &xst_filesys_info_set ($info, 'network_host', $host);
+  &gst_filesys_info_set ($info, 'network_host', $host);
 }
 
-sub xst_filesys_info_get_network_path  # filesys_info
+sub gst_filesys_info_get_network_path  # filesys_info
 {
   return $_[0]->{'network_path'};
 }
 
-sub xst_filesys_info_set_network_path  # filesys_info, network_path
+sub gst_filesys_info_set_network_path  # filesys_info, network_path
 {
   my ($info, $path) = @_;
 
   $path = "/" . $path if (!($path =~ /^\//));
-  &xst_filesys_info_set ($info, 'network_path', $path);
+  &gst_filesys_info_set ($info, 'network_path', $path);
 }
 
-sub xst_filesys_info_get_uuid          # filesys_info
+sub gst_filesys_info_get_uuid          # filesys_info
 {
   return $_[0]->{'uuid'};
 }
 
-sub xst_filesys_info_set_uuid          # filesys_info, uuid
+sub gst_filesys_info_set_uuid          # filesys_info, uuid
 {
-  &xst_filesys_info_set ($_[0], 'uuid', $_[1]);
+  &gst_filesys_info_set ($_[0], 'uuid', $_[1]);
 }
 
-sub xst_filesys_info_get_point         # filesys_info
+sub gst_filesys_info_get_point         # filesys_info
 {
   return $_[0]->{'point'};
 }
 
-sub xst_filesys_info_set_point         # filesys_info, point
+sub gst_filesys_info_set_point         # filesys_info, point
 {
-  &xst_filesys_info_set ($_[0], 'point', $_[1]);
+  &gst_filesys_info_set ($_[0], 'point', $_[1]);
 }
 
-sub xst_filesys_info_get_fs            # filesys_info
+sub gst_filesys_info_get_fs            # filesys_info
 {
   return $_[0]->{'fs'};
 }
 
-sub xst_filesys_info_set_fs            # filesys_info, fs
+sub gst_filesys_info_set_fs            # filesys_info, fs
 {
-  &xst_filesys_info_set ($_[0], 'fs', $_[1]);
+  &gst_filesys_info_set ($_[0], 'fs', $_[1]);
 }
 
-sub xst_filesys_info_get_dump          # filesys_info
+sub gst_filesys_info_get_dump          # filesys_info
 {
   return $_[0]->{'dump'} || "0";
 }
 
-sub xst_filesys_info_set_dump          # filesys_info, dump
+sub gst_filesys_info_set_dump          # filesys_info, dump
 {
-  &xst_filesys_info_set ($_[0], 'dump', $_[1]);
+  &gst_filesys_info_set ($_[0], 'dump', $_[1]);
 }
 
-sub xst_filesys_info_get_priority      # filesys_info
+sub gst_filesys_info_get_priority      # filesys_info
 {
   return $_[0]->{'priority'} || "0";
 }
 
-sub xst_filesys_info_set_priority      # filesys_info, priority
+sub gst_filesys_info_set_priority      # filesys_info, priority
 {
-  &xst_filesys_info_set ($_[0], 'priority', $_[1]);
+  &gst_filesys_info_set ($_[0], 'priority', $_[1]);
 }
 
-sub xst_filesys_info_get_mounted       # filesys_info
+sub gst_filesys_info_get_mounted       # filesys_info
 {
   return $_[0]->{'mounted'};
 }
 
-sub xst_filesys_info_set_mounted       # filesys_info, boolean
+sub gst_filesys_info_set_mounted       # filesys_info, boolean
 {
-  &xst_filesys_info_set ($_[0], 'mounted', $_[1]);
+  &gst_filesys_info_set ($_[0], 'mounted', $_[1]);
 }
 
-sub xst_filesys_info_get_permanent     # filesys_info
+sub gst_filesys_info_get_permanent     # filesys_info
 {
   return $_[0]->{'permanent'};
 }
 
-sub xst_filesys_info_set_permanent     # filesys_info, boolean
+sub gst_filesys_info_set_permanent     # filesys_info, boolean
 {
-  &xst_filesys_info_set ($_[0], 'permanent', $_[1]);
+  &gst_filesys_info_set ($_[0], 'permanent', $_[1]);
 }
 
-sub xst_filesys_info_get_detected      # filesys_info
+sub gst_filesys_info_get_detected      # filesys_info
 {
   return $_[0]->{'detected'};
 }
 
-sub xst_filesys_info_set_detected      # filesys_info, boolean
+sub gst_filesys_info_set_detected      # filesys_info, boolean
 {
-  &xst_filesys_info_set ($_[0], 'detected', $_[1]);
+  &gst_filesys_info_set ($_[0], 'detected', $_[1]);
 }
 
-sub xst_filesys_info_get_option      # filesys_info, option
+sub gst_filesys_info_get_option      # filesys_info, option
 {
   return $_[0]->{'options'}{$_[1]};
 }
@@ -328,12 +328,12 @@ sub xst_filesys_info_get_option      # filesys_info, option
 # " " (one space) indicates that this entry takes a value (is non-bool), but
 # has none.
 
-sub xst_filesys_info_set_option        # filesys_info, option, value
+sub gst_filesys_info_set_option        # filesys_info, option, value
 {
   $_[0]->{'options'}{$_[1]} = $_[2];
 }
 
-sub xst_filesys_info_remove_option     # filesys_info, option
+sub gst_filesys_info_remove_option     # filesys_info, option
 {
   delete $_[0]->{'options'}{$_[1]};
 }
@@ -341,7 +341,7 @@ sub xst_filesys_info_remove_option     # filesys_info, option
 # --- filesys_table; multiple instances of filesys_info --- #
 
 
-sub xst_filesys_table_new
+sub gst_filesys_table_new
 {
   my @array;
   return \@array;
@@ -351,15 +351,15 @@ sub xst_filesys_table_new
 #
 # Returns a newly allocated filesys_table, identical to the argument.
 
-sub xst_filesys_table_dup          # filesys_table
+sub gst_filesys_table_dup          # filesys_table
 {
   my $orig = $_[0];
-  my $dup = &xst_filesys_table_new ();
+  my $dup = &gst_filesys_table_new ();
   my $i;
 
   foreach $i (@$orig)
   {
-    &xst_filesys_table_add ($dup, &xst_filesys_info_dup ($i));
+    &gst_filesys_table_add ($dup, &gst_filesys_info_dup ($i));
   }
 
   return $dup;
@@ -369,7 +369,7 @@ sub xst_filesys_table_dup          # filesys_table
 # does not check for uniqueness, which lets you add several references
 # to the same filesys_info.
 
-sub xst_filesys_table_add          # filesys_table, filesys_info
+sub gst_filesys_table_add          # filesys_table, filesys_info
 {
   my ($table, $info) = @_;
 
@@ -379,7 +379,7 @@ sub xst_filesys_table_add          # filesys_table, filesys_info
 # Ensure that a filesys_info reference exists in a filesys_table. If it
 # doesn't, it will be added. If it does, no action will be taken.
 
-sub xst_filesys_table_ensure       # filesys_table, filesys_info
+sub gst_filesys_table_ensure       # filesys_table, filesys_info
 {
   my ($table, $info) = @_;
   my $i;
@@ -389,12 +389,12 @@ sub xst_filesys_table_ensure       # filesys_table, filesys_info
     return if ($i eq $info);
   }
 
-  &xst_filesys_table_add ($table, $info);
+  &gst_filesys_table_add ($table, $info);
 }
 
 # Remove a filesys_info reference from a filesys_table.
 
-sub xst_filesys_table_remove       # filesys_table, filesys_info
+sub gst_filesys_table_remove       # filesys_table, filesys_info
 {
   my ($table, $info) = @_;
   my $i;
@@ -410,13 +410,13 @@ sub xst_filesys_table_remove       # filesys_table, filesys_info
     }
   }
 
-  &xst_debug_print_line ("Entry to remove [" . $info . "] not found in filesys_table.");
+  &gst_debug_print_line ("Entry to remove [" . $info . "] not found in filesys_table.");
 }
 
 # Find and return a reference to a filesys_info in a filesys_table
 # matching any of the information provided.
 
-sub xst_filesys_table_find         # filesys_table, device, label, uuid, network_host, network_path
+sub gst_filesys_table_find         # filesys_table, device, label, uuid, network_host, network_path
 {
   my ($table, $device, $label, $uuid, $network_host, $network_path, $point) = @_;
   my $i;
@@ -449,20 +449,20 @@ sub xst_filesys_table_find         # filesys_table, device, label, uuid, network
     }
   }
 
-  &xst_debug_print_line ("Entry [" . $device . "] not found in filesys_table.");
+  &gst_debug_print_line ("Entry [" . $device . "] not found in filesys_table.");
   return undef;
 }
 
-sub xst_filesys_table_find_info_equivalent  # filesys_table, filesys_info
+sub gst_filesys_table_find_info_equivalent  # filesys_table, filesys_info
 {
   my ($table, $info) = @_;
 
-  return &xst_filesys_table_find ($table, &xst_filesys_info_get_device ($info),
-                                  &xst_filesys_info_get_label ($info),
-                                  &xst_filesys_info_get_uuid ($info),
-                                  &xst_filesys_info_get_network_host ($info),
-                                  &xst_filesys_info_get_network_path ($info),
-                                  &xst_filesys_info_get_point ($info));
+  return &gst_filesys_table_find ($table, &gst_filesys_info_get_device ($info),
+                                  &gst_filesys_info_get_label ($info),
+                                  &gst_filesys_info_get_uuid ($info),
+                                  &gst_filesys_info_get_network_host ($info),
+                                  &gst_filesys_info_get_network_path ($info),
+                                  &gst_filesys_info_get_point ($info));
 }
 
 # Merges filesys tables A and B, resolving conflicts by giving priority to A.
@@ -471,26 +471,26 @@ sub xst_filesys_table_find_info_equivalent  # filesys_table, filesys_info
 #
 # Returns a newly allocated table C, which is a superset of A and B.
 
-sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B
+sub gst_filesys_table_merge_superset  # filesys_table A, filesys_table B
 {
   my ($intab_a, $intab_b) = @_;
   my ($hash_c, $hash_b, $key);
   my $outtab;
 
-  $outtab = &xst_filesys_table_dup ($intab_a);
+  $outtab = &gst_filesys_table_dup ($intab_a);
 
   foreach $info_b (@$intab_b)
   {
     my $info_c;
 
-    if ($info_c = &xst_filesys_table_find_info_equivalent ($outtab, $info_b))
+    if ($info_c = &gst_filesys_table_find_info_equivalent ($outtab, $info_b))
     {
-      &xst_filesys_info_merge ($info_c, $info_b);
+      &gst_filesys_info_merge ($info_c, $info_b);
     }
     else
     {
-      $info_c = &xst_filesys_info_dup ($info_b);
-      &xst_filesys_table_add ($outtab, $info_c);
+      $info_c = &gst_filesys_info_dup ($info_b);
+      &gst_filesys_table_add ($outtab, $info_c);
     }
   }
 
@@ -502,21 +502,21 @@ sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B
 #
 # Returns a newly allocated table C, which is a subset of A and B.
 
-sub xst_filesys_table_merge_subset    # filesys_table A, filesys_table B
+sub gst_filesys_table_merge_subset    # filesys_table A, filesys_table B
 {
   my ($intab_a, $intab_b) = @_;
   my ($hash_c, $hash_b, $key);
   my $outtab;
 
-  $outtab = &xst_filesys_table_dup ($intab_a);
+  $outtab = &gst_filesys_table_dup ($intab_a);
 
   foreach $info_b (@$intab_b)
   {
     my $info_c;
 
-    if ($info_c = &xst_filesys_table_find_info_equivalent ($outtab, $info_b))
+    if ($info_c = &gst_filesys_table_find_info_equivalent ($outtab, $info_b))
     {
-      &xst_filesys_info_merge ($info_c, $info_b);
+      &gst_filesys_info_merge ($info_c, $info_b);
     }
   }
 
@@ -525,23 +525,23 @@ sub xst_filesys_table_merge_subset    # filesys_table A, filesys_table B
 
 # Called to indicate that entries in a filesys table are mounted.
 
-sub xst_filesys_table_set_mounted_true  # filesys_table
+sub gst_filesys_table_set_mounted_true  # filesys_table
 {
   my ($table) = @_;
   foreach $i (@$table)
   {
-    &xst_filesys_info_set_mounted ($i, 1);
+    &gst_filesys_info_set_mounted ($i, 1);
   }
 }
 
 # Called to indicate that entries in a filesys table are permanent.
 
-sub xst_filesys_table_set_permanent_true  # filesys_table
+sub gst_filesys_table_set_permanent_true  # filesys_table
 {
   my ($table) = @_;
   foreach $i (@$table)
   {
-    &xst_filesys_info_set_permanent ($i, 1);
+    &gst_filesys_info_set_permanent ($i, 1);
   }
 }
 
@@ -549,18 +549,18 @@ sub xst_filesys_table_set_permanent_true  # filesys_table
 # e.g. by a network or bus scanner, and were not specified in any part of
 # the user's configuration.
 
-sub xst_filesys_table_set_detected_true  # filesys_table
+sub gst_filesys_table_set_detected_true  # filesys_table
 {
   my ($table) = @_;
   foreach $i (@$table)
   {
-    &xst_filesys_info_set_detected ($i, 1);
+    &gst_filesys_info_set_detected ($i, 1);
   }
 }
 
 # --- Parsing --- #
 
-sub xst_filesys_entry_identify
+sub gst_filesys_entry_identify
 {
   my ($device, $fs) = @_;
   my ($label, $uuid, $network_host, $network_path);
@@ -573,7 +573,7 @@ sub xst_filesys_entry_identify
     # We know only the device node. Try to get label too.
     if ($fs eq "ext2" || ($fs eq "auto" && !($device =~ /fd[0-9]$/)))
     {
-      $label = &xst_filesys_ext2_device_to_label ($device);
+      $label = &gst_filesys_ext2_device_to_label ($device);
     }
     # Network filesystem devices can be separated into remote host and remote path.
     elsif ($fs eq "nfs")
@@ -597,18 +597,18 @@ sub xst_filesys_entry_identify
   return ($device, $label, $uuid, $network_host, $network_path);
 }
 
-sub xst_filesys_entry_identify_info
+sub gst_filesys_entry_identify_info
 {
   my ($fsi, $device, $fs) = @_;
   my ($label, $uuid, $network_host, $network_path);
 
-  ($device, $label, $uuid, $network_host, $network_path) = &xst_filesys_entry_identify ($device, $fs);
+  ($device, $label, $uuid, $network_host, $network_path) = &gst_filesys_entry_identify ($device, $fs);
 
-  if ($device)       { &xst_filesys_info_set_device       ($fsi, $device);       }
-  if ($label)        { &xst_filesys_info_set_label        ($fsi, $label);        }
-  if ($uuid)         { &xst_filesys_info_set_uuid         ($fsi, $uuid);         }
-  if ($network_host) { &xst_filesys_info_set_network_host ($fsi, $network_host); }
-  if ($network_path) { &xst_filesys_info_set_network_path ($fsi, $network_path); }
+  if ($device)       { &gst_filesys_info_set_device       ($fsi, $device);       }
+  if ($label)        { &gst_filesys_info_set_label        ($fsi, $label);        }
+  if ($uuid)         { &gst_filesys_info_set_uuid         ($fsi, $uuid);         }
+  if ($network_host) { &gst_filesys_info_set_network_host ($fsi, $network_host); }
+  if ($network_path) { &gst_filesys_info_set_network_path ($fsi, $network_path); }
 }
 
 # Get all instances from fstab-style file. Returns a filesys_table.
@@ -620,17 +620,17 @@ sub xst_filesys_entry_identify_info
 # key(s) used, and making a special-format string for that (which could
 # be passed to option readers) would be a bad hack.
 
-sub xst_filesys_fstab_parse  # filename
+sub gst_filesys_fstab_parse  # filename
 {
   my ($file) = @_;
   my ($fd, $table);
 
-  $fd = &xst_file_open_read_from_names ($file);
+  $fd = &gst_file_open_read_from_names ($file);
   return undef if !$fd;
 
-  $table = &xst_filesys_table_new ();
+  $table = &gst_filesys_table_new ();
 
-  while (($_ = &xst_parse_chomp_line_hash_comment ($fd)) != -1)
+  while (($_ = &gst_parse_chomp_line_hash_comment ($fd)) != -1)
   {
     # Each line is in the following format:
     # <device> <mount point> <filesystem> <options> <dump flag> <fsck priority>
@@ -638,14 +638,14 @@ sub xst_filesys_fstab_parse  # filename
     next if (@line < 6);
     my ($device, $point, $fs, $options, $dump, $fsck) = @line;
 
-    my $fsi = &xst_filesys_info_new ();
-    &xst_filesys_entry_identify_info ($fsi, $device, $fs);
+    my $fsi = &gst_filesys_info_new ();
+    &gst_filesys_entry_identify_info ($fsi, $device, $fs);
 
     # <mount point>, <fs>, <dump flag> and <fsck priority> are verbatim.
-    &xst_filesys_info_set_point    ($fsi, $point);
-    &xst_filesys_info_set_fs       ($fsi, $fs);
-    &xst_filesys_info_set_dump     ($fsi, $dump);
-    &xst_filesys_info_set_priority ($fsi, $fsck);
+    &gst_filesys_info_set_point    ($fsi, $point);
+    &gst_filesys_info_set_fs       ($fsi, $fs);
+    &gst_filesys_info_set_dump     ($fsi, $dump);
+    &gst_filesys_info_set_priority ($fsi, $fsck);
 
     # <options> expands to "<option>[,<option>[,...]]".
     my @optlist = split /[,]/, $options;
@@ -657,25 +657,25 @@ sub xst_filesys_fstab_parse  # filename
       next if ($key eq "" || $key eq "defaults");
 
       if ($value eq "" && $option =~ /=/) { $value = " "; }
-      &xst_filesys_info_set_option ($fsi, $key, $value);
+      &gst_filesys_info_set_option ($fsi, $key, $value);
     }
 
     # Link it in.
-    &xst_filesys_table_add ($table, $fsi);
+    &gst_filesys_table_add ($table, $fsi);
   }
 
-  &xst_file_close ($fd);
+  &gst_file_close ($fd);
   return $table;
 }
 
 # Get all instances from 'mount -p' output. Returns a filesys_table.
-sub xst_filesys_freebsd_mount_cmd_parse
+sub gst_filesys_freebsd_mount_cmd_parse
 {
   my ($table, $mount_cmd);
   my (@output, $l);
 
-  $table = &xst_filesys_table_new ();
-  $mount_cmd = &xst_file_locate_tool ("mount");
+  $table = &gst_filesys_table_new ();
+  $mount_cmd = &gst_file_locate_tool ("mount");
   @output = (readpipe ("$mount_cmd -p"));
 
   foreach $l (@output)
@@ -689,16 +689,16 @@ sub xst_filesys_freebsd_mount_cmd_parse
     next if ($#line < 5);
     my ($device, $point, $fs, $options, $dump, $fsck) = @line;
 
-    my $fsi = &xst_filesys_info_new ();
-    &xst_filesys_entry_identify_info ($fsi, $device, $fs);
+    my $fsi = &gst_filesys_info_new ();
+    &gst_filesys_entry_identify_info ($fsi, $device, $fs);
 
     # <device> expands to "<device node>" (unlike fstab, which has dev|label|uuid).
     # <mount point>, <fs>, <dump flag> and <fsck priority> are verbatim.
-    &xst_filesys_info_set_device   ($fsi, $device);
-    &xst_filesys_info_set_point    ($fsi, $point);
-    &xst_filesys_info_set_fs       ($fsi, $fs);
-    &xst_filesys_info_set_dump     ($fsi, $dump);
-    &xst_filesys_info_set_priority ($fsi, $fsck);
+    &gst_filesys_info_set_device   ($fsi, $device);
+    &gst_filesys_info_set_point    ($fsi, $point);
+    &gst_filesys_info_set_fs       ($fsi, $fs);
+    &gst_filesys_info_set_dump     ($fsi, $dump);
+    &gst_filesys_info_set_priority ($fsi, $fsck);
 
     # <options> expands to "<option>[,<option>[,...]]".
     my @optlist = split (/,/, $options);
@@ -710,11 +710,11 @@ sub xst_filesys_freebsd_mount_cmd_parse
       next if ($key eq "" || $key eq "defaults");
 
       $value = " " if ($value eq "" && $option =~ /=/);
-      &xst_filesys_info_set_option ($fsi, $key, $value);
+      &gst_filesys_info_set_option ($fsi, $key, $value);
     }
 
     # Link it in.
-    &xst_filesys_table_add ($table, $fsi);
+    &gst_filesys_table_add ($table, $fsi);
   }
 
   return $table;
@@ -722,17 +722,17 @@ sub xst_filesys_freebsd_mount_cmd_parse
 
 # Get all instances from mtab-style file. Returns a filesys_table.
 
-sub xst_filesys_mtab_parse  # filename
+sub gst_filesys_mtab_parse  # filename
 {
   my ($file) = @_;
   my ($fd, $table);
 
-  $fd = &xst_file_open_read_from_names ($file);
+  $fd = &gst_file_open_read_from_names ($file);
   return undef if !$fd;
 
-  $table = &xst_filesys_table_new ();
+  $table = &gst_filesys_table_new ();
 
-  while (($_ = &xst_parse_chomp_line_hash_comment ($fd)) != -1)
+  while (($_ = &gst_parse_chomp_line_hash_comment ($fd)) != -1)
   {
     # Columns are separated by one, and only one, space. The presence of one or
     # more blank values is indicated by a string of several spaces.
@@ -743,16 +743,16 @@ sub xst_filesys_mtab_parse  # filename
     next if (@line < 6);
     my ($device, $point, $fs, $options, $dump, $fsck) = @line;
 
-    my $fsi = &xst_filesys_info_new ();
-    &xst_filesys_entry_identify_info ($fsi, $device, $fs);
+    my $fsi = &gst_filesys_info_new ();
+    &gst_filesys_entry_identify_info ($fsi, $device, $fs);
 
     # <device> expands to "<device node>" (unlike fstab, which has dev|label|uuid).
     # <mount point>, <fs>, <dump flag> and <fsck priority> are verbatim.
-    &xst_filesys_info_set_device   ($fsi, $device);
-    &xst_filesys_info_set_point    ($fsi, $point);
-    &xst_filesys_info_set_fs       ($fsi, $fs);
-    &xst_filesys_info_set_dump     ($fsi, $dump);
-    &xst_filesys_info_set_priority ($fsi, $fsck);
+    &gst_filesys_info_set_device   ($fsi, $device);
+    &gst_filesys_info_set_point    ($fsi, $point);
+    &gst_filesys_info_set_fs       ($fsi, $fs);
+    &gst_filesys_info_set_dump     ($fsi, $dump);
+    &gst_filesys_info_set_priority ($fsi, $fsck);
 
     # <options> expands to "<option>[,<option>[,...]]".
     my @optlist = split /[,]/, $options;
@@ -764,14 +764,14 @@ sub xst_filesys_mtab_parse  # filename
       next if ($key eq "" || $key eq "defaults");
 
       if ($value eq "" && $option =~ /=/) { $value = " "; }
-      &xst_filesys_info_set_option ($fsi, $key, $value);
+      &gst_filesys_info_set_option ($fsi, $key, $value);
     }
 
     # Link it in.
-    &xst_filesys_table_add ($table, $fsi);
+    &gst_filesys_table_add ($table, $fsi);
   }
 
-  &xst_file_close ($fd);
+  &gst_file_close ($fd);
   return $table;
 }
 
@@ -779,7 +779,7 @@ sub xst_filesys_mtab_parse  # filename
 # --- Replacing --- #
 
 
-sub xst_filesys_fstab_get_next_entry_line  # $infd, $outfd
+sub gst_filesys_fstab_get_next_entry_line  # $infd, $outfd
 {
   my ($infd, $outfd) = @_;
 
@@ -789,7 +789,7 @@ sub xst_filesys_fstab_get_next_entry_line  # $infd, $outfd
     # <device> <mount point> <filesystem> <options> <dump flag> <fsck priority>
     my @line = split /[ \t]+/, $_;
     if ($line[0] eq "") { shift @line; }
-    if (@line < 6 || &xst_ignore_line (@line)) { print $outfd $_; next; }
+    if (@line < 6 || &gst_ignore_line (@line)) { print $outfd $_; next; }
 
     return $_;
   }
@@ -797,7 +797,7 @@ sub xst_filesys_fstab_get_next_entry_line  # $infd, $outfd
   return undef;
 }
 
-sub xst_filesys_fstab_get_entry_line_fields  # line
+sub gst_filesys_fstab_get_entry_line_fields  # line
 {
   my ($line) = @_;
 
@@ -810,11 +810,11 @@ sub xst_filesys_fstab_get_entry_line_fields  # line
   return split /[ \t]+/, $line;
 }
 
-sub xst_filesys_fstab_get_entry_line_comments  # line
+sub gst_filesys_fstab_get_entry_line_comments  # line
 {
 }
 
-sub xst_filesys_info_print_options       # filesys_info
+sub gst_filesys_info_print_options       # filesys_info
 {
   my ($info) = @_;
   my $optstring = "";
@@ -841,55 +841,55 @@ sub xst_filesys_info_print_options       # filesys_info
   return $optstring;
 }
 
-sub xst_filesys_info_print_device
+sub gst_filesys_info_print_device
 {
   my ($info) = @_;
   my $device;
 
-  if (&xst_filesys_info_get_label ($info))
+  if (&gst_filesys_info_get_label ($info))
   {
-    $device = "LABEL=" . &xst_filesys_info_get_label ($info);
+    $device = "LABEL=" . &gst_filesys_info_get_label ($info);
   }
-  elsif (&xst_filesys_info_get_uuid ($info))
+  elsif (&gst_filesys_info_get_uuid ($info))
   {
-    $device = "UUID=" . &xst_filesys_info_get_uuid ($info);
+    $device = "UUID=" . &gst_filesys_info_get_uuid ($info);
   }
-  elsif (&xst_filesys_info_get_network_host ($info) &&
-         &xst_filesys_info_get_network_path ($info))
+  elsif (&gst_filesys_info_get_network_host ($info) &&
+         &gst_filesys_info_get_network_path ($info))
   {
-    if (&xst_filesys_info_get_fs ($info) eq "smbfs")
+    if (&gst_filesys_info_get_fs ($info) eq "smbfs")
     {
-      $device = "//" . &xst_filesys_info_get_network_host ($info)
-                     . &xst_filesys_info_get_network_path ($info);
+      $device = "//" . &gst_filesys_info_get_network_host ($info)
+                     . &gst_filesys_info_get_network_path ($info);
     }
     else
     {
-      $device = &xst_filesys_info_get_network_host ($info) . ":" .
-              &xst_filesys_info_get_network_path ($info);
+      $device = &gst_filesys_info_get_network_host ($info) . ":" .
+              &gst_filesys_info_get_network_path ($info);
     }
   }
   else
   {
-    $device = &xst_filesys_info_get_device ($info);
+    $device = &gst_filesys_info_get_device ($info);
   }
 
   return $device;
 }
 
-sub xst_filesys_info_print_entry
+sub gst_filesys_info_print_entry
 {
   my ($info) = @_;
   my $line;
 
   # <device>
 
-  $line = sprintf ("%-23s", &xst_filesys_info_print_device ($info));
+  $line = sprintf ("%-23s", &gst_filesys_info_print_device ($info));
 
   # <mount point>
 
-  if (&xst_filesys_info_get_point ($info))
+  if (&gst_filesys_info_get_point ($info))
   {
-    $line .= sprintf ("%-24s", (" " . &xst_filesys_info_get_point ($info))) . " ";
+    $line .= sprintf ("%-24s", (" " . &gst_filesys_info_get_point ($info))) . " ";
   }
   else
   {
@@ -898,49 +898,49 @@ sub xst_filesys_info_print_entry
 
   # <filesystem> <options> <dump flag> <fsck priority>
 
-  $line .= sprintf ("%-7s", &xst_filesys_info_get_fs ($info)) . " " .
-           sprintf ("%-15s", &xst_filesys_info_print_options ($info)) . " " .
-           &xst_filesys_info_get_dump ($info) . " " .
-           &xst_filesys_info_get_priority ($info);
+  $line .= sprintf ("%-7s", &gst_filesys_info_get_fs ($info)) . " " .
+           sprintf ("%-15s", &gst_filesys_info_print_options ($info)) . " " .
+           &gst_filesys_info_get_dump ($info) . " " .
+           &gst_filesys_info_get_priority ($info);
 
   return $line;
 }
 
-sub xst_filesys_fstab_add_entry     # filename, filesys_info
+sub gst_filesys_fstab_add_entry     # filename, filesys_info
 {
   my ($file, $info) = @_;
   my ($infd, $outfd);
   my ($line);
 
-  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  ($infd, $outfd) = &gst_file_open_filter_write_from_names ($file);
   return undef if !$outfd;
 
   while (<$infd>) { print $outfd $_; }
-  &xst_file_close ($infd);
+  &gst_file_close ($infd);
 
-  print $outfd &xst_filesys_info_print_entry ($info) . "\n";
-  &xst_file_close ($outfd);
+  print $outfd &gst_filesys_info_print_entry ($info) . "\n";
+  &gst_file_close ($outfd);
 }
 
-sub xst_filesys_fstab_update_entry  # filename, filesys_info
+sub gst_filesys_fstab_update_entry  # filename, filesys_info
 {
   my ($file, $info) = @_;
   my ($infd, $outfd);
   my ($line);
   my $replaced = 0;
 
-  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  ($infd, $outfd) = &gst_file_open_filter_write_from_names ($file);
   return undef if !$outfd;
 
-  while ($line = &xst_filesys_fstab_get_next_entry_line ($infd, $outfd))
+  while ($line = &gst_filesys_fstab_get_next_entry_line ($infd, $outfd))
   {
-    my ($device, $point, $fs, $options, $dump, $fsck) = &xst_filesys_fstab_get_entry_line_fields ($line);
-    my ($device, $label, $uuid, $network_host, $network_path) = &xst_filesys_entry_identify ($device, $fs);
+    my ($device, $point, $fs, $options, $dump, $fsck) = &gst_filesys_fstab_get_entry_line_fields ($line);
+    my ($device, $label, $uuid, $network_host, $network_path) = &gst_filesys_entry_identify ($device, $fs);
 
-    if (!$replaced && &xst_filesys_info_match ($info, $device, $label, $uuid,
+    if (!$replaced && &gst_filesys_info_match ($info, $device, $label, $uuid,
                                                $network_host, $network_path, $point))
     {
-      print $outfd &xst_filesys_info_print_entry ($info) . "\n";
+      print $outfd &gst_filesys_info_print_entry ($info) . "\n";
       $replaced = 1;
     }
     else
@@ -949,63 +949,63 @@ sub xst_filesys_fstab_update_entry  # filename, filesys_info
     }
   }
 
-  &xst_file_close ($infd);
-  &xst_file_close ($outfd);
+  &gst_file_close ($infd);
+  &gst_file_close ($outfd);
 }
 
-sub xst_filesys_fstab_remove_entry  # filename, filesys_info
+sub gst_filesys_fstab_remove_entry  # filename, filesys_info
 {
   my ($file, $info) = @_;
   my ($infd, $outfd);
   my ($line);
 
-  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  ($infd, $outfd) = &gst_file_open_filter_write_from_names ($file);
   return undef if !$outfd;
 
-  while ($line = &xst_filesys_fstab_get_next_entry_line ($infd, $outfd))
+  while ($line = &gst_filesys_fstab_get_next_entry_line ($infd, $outfd))
   {
-    my ($device, $point, $fs, $options, $dump, $fsck) = &xst_filesys_fstab_get_entry_line_fields ($line);
-    my ($device, $label, $uuid, $network_host, $network_path) = &xst_filesys_entry_identify ($device, $fs);
+    my ($device, $point, $fs, $options, $dump, $fsck) = &gst_filesys_fstab_get_entry_line_fields ($line);
+    my ($device, $label, $uuid, $network_host, $network_path) = &gst_filesys_entry_identify ($device, $fs);
 
-    if (!&xst_filesys_info_match ($info, $device, $label, $uuid, $network_host, $network_path, $point))
+    if (!&gst_filesys_info_match ($info, $device, $label, $uuid, $network_host, $network_path, $point))
     {
       print $outfd $line;
     }
   }
 
-  &xst_file_close ($infd);
-  &xst_file_close ($outfd);
+  &gst_file_close ($infd);
+  &gst_file_close ($outfd);
 }
 
 # Replace instances in fstab-style file.
 
-sub xst_filesys_fstab_replace  # filename, table
+sub gst_filesys_fstab_replace  # filename, table
 {
   my ($file, $table) = @_;
   my ($new_table, $old_table);
 
-  $old_table = &xst_filesys_fstab_parse ($file);
-  $new_table = &xst_filesys_table_dup ($table);
+  $old_table = &gst_filesys_fstab_parse ($file);
+  $new_table = &gst_filesys_table_dup ($table);
 
   for $info (@$new_table)
   {
-    my $old_info = &xst_filesys_table_find_info_equivalent ($old_table, $info);
+    my $old_info = &gst_filesys_table_find_info_equivalent ($old_table, $info);
 
 #    print "Looking for entry - ";
-    if (&xst_filesys_info_get_permanent ($info) && !$old_info)
+    if (&gst_filesys_info_get_permanent ($info) && !$old_info)
     {
 #      print "adding.\n";
-      &xst_filesys_fstab_add_entry ($file, $info);
+      &gst_filesys_fstab_add_entry ($file, $info);
     }
-    elsif (!&xst_filesys_info_get_permanent ($info) && $old_info)
+    elsif (!&gst_filesys_info_get_permanent ($info) && $old_info)
     {
 #      print "removing.\n";
-      &xst_filesys_fstab_remove_entry ($file, $info);
+      &gst_filesys_fstab_remove_entry ($file, $info);
     }
-    elsif ($old_info && !&xst_filesys_info_match_data ($old_info, $info))
+    elsif ($old_info && !&gst_filesys_info_match_data ($old_info, $info))
     {
 #      print "updating.\n";
-      &xst_filesys_fstab_update_entry ($file, $info);
+      &gst_filesys_fstab_update_entry ($file, $info);
     }
     else
     {
@@ -1018,10 +1018,10 @@ sub xst_filesys_fstab_replace  # filename, table
   for $old_info (@$old_table)
   {
 #    print "Looking for entry - ";
-    if (!&xst_filesys_table_find_info_equivalent ($new_table, $old_info))
+    if (!&gst_filesys_table_find_info_equivalent ($new_table, $old_info))
     {
 #      print "removing.\n";
-      &xst_filesys_fstab_remove_entry ($file, $old_info);
+      &gst_filesys_fstab_remove_entry ($file, $old_info);
     }
     else
     {
@@ -1034,78 +1034,78 @@ sub xst_filesys_fstab_replace  # filename, table
 # --- Mounting --- #
 
 
-sub xst_filesys_mount_on
+sub gst_filesys_mount_on
 {
   my ($info) = @_;
   my ($dev, $point, $fs);
 
-  $dev   = &xst_filesys_info_print_device ($info);
-  $point = &xst_filesys_info_get_point ($info);
+  $dev   = &gst_filesys_info_print_device ($info);
+  $point = &gst_filesys_info_get_point ($info);
 
-  &xst_report_enter ();
-  &xst_report ("filesys_mount", $dev, $point);
+  &gst_report_enter ();
+  &gst_report ("filesys_mount", $dev, $point);
 
-  $fs = &xst_filesys_info_get_fs ($info);
+  $fs = &gst_filesys_info_get_fs ($info);
   $fs = "auto" if ($fs eq "");
 
-  if (&xst_file_run ("mount -t " . $fs . " -o " . &xst_filesys_info_print_options ($info) . " " .
+  if (&gst_file_run ("mount -t " . $fs . " -o " . &gst_filesys_info_print_options ($info) . " " .
                      $dev . " " . $point))
   {
-    &xst_report ("filesys_mount_failed", $dev, $point);
+    &gst_report ("filesys_mount_failed", $dev, $point);
   }
 
-  &xst_report_leave ();
+  &gst_report_leave ();
 }
 
-sub xst_filesys_mount_off
+sub gst_filesys_mount_off
 {
   my ($info) = @_;
   my ($dev, $point);
 
-  $dev   = &xst_filesys_info_print_device ($info);
-  $point = &xst_filesys_info_get_point ($info);
+  $dev   = &gst_filesys_info_print_device ($info);
+  $point = &gst_filesys_info_get_point ($info);
 
-  &xst_report_enter ();
-  &xst_report ("filesys_unmount", $dev, $point);
+  &gst_report_enter ();
+  &gst_report ("filesys_unmount", $dev, $point);
 
-  if (&xst_file_run ("umount -f " . $point))
+  if (&gst_file_run ("umount -f " . $point))
   {
-    &xst_report ("filesys_unmount_failed", $dev, $point);
+    &gst_report ("filesys_unmount_failed", $dev, $point);
   }
 
-  &xst_report_leave ();
+  &gst_report_leave ();
 }
 
-sub xst_filesys_mount_sync_all
+sub gst_filesys_mount_sync_all
 {
   my ($fstab_file, $mtab_file, $new_table) = @_;
   my ($mount_table, $fs_table);
 
-  $fs_table    = &xst_filesys_fstab_parse ($fstab_file);
-  $mount_table = &xst_filesys_mtab_parse  ($mtab_file);
+  $fs_table    = &gst_filesys_fstab_parse ($fstab_file);
+  $mount_table = &gst_filesys_mtab_parse  ($mtab_file);
 
   for $info (@$new_table)
   {
-    my $mounted_info = &xst_filesys_table_find_info_equivalent ($mount_table, $info);
+    my $mounted_info = &gst_filesys_table_find_info_equivalent ($mount_table, $info);
 
-    if ($mounted_info && !&xst_filesys_info_get_mounted ($info))
+    if ($mounted_info && !&gst_filesys_info_get_mounted ($info))
     {
-      &xst_filesys_mount_off ($mounted_info);
+      &gst_filesys_mount_off ($mounted_info);
     }
-    elsif (!$mounted_info && &xst_filesys_info_get_mounted ($info))
+    elsif (!$mounted_info && &gst_filesys_info_get_mounted ($info))
     {
       # If the mount has an fstab entry, we prefer that over the information
       # provided by XML.
 
-      my $fs_info = &xst_filesys_table_find_info_equivalent ($fs_table, $info);  
+      my $fs_info = &gst_filesys_table_find_info_equivalent ($fs_table, $info);  
 
       if ($fs_info)
       {
-        &xst_filesys_mount_on ($fs_info);
+        &gst_filesys_mount_on ($fs_info);
       }
       else
       {
-        &xst_filesys_mount_on ($info);
+        &gst_filesys_mount_on ($info);
       }
     }
   }

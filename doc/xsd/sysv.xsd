@@ -17,7 +17,7 @@
   </annotation>
   
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
 
   <element type="sysvType" name="sysv"/>
 

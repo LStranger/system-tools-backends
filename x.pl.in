@@ -339,7 +339,7 @@ ModeLine "1920x1440@75" 297.0 1920 2064 2288 2640   1440 1441 1444 1500 -hsync +
 
                         );
 BEGIN {
-  &xst_report_table ({
+  &gst_report_table ({
     'x_version'      => ['info',  _('Detected X version [%s].')],
     'x_parse'        => ['info',  _('Configuration file [%s] successfully parsed.')],
     'x_parse_error'  => ['error', _('Error parsing keyword [%s].')],
@@ -366,7 +366,7 @@ sub x_version
 
   unless ($command) {
     # TODO: add report;
-    &xst_debug_print_line ("Couldn't find X binary.");
+    &gst_debug_print_line ("Couldn't find X binary.");
     return;
   }
 
@@ -383,7 +383,7 @@ sub x_version
   }
   close (FD);
 
-  &xst_report ('x_version', $number);
+  &gst_report ('x_version', $number);
 
   $x_version->{'command'} = $command;
   $x_version->{'sections'} = ($number >= 400) ? $x4_sections : $x3_sections;
@@ -393,7 +393,7 @@ sub x_version
   return $x_version;
 }
 
-# Difference from xst_item_is_in_list is that XF86Config keywords are
+# Difference from gst_item_is_in_list is that XF86Config keywords are
 # case-insensitive and "_" characters are ignored.
 # Returns found value from list or 0.
 sub x_keyword_in_list
@@ -464,7 +464,7 @@ sub parse_option_old
     $val = 'false' if not $val;
   }
 
-  bless [ $name, $val ], "XstXOption";
+  bless [ $name, $val ], "GstXOption";
 }
 
 # ------------------------------------------------------
@@ -485,7 +485,7 @@ sub x_parse_unique_string
   goto ERROR unless $val =~ /^\".*\"$/;
 
   $val =~ s/\"//g;
-  &xst_debug_print_line ("x_parse_unique_string: warning: '$kw' is unique but" .
+  &gst_debug_print_line ("x_parse_unique_string: warning: '$kw' is unique but" .
                          "already has value '$config->{$kw}'.")
       if exists ($config->{$kw});
 
@@ -493,8 +493,8 @@ sub x_parse_unique_string
   return;
 
  ERROR:
-  &xst_report ('x_parse_error', $kw);
-  &xst_debug_print_line ("x_parse_unique_string: error parsing $kw");
+  &gst_report ('x_parse_error', $kw);
+  &gst_debug_print_line ("x_parse_unique_string: error parsing $kw");
 }
 
 sub x_xml_parse_unique
@@ -502,13 +502,13 @@ sub x_xml_parse_unique
   my $hash = shift;
   my $kw = shift;
 
-  $hash->{$kw} = &xst_xml_get_text (shift @_);
+  $hash->{$kw} = &gst_xml_get_text (shift @_);
 }
 
 sub x_xml_print_unique
 {
   my ($key, $val) = @_;
-  &xst_xml_print_pcdata ($key, $val);
+  &gst_xml_print_pcdata ($key, $val);
 }
 
 sub x_update_unique_string
@@ -553,7 +553,7 @@ sub x_parse_unique_int
   goto ERROR unless defined ($val);
   goto ERROR unless $val =~ /^[0-9]+$/;
 
-  &xst_debug_print_line ("x_parse_unique_string: warning: '$kw' is unique but" .
+  &gst_debug_print_line ("x_parse_unique_string: warning: '$kw' is unique but" .
                          "already has value '$config->{$kw}'.")
       if exists ($config->{$kw});
 
@@ -561,8 +561,8 @@ sub x_parse_unique_int
   return;
 
  ERROR:
-  &xst_report ('x_parse_error', $kw);
-  &xst_debug_print_line ("x_parse_unique_int: error parsing $kw");
+  &gst_report ('x_parse_error', $kw);
+  &gst_debug_print_line ("x_parse_unique_int: error parsing $kw");
 }
 
 sub x_update_unique_int
@@ -620,8 +620,8 @@ sub x_parse_list_string
   return;
 
  ERROR:
-  &xst_report ('x_parse_error', $kw);
-  &xst_debug_print_line ("x_parse_list_string: error parsing $kw");
+  &gst_report ('x_parse_error', $kw);
+  &gst_debug_print_line ("x_parse_list_string: error parsing $kw");
 }
 
 sub x_xml_parse_list
@@ -630,7 +630,7 @@ sub x_xml_parse_list
   my $kw = shift;
   my $values = shift;
   my $i = 1;
-  while (defined (my $tmp = &xst_xml_get_attribute ($values, 'arg' . $i))) {
+  while (defined (my $tmp = &gst_xml_get_attribute ($values, 'arg' . $i))) {
     push @{$hash->{$kw}}, $tmp;
     $i++;
   }
@@ -647,7 +647,7 @@ sub x_xml_print_list
     $str .= ' arg' . $i . "=\"$_\"";
     $i++;
   }
-  &xst_xml_print_line ("<$str/>");
+  &gst_xml_print_line ("<$str/>");
 }
 
 sub x_update_list_string
@@ -717,8 +717,8 @@ sub x_parse_list_int
   return;
 
  ERROR:
-  &xst_report ('x_parse_error', $kw);
-  &xst_debug_print_line ("x_parse_list_int: error parsing $kw");
+  &gst_report ('x_parse_error', $kw);
+  &gst_debug_print_line ("x_parse_list_int: error parsing $kw");
 }
 
 sub x_update_list_int
@@ -840,8 +840,8 @@ sub x_parse_serverlayout_screen
   return;
 
  ERROR:
-  &xst_report ('x_parse_error', $kw);
-  &xst_debug_print_line ("x_parse_serverlayout_screen: error parsing $kw");
+  &gst_report ('x_parse_error', $kw);
+  &gst_debug_print_line ("x_parse_serverlayout_screen: error parsing $kw");
 }
 
 sub x_xml_parse_serverlayout_screen
@@ -852,8 +852,8 @@ sub x_xml_parse_serverlayout_screen
 
   $hash->{$kw} = {} unless exists $hash->{$kw};
 
-  my $number = &xst_xml_get_attribute ($tag, "number");
-  my $screen = { 'Identifier' => &xst_xml_get_attribute ($tag, "name") };
+  my $number = &gst_xml_get_attribute ($tag, "number");
+  my $screen = { 'Identifier' => &gst_xml_get_attribute ($tag, "name") };
   $hash->{$kw}->{$number} = $screen;
 }
 
@@ -863,7 +863,7 @@ sub x_xml_print_serverlayout_screen
 
   foreach my $screen (keys %$val) {
     my $name = $val->{$screen}->{'Identifier'};
-    &xst_xml_print_line ("<$key number=\"$screen\" name=\"$name\"/>");
+    &gst_xml_print_line ("<$key number=\"$screen\" name=\"$name\"/>");
   }
 }
 
@@ -967,8 +967,8 @@ sub x_parse_modeline
   return;
 
  ERROR:
-  &xst_report ('x_parse_error', $kw);
-  &xst_debug_print_line ("x_parse_modeline: error parsing $kw");
+  &gst_report ('x_parse_error', $kw);
+  &gst_debug_print_line ("x_parse_modeline: error parsing $kw");
 }
 
 sub x_xml_parse_modeline
@@ -988,9 +988,9 @@ sub x_xml_parse_modeline
     while (@$modeline) {      
       my $field = shift @$modeline;
       if ($field ne 'flag') {
-        $mode->{$field} = &xst_xml_get_text (shift @$modeline);
+        $mode->{$field} = &gst_xml_get_text (shift @$modeline);
       } else {
-        push @{$mode->{$field}}, &xst_xml_get_text (shift @$modeline);
+        push @{$mode->{$field}}, &gst_xml_get_text (shift @$modeline);
       }
     }
     push @{$hash->{$kw}}, $mode;
@@ -1001,29 +1001,29 @@ sub x_xml_print_modeline
 {
   my ($key, $list) = @_;
 
-  &xst_xml_container_enter ("ModeLine");
+  &gst_xml_container_enter ("ModeLine");
 
   foreach (@$list) {
     my $modeline = $_;
-    &xst_xml_container_enter ("Mode");
+    &gst_xml_container_enter ("Mode");
     foreach my $field (keys %$modeline) {
       my $type = ref ($modeline->{$field});
 
-      if (!$type) { &xst_xml_print_pcdata ($field, $modeline->{$field}); }
+      if (!$type) { &gst_xml_print_pcdata ($field, $modeline->{$field}); }
       elsif ($type eq 'ARRAY') {
         foreach my $flag (@{$modeline->{$field}}) {
-          &xst_xml_print_pcdata ('flag', $flag);
+          &gst_xml_print_pcdata ('flag', $flag);
         }
       }
       else {
         my $msg = "unknown data type $type";
-        &xst_report ('x_general_warn', $msg);
-        &xst_debug_print_line ("x_xml_print_modeline: $msg");
+        &gst_report ('x_general_warn', $msg);
+        &gst_debug_print_line ("x_xml_print_modeline: $msg");
       }
     }
-    &xst_xml_container_leave ();
+    &gst_xml_container_leave ();
   }
-  &xst_xml_container_leave ();
+  &gst_xml_container_leave ();
 }
 
 sub x_update_modeline
@@ -1109,8 +1109,8 @@ sub x_parse_range_hz
   return;
 
  ERROR:
-  &xst_report ('x_parse_error', $kw);
-  &xst_debug_print_line ("x_parse_range_hz: error parsing $kw");
+  &gst_report ('x_parse_error', $kw);
+  &gst_debug_print_line ("x_parse_range_hz: error parsing $kw");
 }
 
 sub x_xml_parse_range_hz
@@ -1118,7 +1118,7 @@ sub x_xml_parse_range_hz
   my $hash, shift;
   my $kw = shift;
 
-  push @{$hash->{$kw}}, &xst_xml_get_text (shift @_);
+  push @{$hash->{$kw}}, &gst_xml_get_text (shift @_);
 }
 
 sub x_xml_print_range_hz
@@ -1130,7 +1130,7 @@ sub x_xml_print_range_hz
     my $val = $$tmp[0];
     $val .= '-' . $$tmp[1] if $$tmp[0] != $$tmp[1];
 
-    &xst_xml_print_pcdata ($key, $val);
+    &gst_xml_print_pcdata ($key, $val);
   }
 }
 
@@ -1173,7 +1173,7 @@ sub x_get_token
   while (@$buf) {
     my $line = $$buf[0];
 
-    if (&xst_ignore_line ($line)) {
+    if (&gst_ignore_line ($line)) {
       push @$dest_buf, $line if defined ($dest_buf);
       shift @$buf;
       next;
@@ -1201,7 +1201,7 @@ sub x_peek_token
   foreach (@$buf) {
     my $line = $_;
 
-    if (&xst_ignore_line ($line)) {
+    if (&gst_ignore_line ($line)) {
       next;
     }
 
@@ -1234,7 +1234,7 @@ sub x_parse
 
   $x_version = &x_version () unless $x_version;
 
-  my $buf = &xst_file_buffer_load ($fname);
+  my $buf = &gst_file_buffer_load ($fname);
   return unless $buf;
   
   # Init section stack
@@ -1291,7 +1291,7 @@ sub x_parse
     }
   }
 
-  &xst_report ('x_parse', $fname);
+  &gst_report ('x_parse', $fname);
   return $config;
 }
 
@@ -1312,7 +1312,7 @@ sub x_xml_print_section
   $section_ptr = $x4_sections unless $section_ptr; # Always print using X4_sections.
 
   return unless (exists ($section_ptr->{$section}));
-  &xst_xml_container_enter ("$section");
+  &gst_xml_container_enter ("$section");
 
   $section_ptr = $section_ptr->{$section};
   foreach $key (keys %$hash) {
@@ -1329,12 +1329,12 @@ sub x_xml_print_section
 
     else {
       my $msg = "unknown keyword $key in section $section";
-      &xst_report ('x_general_warn', $msg);
-      &xst_debug_print_line ("x_xml_print_section: $msg");
+      &gst_report ('x_general_warn', $msg);
+      &gst_debug_print_line ("x_xml_print_section: $msg");
     }
   }
 
-  &xst_xml_container_leave ();
+  &gst_xml_container_leave ();
 }
 
 # --------------------------------------------------------------------
@@ -1401,8 +1401,8 @@ sub x_xml_parse
 
     else {
       my $msg = "received unknown xml tag $$tree[0]";
-      &xst_report ('xml_unexp_tag', $$tree[0]);
-      &xst_debug_print_line ("x_xml_parse: $msg");
+      &gst_report ('xml_unexp_tag', $$tree[0]);
+      &gst_debug_print_line ("x_xml_parse: $msg");
     }
 
     shift @$tree;
@@ -1424,7 +1424,7 @@ sub x_update_get_token
   for ($ptr->{'line'}; $ptr->{'line'} < @$buf; $ptr->{'line'}++, $ptr->{'col'} = 0) {
     my $line = substr ($$buf[$ptr->{'line'}], $ptr->{'col'});
 
-    next if &xst_ignore_line ($line);
+    next if &gst_ignore_line ($line);
 
     $line =~ s/^(\s+)//;
     $ptr->{'col'} += length ($1) if defined ($1);
@@ -1544,8 +1544,8 @@ sub x_update_add_section
 
     else {
       my $msg = "unknown keyword $key in section $section";
-      &xst_report ('x_general_warn', $msg);
-      &xst_debug_print_line ("x_update_add_section: $msg");
+      &gst_report ('x_general_warn', $msg);
+      &gst_debug_print_line ("x_update_add_section: $msg");
     }
   }
 
@@ -1634,8 +1634,8 @@ sub x_update_section
 
     else {
       my $msg = "unknown keyword $kw in section $section_name";
-      &xst_report ('x_general_warn', $msg);
-      &xst_debug_print_line ("x_update_section: $msg");
+      &gst_report ('x_general_warn', $msg);
+      &gst_debug_print_line ("x_update_section: $msg");
     }
 
     undef $first_time if $first_time;
@@ -1660,7 +1660,7 @@ sub x_config_set
   return unless $xml_config;
 
   my $section_list = $x_version->{'sections'};  
-  my $buf = &xst_file_buffer_load ($fname);
+  my $buf = &gst_file_buffer_load ($fname);
   return unless $buf;
 
   my $ptr = {};
@@ -1681,7 +1681,7 @@ sub x_config_set
     }
   }
 
-  &xst_file_buffer_save ($buf, $fname);
+  &gst_file_buffer_save ($buf, $fname);
 }
 
 
@@ -1749,7 +1749,7 @@ sub x_check_get_serverlayout
   my $hash = {};
 
   # Add 'Identifier'
-  $hash->{'Identifier'} = 'Xst Configured';
+  $hash->{'Identifier'} = 'Gst Configured';
 
   # Add 'Screen'
   my $ref = &x_get_active_screen ($config, $x_version);
@@ -1771,7 +1771,7 @@ sub x_check_set_serverlayout
   return unless $config;
 
   if ($x_version->{'number'} < 400) {
-    delete $config->{'XstXServerLayout'} if (exists ($config->{'XstXServerLayout'}));
+    delete $config->{'GstXServerLayout'} if (exists ($config->{'GstXServerLayout'}));
   }
 }
 
@@ -1835,7 +1835,7 @@ sub x_get_active_serverlayout
   # Active == first
   my $active = $config->{'ServerLayout'}[0];
   unless ($active->{'Identifier'} || $active->{'Screen'}) {
-    &xst_debug_print_line ("x_get_active_serverlayout: Incomplete active layout.");
+    &gst_debug_print_line ("x_get_active_serverlayout: Incomplete active layout.");
     return;
   }
 
@@ -1852,7 +1852,7 @@ sub x_get_active_display
   return unless $screen;
 
   if (scalar @{$screen->{'Display'}} < 1) {
-    &xst_debug_print_line ("x_get_active_display: No 'Display' subsections found.");
+    &gst_debug_print_line ("x_get_active_display: No 'Display' subsections found.");
     return;
   }
 
@@ -1860,7 +1860,7 @@ sub x_get_active_display
     return $disp if $screen->{'DefaultDepth'} == $disp->{'Depth'};
   }
 
-  &xst_debug_print_line ("x_get_active_display: No 'Display' subsection found.");
+  &gst_debug_print_line ("x_get_active_display: No 'Display' subsection found.");
   return;
 }
 
@@ -1875,7 +1875,7 @@ sub x_check_display
 
   my $modes = $display->{'Modes'};
   if (scalar @$modes < 1) {
-    &xst_debug_print_line ("x_check_display: No 'Modes' found.");
+    &gst_debug_print_line ("x_check_display: No 'Modes' found.");
     return;
   }
 
@@ -1968,7 +1968,7 @@ sub x_probe_add_monitor
   return unless $monitor;
 
   my $new;
-  $new->{'Identifier'} = 'XstTestMonitor';
+  $new->{'Identifier'} = 'GstTestMonitor';
   $new->{'HorizSync'} = $monitor->{'HorizSync'};
   $new->{'VertRefresh'} = $monitor->{'VertRefresh'};
   $new->{'ModeLine'} = ();
@@ -1991,9 +1991,9 @@ sub x_probe_add_screen
   return unless $monitor;
 
   my $new;
-  $new->{'Identifier'} = 'XstTestScreen';
+  $new->{'Identifier'} = 'GstTestScreen';
   $new->{'Device'} = $screen->{'Device'};
-  $new->{'Monitor'} = 'XstTestMonitor';
+  $new->{'Monitor'} = 'GstTestMonitor';
 
   foreach my $depth (@x_colordepths) {
     my $display;    
@@ -2038,8 +2038,8 @@ sub x_probe_scan
   $depth_cmd .= $depth;
 
   my $command = $x_version->{'command'};
-  &xst_debug_print_line ("$command :9 -xf86config $cfg_file -probeonly $depth_cmd -screen XstTestScreen 2>&1 |");
-  open (FD, "$command :9 -xf86config $cfg_file -probeonly $depth_cmd -screen XstTestScreen 2>&1 |");
+  &gst_debug_print_line ("$command :9 -xf86config $cfg_file -probeonly $depth_cmd -screen GstTestScreen 2>&1 |");
+  open (FD, "$command :9 -xf86config $cfg_file -probeonly $depth_cmd -screen GstTestScreen 2>&1 |");
   if (FD) {
     my @content = (<FD>);
     close (FD);
@@ -2073,8 +2073,8 @@ sub x_probe_collect
     return $list;
   }
 
-  &xst_report ('x_probe_error', $depth);
-  &xst_debug_print_line ("x_probe_collect: error reading XFree's output at depth $depth.");
+  &gst_report ('x_probe_error', $depth);
+  &gst_debug_print_line ("x_probe_collect: error reading XFree's output at depth $depth.");
   return;
 }
 
@@ -2088,9 +2088,9 @@ sub x_probe_run
 
   my $hash;
   foreach my $depth (@x_colordepths) {
-    my $proc = &xst_process_fork (\&x_probe_scan, $cfg_file, $depth);
-    &xst_process_list_check_ready (15, $proc);
-    my $list = &xst_process_result_collect ($proc, \&x_probe_collect, $modes, $depth);
+    my $proc = &gst_process_fork (\&x_probe_scan, $cfg_file, $depth);
+    &gst_process_list_check_ready (15, $proc);
+    my $list = &gst_process_result_collect ($proc, \&x_probe_collect, $modes, $depth);
     if ($list && scalar @$list) {
       $hash->{$depth} = $list;
     } else {
@@ -2099,7 +2099,7 @@ sub x_probe_run
   }
 
   unless ($hash) {
-    &xst_report ('x_probe_error', "Error running XFree server");
+    &gst_report ('x_probe_error', "Error running XFree server");
     return;
   }
 
@@ -2113,18 +2113,18 @@ sub x_probe_print_xml
 
   return unless $list;    
 
-  &xst_xml_print_begin ();
-  &xst_xml_print_vspace ();
+  &gst_xml_print_begin ();
+  &gst_xml_print_vspace ();
 
   foreach my $depth (keys %$list) {
-    &xst_xml_print_line ("<Depth value=\"$depth\">");
-    &xst_xml_enter ();
+    &gst_xml_print_line ("<Depth value=\"$depth\">");
+    &gst_xml_enter ();
     &x_xml_print_modeline (0, $list->{$depth});
-    &xst_xml_leave ();
-    &xst_xml_print_line (q(</Depth>));
+    &gst_xml_leave ();
+    &gst_xml_print_line (q(</Depth>));
   }
 
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
 }
 
 # Internal
@@ -2136,9 +2136,9 @@ sub x_probe_store
   return unless $config;
   # TODO: Write monitor and card information also.
 
-  my $file = &xst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $x_probe_file;
+  my $file = &gst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $x_probe_file;
 
-  my $fh = &xst_file_open_write_from_names ($file);
+  my $fh = &gst_file_open_write_from_names ($file);
   if ($fh) {
     local *STDOUT = $fh;
     &x_probe_print_xml ($list);
@@ -2154,8 +2154,8 @@ sub x_probe_load
   return unless $config;
   # TODO: Check if monitor || card is changed
 
-  my $file = &xst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $x_probe_file;
-  my $fh = &xst_file_open_read_from_names ($file);
+  my $file = &gst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $x_probe_file;
+  my $fh = &gst_file_open_read_from_names ($file);
 
   if ($fh) {
     my @content = <$fh>;
@@ -2178,8 +2178,8 @@ sub x_probe
 
   unless ($direct) {
     my @content = &x_probe_load ($config);
-    &xst_report ('x_probe_needed') unless @content;
-    &xst_report_end ();
+    &gst_report ('x_probe_needed') unless @content;
+    &gst_report_end ();
     print @content;
     return;
   }
@@ -2197,12 +2197,12 @@ sub x_probe
 
   if ($list) {
     &x_probe_store ($config, $list);
-    &xst_report_end ();
+    &gst_report_end ();
     &x_probe_print_xml ($list);
     return;
   }
 
-  &xst_report_end ();
+  &gst_report_end ();
 }
 
 

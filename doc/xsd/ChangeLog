@@ -1,3 +1,10 @@
+2003-03-13  Christian Neumair  <chris@gnome-de.org>
+
+	* *.xsd: s/xst/gst/.
+	* gst.xsd: Added.
+	* networktypes.xsd: s/xst/gst/.
+	* xst.xsd: Removed, renamed to gst.xst.
+
 2003-02-21  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Release 0.23.0

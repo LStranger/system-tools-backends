@@ -80,7 +80,7 @@ sub xml_parse
   my ($tree, %hash);
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan;
+  $tree = &gst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "print" tag.
@@ -130,7 +130,7 @@ sub xml_parse_printer
 
   while (@$tree)
   {
-    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
+    $hash{$$tree[0]} = &gst_xml_get_pcdata ($$tree[1]);
 
     # If get_pcdata returns an array instead of a scalar, we have
     #  a subsection to process.
@@ -154,7 +154,7 @@ sub xml_parse_section
 
   while (@$tree)
   {
-    $hash{$$tree[0]} = &xst_xml_get_pcdata ($$tree[1]);
+    $hash{$$tree[0]} = &gst_xml_get_pcdata ($$tree[1]);
 
     shift @$tree;
     shift @$tree;
@@ -175,21 +175,21 @@ sub xml_print_printer
   my ($h, $spool) = @_;
   my ($i, $val, $section);
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<printer>\n");
-  &xst_xml_enter ();
+  &gst_xml_print_vspace ();
+  &gst_xml_print_line ("<printer>\n");
+  &gst_xml_enter ();
 
-  $val = &xst_xml_quote ($spool);
-  &xst_xml_print_line ("<name>$val</name>");
+  $val = &gst_xml_quote ($spool);
+  &gst_xml_print_line ("<name>$val</name>");
 
   foreach $i (keys (%$h))
   {
-    $val = &xst_xml_quote ($$h{$i});
-    &xst_xml_print_line ("<$i>$val</$i>\n");
+    $val = &gst_xml_quote ($$h{$i});
+    &gst_xml_print_line ("<$i>$val</$i>\n");
   }
 
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</printer>\n");  
+  &gst_xml_leave ();
+  &gst_xml_print_line ("</printer>\n");  
 }
 
 sub xml_print
@@ -197,14 +197,14 @@ sub xml_print
   my $h = $_[0];
   my ($i, $val);
 
-  &xst_xml_print_begin ();
+  &gst_xml_print_begin ();
 
   foreach $i (keys (%$h))
   {
     &xml_print_printer ($$h{$i}, $i);
   }
 
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
 }
 
 
@@ -215,8 +215,8 @@ sub get
 {
   my $hash;
 
-  $hash = &xst_print_conf_get ();
-  &xst_report_end ();
+  $hash = &gst_print_conf_get ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -226,8 +226,8 @@ sub set
   my $hash;
   
   $hash = &xml_parse ();
-  &xst_print_conf_set ($hash);
-  &xst_report_end ();
+  &gst_print_conf_set ($hash);
+  &gst_report_end ();
 }
 
 
@@ -239,7 +239,7 @@ sub filter
   my $hash;
   
   $hash = &xml_parse ();
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -247,7 +247,7 @@ sub filter
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives =
 {
@@ -256,6 +256,6 @@ $directives =
   "filter" => [ \&filter, [], "" ]
 };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

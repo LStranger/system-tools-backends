@@ -1,3 +1,10 @@
+2003-03-13  Christian Neumair  <chris@gnome-de.org>
+
+	* .cvsignore: Updated.
+	* users-conf.in: Added Gentoo to list of supported platforms.
+	* rhprinterdb2gstxml.pl: Added.
+	* rhprinterdb2xstxml.pl: Removed, renamed to rhprinterdb2gstxml.pl.
+
 2003-03-12  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* time-conf.in, boot-conf.in, users-conf.in, platform.in:

@@ -23,7 +23,7 @@
 
 
 # This function extracts known names and descriptions from the description hash
-sub xst_service_list_get_info
+sub gst_service_list_get_info
 {
 	my ($service) = @_;
 	my (%service_description_list);
@@ -103,7 +103,7 @@ sub xst_service_list_get_info
 
 
 # This function determines if a service is "forbidden" or not (if runlevel-admin must show it or not)
-sub xst_service_list_service_is_forbidden
+sub gst_service_list_service_is_forbidden
 {
 	my ($service) = @_;
 	my (%service_forbidden_list);

@@ -61,7 +61,7 @@ sub xml_parse
   
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan ($file);
+  $tree = &gst_xml_scan ($file);
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "networking" tag.
@@ -69,7 +69,7 @@ sub xml_parse
   while ($elem = shift @$tree)
   {
       if   ($elem eq "dhcpd") { &xml_parse_dhcpd (shift @$tree, \%hash); }
-      else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+      else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   return (\%hash);
@@ -84,38 +84,38 @@ sub xml_parse_dhcpd
   
   while ($elem = shift @$tree)
   {
-    if    ($elem eq "installed")    { $$hash{"installed"}  = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "configured")   { $$hash{"configured"} = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "active")       { $$hash{"active"}     = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "subnet")       { &xst_dhcpd_xml_parse_subnet (shift @$tree, \%subnets); }
-    else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    if    ($elem eq "installed")    { $$hash{"installed"}  = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "configured")   { $$hash{"configured"} = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "active")       { $$hash{"active"}     = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "subnet")       { &gst_dhcpd_xml_parse_subnet (shift @$tree, \%subnets); }
+    else  { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"subnets"} = \%subnets unless scalar keys %subnets == 0;
 }
 
 # --- XML printing --- #
-sub xst_dhcpd_print_subnet
+sub gst_dhcpd_print_subnet
 {
     my ($h) = @_;
     my %ranges, %hosts;
     my $range, $hosts;
 
-    &xst_xml_container_enter ("subnet");
+    &gst_xml_container_enter ("subnet");
 
     # Options
-    &xst_xml_print_hash ($$h{"options"});
-    &xst_xml_print_vspace ();
+    &gst_xml_print_hash ($$h{"options"});
+    &gst_xml_print_vspace ();
 
     # Ranges
-    &xst_xml_print_hash_hash ($$h{"ranges"}, "range");
-    &xst_xml_print_vspace ();
+    &gst_xml_print_hash_hash ($$h{"ranges"}, "range");
+    &gst_xml_print_vspace ();
     
     # Hosts
-    &xst_xml_print_hash_hash ($$h{"hosts"}, "host");
-    &xst_xml_print_vspace ();
+    &gst_xml_print_hash_hash ($$h{"hosts"}, "host");
+    &gst_xml_print_vspace ();
     
-    &xst_xml_container_leave ("subnet");
+    &gst_xml_container_leave ("subnet");
 
     return;
 }
@@ -127,18 +127,18 @@ sub xml_print
   my $subnet;
   my @scalar_keys = qw(installed active);
 
-  &xst_xml_print_begin ();
+  &gst_xml_print_begin ();
 
-  &xst_xml_print_scalars ($h, @scalar_keys);
-  &xst_xml_print_vspace ();
+  &gst_xml_print_scalars ($h, @scalar_keys);
+  &gst_xml_print_vspace ();
   
   $subnets = $$h{"subnets"};
   foreach $subnet (keys %$subnets) {
-      &xst_dhcpd_print_subnet ($$subnets{$subnet});
-      &xst_xml_print_vspace ();
+      &gst_dhcpd_print_subnet ($$subnets{$subnet});
+      &gst_xml_print_vspace ();
   }
   
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
   
 }
 
@@ -147,9 +147,9 @@ sub get
 {
   my $hash;
 
-  $hash = &xst_dhcpd_conf_get ();
+  $hash = &gst_dhcpd_conf_get ();
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -160,8 +160,8 @@ sub set
     my $res;
     
     $hash = &xml_parse ();
-    $res = &xst_dhcpd_conf_set ($hash);
-    &xst_report_end ();
+    $res = &gst_dhcpd_conf_set ($hash);
+    &gst_report_end ();
 
     if ($res eq -1) {
         printf STDERR "An error ocurred while setting configuration\n";
@@ -176,21 +176,21 @@ sub filter
   my $hash;
 
   $hash = &xml_parse ();
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"            => [ \&get,    [], "" ],
   "set"            => [ \&set,    [], "" ]
     };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);
 

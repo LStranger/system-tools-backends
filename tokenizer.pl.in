@@ -40,49 +40,49 @@ if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 require "$SCRIPTSDIR/file.pl$DOTIN";
 
 # -------------------------------- Test ---------------------------
-sub xst_tokenizer_test
+sub gst_tokenizer_test
 {
     my ($file) = @_;
     my $in, $out;
     my $token;
 
     $out = \@dummy_arrayt; # Otherwise push @$out doesn't work
-    $in = &xst_tokenize ($file);
+    $in = &gst_tokenize ($file);
 
-    while (defined ($token = &xst_tokenize_get_token ($in, $out))) {
+    while (defined ($token = &gst_tokenize_get_token ($in, $out))) {
         # Replace a token
         if ("subnet" eq $token) {
-            my $subnet = &xst_tokenize_get_token ($in, $out);
-            &xst_tokenize_replace_token (out, "123\.123\.123\.123");
+            my $subnet = &gst_tokenize_get_token ($in, $out);
+            &gst_tokenize_replace_token (out, "123\.123\.123\.123");
         }
         # Append tokens
         if ("option" eq $token) {
-            &xst_tokenize_append_token ($out, " now");
+            &gst_tokenize_append_token ($out, " now");
         }
         # Remove and skip till
         if ("range" eq $token) {
-            &xst_tokenize_remove_till  ($out,";");
-            &xst_tokenize_skip_till    ($in, ";");
+            &gst_tokenize_remove_till  ($out,";");
+            &gst_tokenize_skip_till    ($in, ";");
         }
     }
 
-    &xst_file_buffer_save ($out, $file . ".new");
+    &gst_file_buffer_save ($out, $file . ".new");
 
     printf STDERR "Tested tokenizer with $file. Output in $file.new\n";
     printf STDERR "You can :\n";
     printf STDERR "diff $file $file.new\n";
 }
-#&xst_tokenizer_test ("/etc/dhcpd.conf");
+#&gst_tokenizer_test ("/etc/dhcpd.conf");
 
 # -------------------------------- token functions -------------------
-sub xst_tokenize_warning
+sub gst_tokenize_warning
 {
     my ($mess) = @_;
 
     printf STDERR "Warning ***: $mess\n";
 }
 
-sub xst_tokenize_error
+sub gst_tokenize_error
 {
     my ($mess) = @_;
 
@@ -91,17 +91,17 @@ sub xst_tokenize_error
     exit;
 }
 
-sub xst_tokenize_verify_token
+sub gst_tokenize_verify_token
 {
     my ($in, $verifyme, $out) = @_;
-    my $token = &xst_tokenize_get_token ($in, $out);
+    my $token = &gst_tokenize_get_token ($in, $out);
 
     if ($token ne $verifyme) {
-        &xst_tokenize_warning ("Expected \"" . $verifyme . "\" found \"" . $token . "\" at line ?");
+        &gst_tokenize_warning ("Expected \"" . $verifyme . "\" found \"" . $token . "\" at line ?");
     }
 }
 
-sub xst_tokenize_get_token
+sub gst_tokenize_get_token
 {
     my ($in, $out) = @_;
     my $token = "";
@@ -120,7 +120,7 @@ sub xst_tokenize_get_token
     return $token;
 }
 
-sub xst_tokenize_get_token_unclean
+sub gst_tokenize_get_token_unclean
 {
     my ($in, $out) = @_;
     my $token = "";
@@ -136,12 +136,12 @@ sub xst_tokenize_get_token_unclean
     return $token;
 }
 
-sub xst_tokenize_get_token_till
+sub gst_tokenize_get_token_till
 {
     my ($in, $out, $till_me) = @_;
     my $resp;
 
-    while (defined ($token = &xst_tokenize_get_token ($in, $out)) and
+    while (defined ($token = &gst_tokenize_get_token ($in, $out)) and
            ($token ne $till_me)){
         if (defined $resp) {
             $resp .= " ";
@@ -152,7 +152,7 @@ sub xst_tokenize_get_token_till
     return $resp;
 }
 
-sub xst_tokenize_replace_token
+sub gst_tokenize_replace_token
 {
     my ($out, $new_token) = @_;
     my $token = pop (@$out);
@@ -166,7 +166,7 @@ sub xst_tokenize_replace_token
     push (@$out, $token);
 }
 
-sub xst_tokenize_append_token
+sub gst_tokenize_append_token
 {
     my ($out, $token) = @_;
 
@@ -175,7 +175,7 @@ sub xst_tokenize_append_token
     push (@$out, $token);
 }
 
-sub xst_tokenize_remove_token
+sub gst_tokenize_remove_token
 {
     my ($out, $number) = @_;
 
@@ -189,7 +189,7 @@ sub xst_tokenize_remove_token
     }
 }
 
-sub xst_tokenize_skip_token
+sub gst_tokenize_skip_token
 {
     my ($in, $number) = @_;
 
@@ -203,7 +203,7 @@ sub xst_tokenize_skip_token
     }
 }
 
-sub xst_tokenize_undo
+sub gst_tokenize_undo
 {
     my ($in, $out, $number) = @_;
 
@@ -221,25 +221,25 @@ sub xst_tokenize_undo
     }
 }
 
-sub xst_tokenize_advance_till
+sub gst_tokenize_advance_till
 {
     my ($in, $till_me, $out) = @_;
     
-    while (defined (my $token = &xst_tokenize_get_token ($in, $out))) {
+    while (defined (my $token = &gst_tokenize_get_token ($in, $out))) {
         if ($token eq $till_me) {
             return;
         }
     }
 }
 
-sub xst_tokenize_skip_till
+sub gst_tokenize_skip_till
 {
     my ($in, $till_me) = @_;
     my $token;
 
     while (1) {
-        $token = &xst_tokenize_get_token ($in, $out);
-        &xst_tokenize_remove_token ($out);
+        $token = &gst_tokenize_get_token ($in, $out);
+        &gst_tokenize_remove_token ($out);
         if ($token eq $till_me) {
             return;
         }
@@ -247,7 +247,7 @@ sub xst_tokenize_skip_till
     
 }
 
-sub xst_tokenize_remove_till
+sub gst_tokenize_remove_till
 {
     my ($out, $till_me) = @_;
     my @dont_remove;
@@ -272,10 +272,10 @@ sub xst_tokenize_remove_till
 }
 
 # -------------------------------- tokenizer  -------------------
-sub xst_tokenize
+sub gst_tokenize
 {
     my ($file) = @_;
-    my $buf = &xst_file_buffer_load ($file);
+    my $buf = &gst_file_buffer_load ($file);
 
     my @out;
     my $out_index;
@@ -284,7 +284,7 @@ sub xst_tokenize
         my $line = $$buf[0];
         my $i = 0;
 
-        if (&xst_ignore_line ($line)) {
+        if (&gst_ignore_line ($line)) {
             $out[$out_index++] = $line;
             shift @$buf;
             next;

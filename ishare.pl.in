@@ -33,14 +33,14 @@ require "$SCRIPTSDIR/service.pl$DOTIN";
 require "$SCRIPTSDIR/network.pl$DOTIN";
 
 
-sub xst_ishare_ipchains_configured
+sub gst_ishare_ipchains_configured
 {
   my ($tools, $kerneltool) = @_;
   my ($ret, $fd, $val);
   
   if ($tools && $kerneltool)
   {
-    $fd = &xst_file_run_pipe_read ("ipchains-save");
+    $fd = &gst_file_run_pipe_read ("ipchains-save");
     if ($fd ne undef)
     {
       $ret = 0;
@@ -53,7 +53,7 @@ sub xst_ishare_ipchains_configured
         }
       }
       
-      &xst_file_close ($fd);
+      &gst_file_close ($fd);
     }
   }
 
@@ -61,16 +61,16 @@ sub xst_ishare_ipchains_configured
 }
 
 
-sub xst_ishare_fwrules_get_ipchains
+sub gst_ishare_fwrules_get_ipchains
 {
-  &xst_ishare_get_linux22_forward_support (\%hash);
-  &xst_ishare_get_linux22_forward_support_active (\%hash);
+  &gst_ishare_get_linux22_forward_support (\%hash);
+  &gst_ishare_get_linux22_forward_support_active (\%hash);
 
   return \%hash;
 }
 
 
-sub xst_ishare_ipchains_save
+sub gst_ishare_ipchains_save
 {
   my ($ipchains_conf, $interface, $landevs, $overwrite) = @_;
   my ($fd, $dev, $landev, $network, $netmask);
@@ -78,9 +78,9 @@ sub xst_ishare_ipchains_save
 
   return 0 if !$overwrite;
   
-  $fd = &xst_file_run_pipe_read ("ipchains-save");
+  $fd = &gst_file_run_pipe_read ("ipchains-save");
   @buff = (<$fd>);
-  &xst_file_close ($fd);
+  &gst_file_close ($fd);
 
   foreach $line (@buff)
   {
@@ -91,21 +91,21 @@ sub xst_ishare_ipchains_save
   {
     $dev = $$interface{$landev};
     $netmask = $$dev{"netmask"};
-    $network = &xst_network_ipv4_calc_subnet ($$dev{"address"}, $netmask);
+    $network = &gst_network_ipv4_calc_subnet ($$dev{"address"}, $netmask);
     push @buff, "-A forward -s $network/$netmask -d 0.0.0.0/0.0.0.0 -j MASQ\n";
   }
 
-  &xst_file_buffer_clean (\@buff);
-  return &xst_file_buffer_save (\@buff, $ipchains_conf);
+  &gst_file_buffer_clean (\@buff);
+  return &gst_file_buffer_save (\@buff, $ipchains_conf);
 }
 
 
-sub xst_ishare_dhcp_set_devs
+sub gst_ishare_dhcp_set_devs
 {
   my ($linux_conf, $overwrite, $dev) = @_;
 
   if ($overwrite) {
-    return &xst_replace_join_first_array
+    return &gst_replace_join_first_array
         ($linux_conf, "DHCP.interface", " ", " ", $dev);
   }
 
@@ -113,17 +113,17 @@ sub xst_ishare_dhcp_set_devs
 }
 
 
-sub xst_ishare_dhcp_conf_add_interface
+sub gst_ishare_dhcp_conf_add_interface
 {
   my ($buff, $address, $netmask, $hwaddr) = @_;
   my ($network, $broadcast, $min, $max, $hostname);
 
-  $hostname = &xst_file_run_backtick ("hostname");
+  $hostname = &gst_file_run_backtick ("hostname");
   chomp $hostname;
   $hostname = "server" if $hostname eq "";
 
-  $min = $network   = &xst_network_ipv4_calc_subnet ($address, $netmask);
-  $max = $broadcast = &xst_network_ipv4_calc_bcast  ($address, $netmask);
+  $min = $network   = &gst_network_ipv4_calc_subnet ($address, $netmask);
+  $max = $broadcast = &gst_network_ipv4_calc_bcast  ($address, $netmask);
 
   $max =~ s/([0-9]+)$//;
   $max .= $1 - 1;
@@ -145,7 +145,7 @@ sub xst_ishare_dhcp_conf_add_interface
 }
 
 
-sub xst_ishare_dhcp_set_conf
+sub gst_ishare_dhcp_set_conf
 {
   my ($dhcpd_conf, $overwrite, $interface, $devs) = @_;
   my ($dev, $iface);
@@ -153,84 +153,84 @@ sub xst_ishare_dhcp_set_conf
 
   return 0 if !$overwrite;
 
-  $info = &xst_network_interfaces_get_info ();
+  $info = &gst_network_interfaces_get_info ();
   
   foreach $dev (@$devs)
   {
     $iface = $$interface{$dev};
 
-    &xst_ishare_dhcp_conf_add_interface (\@buff, $$iface{"address"}, $$iface{"netmask"},
+    &gst_ishare_dhcp_conf_add_interface (\@buff, $$iface{"address"}, $$iface{"netmask"},
                                          $ {$$info{$$iface{"dev"}}}{"hwaddr"});
   }
 
-  &xst_file_buffer_clean (\@buff);
-  &xst_file_buffer_save (\@buff, $dhcpd_conf);
+  &gst_file_buffer_clean (\@buff);
+  &gst_file_buffer_save (\@buff, $dhcpd_conf);
 }
 
 
-sub xst_ishare_conf_get
+sub gst_ishare_conf_get
 {
   my %dist_attrib;
   my $hash;
 
-  %dist_attrib = &xst_ishare_conf_get_parse_table ();
+  %dist_attrib = &gst_ishare_conf_get_parse_table ();
 
-  $hash = &xst_parse_from_table ($dist_attrib{"fn"},
+  $hash = &gst_parse_from_table ($dist_attrib{"fn"},
                                  $dist_attrib{"table"});
   return $hash;
 }
 
 
-sub xst_ishare_fwrules_get
+sub gst_ishare_fwrules_get
 {
   my %dist_attrib;
   my $hash;
 
-  %dist_attrib = &xst_ishare_fwrules_get_parse_table ();
+  %dist_attrib = &gst_ishare_fwrules_get_parse_table ();
 
-  $hash = &xst_parse_from_table ($dist_attrib{"fn"},
+  $hash = &gst_parse_from_table ($dist_attrib{"fn"},
                                  $dist_attrib{"table"});
   return $hash;
 }
 
 
-sub xst_ishare_dhcp_get
+sub gst_ishare_dhcp_get
 {
   my %dist_attrib;
   my $hash;
 
-  %dist_attrib = &xst_ishare_dhcp_get_parse_table ();
+  %dist_attrib = &gst_ishare_dhcp_get_parse_table ();
 
-  $hash = &xst_parse_from_table ($dist_attrib{"fn"},
+  $hash = &gst_parse_from_table ($dist_attrib{"fn"},
                                  $dist_attrib{"table"});
   return $hash;
 }
 
 
-sub xst_ishare_conf_set
+sub gst_ishare_conf_set
 {
   my ($values_hash) = @_;
   my (%dist_attrib, $old_hash);
 
-  %dist_attrib = &xst_ishare_conf_get_replace_table ();
+  %dist_attrib = &gst_ishare_conf_get_replace_table ();
 
-  $old_hash = &xst_network_conf_get ();
-  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+  $old_hash = &gst_network_conf_get ();
+  $res = &gst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
                                   $values_hash, $old_hash);
 
   return $res;
 }
 
 
-sub xst_ishare_fwrules_set
+sub gst_ishare_fwrules_set
 {
   my ($interface, $values_hash) = @_;
   my (%dist_attrib, $old_hash);
 
-  %dist_attrib = &xst_ishare_fwrules_get_replace_table ();
+  %dist_attrib = &gst_ishare_fwrules_get_replace_table ();
 
   $$values_hash{"interface"} = $interface;
-  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+  $res = &gst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
                                   $values_hash, $old_hash);
   delete $$values_hash{"interface"};
 
@@ -238,15 +238,15 @@ sub xst_ishare_fwrules_set
 }
 
 
-sub xst_ishare_dhcp_set
+sub gst_ishare_dhcp_set
 {
   my ($interface, $values_hash) = @_;
   my (%dist_attrib, $old_hash);
 
-  %dist_attrib = &xst_ishare_dhcp_get_replace_table ();
+  %dist_attrib = &gst_ishare_dhcp_get_replace_table ();
 
   $$values_hash{"interface"} = $interface;
-  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+  $res = &gst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
                                   $values_hash, $old_hash);
   delete $$values_hash{"interface"};
 
@@ -254,7 +254,7 @@ sub xst_ishare_dhcp_set
 }
 
 
-sub xst_ishare_conf_get_parse_table
+sub gst_ishare_conf_get_parse_table
 {
   my %dist_map =
   (
@@ -273,21 +273,21 @@ sub xst_ishare_conf_get_parse_table
          fn => {},
          table =>
              [
-              [ "interface", \&xst_network_interfaces_get ],
-              [ "fwrules",   \&xst_ishare_fwrules_get     ],
-              [ "dhcp",      \&xst_ishare_dhcp_get        ],
+              [ "interface", \&gst_network_interfaces_get ],
+              [ "fwrules",   \&gst_ishare_fwrules_get     ],
+              [ "dhcp",      \&gst_ishare_dhcp_get        ],
               ]
               }
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
-sub xst_ishare_fwrules_get_parse_table
+sub gst_ishare_fwrules_get_parse_table
 {
   my %dist_map =
   (
@@ -311,24 +311,24 @@ sub xst_ishare_fwrules_get_parse_table
          },
          table =>
              [
-              [ "tools",        \&xst_file_tool_installed,        "ipchains"    ],
-              [ "kerneltool",   \&xst_file_exists,                PROC_IPCHAINS ],
-              [ "configured",   \&xst_ishare_ipchains_configured, "%tools%", "%kerneltool%" ],
-              [ "forwarding",   \&xst_file_exists,                PROC_FORWARD  ],
-              [ "masquerading", \&xst_file_exists,                PROC_MASQ     ],
-              [ "active",       \&xst_parse_kw,                   PROC_FORWARD, "1" ]
+              [ "tools",        \&gst_file_tool_installed,        "ipchains"    ],
+              [ "kerneltool",   \&gst_file_exists,                PROC_IPCHAINS ],
+              [ "configured",   \&gst_ishare_ipchains_configured, "%tools%", "%kerneltool%" ],
+              [ "forwarding",   \&gst_file_exists,                PROC_FORWARD  ],
+              [ "masquerading", \&gst_file_exists,                PROC_MASQ     ],
+              [ "active",       \&gst_parse_kw,                   PROC_FORWARD, "1" ]
               ]
                 },
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
-sub xst_ishare_dhcp_get_parse_table
+sub gst_ishare_dhcp_get_parse_table
 {
   my %dist_map =
   (
@@ -352,10 +352,10 @@ sub xst_ishare_dhcp_get_parse_table
          },
          table =>
              [
-              [ "installed",   \&xst_service_sysv_installed,  DHCPD_SERVICE ],
-              [ "configured",  \&xst_file_exists,             DHCPD_CONF    ],
-              [ "active",      \&xst_service_sysv_get_status, DHCPD_SERVICE ],
-              [ "dev",         \&xst_parse_split_first_array, LINUX_CONF, "DHCP.interface",
+              [ "installed",   \&gst_service_sysv_installed,  DHCPD_SERVICE ],
+              [ "configured",  \&gst_file_exists,             DHCPD_CONF    ],
+              [ "active",      \&gst_service_sysv_get_status, DHCPD_SERVICE ],
+              [ "dev",         \&gst_parse_split_first_array, LINUX_CONF, "DHCP.interface",
                                                               "[ \t]+", "[ \t]+" ],
               ]
                 },
@@ -368,21 +368,21 @@ sub xst_ishare_dhcp_get_parse_table
          },
          table =>
              [
-              [ "installed",   \&xst_service_sysv_installed,  DHCPD_SERVICE ],
-              [ "configured",  \&xst_file_exists,             DHCPD_CONF    ],
-              [ "active",      \&xst_service_sysv_get_status, DHCPD_SERVICE ],
+              [ "installed",   \&gst_service_sysv_installed,  DHCPD_SERVICE ],
+              [ "configured",  \&gst_file_exists,             DHCPD_CONF    ],
+              [ "active",      \&gst_service_sysv_get_status, DHCPD_SERVICE ],
               ]
                 },
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
-sub xst_ishare_conf_get_replace_table
+sub gst_ishare_conf_get_replace_table
 {
   my %dist_map =
   (
@@ -401,21 +401,21 @@ sub xst_ishare_conf_get_replace_table
          fn => {},
          table =>
              [
-              [ "interface", \&xst_network_interfaces_set, OLD_HASH ],
-              [ "fwrules",   \&xst_ishare_fwrules_set,     "%interface%" ],
-              [ "dhcp",      \&xst_ishare_dhcp_set,        "%interface%" ]
+              [ "interface", \&gst_network_interfaces_set, OLD_HASH ],
+              [ "fwrules",   \&gst_ishare_fwrules_set,     "%interface%" ],
+              [ "dhcp",      \&gst_ishare_dhcp_set,        "%interface%" ]
               ]
                 },
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
-sub xst_ishare_fwrules_get_replace_table
+sub gst_ishare_fwrules_get_replace_table
 {
   my %dist_map =
   (
@@ -440,10 +440,10 @@ sub xst_ishare_fwrules_get_replace_table
          },
          table =>
              [
-              [ "active",     \&xst_replace_line_first,         PROC_FORWARD ],
-              [ "active",     \&xst_replace_sh_bool,            SYSCONFIG_NETWORK, "FORWARD_IPV4" ],
-              [ "overwrite",  \&xst_ishare_ipchains_save,       IPCHAINS_CONF, "%interface%", "%landev%" ],
-              [ "active",     \&xst_service_sysv_force_status,  [8, IPCHAINS_SERVICE] ],
+              [ "active",     \&gst_replace_line_first,         PROC_FORWARD ],
+              [ "active",     \&gst_replace_sh_bool,            SYSCONFIG_NETWORK, "FORWARD_IPV4" ],
+              [ "overwrite",  \&gst_ishare_ipchains_save,       IPCHAINS_CONF, "%interface%", "%landev%" ],
+              [ "active",     \&gst_service_sysv_force_status,  [8, IPCHAINS_SERVICE] ],
               ]
                 },
        "debian-2.2" =>
@@ -457,23 +457,23 @@ sub xst_ishare_fwrules_get_replace_table
          },
          table =>
              [
-              [ "active",     \&xst_replace_sh_bool,             NETWORK_OPTIONS, "ip_forward" ],          
-              [ "active",     \&xst_replace_line_first,          PROC_FORWARD ],
-              [ "active",     \&xst_service_sysv_install_script, IPCHAINS_SERVICE, "debian_ipchains" ],
-              [ "overwrite",  \&xst_ishare_ipchains_save,        IPCHAINS_CONF, "%interface%", "%landev%" ],
-              [ "active",     \&xst_service_sysv_force_status,   [5, IPCHAINS_SERVICE] ],
+              [ "active",     \&gst_replace_sh_bool,             NETWORK_OPTIONS, "ip_forward" ],          
+              [ "active",     \&gst_replace_line_first,          PROC_FORWARD ],
+              [ "active",     \&gst_service_sysv_install_script, IPCHAINS_SERVICE, "debian_ipchains" ],
+              [ "overwrite",  \&gst_ishare_ipchains_save,        IPCHAINS_CONF, "%interface%", "%landev%" ],
+              [ "active",     \&gst_service_sysv_force_status,   [5, IPCHAINS_SERVICE] ],
               ]
                 },
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
-sub xst_ishare_dhcp_get_replace_table
+sub gst_ishare_dhcp_get_replace_table
 {
   my %dist_map =
   (
@@ -497,9 +497,9 @@ sub xst_ishare_dhcp_get_replace_table
          },
          table =>
              [
-              [ "dev",         \&xst_ishare_dhcp_set_devs,    LINUX_CONF, "%overwrite%" ],
-              [ "dev",         \&xst_ishare_dhcp_set_conf,    DHCPD_CONF, "%overwrite%", "%interface%" ],
-              [ "active",      \&xst_service_sysv_set_status, [65, DHCPD_SERVICE] ]
+              [ "dev",         \&gst_ishare_dhcp_set_devs,    LINUX_CONF, "%overwrite%" ],
+              [ "dev",         \&gst_ishare_dhcp_set_conf,    DHCPD_CONF, "%overwrite%", "%interface%" ],
+              [ "active",      \&gst_service_sysv_set_status, [65, DHCPD_SERVICE] ]
               ]
                 },
        "debian-2.2" =>
@@ -511,16 +511,16 @@ sub xst_ishare_dhcp_get_replace_table
          },
          table =>
              [
-              [ "dev",         \&xst_ishare_dhcp_set_conf,    DHCPD_CONF, "%overwrite%", "%interface%" ],
-              [ "active",      \&xst_replace_sh_bool,         "/etc/init.d/dhcpd", "run_dhcpd", "1", "0" ],
-              [ "active",      \&xst_service_sysv_set_status, [20, DHCPD_SERVICE] ]
+              [ "dev",         \&gst_ishare_dhcp_set_conf,    DHCPD_CONF, "%overwrite%", "%interface%" ],
+              [ "active",      \&gst_replace_sh_bool,         "/etc/init.d/dhcpd", "run_dhcpd", "1", "0" ],
+              [ "active",      \&gst_service_sysv_set_status, [20, DHCPD_SERVICE] ]
               ]
               },
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }

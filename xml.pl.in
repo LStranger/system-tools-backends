@@ -40,143 +40,143 @@ use Text::ParseWords;
 # --- XML print formatting  --- #
 
 
-# &xst_xml_enter: Call after entering a block. Increases indent level.
-# &xst_xml_leave: Call before leaving a block. Decreases indent level.
-# &xst_xml_print_indent: Call before printing a line. Indents to current level. 
-# &xst_xml_print_vspace: Ensures there is a vertical space of one and only one line.
-# &xst_xml_print: Indent, then print all arguments. Just for sugar.
+# &gst_xml_enter: Call after entering a block. Increases indent level.
+# &gst_xml_leave: Call before leaving a block. Decreases indent level.
+# &gst_xml_print_indent: Call before printing a line. Indents to current level. 
+# &gst_xml_print_vspace: Ensures there is a vertical space of one and only one line.
+# &gst_xml_print: Indent, then print all arguments. Just for sugar.
 
 
-my $xst_indent_level = 0;
-my $xst_have_vspace = 0;
+my $gst_indent_level = 0;
+my $gst_have_vspace = 0;
 
-my @xst_xml_stack;
+my @gst_xml_stack;
 
-sub xst_xml_print_comment # (comment text)
+sub gst_xml_print_comment # (comment text)
 {
   my ($comment) = @_;
 
-  &xst_xml_print_line ("<!-- $comment -->") if $comment;
+  &gst_xml_print_line ("<!-- $comment -->") if $comment;
 }
 
 
-sub xst_xml_print_begin
+sub gst_xml_print_begin
 {
   my ($name) = @_;
 
-  $name = $xst_name if !$name;
+  $name = $gst_name if !$name;
 
-  &xst_xml_print_string ("<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n");
-  &xst_xml_print_string ("<!DOCTYPE $name []>\n\n");
-  &xst_xml_print_string ("<$name>\n");
+  &gst_xml_print_string ("<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n");
+  &gst_xml_print_string ("<!DOCTYPE $name []>\n\n");
+  &gst_xml_print_string ("<$name>\n");
 
-  &xst_xml_enter ();
+  &gst_xml_enter ();
 
-  &xst_xml_print_vspace ();
+  &gst_xml_print_vspace ();
 }
 
 
 # The frontend expects exactly this string. Don not alter.
-sub xst_xml_print_request_end
+sub gst_xml_print_request_end
 {
-  print "\n<!-- XST: end of request -->\n";
+  print "\n<!-- GST: end of request -->\n";
 }
 
 
-sub xst_xml_print_end
+sub gst_xml_print_end
 {
   my ($name) = @_;
 
-  $name = $xst_name if !$name;
+  $name = $gst_name if !$name;
   
-  &xst_xml_leave ();
+  &gst_xml_leave ();
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_string ("</$name>\n");
+  &gst_xml_print_vspace ();
+  &gst_xml_print_string ("</$name>\n");
 }
 
 
-sub xst_xml_enter
+sub gst_xml_enter
 {
-  $xst_indent_level += 2;
+  $gst_indent_level += 2;
 }
 
 
-sub xst_xml_leave
+sub gst_xml_leave
 {
-  $xst_indent_level -= 2;
+  $gst_indent_level -= 2;
 }
 
 
-sub xst_xml_print_string
+sub gst_xml_print_string
 {
   print $_[0];
-  &xst_debug_print_string_to_file ("out.xml", $_[0]);
+  &gst_debug_print_string_to_file ("out.xml", $_[0]);
 }
 
-sub xst_xml_format_indent
+sub gst_xml_format_indent
 {
-  $xst_have_vspace = 0;
-  return " " x $xst_indent_level;
+  $gst_have_vspace = 0;
+  return " " x $gst_indent_level;
 }
 
-sub xst_xml_print_indent
+sub gst_xml_print_indent
 {
-  &xst_xml_print_string(&xst_xml_format_indent ());
+  &gst_xml_print_string(&gst_xml_format_indent ());
 }
 
-sub xst_xml_print_vspace
+sub gst_xml_print_vspace
 {
-  if (not $xst_have_vspace)
+  if (not $gst_have_vspace)
   {
-    &xst_xml_print_string ("\n");
-    $xst_have_vspace = 1;
+    &gst_xml_print_string ("\n");
+    $gst_have_vspace = 1;
   }
 }
 
 
-sub xst_xml_print_line
+sub gst_xml_print_line
 {
   my $line;
   $line = join ("", @_);
   $line =~ tr/\n//d;
 
-  &xst_xml_print_indent ();
-  &xst_xml_print_string ($line . "\n");
+  &gst_xml_print_indent ();
+  &gst_xml_print_string ($line . "\n");
 }
 
-sub xst_xml_format_pcdata # (name, pcdata)
+sub gst_xml_format_pcdata # (name, pcdata)
 {
   my ($name, $pcdata) = @_;
   return "<$name>$pcdata</$name>" if defined ($name) || defined ($pcdata);
 }
 
-sub xst_xml_print_pcdata # (name, pcdata)
+sub gst_xml_print_pcdata # (name, pcdata)
 {
   my ($name, $pcdata) = @_;
-  my $line = &xst_xml_format_pcdata ($name, $pcdata);
+  my $line = &gst_xml_format_pcdata ($name, $pcdata);
 
-  &xst_xml_print_line ($line) if $line;
+  &gst_xml_print_line ($line) if $line;
 }
 
-sub xst_xml_format_state_tag
+sub gst_xml_format_state_tag
 {
   my ($name, $state) = @_;
-  my $boolean = &xst_print_boolean_truefalse ($state);
+  my $boolean = &gst_print_boolean_truefalse ($state);
 
   return "<$name state='$boolean'/>";
 }
 
-sub xst_xml_print_state_tag
+sub gst_xml_print_state_tag
 {
   my ($name, $state) = @_;
-  my $state_tag = &xst_xml_format_state_tag ($name, $state);
+  my $state_tag = &gst_xml_format_state_tag ($name, $state);
 
-  &xst_xml_print_line ($state_tag); 
+  &gst_xml_print_line ($state_tag); 
 }
 
 # Pass a hash and the keys whose items are scalars. Print <key>val</key>.
-sub xst_xml_print_scalars
+sub gst_xml_print_scalars
 {
   my ($h, @scalar_keys) = @_;
   my ($i, $val);
@@ -185,8 +185,8 @@ sub xst_xml_print_scalars
 
   while ($i = shift @scalar_keys)
   {
-    $val = &xst_xml_quote ($$h{$i});
-    &xst_xml_print_line ("<$i>$val</$i>\n") if exists $$h{$i};
+    $val = &gst_xml_quote ($$h{$i});
+    &gst_xml_print_line ("<$i>$val</$i>\n") if exists $$h{$i};
   }
   
 }
@@ -194,128 +194,128 @@ sub xst_xml_print_scalars
 # Print the @$array using <$tag>val</$tag> foreach val in the array.
 # Actually lets print_structure do that now. Just print sequentially
 # the given elements, using as $tag as the surrounding tags.
-sub xst_xml_print_array
+sub gst_xml_print_array
 {
   my ($array, $tag) = @_;
   my ($i, $val);
 
   return if (scalar @$array <= 0);
 
-  &xst_xml_print_vspace ();
+  &gst_xml_print_vspace ();
   foreach $i (@$array)
   {
-    &xst_xml_print_structure ($i, $tag);
+    &gst_xml_print_structure ($i, $tag);
   }
 }
 
 # Pass a hash and the keys whose items are arrays. Print <key>val</key> foreach val
 # in the array at hash{key}
-sub xst_xml_print_arrays
+sub gst_xml_print_arrays
 {
   my ($h, @array_keys) = @_;
   my ($i, $j, $val);
   
   foreach $i (sort @array_keys)
   {
-    &xst_xml_print_array ($$h{$i}, $i) if (exists $$h{$i})
+    &gst_xml_print_array ($$h{$i}, $i) if (exists $$h{$i})
   }
 }
 
 # Pass a hash, create a parent tag $tag and print <key>val</key> for every
 # value pair in the hash. If structure refs are found, these are recursively
 # printed with print_structure.
-sub xst_xml_print_hash
+sub gst_xml_print_hash
 {
   my ($hash, $tag) = @_;
   my ($j, $val);
   
-  &xst_xml_print_vspace ();
+  &gst_xml_print_vspace ();
   if (defined $tag) {
-      &xst_xml_print_line ("<$tag>\n");
-      &xst_xml_enter ();
+      &gst_xml_print_line ("<$tag>\n");
+      &gst_xml_enter ();
   }
   
   foreach $j (sort keys (%$hash))
   {
-    &xst_xml_print_structure ($$hash{$j}, $j);
+    &gst_xml_print_structure ($$hash{$j}, $j);
   }
 
   if (defined $tag) {
-      &xst_xml_leave ();
-      &xst_xml_print_line ("</$tag>\n");
+      &gst_xml_leave ();
+      &gst_xml_print_line ("</$tag>\n");
   }
 }
 
 # Call the corresponding function depending on the reference
 # type of $x. If just a scalar, print <$tag>$x</$tag>.
-sub xst_xml_print_structure
+sub gst_xml_print_structure
 {
   my ($x, $tag) = @_;
 
-     if (ref $x eq "ARRAY") { &xst_xml_print_array ($x, $tag); }
-  elsif (ref $x eq "HASH")  { &xst_xml_print_hash  ($x, $tag); }
+     if (ref $x eq "ARRAY") { &gst_xml_print_array ($x, $tag); }
+  elsif (ref $x eq "HASH")  { &gst_xml_print_hash  ($x, $tag); }
   else
   {
-    &xst_xml_print_line ("<$tag>" . &xst_xml_quote ($x) . "</$tag>\n");
+    &gst_xml_print_line ("<$tag>" . &gst_xml_quote ($x) . "</$tag>\n");
   }
 }
 
 # Treats hash as an array: doesn't use the keys as tags for its
 # elements, but the given tag.
-sub xst_xml_print_hash_hash
+sub gst_xml_print_hash_hash
 {
   my ($h, $tag) = @_;
   my $i;
   
   foreach $i (sort keys %$h)
   {
-    &xst_xml_print_hash ($$h{$i}, $tag);
+    &gst_xml_print_hash ($$h{$i}, $tag);
   } 
 }
 
 
-sub xst_xml_container_enter # (name)
+sub gst_xml_container_enter # (name)
 {
   my ($container) = @_;
 
-  ## xst_xml_stack is not my, as it is defined at top,
+  ## gst_xml_stack is not my, as it is defined at top,
   ## so it is global
-  push @xst_xml_stack, $container;
+  push @gst_xml_stack, $container;
 
-  &xst_xml_print_line ("<$container>");
-  &xst_xml_enter();
+  &gst_xml_print_line ("<$container>");
+  &gst_xml_enter();
 }
 
 
-sub xst_xml_container_leave
+sub gst_xml_container_leave
 {
   ## checks if there is a start tag
-  if ($#xst_xml_stack >= 0)
+  if ($#gst_xml_stack >= 0)
   { 
-    my $current_container = pop @xst_xml_stack;
+    my $current_container = pop @gst_xml_stack;
 
-    &xst_xml_leave ();
-    &xst_xml_print_line ("</$current_container>");
+    &gst_xml_leave ();
+    &gst_xml_print_line ("</$current_container>");
   }
 }
 
 
-sub xst_xml_print_container # (name, @strings)
+sub gst_xml_print_container # (name, @strings)
 {
   my ($name, @strings) = @_;
 
   if (@strings) {
-    &xst_xml_container_enter ($name);
+    &gst_xml_container_enter ($name);
     foreach $tag (@strings) {
-      &xst_xml_print_line ("$tag");
+      &gst_xml_print_line ("$tag");
     }
-    &xst_xml_container_leave ();
+    &gst_xml_container_leave ();
   }
 } 
 
 # --- XML printing from in-memory model --- #
 
-sub xst_xml_model_print_attributes
+sub gst_xml_model_print_attributes
 {
   my ($tree) = @_;
   my ($attrs, $string);
@@ -330,7 +330,7 @@ sub xst_xml_model_print_attributes
   return $string;
 }
 
-sub xst_xml_model_print_recurse
+sub gst_xml_model_print_recurse
 {
   my ($tree, $indent) = @_;
   my ($string);
@@ -352,12 +352,12 @@ sub xst_xml_model_print_recurse
     }
     elsif (@$branch == 1)  # Empty tag.
     {
-      $string .= "<" . $children [0] . &xst_xml_model_print_attributes ($branch) . "/>";
+      $string .= "<" . $children [0] . &gst_xml_model_print_attributes ($branch) . "/>";
     }
     else
     {
-      $string .= "<" . $children [0] . &xst_xml_model_print_attributes ($branch) . ">";
-      $string .= &xst_xml_model_print_recurse ($branch);
+      $string .= "<" . $children [0] . &gst_xml_model_print_attributes ($branch) . ">";
+      $string .= &gst_xml_model_print_recurse ($branch);
       $string .= "</" . $children [0] . ">";
     }
 
@@ -367,19 +367,19 @@ sub xst_xml_model_print_recurse
 
 #  if ($branch)
 #  {
-#    return &xst_xml_get_attribute ($branch, $property) if $property ne "";
-#    return &xst_xml_get_pcdata ($branch);
+#    return &gst_xml_get_attribute ($branch, $property) if $property ne "";
+#    return &gst_xml_get_pcdata ($branch);
 #  }
 
   return $string;
 }
 
-sub xst_xml_model_print
+sub gst_xml_model_print
 {
   my ($tree) = @_;
   my ($string);
 
-  $string = &xst_xml_model_print_recurse ($tree);
+  $string = &gst_xml_model_print_recurse ($tree);
   chomp $string;
   $string .= "\n";
 
@@ -391,7 +391,7 @@ sub xst_xml_model_print
 
 # This code tries to replace XML::Parser scanning from stdin in tree mode.
 
-sub xst_xml_scan_make_kid_array
+sub gst_xml_scan_make_kid_array
 {
   my $line = shift;
   my (%hash, @sublist, @attr, @list);
@@ -419,22 +419,22 @@ sub xst_xml_scan_make_kid_array
 }
 
 
-sub xst_xml_scan_recurse
+sub gst_xml_scan_recurse
 {
-  my ($xst_xml_scan_list, $list_arg) = @_;
+  my ($gst_xml_scan_list, $list_arg) = @_;
   my @list;
   if ($list_arg ne undef) { @list = $$list_arg[0]; }
   
-  while (@$xst_xml_scan_list)
+  while (@$gst_xml_scan_list)
   {
-    $el = shift @$xst_xml_scan_list;
+    $el = shift @$gst_xml_scan_list;
 
     if (($el eq "") || $el =~ /^\<[!?].*\>$/s) { next; }  # Empty strings, PI and DTD must go.
     if ($el =~ /^\<.*\/\>$/s)  # Empty.
     {
       $el =~ /^\<([a-zA-Z0-9_-]+).*\/\>$/s;
       push (@list, $1);
-      push (@list, &xst_xml_scan_make_kid_array ($el));
+      push (@list, &gst_xml_scan_make_kid_array ($el));
     }
     elsif ($el =~ /^\<\/.*\>$/s)  # End.
     {
@@ -444,8 +444,8 @@ sub xst_xml_scan_recurse
     {
       $el =~ /^\<([a-zA-Z0-9_-]+).*\>$/s;
       push (@list, $1);
-      $sublist = &xst_xml_scan_make_kid_array ($el);
-      push (@list, &xst_xml_scan_recurse ($xst_xml_scan_list, $sublist));
+      $sublist = &gst_xml_scan_make_kid_array ($el);
+      push (@list, &gst_xml_scan_recurse ($gst_xml_scan_list, $sublist));
       next;
     }
     elsif ($el ne "")  # PCDATA.
@@ -459,7 +459,7 @@ sub xst_xml_scan_recurse
 }
 
 
-sub xst_xml_read_file
+sub gst_xml_read_file
 {
   my ($file) = @_;
   my ($doc, $i);
@@ -473,15 +473,15 @@ sub xst_xml_read_file
 }
 
 
-sub xst_xml_read_compressed_file
+sub gst_xml_read_compressed_file
 {
   my ($file) = @_;
   my ($doc, $i, $fd);
 
-  $fd = &xst_file_run_pipe_read ("gunzip -c $file");
+  $fd = &gst_file_run_pipe_read ("gunzip -c $file");
   return undef if $fd eq undef;
   $doc .= $i while ($i = <$fd>);
-  &xst_file_close ($fd);
+  &gst_file_close ($fd);
 
   if (length ($doc) < 4)  # Allow for one blank line from gzip, '\n\r'.
   {
@@ -492,11 +492,11 @@ sub xst_xml_read_compressed_file
 }
 
 
-sub xst_xml_read_stdin
+sub gst_xml_read_stdin
 {
   my ($i, $doc);
   
-  while (! ($i =~ /^<!-- XST: end of request -->$/))
+  while (! ($i =~ /^<!-- GST: end of request -->$/))
   {
     $doc .= $i;
     $i = <STDIN>;
@@ -508,18 +508,18 @@ sub xst_xml_read_stdin
 
 # (file, tool) If no file specified, reads stdin.
 # file could also contain xml document.
-# If tool is an xst_tool, stores the read buffer in
+# If tool is an gst_tool, stores the read buffer in
 # $$tool{"xml_doc"}.
-sub xst_xml_scan  
+sub gst_xml_scan  
 {
   my ($file, $tool) = @_;
-  my ($doc, @tree, @xst_xml_scan_list);
+  my ($doc, @tree, @gst_xml_scan_list);
 
-  $file = $xst_input_file unless $file;
+  $file = $gst_input_file unless $file;
 
   if ($file && stat ($file))
   {
-    $doc = &xst_xml_read_file ($file);
+    $doc = &gst_xml_read_file ($file);
   }
   elsif ($file)
   {
@@ -527,29 +527,29 @@ sub xst_xml_scan
   }
   else
   {
-    $doc = &xst_xml_read_stdin ();
+    $doc = &gst_xml_read_stdin ();
   }
 
-  &xst_debug_print_log_to_file ("in.xml", $doc);
+  &gst_debug_print_log_to_file ("in.xml", $doc);
 
-  $$tool{"xml_doc"} = $doc if (&xst_is_tool ($tool));
+  $$tool{"xml_doc"} = $doc if (&gst_is_tool ($tool));
 
-  @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
-  $tree = &xst_xml_scan_recurse (\@xst_xml_scan_list);
+  @gst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
+  $tree = &gst_xml_scan_recurse (\@gst_xml_scan_list);
 
   return $tree;
 }
 
 # XML scanning that preserves more exact attributes of the scanned XML.
 
-sub xst_xml_model_scan_recurse
+sub gst_xml_model_scan_recurse
 {
   my @list;
   if (@_) { @list = $_[0]->[0]; }
   
-  while (@xst_xml_scan_list)
+  while (@gst_xml_scan_list)
   {
-    $el = $xst_xml_scan_list[0]; shift @xst_xml_scan_list;
+    $el = $gst_xml_scan_list[0]; shift @gst_xml_scan_list;
 
     if ($el eq "")  # Empty strings.
     {
@@ -565,7 +565,7 @@ sub xst_xml_model_scan_recurse
     {
       $el =~ /^\<([a-zA-Z0-9_-]+).*\/\>$/s;
       push (@list, $1);
-      push (@list, &xst_xml_scan_make_kid_array ($el));
+      push (@list, &gst_xml_scan_make_kid_array ($el));
     }
     elsif ($el =~ /^\<\/.*\>$/s)  # End.
     {
@@ -575,8 +575,8 @@ sub xst_xml_model_scan_recurse
     {
       $el =~ /^\<([a-zA-Z0-9_-]+).*\>$/s;
       push (@list, $1);
-      $sublist = &xst_xml_scan_make_kid_array ($el);
-      push (@list, &xst_xml_model_scan_recurse ($sublist));
+      $sublist = &gst_xml_scan_make_kid_array ($el);
+      push (@list, &gst_xml_model_scan_recurse ($sublist));
       next;
     }
     elsif ($el ne "")  # PCDATA.
@@ -589,19 +589,19 @@ sub xst_xml_model_scan_recurse
   return \@list;
 }
 
-sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
+sub gst_xml_model_scan  # (file) If no file specified, reads stdin.
 {
   my ($file) = @_;
   my ($doc, $tree, $compressed);
 
-  $file = $xst_input_file if $file eq undef;
+  $file = $gst_input_file if $file eq undef;
 
   if ($file)
   {
-    $doc = &xst_xml_read_compressed_file ($file);
+    $doc = &gst_xml_read_compressed_file ($file);
     if (!$doc)
     {
-      $doc = &xst_xml_read_file ($file);
+      $doc = &gst_xml_read_file ($file);
       $compressed = 0;
     }
     else
@@ -614,40 +614,40 @@ sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
     return undef, 0;
   }
 
-  @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)/mg); # pcdata, tag, pcdata, tag, ...
-  $tree = &xst_xml_model_scan_recurse;
+  @gst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)/mg); # pcdata, tag, pcdata, tag, ...
+  $tree = &gst_xml_model_scan_recurse;
 
   return $tree, $compressed;
 }
 
-sub xst_xml_model_save
+sub gst_xml_model_save
 {
   my ($model, $file, $compressed) = @_;
   my $fd;
 
   if ($compressed == 1)
   {
-    $fd = &xst_file_open_write_compressed ($file);
+    $fd = &gst_file_open_write_compressed ($file);
   }
   else
   {
-    $fd = &xst_file_open_write_from_names ($file);
+    $fd = &gst_file_open_write_from_names ($file);
   }
 
   if ($fd == -1) { return -1; }
 
-  print $fd &xst_xml_model_print ($model);
-  &xst_file_close ($fd);
+  print $fd &gst_xml_model_print ($model);
+  &gst_file_close ($fd);
 
   return 0;
 }
 
 # Quote/unquote.
 
-@xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"', "&amp;", '&' );
+@gst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"', "&amp;", '&' );
 
 
-sub xst_xml_quote
+sub gst_xml_quote
 {
   my $in = $_[0];
   my $out = "";
@@ -663,7 +663,7 @@ sub xst_xml_quote
 	
     $joined = 0;		# Cumbersome.
     
-    for (@xe = @xst_xml_entities; @xe && !$joined; )
+    for (@xe = @gst_xml_entities; @xe && !$joined; )
     {
       if ($xe [1] eq $clist [0]) { $out = join ('', $out, $xe [0]); $joined = 1; }
       shift @xe; shift @xe;
@@ -677,16 +677,16 @@ sub xst_xml_quote
 }
 
 
-sub xst_xml_unquote
+sub gst_xml_unquote
 {
   my $ret = $_[0];
   my $i;
 
   #print STDERR "INI U: $ret\n";
   
-  for ($i = 0; $xst_xml_entities[$i] ne undef; $i += 2)
+  for ($i = 0; $gst_xml_entities[$i] ne undef; $i += 2)
   {
-    $ret =~ s/$xst_xml_entities[$i]/$xst_xml_entities[$i + 1]/g;
+    $ret =~ s/$gst_xml_entities[$i]/$gst_xml_entities[$i + 1]/g;
   }
 
   while ($ret =~ /&#([0-9]+);/)
@@ -705,7 +705,7 @@ sub xst_xml_unquote
 # --- XML parsing --- #
 
 
-sub xst_xml_get_pcdata
+sub gst_xml_get_pcdata
 {
   my $tree = $_[0];
   my $retval;
@@ -716,8 +716,8 @@ sub xst_xml_get_pcdata
   {
     if ($$tree[0] == 0)
     {
-      $retval = &xst_xml_unquote ($$tree[1]);
-      &xst_debug_print_line ("xst_xml_get_pcdata: $retval");
+      $retval = &gst_xml_unquote ($$tree[1]);
+      &gst_debug_print_line ("gst_xml_get_pcdata: $retval");
       return ($retval);
     }
     
@@ -730,12 +730,12 @@ sub xst_xml_get_pcdata
 
 # Compresses node into a word and returns it.
 
-sub xst_xml_get_word
+sub gst_xml_get_word
 {
   my $tree = $_[0];
   my $retval;
 
-  $retval = &xst_xml_get_pcdata ($tree);
+  $retval = &gst_xml_get_pcdata ($tree);
   $retval =~ tr/ \n\r\t\f//d;
   return $retval;
 }
@@ -743,12 +743,12 @@ sub xst_xml_get_word
 
 # Compresses node into a size and returns it.
 
-sub xst_xml_get_size
+sub gst_xml_get_size
 {
   my $tree = $_[0];
   my $retval;
 
-  $retval = &xst_xml_get_word ($tree);
+  $retval = &gst_xml_get_word ($tree);
   if ($retval =~ /Mb$/)
   {
     $retval =~ tr/ Mb//d; 
@@ -761,12 +761,12 @@ sub xst_xml_get_size
 
 # Replaces misc. whitespace with spaces and returns text.
 
-sub xst_xml_get_text
+sub gst_xml_get_text
 {
   my $tree = $_[0];
   my $retval;
 
-  $retval = &xst_xml_get_pcdata ($tree);
+  $retval = &gst_xml_get_pcdata ($tree);
   my $type = ref ($retval);
 
   if (!$type) { $retval =~ tr/\n\r\t\f/    /; }  
@@ -774,25 +774,25 @@ sub xst_xml_get_text
   return $retval;
 }
 
-sub xst_xml_get_attribute
+sub gst_xml_get_attribute
 {
   my ($tree, $attr) = @_;
 
   return $$tree[0]->{$attr};
 }
 
-sub xst_xml_get_state
+sub gst_xml_get_state
 {
   my ($tree) = @_;
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
-  return &xst_util_read_boolean ($$tree[0]->{state});
+  return &gst_util_read_boolean ($$tree[0]->{state});
 }
 
 # XML model operations.
 
 # Locate a node from the branch leading up to it.
-sub xst_xml_model_find
+sub gst_xml_model_find
 {
   my ($model, $varpath) = @_;
   my ($branch, @path);
@@ -827,13 +827,13 @@ sub xst_xml_model_find
 }
 
 # Add a branch to another branch. Allows duplicates.
-sub xst_xml_model_add
+sub gst_xml_model_add
 {
   my ($model, $varpath, $addpath) = @_;
   my ($branch, @path);
 
   @path = split /\//, $addpath;
-  $branch = &xst_xml_model_find ($model, $varpath);
+  $branch = &gst_xml_model_find ($model, $varpath);
   if ($branch == undef)
   {
     return -1;
@@ -856,7 +856,7 @@ sub xst_xml_model_add
 }
 
 # Ensure a branch exists, by extending the branch with given elements, if needed.
-sub xst_xml_model_ensure
+sub gst_xml_model_ensure
 {
   my ($model, $varpath) = @_;
   my ($branch, @path);
@@ -904,13 +904,13 @@ sub xst_xml_model_ensure
   return $branch;
 }
 
-sub xst_xml_model_remove
+sub gst_xml_model_remove
 {
   my ($model, $varpath, $tag) = @_;
   my ($branch, $i);
 
   @path = split /\//, $addpath;
-  $branch = &xst_xml_model_find ($model, $varpath);
+  $branch = &gst_xml_model_find ($model, $varpath);
   if ($branch == undef)
   {
     return -1;
@@ -928,7 +928,7 @@ sub xst_xml_model_remove
   return -1;
 }
 
-sub xst_xml_model_get_children
+sub gst_xml_model_get_children
 {
   my ($branch) = @_;
   my (@children);
@@ -946,7 +946,7 @@ sub xst_xml_model_get_children
   return \@children;
 }
 
-sub xst_xml_model_get_pcdata
+sub gst_xml_model_get_pcdata
 {
   my ($branch) = @_;
   my ($i);
@@ -955,7 +955,7 @@ sub xst_xml_model_get_pcdata
   {
     if ($$branch [$i] == 0)
     {
-      my $retval = &xst_xml_unquote ($$branch [$i + 1]);
+      my $retval = &gst_xml_unquote ($$branch [$i + 1]);
       return ($retval);
     }
   }
@@ -963,24 +963,24 @@ sub xst_xml_model_get_pcdata
   return "";
 }
 
-sub xst_xml_model_set_pcdata
+sub gst_xml_model_set_pcdata
 {
   my ($branch, $pcdata) = @_;
 
   @$branch = (@$branch [0]);
 
   $$branch [1] = 0;
-  $$branch [2] = &xst_xml_quote ($pcdata);
+  $$branch [2] = &gst_xml_quote ($pcdata);
 }
 
-sub xst_xml_model_get_attribute
+sub gst_xml_model_get_attribute
 {
   my ($branch, $attr) = @_;
 
   return $$branch[0]->{$attr};
 }
 
-sub xst_xml_model_set_attribute
+sub gst_xml_model_set_attribute
 {
   my ($branch, $attr, $value) = @_;
 

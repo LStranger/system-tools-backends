@@ -17,27 +17,27 @@
   </annotation>
   
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
     
   <element type="bootType" name="boot"/>
   
   <complexType name="bootType">
     <sequence>
-	 <element type="xstKeyword"  name="compact"  minOccurs="0"/>
-	 <element type="xstKeyword"  name="lba32"    minOccurs="0"/>
-	 <element type="xstKeyword"  name="linear"   minOccurs="0"/>
-	 <element type="xstKeyword"  name="lock"     minOccurs="0"/>
-	 <element type="xstKeyword"  name="prompt"   minOccurs="0"/>
+	 <element type="gstKeyword"  name="compact"  minOccurs="0"/>
+	 <element type="gstKeyword"  name="lba32"    minOccurs="0"/>
+	 <element type="gstKeyword"  name="linear"   minOccurs="0"/>
+	 <element type="gstKeyword"  name="lock"     minOccurs="0"/>
+	 <element type="gstKeyword"  name="prompt"   minOccurs="0"/>
 	 
 	 <element type="string"      name="append"   minOccurs="0"/>
-	 <element type="xstFilePath" name="boot"     minOccurs="0"/>
+	 <element type="gstFilePath" name="boot"     minOccurs="0"/>
 	 <element type="string"      name="default"  minOccurs="0"/>
 	 <element type="unsignedInt" name="delay"    minOccurs="0"/>
-	 <element type="xstFilePath" name="install"  minOccurs="0"/>
-	 <element type="xstFilePath" name="keytable" minOccurs="0"/>
-	 <element type="xstFilePath" name="map"      minOccurs="0"/>
+	 <element type="gstFilePath" name="install"  minOccurs="0"/>
+	 <element type="gstFilePath" name="keytable" minOccurs="0"/>
+	 <element type="gstFilePath" name="map"      minOccurs="0"/>
 	 <element type="string"      name="message"  minOccurs="0"/>
-	 <element type="xstFilePath" name="root"     minOccurs="0"/>	
+	 <element type="gstFilePath" name="root"     minOccurs="0"/>	
 	 <element type="unsigedInt"  name="timeout"  minOccurs="0"/>
 	 
 	 <element type="entryType"   name="entry"    minOccurs="1" maxOccurs="16"/>
@@ -47,8 +47,8 @@
   <complexType name="entryType">
     <sequence>
 	 <choice>
-	   <element type="xstFilePath" name="image"/>
-	   <element type="xstFilePath" name="other"/>
+	   <element type="gstFilePath" name="image"/>
+	   <element type="gstFilePath" name="other"/>
 	 </choice>
 
 	 <element type="string"      name="alias"      minOccurs="0"/>
@@ -56,17 +56,17 @@
 	 <element type="string"      name="label"      minOccurs="0"/>
 	 <element type="string"      name="literal"    minOccurs="0"/>
 	 <element type="string"      name="loader"     minOccurs="0"/>
-	 <element type="xstKeyword"  name="lock"       minOccurs="0"/>
-	 <element type="xstKeyword"  name="optional"   minOccurs="0"/>
+	 <element type="gstKeyword"  name="lock"       minOccurs="0"/>
+	 <element type="gstKeyword"  name="optional"   minOccurs="0"/>
 	 <element type="string"      name="password"   minOccurs="0"/>
 	 <element type="string"      name="range"      minOccurs="0"/>
 	 <element type="unsignedInt" name="ramdisk"    minOccurs="0"/>
-	 <element type="xstKeyword"  name="read-only"  minOccurs="0"/>
-	 <element type="xstKeyword"  name="read-write" minOccurs="0"/>
-	 <element type="xstKeyword"  name="restricted" minOccurs="0"/>
-	 <element type="xstFilePath" name="root"       minOccurs="0"/>
-	 <element type="xstFilePath" name="table"      minOccurs="0"/>
-	 <element type="xstKeyword"  name="unsafe"     minOccurs="0"/>
+	 <element type="gstKeyword"  name="read-only"  minOccurs="0"/>
+	 <element type="gstKeyword"  name="read-write" minOccurs="0"/>
+	 <element type="gstKeyword"  name="restricted" minOccurs="0"/>
+	 <element type="gstFilePath" name="root"       minOccurs="0"/>
+	 <element type="gstFilePath" name="table"      minOccurs="0"/>
+	 <element type="gstKeyword"  name="unsafe"     minOccurs="0"/>
 	 <element type="vgaType"     name="vga"        minOccurs="0"/>
     </sequence>
   </complexType>

@@ -62,12 +62,12 @@ sub xml_print
 {
   my $font_list = shift;
 
-  &xst_xml_print_begin ();
-  &xst_xml_print_vspace ();
+  &gst_xml_print_begin ();
+  &gst_xml_print_vspace ();
 
   &font_xml_print ($font_list);
 
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
 }
 
 # Top-level actions.
@@ -76,7 +76,7 @@ sub get
 {
   my $font_list = &font_get_all ();
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($font_list);
 }
 
@@ -85,14 +85,14 @@ sub set
   my $font_list = &font_xml_parse ();
 
   &font_set ($font_list);
-  &xst_report_end ();
+  &gst_report_end ();
 }
 
 sub filter
 {
   my $font_list = &font_xml_parse ();
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($font_list);
 }
 
@@ -101,7 +101,7 @@ sub test
   my ($tool, @dir) = @_;
   my $font_list = &font_test (\@dir);
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($font_list);
 }
 
@@ -109,7 +109,7 @@ sub test
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"    => [ \&get,    [], "" ],
@@ -119,6 +119,6 @@ $directives = {
 };
 
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

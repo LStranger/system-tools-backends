@@ -99,7 +99,7 @@ sub update_partition
   if ($label eq "")
   {
     if ($device eq "") { return; }
-    $label = xst_filesys_ext2_device_to_label ($device);
+    $label = gst_filesys_ext2_device_to_label ($device);
   }
 
   for ($i = 0; $cf_disks[$i]; $i++)
@@ -295,7 +295,7 @@ sub read_fstab
 
   # Find the file.
 
-  $fstab_file = &xst_file_open_read_from_names(@fstab_names);
+  $fstab_file = &gst_file_open_read_from_names(@fstab_names);
   if (not $fstab_file) { return; }  # We didn't find it.
   *FSTAB_FILE = $fstab_file;
 
@@ -309,7 +309,7 @@ sub read_fstab
 
     if ($line[0] eq "") { shift @line; }
     if ($line[0] eq "") { next; }
-    if (&xst_ignore_line($line[0])) { next; }
+    if (&gst_ignore_line($line[0])) { next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
     if ($device =~ /$LABEL=(.*)/) { $label = $1; $device = ""; }
@@ -346,7 +346,7 @@ sub write_fstab
   my ($ifh, $ofh);
   local (*INFILE, *OUTFILE);
 
-  ($ifh, $ofh) = &xst_file_open_filter_write_from_names(@fstab_names);
+  ($ifh, $ofh) = &gst_file_open_filter_write_from_names(@fstab_names);
   if (not $ofh) { return; }  # No point if we can't write.
   *INFILE = $ifh; *OUTFILE = $ofh;
 
@@ -359,7 +359,7 @@ sub write_fstab
 
     if ($line[0] eq "") { shift @line; }
     if ($line[0] eq "") { print OUTFILE; next; }
-    if (&xst_ignore_line($line[0])) { print OUTFILE; next; }
+    if (&gst_ignore_line($line[0])) { print OUTFILE; next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
     if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||
@@ -459,7 +459,7 @@ sub write_fstab
       {
         my $part = $cf_disks[$i]->{partitions}[$j];
 
-        &xst_report ("disks_fstab_add", $cf_disks[$i]->{partitions}[$j]->{device});
+        &gst_report ("disks_fstab_add", $cf_disks[$i]->{partitions}[$j]->{device});
         
         # Write record.
 
@@ -532,15 +532,15 @@ sub get_fdisk
                      
                      "/dev/xda", "/dev/xdb" );
 
-  $fdisk_tool = &xst_file_locate_tool("fdisk");
+  $fdisk_tool = &gst_file_locate_tool("fdisk");
 
   for $dev (@check_devs)
   {
     my ($disk, $device, $point, $fs, $options, $check, $size, $bootable, $fd);
     
-    &xst_report ("disks_partition_probe", $dev);
+    &gst_report ("disks_partition_probe", $dev);
 
-    $fd = &xst_file_run_pipe_read ("fdisk -l $dev");
+    $fd = &gst_file_run_pipe_read ("fdisk -l $dev");
     while (<$fd>)
     {
       if (/^\/dev/)
@@ -579,16 +579,16 @@ sub get_fdisk
                           $bootable, 1);
       }
     }
-    &xst_file_close ($fd);
+    &gst_file_close ($fd);
 
-    &xst_report ("disks_size_query", $dev);
+    &gst_report ("disks_size_query", $dev);
 
-    $fd = &xst_file_run_pipe_read ("fdisk -s $de");
+    $fd = &gst_file_run_pipe_read ("fdisk -s $de");
     ($size) = (<$fd> =~ /([0-9]+)/);
     if ($size ne "") { &update_disk_size($dev, $size); }
-    &xst_file_close ($fd);
+    &gst_file_close ($fd);
     
-    &xst_print_progress();
+    &gst_print_progress();
   }
 }
 
@@ -600,7 +600,7 @@ sub xml_parse
 {
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan;
+  $tree = &gst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the toplevel tag.
@@ -644,8 +644,8 @@ sub xml_parse_disk
 
   while (@$tree)
   {
-    if ($$tree[0] eq "device") { %disk->{device} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "size") { %disk->{size} = &xst_xml_get_word($$tree[1]); }
+    if ($$tree[0] eq "device") { %disk->{device} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "size") { %disk->{size} = &gst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "partition")
     {
       my %partition = &xml_parse_partition($$tree[1]);
@@ -669,11 +669,11 @@ sub xml_parse_partition
 
   while (@$tree)
   {
-    if ($$tree[0] eq "device") { %partition->{device} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "type") { %partition->{type} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "point") { %partition->{point} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "label") { %partition->{label} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "size") { %partition->{size} = &xst_xml_get_word($$tree[1]); }
+    if ($$tree[0] eq "device") { %partition->{device} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "type") { %partition->{type} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "point") { %partition->{point} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "label") { %partition->{label} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "size") { %partition->{size} = &gst_xml_get_word($$tree[1]); }
     elsif ($$tree[0] eq "bootable") { %partition->{bootable} = &xml_parse_state($$tree[1]); }
     elsif ($$tree[0] eq "integritycheck") { %partition->{check} = &xml_parse_state($$tree[1]); }
     elsif ($$tree[0] eq "mounted") { %partition->{mounted} = &xml_parse_state($$tree[1]); }
@@ -693,7 +693,7 @@ sub xml_parse_state
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(&xst_util_read_boolean($$tree[0]->{state}));
+  return(&gst_util_read_boolean($$tree[0]->{state}));
 }
 
 
@@ -702,10 +702,10 @@ sub xml_parse_state
 
 sub xml_print
 {
-  &xst_xml_print_begin ();
+  &gst_xml_print_begin ();
 
-  &xst_xml_print_line ("<!-- Local fixed media and partitions -->\n");
-  &xst_xml_print_vspace ();
+  &gst_xml_print_line ("<!-- Local fixed media and partitions -->\n");
+  &gst_xml_print_vspace ();
 
   my @disks = @cf_disks;
   
@@ -715,12 +715,12 @@ sub xml_print
     {
       my $disk = $disks[0];
       
-      &xst_xml_print_vspace ();
-      &xst_xml_print_line ("<disk>\n");
-      &xst_xml_enter ();
+      &gst_xml_print_vspace ();
+      &gst_xml_print_line ("<disk>\n");
+      &gst_xml_enter ();
 
-      &xst_xml_print_line ("<device>" . %$disk->{device} . "</device>\n");
-      if (%$disk->{size}) { &xst_xml_print_line ("<size>" . %$disk->{size} . "</size>\n"); }
+      &gst_xml_print_line ("<device>" . %$disk->{device} . "</device>\n");
+      if (%$disk->{size}) { &gst_xml_print_line ("<size>" . %$disk->{size} . "</size>\n"); }
       
       my $partitions = %$disk->{partitions};
       
@@ -728,40 +728,40 @@ sub xml_print
       {
         my $partition = $$partitions[0];
 
-        &xst_xml_print_vspace ();
-        &xst_xml_print_line ("<partition>\n");
-        &xst_xml_enter ();
+        &gst_xml_print_vspace ();
+        &gst_xml_print_line ("<partition>\n");
+        &gst_xml_enter ();
 
-        &xst_xml_print_line ("<device>" . %$partition->{device} . "</device>\n");
-        if (%$partition->{type}) { &xst_xml_print_line ("<type>" . %$partition->{type} . "</type>\n"); }
-        if (%$partition->{point}) { &xst_xml_print_line ("<point>" . %$partition->{point} . "</point>\n"); }
-        if (%$partition->{label}) { &xst_xml_print_line ("<label>" . %$partition->{label} . "</label>\n"); }
+        &gst_xml_print_line ("<device>" . %$partition->{device} . "</device>\n");
+        if (%$partition->{type}) { &gst_xml_print_line ("<type>" . %$partition->{type} . "</type>\n"); }
+        if (%$partition->{point}) { &gst_xml_print_line ("<point>" . %$partition->{point} . "</point>\n"); }
+        if (%$partition->{label}) { &gst_xml_print_line ("<label>" . %$partition->{label} . "</label>\n"); }
         if (%$partition->{size})
         {
-          &xst_xml_print_line ("<size>" . %$partition->{size} . "</size>\n");
+          &gst_xml_print_line ("<size>" . %$partition->{size} . "</size>\n");
         }
 
-        &xst_xml_print_state_tag ("bootable", %$partition->{bootable});
-        &xst_xml_print_state_tag ("integritycheck", %$partition->{check});
-        &xst_xml_print_state_tag ("mounted", %$partition->{mounted});
-        &xst_xml_print_state_tag ("listed", %$partition->{listed});
-        &xst_xml_print_state_tag ("detected", %$partition->{detected});
+        &gst_xml_print_state_tag ("bootable", %$partition->{bootable});
+        &gst_xml_print_state_tag ("integritycheck", %$partition->{check});
+        &gst_xml_print_state_tag ("mounted", %$partition->{mounted});
+        &gst_xml_print_state_tag ("listed", %$partition->{listed});
+        &gst_xml_print_state_tag ("detected", %$partition->{detected});
 
-        &xst_xml_leave ();
-        &xst_xml_print_line ("</partition>\n");
+        &gst_xml_leave ();
+        &gst_xml_print_line ("</partition>\n");
         
         shift @$partitions;
       }
 
-      &xst_xml_leave ();
-      &xst_xml_print_line ("</disk>\n");
-      &xst_xml_print_vspace ();
+      &gst_xml_leave ();
+      &gst_xml_print_line ("</disk>\n");
+      &gst_xml_print_vspace ();
     }
   
     shift @disks;
   }
 
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
 }
 
 
@@ -773,7 +773,7 @@ sub get
   &get_fdisk;
   &read_fstab;
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ();
 }
 
@@ -786,8 +786,8 @@ sub set_immediate
   my $mount_tool;
   my $umount_tool;
 
-  $mount_tool = &xst_file_locate_tool("mount");
-  $umount_tool = &xst_file_locate_tool("umount");
+  $mount_tool = &gst_file_locate_tool("mount");
+  $umount_tool = &gst_file_locate_tool("umount");
 
   # Count partitions.
 
@@ -815,27 +815,27 @@ sub set_immediate
       {
         if ($cf_disks[$i]->{partitions}[$j]->{mounted})
         {
-          &xst_report ("disks_mount", $cf_disks[$i]->{partitions}[$j]->{device});
+          &gst_report ("disks_mount", $cf_disks[$i]->{partitions}[$j]->{device});
           system "$mount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " " .
                  $cf_disks[$i]->{partitions}[$j]->{point} . " >/dev/null 2>/dev/null";
         }
         else
         {
-          &xst_report ("disks_umount", $cf_disks[$i]->{partitions}[$j]->{device});
+          &gst_report ("disks_umount", $cf_disks[$i]->{partitions}[$j]->{device});
           system "$umount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " >/dev/null 2>/dev/null";
         }
 	
         $num_done++;
-        &xst_progress(10 + (80 / ($num_partitions - $num_done + 1)));
+        &gst_progress(10 + (80 / ($num_partitions - $num_done + 1)));
       }
     }
   }
   else
   {
-    &xst_report ("disks_mount_error");
+    &gst_report ("disks_mount_error");
   }
   
-  &xst_progress(90);
+  &gst_progress(90);
 }
 
 
@@ -843,14 +843,14 @@ sub set
 {
   &xml_parse ();
 
-  &write_fstab; &xst_progress(10);
+  &write_fstab; &gst_progress(10);
 
-  if ($xst_do_immediate)
+  if ($gst_do_immediate)
   {
     &set_immediate;
   }
   
-  &xst_report_end ();
+  &gst_report_end ();
 }
 
 
@@ -860,7 +860,7 @@ sub set
 sub filter
 {
   &xml_parse ();
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ();
 }
 
@@ -868,7 +868,7 @@ sub filter
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"    => [ \&get,    [], "" ],
@@ -876,6 +876,6 @@ $directives = {
   "filter" => [ \&filter, [], "" ]
     };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

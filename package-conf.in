@@ -57,7 +57,7 @@ end_of_description;
 
 # Where are the tools?
 
-$cmd_pack = &xst_file_locate_tool ("rpm");
+$cmd_pack = &gst_file_locate_tool ("rpm");
 
 # --- Internal configuration variables --- #
 
@@ -72,49 +72,49 @@ $cmd_pack = &xst_file_locate_tool ("rpm");
 
 sub xml_print
 {
-  &xst_xml_print_line ("<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>");
-  &xst_xml_print_line ("<!DOCTYPE packages []>\n");
-  &xst_xml_print_line ("<packages>");
-  &xst_xml_enter ();
+  &gst_xml_print_line ("<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>");
+  &gst_xml_print_line ("<!DOCTYPE packages []>\n");
+  &gst_xml_print_line ("<packages>");
+  &gst_xml_enter ();
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
+  &gst_xml_print_vspace ();
+  &gst_xml_print_line ("<!-- Configuration starts here -->\n");
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<meta>");
-  &xst_xml_enter;
+  &gst_xml_print_vspace ();
+  &gst_xml_print_line ("<meta>");
+  &gst_xml_enter;
 
   my $number_of_packages = $#cf_package + 1;
-  &xst_xml_print_line ("<number>$number_of_packages</number>");
-  &xst_xml_leave;
-  &xst_xml_print_line ("</meta>");
+  &gst_xml_print_line ("<number>$number_of_packages</number>");
+  &gst_xml_leave;
+  &gst_xml_print_line ("</meta>");
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("</packagedb>");
-  &xst_xml_print_vspace ();
-  &xst_xml_enter;
+  &gst_xml_print_vspace ();
+  &gst_xml_print_line ("</packagedb>");
+  &gst_xml_print_vspace ();
+  &gst_xml_enter;
 
   foreach $entry (@cf_package) {
-    &xst_xml_print_line ("<package>");
-    &xst_xml_enter;
-    &xst_xml_print_line ("<name>$entry->{name}</name>");
-    &xst_xml_print_line ("<version>$entry->{vers}</version>");
-    &xst_xml_print_line ("<distribution>$entry->{dist}</distribution>");
-    &xst_xml_leave;
-    &xst_xml_print_line ("</package>");
-  &xst_xml_print_vspace ();
+    &gst_xml_print_line ("<package>");
+    &gst_xml_enter;
+    &gst_xml_print_line ("<name>$entry->{name}</name>");
+    &gst_xml_print_line ("<version>$entry->{vers}</version>");
+    &gst_xml_print_line ("<distribution>$entry->{dist}</distribution>");
+    &gst_xml_leave;
+    &gst_xml_print_line ("</package>");
+  &gst_xml_print_vspace ();
   }
 
-  &xst_xml_print_vspace ();
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</packagedb>");
+  &gst_xml_print_vspace ();
+  &gst_xml_leave ();
+  &gst_xml_print_line ("</packagedb>");
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- End of configuration -->\n");
+  &gst_xml_print_vspace ();
+  &gst_xml_print_line ("<!-- End of configuration -->\n");
 
-  &xst_xml_print_vspace ();
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</packages>");
+  &gst_xml_print_vspace ();
+  &gst_xml_leave ();
+  &gst_xml_print_line ("</packages>");
 }
 
 
@@ -144,9 +144,9 @@ sub get_package
     "turbolinux" => "$cmd_map{rpm}",
   );
 
-  ($distributor) = split /-/, $xst_dist;
+  ($distributor) = split /-/, $gst_dist;
 
-  $fd = &xst_file_run_pipe_read ("$dist_map{$distributor}");
+  $fd = &gst_file_run_pipe_read ("$dist_map{$distributor}");
   die "Could not execute the package query command" if $fd eq undef;
 
   while (<$fd>)
@@ -160,16 +160,16 @@ sub get_package
       "dist"     => $dist,
     };
   }
-  &xst_file_close ($fd);
+  &gst_file_close ($fd);
 }
 
 sub get
 {
-  &xst_report ("get_packages");
+  &gst_report ("get_packages");
 
-  &get_package; &xst_print_progress();
+  &get_package; &gst_print_progress();
   
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ();
 }
 
@@ -179,7 +179,7 @@ sub get
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"    => [ \&get,    [], "" ],
@@ -187,6 +187,6 @@ $directives = {
   "filter" => [ \&filter, [], "" ]
     };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

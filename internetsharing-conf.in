@@ -68,7 +68,7 @@ sub xml_parse
   
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan ();
+  $tree = &gst_xml_scan ();
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "networking" tag.
@@ -76,7 +76,7 @@ sub xml_parse
   while ($elem = shift @$tree)
   {
     if   ($elem eq "internetsharing") { &xml_parse_internetsharing (shift @$tree, \%hash); }
-    else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   return (\%hash);
@@ -94,8 +94,8 @@ sub xml_parse_internetsharing
   {
       if    ($elem eq "fwrules")   { $$hash{"fwrules"} = &xml_parse_fwrules (shift @$tree);        }
       elsif ($elem eq "dhcp")      { $$hash{"dhcp"}    = &xml_parse_dhcp    (shift @$tree);        }
-      elsif ($elem eq "interface") { &xst_network_xml_parse_interface (shift @$tree, \%interface); }
-      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+      elsif ($elem eq "interface") { &gst_network_xml_parse_interface (shift @$tree, \%interface); }
+      else  { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
   
   $$hash{"interface"} = \%interface unless scalar keys %interface == 0;
@@ -113,15 +113,15 @@ sub xml_parse_fwrules
 
   while ($elem = shift @$tree)
   {
-      if    ($elem eq "tools")        { $$hash{"tools"}        = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "kerneltool")   { $$hash{"kerneltool"}   = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "configured")   { $$hash{"configured"}   = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "forwarding")   { $$hash{"forwarding"}   = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "masquerading") { $$hash{"masquerading"} = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "overwrite")    { $$hash{"overwrite"}    = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "active")       { $$hash{"active"}       = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "landev")       { push @$landevs, &xst_xml_get_pcdata (shift @$tree); }
-      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+      if    ($elem eq "tools")        { $$hash{"tools"}        = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "kerneltool")   { $$hash{"kerneltool"}   = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "configured")   { $$hash{"configured"}   = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "forwarding")   { $$hash{"forwarding"}   = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "masquerading") { $$hash{"masquerading"} = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "overwrite")    { $$hash{"overwrite"}    = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "active")       { $$hash{"active"}       = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "landev")       { push @$landevs, &gst_xml_get_pcdata (shift @$tree); }
+      else  { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"landev"} = $landevs;
@@ -141,12 +141,12 @@ sub xml_parse_dhcp
 
   while ($elem = shift @$tree)
   {
-      if    ($elem eq "installed")    { $$hash{"installed"}  = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "configured")   { $$hash{"configured"} = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "overwrite")    { $$hash{"overwrite"}  = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "active")       { $$hash{"active"}     = &xst_xml_get_pcdata (shift @$tree); }
-      elsif ($elem eq "dev")          { push @$devs, &xst_xml_get_pcdata (shift @$tree); }
-      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+      if    ($elem eq "installed")    { $$hash{"installed"}  = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "configured")   { $$hash{"configured"} = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "overwrite")    { $$hash{"overwrite"}  = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "active")       { $$hash{"active"}     = &gst_xml_get_pcdata (shift @$tree); }
+      elsif ($elem eq "dev")          { push @$devs, &gst_xml_get_pcdata (shift @$tree); }
+      else  { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"dev"} = $devs;
@@ -162,11 +162,11 @@ sub xml_print
 {
   my ($h) = @_;
 
-  &xst_xml_print_begin ();
-  &xst_xml_print_hash ($$h{"fwrules"}, "fwrules");
-  &xst_xml_print_hash ($$h{"dhcp"},    "dhcp");
-  &xst_xml_print_hash_hash ($$h{"interface"}, "interface");
-  &xst_xml_print_end ();
+  &gst_xml_print_begin ();
+  &gst_xml_print_hash ($$h{"fwrules"}, "fwrules");
+  &gst_xml_print_hash ($$h{"dhcp"},    "dhcp");
+  &gst_xml_print_hash_hash ($$h{"interface"}, "interface");
+  &gst_xml_print_end ();
 }
 
 # Main operations
@@ -175,9 +175,9 @@ sub get
 {
   my $hash;
   
-  $hash = &xst_ishare_conf_get ();
+  $hash = &gst_ishare_conf_get ();
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -186,12 +186,12 @@ sub get_interfaces
 {
   my $hash;
 
-  $hash = &xst_network_interfaces_get ();
+  $hash = &gst_network_interfaces_get ();
   
-  &xst_report_end ();
-  &xst_xml_print_begin ();
-  &xst_xml_print_hash_hash ($hash, "interface");
-  &xst_xml_print_end ();
+  &gst_report_end ();
+  &gst_xml_print_begin ();
+  &gst_xml_print_hash_hash ($hash, "interface");
+  &gst_xml_print_end ();
 }
 
 
@@ -200,8 +200,8 @@ sub set
   my $hash;
 
   $hash = &xml_parse ();
-  &xst_ishare_conf_set ($hash);
-  &xst_report_end ();
+  &gst_ishare_conf_set ($hash);
+  &gst_report_end ();
 }
 
 
@@ -213,14 +213,14 @@ sub filter
   my $hash;
 
   $hash = &xml_parse ();
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"            => [ \&get,    [], "" ],
@@ -229,7 +229,7 @@ $directives = {
   "get_interfaces" => [ \&get_interfaces, [], "Get the interface tags only." ]
     };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);
 

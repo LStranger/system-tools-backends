@@ -83,10 +83,10 @@ $progress_max = 3;
 
 # Where are the tools?
 
-$cmd_swapon = &xst_file_locate_tool ("swapon");
-$cmd_swapoff = &xst_file_locate_tool ("swapoff");
-$cmd_mkswap = &xst_file_locate_tool ("mkswap");
-$cmd_dd = &xst_file_locate_tool ("dd");
+$cmd_swapon = &gst_file_locate_tool ("swapon");
+$cmd_swapoff = &gst_file_locate_tool ("swapoff");
+$cmd_mkswap = &gst_file_locate_tool ("mkswap");
+$cmd_dd = &gst_file_locate_tool ("dd");
 
 
 # --- Internal configuration variables --- #
@@ -104,7 +104,7 @@ sub xml_parse
 {
   # Scan XML to tree.
   
-  $tree = &xst_xml_scan;
+  $tree = &gst_xml_scan;
   
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "memory" tag.
@@ -156,30 +156,30 @@ sub xml_parse_swapinfo
   {
     if ($$tree[0] eq 'device') 
 	  { 
-	    $entry->{device} = &xst_xml_get_word ($$tree[1]);
+	    $entry->{device} = &gst_xml_get_word ($$tree[1]);
 	  }
     elsif ($$tree[0] eq 'enabled') 
 	  {
 	    $node = $$tree[1];
-	    $entry->{enabled} = &xst_util_read_boolean ($$node[0]->{state});
+	    $entry->{enabled} = &gst_util_read_boolean ($$node[0]->{state});
 	  }
     elsif ($$tree[0] eq 'priority') 
 	  { 
-	    $entry->{priority} = &xst_xml_get_word ($$tree[1]);
+	    $entry->{priority} = &gst_xml_get_word ($$tree[1]);
 	  }
     elsif ($$tree[0] eq 'size') 
 	  { 
-	    $entry->{size} = &xst_xml_get_size ($$tree[1]);
+	    $entry->{size} = &gst_xml_get_size ($$tree[1]);
 	  }
     elsif ($$tree[0] eq 'isfile') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_file} = &xst_util_read_boolean ($$node[0]->{state});
+	    $entry->{is_file} = &gst_util_read_boolean ($$node[0]->{state});
 	  }
     elsif ($$tree[0] eq 'isnew') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_new} = &xst_util_read_boolean ($$node[0]->{state});
+	    $entry->{is_new} = &gst_util_read_boolean ($$node[0]->{state});
 	  }
     
     shift @$tree;
@@ -194,46 +194,46 @@ sub xml_parse_swapinfo
 
 sub xml_print
 {
-  &xst_xml_print_begin ();
+  &gst_xml_print_begin ();
 
   foreach $entry (@cf_memory) {
-    &xst_xml_print_line ("<memsize>$entry->{MemTotal}</memsize>\n");
-    &xst_xml_print_line ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
+    &gst_xml_print_line ("<memsize>$entry->{MemTotal}</memsize>\n");
+    &gst_xml_print_line ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
   }
 
-  &xst_xml_print_vspace ();
+  &gst_xml_print_vspace ();
 
   foreach $entry (@cf_partition) {
-    &xst_xml_print_line ("<partition>\n");
-    &xst_xml_enter;
-    &xst_xml_print_line ("<device>$entry->{device}</device>\n");
-    &xst_xml_print_line ("<size>$entry->{size}</size>\n");
-    &xst_xml_leave;
-    &xst_xml_print_line ("</partition>\n");
+    &gst_xml_print_line ("<partition>\n");
+    &gst_xml_enter;
+    &gst_xml_print_line ("<device>$entry->{device}</device>\n");
+    &gst_xml_print_line ("<size>$entry->{size}</size>\n");
+    &gst_xml_leave;
+    &gst_xml_print_line ("</partition>\n");
   }
 
-  &xst_xml_print_vspace ();
+  &gst_xml_print_vspace ();
 
   foreach $entry (@cf_swapinfo) {
-    &xst_xml_print_line ("<swapdev>\n");
-    &xst_xml_enter;
-    &xst_xml_print_line ("<device>$entry->{device}</device>\n");
-    &xst_xml_print_line ("<enabled state='", 
-                         &xst_print_boolean_yesno ($entry->{enabled}), 
+    &gst_xml_print_line ("<swapdev>\n");
+    &gst_xml_enter;
+    &gst_xml_print_line ("<device>$entry->{device}</device>\n");
+    &gst_xml_print_line ("<enabled state='", 
+                         &gst_print_boolean_yesno ($entry->{enabled}), 
                          "'/>\n");
-    &xst_xml_print_line ("<priority>$entry->{priority}</priority>\n");
-    &xst_xml_print_line ("<isfile state='",
-                         &xst_print_boolean_truefalse ($entry->{is_file}),
+    &gst_xml_print_line ("<priority>$entry->{priority}</priority>\n");
+    &gst_xml_print_line ("<isfile state='",
+                         &gst_print_boolean_truefalse ($entry->{is_file}),
                          "'/>\n");
-    &xst_xml_print_line ("<size>$entry->{size}</size>\n");
-    &xst_xml_print_line ("<isnew state='",
-                         &xst_print_boolean_truefalse ($entry->{is_new}),
+    &gst_xml_print_line ("<size>$entry->{size}</size>\n");
+    &gst_xml_print_line ("<isnew state='",
+                         &gst_print_boolean_truefalse ($entry->{is_new}),
                          "'/>\n");
-    &xst_xml_leave;
-    &xst_xml_print_line ("</swapdev>\n\n");
+    &gst_xml_leave;
+    &gst_xml_print_line ("</swapdev>\n\n");
   }
 
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
 }
 
 
@@ -247,7 +247,7 @@ sub get_memory
   my $ifh;
   local *FILE;
 
-  $ifh = &xst_file_open_read_from_names(@meminfo_names);
+  $ifh = &gst_file_open_read_from_names(@meminfo_names);
   if (not $ifh) { return; } # We didn't find it.
   *FILE = $ifh;
 
@@ -290,9 +290,9 @@ sub get_fdisk
   {
     my ($disk, $device, $point, $fs, $options, $check, $size, $bootable, $fd);
     
-    &xst_report ("disks_partition_probe", $dev);
+    &gst_report ("disks_partition_probe", $dev);
 
-    $fd = &xst_file_run_pipe_read ("fdisk -l $dev");
+    $fd = &gst_file_run_pipe_read ("fdisk -l $dev");
     while (<$fd>)
     {
       if (/^\/dev/)
@@ -320,9 +320,9 @@ sub get_fdisk
 
       }
     }
-    &xst_file_close ($fd);
+    &gst_file_close ($fd);
 
-    &xst_report ("disks_size_query", $dev);
+    &gst_report ("disks_size_query", $dev);
 
 #    open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
 #    ($size) = (<FDISK_HD> =~ /([0-9]+)/);
@@ -353,7 +353,7 @@ sub get_swap_size
     my $fd;
     
     # Is partition, &get size.
-    $fd = &xst_file_run_pipe_read ("fdisk -s $device");
+    $fd = &gst_file_run_pipe_read ("fdisk -s $device");
     while (<$fd>)
     {
       if (/^\w+/)
@@ -361,7 +361,7 @@ sub get_swap_size
         $size = sprintf("%.1fMB", $_ / 1024);		#size from Kb to Mb
       }
     }
-    &xst_file_close ($fd);
+    &gst_file_close ($fd);
   }
 
   return $size;
@@ -373,7 +373,7 @@ sub get_swap_entries
   my $fstab_file;
   local *FSTAB_FILE;
 
-  $fstab_file = &xst_file_open_read_from_names (@fstab_names);
+  $fstab_file = &gst_file_open_read_from_names (@fstab_names);
   if (!$fstab_file) { return; }
   *FSTAB_FILE = $fstab_file;
 
@@ -389,7 +389,7 @@ sub get_swap_entries
 
     next if $type ne 'swap';
 
-    &xst_report ("memory_swap_found", $device);
+    &gst_report ("memory_swap_found", $device);
 
     if ($device =~ /^\#(.*)/)
     {
@@ -429,13 +429,13 @@ sub get_swap_entries
 
 sub get
 {
-  &xst_report ("memory_swap_probe");
+  &gst_report ("memory_swap_probe");
 
-  &get_memory; &xst_print_progress();
-  &get_fdisk;  &xst_print_progress();
-  &get_swap_entries; &xst_print_progress();
+  &get_memory; &gst_print_progress();
+  &get_fdisk;  &gst_print_progress();
+  &get_swap_entries; &gst_print_progress();
   
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ();
 }
 
@@ -447,7 +447,7 @@ sub setup_swap_files
   my $command;
 
   $command = "$cmd_swapoff -a";  # To make sure removed swap spaces &get removed
-  &xst_file_run ($command);
+  &gst_file_run ($command);
   
   my $num_done = 0;
 
@@ -462,11 +462,11 @@ sub setup_swap_files
         $size *= 1024;		# Make it to Kb
 
         $command = "$cmd_dd if=/dev/null of=$entry->{device} bs=1024 count=$size";
-        &xst_file_run ($command);
+        &gst_file_run ($command);
       }
 
       $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
-      &xst_file_run ($command);
+      &gst_file_run ($command);
     }
 
     elsif ($entry->{is_file})
@@ -478,10 +478,10 @@ sub setup_swap_files
       if ($size != $entry->{size})
       {
         $command = "$cmd_dd if=/dev/zero of=$entry->{device} bs=1024 count=$size";
-        &xst_file_run ($command);
+        &gst_file_run ($command);
 
         $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
-        &xst_file_run ($command);
+        &gst_file_run ($command);
       }
     }
 
@@ -497,11 +497,11 @@ sub setup_swap_files
     if ($entry->{enabled})
     {
       $command = "$cmd_swapon $entry->{device} $priority >/dev/null 2>/dev/null";
-      &xst_file_run ($command);
+      &gst_file_run ($command);
     }
     
     $num_done++;
-    &xst_progress(90 / ($#cf_swapinfo - $num_done + 2));
+    &gst_progress(90 / ($#cf_swapinfo - $num_done + 2));
   }
 }
 
@@ -513,7 +513,7 @@ sub set_swap_entries
   my ($priority_str);
 
   ($fstab_in_file, $fstab_out_file) = 
-      &xst_file_open_filter_write_from_names (@fstab_names);
+      &gst_file_open_filter_write_from_names (@fstab_names);
   if (!$fstab_out_file) { return; }
   *FSTAB_IN_FILE = $fstab_in_file; *FSTAB_OUT_FILE = $fstab_out_file;
 
@@ -551,13 +551,13 @@ sub set
 {
   &xml_parse ();
   
-  if ($xst_do_immediate)
+  if ($gst_do_immediate)
   {
     &setup_swap_files;
   }
 
   &set_swap_entries;
-  &xst_report_end ();
+  &gst_report_end ();
 }
 
 
@@ -567,7 +567,7 @@ sub set
 sub filter
 {
   &xml_parse ();
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ();
 }
 
@@ -575,7 +575,7 @@ sub filter
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"    => [ \&get,    [], "" ],
@@ -583,6 +583,6 @@ $directives = {
   "filter" => [ \&filter, [], "" ]
     };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

@@ -18,7 +18,7 @@
   </annotation>
 
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
 
 <!--    An installer document consists the following attributes:
 
@@ -225,7 +225,7 @@ peak traffic hours.  host can take the form of michael.linux.com or
 
 -->
   <Complextype name="swarmType">
-    <attribute type="xstHostname" name="host" use="required"/>
+    <attribute type="gstHostname" name="host" use="required"/>
   </complexType>
 
 </schema>

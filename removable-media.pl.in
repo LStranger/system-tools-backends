@@ -33,16 +33,16 @@ require "$SCRIPTSDIR/be.pl$DOTIN";
 require "$SCRIPTSDIR/media.pl$DOTIN";
 
 
-# xst_removable_media_get_list
+# gst_removable_media_get_list
 #
 # Return a list of hashes describing the removable media devices present
 # on this machine.
 
-sub xst_removable_media_get_list
+sub gst_removable_media_get_list
 {
   my @devices;
 
-  @devices = &xst_media_get_list();
+  @devices = &gst_media_get_list();
   
   # TODO: Weed out fixed media.
   
@@ -50,20 +50,20 @@ sub xst_removable_media_get_list
 }
 
 
-# xst_removable_media_xml_print
+# gst_removable_media_xml_print
 #
 # Given a media hash-list, prints the removables inside a <removables> tag
 # pair, using current indent levels.
 
-sub xst_removable_media_xml_print
+sub gst_removable_media_xml_print
 {
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<removables>\n");
-  &xst_xml_enter ();
+  &gst_xml_print_vspace ();
+  &gst_xml_print_line ("<removables>\n");
+  &gst_xml_enter ();
 
   
 
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</removables>\n");
-  &xst_xml_print_vspace ();
+  &gst_xml_leave ();
+  &gst_xml_print_line ("</removables>\n");
+  &gst_xml_print_vspace ();
 }

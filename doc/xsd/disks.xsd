@@ -17,7 +17,7 @@
   </annotation>
   
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
 
   <element type="disksType" name="disks"/>
 
@@ -29,7 +29,7 @@
 
   <complexType name="diskType">
     <sequence>
-      <element type="xstFilePath"   name="device"/>
+      <element type="gstFilePath"   name="device"/>
       <element type="unsignedLong"  name="size"/>
       <element type="partitionType" name="partition" minOccurs="0" maxOccurs="unbounded"/>
     </sequence>
@@ -37,14 +37,14 @@
 
   <complexType name="partitionType">
     <sequence>
-      <element type="xstFilePath"  name="device"/>
+      <element type="gstFilePath"  name="device"/>
       <element type="fstypeType"   name="type"/>
       <element type="unsignedLong" name="size"/>
-      <element type="xstBoolState" name="bootable"/>
-      <element type="xstBoolState" name="integritycheck"/>
-      <element type="xstBoolState" name="mounted"/>
-      <element type="xstBoolState" name="listed"/>
-      <element type="xstBoolState" name="detected"/>
+      <element type="gstBoolState" name="bootable"/>
+      <element type="gstBoolState" name="integritycheck"/>
+      <element type="gstBoolState" name="mounted"/>
+      <element type="gstBoolState" name="listed"/>
+      <element type="gstBoolState" name="detected"/>
     </sequence>
   </complexType>
 

@@ -97,7 +97,7 @@ sub distro_file
 {
   my $x_version = &x_version ();
   my $ver = ($x_version->{'number'} >= 400) ? 'XFree4' : 'XFree3';
-  my $tmp = $platmap->{$xst_dist};
+  my $tmp = $platmap->{$gst_dist};
 
   return $tmp->{$ver};
 }
@@ -110,7 +110,7 @@ sub xml_parse
   my $fname = shift;
   my ($tree, $hash);
 
-  $tree = &xst_xml_scan ($fname);
+  $tree = &gst_xml_scan ($fname);
 
   # Find the first interesting value.
   while ($$tree[0] eq undef) {
@@ -132,19 +132,19 @@ sub xml_print
   my $config = shift;
   my ($section, $hash);
 
-  &xst_xml_print_begin ();
-  &xst_xml_print_vspace ();
+  &gst_xml_print_begin ();
+  &gst_xml_print_vspace ();
 
   foreach $section (keys %$config) {
     my ($arrayref) = $$config{$section};
 
     foreach $hash (@$arrayref) {      
       &x_xml_print_section ($hash, $section, \@display_sections);
-      &xst_xml_print_vspace ();
+      &gst_xml_print_vspace ();
     }
   }
   
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
 }
 
 # Top-level actions.
@@ -155,7 +155,7 @@ sub get
 
   &x_config_fix ($config, 1);
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($config);
 }
 
@@ -166,14 +166,14 @@ sub set
   &x_config_fix ($xml_config, 0);
   
   &x_config_set (&distro_file (), $config, $xml_config);
-  &xst_report_end ();
+  &gst_report_end ();
 }
 
 sub filter
 {
   my $config = &xml_parse ();
   
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($config);
 }
 
@@ -194,10 +194,10 @@ sub test
 
   &x_config_set ($tmp_file, $config, $xml_config);
 
-  $res = &xst_file_run ("$testX_cmd --config=$tmp_file");
+  $res = &gst_file_run ("$testX_cmd --config=$tmp_file");
   unlink ($tmp_file);
 
-  &xst_report_end ();
+  &gst_report_end ();
 }
 
 sub probe
@@ -214,7 +214,7 @@ sub probe
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"    => [ \&get,    [], "" ],
@@ -224,6 +224,6 @@ $directives = {
   "probe"  => [ \&probe,  [ "direct*" ], "Return list of valid standard modelines." ],
 };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

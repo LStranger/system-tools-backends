@@ -38,13 +38,13 @@ require "$SCRIPTSDIR/network.pl$DOTIN";
 
 # --- share_export_smb_info; information on a particular SMB export --- #
 
-sub xst_share_smb_info_new
+sub gst_share_smb_info_new
 {
   my $info = {};
   return $info;
 }
 
-sub xst_share_smb_info_set
+sub gst_share_smb_info_set
 {
   my ($info, $key, $value) = @_;
   
@@ -58,97 +58,97 @@ sub xst_share_smb_info_set
   }
 }
 
-sub xst_share_smb_info_get_name
+sub gst_share_smb_info_get_name
 {
   return $_[0]->{'name'};
 }
 
-sub xst_share_smb_info_set_name
+sub gst_share_smb_info_set_name
 {
-  &xst_share_smb_info_set ($_[0], 'name', $_[1]);
+  &gst_share_smb_info_set ($_[0], 'name', $_[1]);
 }
 
-sub xst_share_smb_info_get_point
+sub gst_share_smb_info_get_point
 {
   return $_[0]->{'point'};
 }
 
-sub xst_share_smb_info_set_point
+sub gst_share_smb_info_set_point
 {
-  &xst_share_smb_info_set ($_[0], 'point', $_[1]);
+  &gst_share_smb_info_set ($_[0], 'point', $_[1]);
 }
 
-sub xst_share_smb_info_get_comment
+sub gst_share_smb_info_get_comment
 {
   return $_[0]->{'comment'};
 }
 
-sub xst_share_smb_info_set_comment
+sub gst_share_smb_info_set_comment
 {
-  &xst_share_smb_info_set ($_[0], 'comment', $_[1]);
+  &gst_share_smb_info_set ($_[0], 'comment', $_[1]);
 }
 
-sub xst_share_smb_info_get_enabled
+sub gst_share_smb_info_get_enabled
 {
   return $_[0]->{'enabled'};
 }
 
-sub xst_share_smb_info_set_enabled
+sub gst_share_smb_info_set_enabled
 {
-  &xst_share_smb_info_set ($_[0], 'enabled', $_[1]);
+  &gst_share_smb_info_set ($_[0], 'enabled', $_[1]);
 }
 
-sub xst_share_smb_info_get_browse
+sub gst_share_smb_info_get_browse
 {
   return $_[0]->{'browse'};
 }
 
-sub xst_share_smb_info_set_browse
+sub gst_share_smb_info_set_browse
 {
-  &xst_share_smb_info_set ($_[0], 'browse', $_[1]);
+  &gst_share_smb_info_set ($_[0], 'browse', $_[1]);
 }
 
-sub xst_share_smb_info_get_public
+sub gst_share_smb_info_get_public
 {
   return $_[0]->{'public'};
 }
 
-sub xst_share_smb_info_set_public
+sub gst_share_smb_info_set_public
 {
-  &xst_share_smb_info_set ($_[0], 'public', $_[1]);
+  &gst_share_smb_info_set ($_[0], 'public', $_[1]);
 }
 
-sub xst_share_smb_info_get_write
+sub gst_share_smb_info_get_write
 {
   return $_[0]->{'write'};
 }
 
-sub xst_share_smb_info_set_write
+sub gst_share_smb_info_set_write
 {
-  &xst_share_smb_info_set ($_[0], 'write', $_[1]);
+  &gst_share_smb_info_set ($_[0], 'write', $_[1]);
 }
 
 # --- share_smb_table; multiple instances of share_smb_info --- #
 
-sub xst_share_smb_table_new
+sub gst_share_smb_table_new
 {
   my @array;
   return \@array;
 }
 
-sub xst_share_smb_table_add
+sub gst_share_smb_table_add
 {
   my ($table, $info) = @_;
   push @$table, $info;
 }
 
-sub xst_share_smb_table_find
+sub gst_share_smb_table_find
 {
   my ($table, $name) = @_;
 
   for $i (@$table)
   {
-    if (&xst_share_smb_info_get_name ($i) eq $name)
+    if (&gst_share_smb_info_get_name ($i) eq $name)
     {
       return $i;
     }
@@ -159,28 +159,28 @@ sub xst_share_smb_table_find
 
 # --- share_export_nfs_info; information on a particular NFS export --- #
 
-sub xst_share_nfs_info_new
+sub gst_share_nfs_info_new
 {
   my $info = {};
   return $info;
 }
 
-sub xst_share_nfs_info_dup
+sub gst_share_nfs_info_dup
 {
   my ($orig) = @_;
   my $dup;
 
   $dup = { %$orig };
-  &xst_share_nfs_info_set_client_table ($dup, &xst_share_nfs_client_table_dup (&xst_share_nfs_info_get_client_table ($orig)));
+  &gst_share_nfs_info_set_client_table ($dup, &gst_share_nfs_client_table_dup (&gst_share_nfs_info_get_client_table ($orig)));
   return $dup;
 }
 
-sub xst_share_nfs_info_match_data
+sub gst_share_nfs_info_match_data
 {
   my ($info_a, $info_b) = @_;
 
-  if (&xst_share_nfs_info_get_point ($info_a) eq &xst_share_nfs_info_get_point ($info_b) &&
-      &xst_share_nfs_info_print_clients ($info_a) eq &xst_share_nfs_info_print_clients ($info_b))
+  if (&gst_share_nfs_info_get_point ($info_a) eq &gst_share_nfs_info_get_point ($info_b) &&
+      &gst_share_nfs_info_print_clients ($info_a) eq &gst_share_nfs_info_print_clients ($info_b))
   {
     return 1;
   }
@@ -188,7 +188,7 @@ sub xst_share_nfs_info_match_data
   return 0;
 }
 
-sub xst_share_nfs_info_set
+sub gst_share_nfs_info_set
 {
   my ($info, $key, $value) = @_;
   
@@ -202,62 +202,62 @@ sub xst_share_nfs_info_set
   }
 }
 
-sub xst_share_nfs_info_get_point
+sub gst_share_nfs_info_get_point
 {
   return $_[0]->{'point'};
 }
 
-sub xst_share_nfs_info_set_point
+sub gst_share_nfs_info_set_point
 {
-  &xst_share_nfs_info_set ($_[0], 'point', $_[1]);
+  &gst_share_nfs_info_set ($_[0], 'point', $_[1]);
 }
 
-sub xst_share_nfs_info_get_client_table
+sub gst_share_nfs_info_get_client_table
 {
   return $_[0]->{'clients'};
 }
 
-sub xst_share_nfs_info_set_client_table
+sub gst_share_nfs_info_set_client_table
 {
-  &xst_share_nfs_info_set ($_[0], 'clients', $_[1]);
+  &gst_share_nfs_info_set ($_[0], 'clients', $_[1]);
 }
 
 # --- share_nfs_table; multiple instances of share_smb_info --- #
 
-sub xst_share_nfs_table_new
+sub gst_share_nfs_table_new
 {
   my @array;
   return \@array;
 }
 
-sub xst_share_nfs_table_add
+sub gst_share_nfs_table_add
 {
   my ($table, $info) = @_;
   push @$table, $info;
 }
 
-sub xst_share_nfs_table_dup
+sub gst_share_nfs_table_dup
 {
   my ($orig) = @_;
-  my $dup = &xst_share_nfs_table_new ();
+  my $dup = &gst_share_nfs_table_new ();
   my $i;
 
   foreach $i (@$orig)
   {
-    &xst_share_nfs_table_add ($dup, &xst_share_nfs_info_dup ($i));
+    &gst_share_nfs_table_add ($dup, &gst_share_nfs_info_dup ($i));
   }
 
   return $dup;
 }
 
-sub xst_share_nfs_table_find
+sub gst_share_nfs_table_find
 {
   my ($table, $point) = @_;
   my $i;
 
   for $i (@$table)
   {
-    if (&xst_share_nfs_info_get_point ($i) eq $point)
+    if (&gst_share_nfs_info_get_point ($i) eq $point)
     {
       return $i;
     }
@@ -266,22 +266,22 @@ sub xst_share_nfs_table_find
   return undef;
 }
 
-sub xst_share_nfs_table_find_info_equivalent
+sub gst_share_nfs_table_find_info_equivalent
 {
   my ($table, $info) = @_;
 
-  return &xst_share_nfs_table_find ($table, &xst_share_nfs_info_get_point ($info));
+  return &gst_share_nfs_table_find ($table, &gst_share_nfs_info_get_point ($info));
 }
 
 # --- share_export_nfs_client_info; information on a particular NFS export's client --- #
 
-sub xst_share_nfs_client_info_new
+sub gst_share_nfs_client_info_new
 {
   my $info = {};
   return $info;
 }
 
-sub xst_share_nfs_client_info_dup
+sub gst_share_nfs_client_info_dup
 {
   my ($orig) = @_;
   my $dup;
@@ -290,7 +290,7 @@ sub xst_share_nfs_client_info_dup
   return $dup;
 }
 
-sub xst_share_nfs_client_info_set
+sub gst_share_nfs_client_info_set
 {
   my ($info, $key, $value) = @_;
   
@@ -304,49 +304,49 @@ sub xst_share_nfs_client_info_set
   }
 }
 
-sub xst_share_nfs_client_info_get_pattern
+sub gst_share_nfs_client_info_get_pattern
 {
   return $_[0]->{'pattern'};
 }
 
-sub xst_share_nfs_client_info_set_pattern
+sub gst_share_nfs_client_info_set_pattern
 {
-  &xst_share_nfs_client_info_set ($_[0], 'pattern', $_[1]);
+  &gst_share_nfs_client_info_set ($_[0], 'pattern', $_[1]);
 }
 
-sub xst_share_nfs_client_info_get_write
+sub gst_share_nfs_client_info_get_write
 {
   return $_[0]->{'write'};
 }
 
-sub xst_share_nfs_client_info_set_write
+sub gst_share_nfs_client_info_set_write
 {
-  &xst_share_nfs_client_info_set ($_[0], 'write', $_[1]);
+  &gst_share_nfs_client_info_set ($_[0], 'write', $_[1]);
 }
 
 # --- share_nfs_client_table; multiple instances of share_smb_client_info --- #
 
-sub xst_share_nfs_client_table_new
+sub gst_share_nfs_client_table_new
 {
   my @array;
   return \@array;
 }
 
-sub xst_share_nfs_client_table_dup
+sub gst_share_nfs_client_table_dup
 {
   my ($orig) = @_;
-  my $dup = &xst_share_nfs_client_table_new ();
+  my $dup = &gst_share_nfs_client_table_new ();
   my $i;
 
   foreach $i (@$orig)
   {
-    &xst_share_nfs_client_table_add ($dup, &xst_share_nfs_client_info_dup ($i));
+    &gst_share_nfs_client_table_add ($dup, &gst_share_nfs_client_info_dup ($i));
   }
 
   return $dup;
 }
 
-sub xst_share_nfs_client_table_add
+sub gst_share_nfs_client_table_add
 {
   my ($table, $info) = @_;
   push @$table, $info;
@@ -354,76 +354,76 @@ sub xst_share_nfs_client_table_add
 
 # --- Parsing --- #
 
-sub xst_share_parse_smb_conf
+sub gst_share_parse_smb_conf
 {
   my ($smb_conf_name) = @_;
   my (@sections, $table);
 
-  $table = xst_share_smb_table_new ();
+  $table = gst_share_smb_table_new ();
 
   # Get the sections.
 
-  @sections = &xst_parse_ini_sections ($smb_conf_name);
+  @sections = &gst_parse_ini_sections ($smb_conf_name);
 
   for $section (@sections)
   {
     next if ($section =~ /^(global)|(homes)|(printers)$/);
-    next if (&xst_parse_ini_bool ($smb_conf_name, $section, "printable"));
+    next if (&gst_parse_ini_bool ($smb_conf_name, $section, "printable"));
 
-    my $sesi = &xst_share_smb_info_new ();
+    my $sesi = &gst_share_smb_info_new ();
     my $point, $comment, $enabled, $browseable, $public, $writable, $printable;
 
-    $point      = &xst_parse_ini      ($smb_conf_name, $section, "path");
-    $comment    = &xst_parse_ini      ($smb_conf_name, $section, "comment");
-    $enabled    = &xst_parse_ini_bool ($smb_conf_name, $section, "available");
-    $browseable = &xst_parse_ini_bool ($smb_conf_name, $section, "browsable")   ||
-                  &xst_parse_ini_bool ($smb_conf_name, $section, "browseable");
-    $public     = &xst_parse_ini_bool ($smb_conf_name, $section, "public")      ||
-                  &xst_parse_ini_bool ($smb_conf_name, $section, "guest");
-    $writable   = &xst_parse_ini_bool ($smb_conf_name, $section, "writable")    ||
-                  &xst_parse_ini_bool ($smb_conf_name, $section, "writeable");
+    $point      = &gst_parse_ini      ($smb_conf_name, $section, "path");
+    $comment    = &gst_parse_ini      ($smb_conf_name, $section, "comment");
+    $enabled    = &gst_parse_ini_bool ($smb_conf_name, $section, "available");
+    $browseable = &gst_parse_ini_bool ($smb_conf_name, $section, "browsable")   ||
+                  &gst_parse_ini_bool ($smb_conf_name, $section, "browseable");
+    $public     = &gst_parse_ini_bool ($smb_conf_name, $section, "public")      ||
+                  &gst_parse_ini_bool ($smb_conf_name, $section, "guest");
+    $writable   = &gst_parse_ini_bool ($smb_conf_name, $section, "writable")    ||
+                  &gst_parse_ini_bool ($smb_conf_name, $section, "writeable");
 
-    &xst_share_smb_info_set_name    ($sesi, $section);
-    &xst_share_smb_info_set_point   ($sesi, $point);
-    &xst_share_smb_info_set_comment ($sesi, $comment);
-    &xst_share_smb_info_set_enabled ($sesi, $enabled);
-    &xst_share_smb_info_set_browse  ($sesi, $browseable);
-    &xst_share_smb_info_set_public  ($sesi, $public);
-    &xst_share_smb_info_set_write   ($sesi, $writable);
+    &gst_share_smb_info_set_name    ($sesi, $section);
+    &gst_share_smb_info_set_point   ($sesi, $point);
+    &gst_share_smb_info_set_comment ($sesi, $comment);
+    &gst_share_smb_info_set_enabled ($sesi, $enabled);
+    &gst_share_smb_info_set_browse  ($sesi, $browseable);
+    &gst_share_smb_info_set_public  ($sesi, $public);
+    &gst_share_smb_info_set_write   ($sesi, $writable);
 
-    &xst_share_smb_table_add ($table, $sesi);
+    &gst_share_smb_table_add ($table, $sesi);
   }
 
   return $table;
 }
 
-sub xst_share_parse_nfs_exports
+sub gst_share_parse_nfs_exports
 {
   my ($nfs_exports_name) = @_;
   my (@sections, $table, $entries);
   my $point;
 
-  $table = xst_share_nfs_table_new ();
+  $table = gst_share_nfs_table_new ();
 
-  $entries = &xst_parse_split_hash_with_continuation ($nfs_exports_name, "[ \t]+", "[ \t]+");
+  $entries = &gst_parse_split_hash_with_continuation ($nfs_exports_name, "[ \t]+", "[ \t]+");
 
   foreach $point (keys %$entries)
   {
     my $clients = $$entries{$point};
-    my $info = &xst_share_nfs_info_new ();
-    my $client_table = &xst_share_nfs_client_table_new ();
+    my $info = &gst_share_nfs_info_new ();
+    my $client_table = &gst_share_nfs_client_table_new ();
 
-    &xst_share_nfs_info_set_point ($info, $point);
+    &gst_share_nfs_info_set_point ($info, $point);
 
     foreach $client (@$clients)
     {
-      my $cinfo = &xst_share_nfs_client_info_new ();
+      my $cinfo = &gst_share_nfs_client_info_new ();
       my $pattern;
 
       $client =~ /^([a-zA-Z0-9.-_*?@\/]+)/;
       $pattern = $1;
       $pattern = "0.0.0.0/0" if $pattern eq "";
-      &xst_share_nfs_client_info_set_pattern ($cinfo, $pattern);
+      &gst_share_nfs_client_info_set_pattern ($cinfo, $pattern);
 
       my $option_str = "";
       my @options;
@@ -433,15 +433,15 @@ sub xst_share_parse_nfs_exports
 
       for $option (@options)
       {
-        if ($option eq "rw") { &xst_share_nfs_client_info_set_write ($cinfo, 1); }
+        if ($option eq "rw") { &gst_share_nfs_client_info_set_write ($cinfo, 1); }
         # Add supported NFS export options here. Some might have to be split on '='.
       }
 
-      &xst_share_nfs_client_table_add ($client_table, $cinfo);
+      &gst_share_nfs_client_table_add ($client_table, $cinfo);
     }
 
-    &xst_share_nfs_info_set_client_table ($info, $client_table);
-    &xst_share_nfs_table_add ($table, $info);
+    &gst_share_nfs_info_set_client_table ($info, $client_table);
+    &gst_share_nfs_table_add ($table, $info);
   }
 
   return $table;
@@ -449,45 +449,45 @@ sub xst_share_parse_nfs_exports
 
 # --- Replacing --- #
 
-sub xst_share_replace_smb_conf
+sub gst_share_replace_smb_conf
 {
   my ($file, $table) = @_;
   my (@sections);
 
   # Get the sections.
 
-  @sections = &xst_parse_ini_sections ($file);
+  @sections = &gst_parse_ini_sections ($file);
 
   for $section (@sections)
   {
     next if ($section =~ /^(global)|(homes)|(printers)$/);
-    next if (&xst_parse_ini_bool ($file, $section, "printable"));
+    next if (&gst_parse_ini_bool ($file, $section, "printable"));
 
-    if (!&xst_share_smb_table_find ($table, $section))
+    if (!&gst_share_smb_table_find ($table, $section))
     {
-      &xst_replace_remove_ini_section ($file, $section);
+      &gst_replace_remove_ini_section ($file, $section);
     }
   }
 
   for $export (@$table)
   {
     my $point, $comment, $enabled, $browseable, $public, $writable, $printable;
-    my $name = &xst_share_smb_info_get_name ($export);
+    my $name = &gst_share_smb_info_get_name ($export);
 
-    &xst_replace_ini      ($file, $name, "path",       &xst_share_smb_info_get_point      ($export));
-    &xst_replace_ini      ($file, $name, "comment",    &xst_share_smb_info_get_comment    ($export));
-    &xst_replace_ini_bool ($file, $name, "available",  &xst_share_smb_info_get_enabled    ($export));
-    &xst_replace_ini_bool ($file, $name, "browseable", &xst_share_smb_info_get_browse     ($export));
-    &xst_replace_ini_bool ($file, $name, "public",     &xst_share_smb_info_get_public     ($export));
-    &xst_replace_ini_bool ($file, $name, "writable",   &xst_share_smb_info_get_write      ($export));
+    &gst_replace_ini      ($file, $name, "path",       &gst_share_smb_info_get_point      ($export));
+    &gst_replace_ini      ($file, $name, "comment",    &gst_share_smb_info_get_comment    ($export));
+    &gst_replace_ini_bool ($file, $name, "available",  &gst_share_smb_info_get_enabled    ($export));
+    &gst_replace_ini_bool ($file, $name, "browseable", &gst_share_smb_info_get_browse     ($export));
+    &gst_replace_ini_bool ($file, $name, "public",     &gst_share_smb_info_get_public     ($export));
+    &gst_replace_ini_bool ($file, $name, "writable",   &gst_share_smb_info_get_write      ($export));
 
-    &xst_replace_remove_ini_var ($file, $name, "browsable");
-    &xst_replace_remove_ini_var ($file, $name, "guest");
-    &xst_replace_remove_ini_var ($file, $name, "writeable");
+    &gst_replace_remove_ini_var ($file, $name, "browsable");
+    &gst_replace_remove_ini_var ($file, $name, "guest");
+    &gst_replace_remove_ini_var ($file, $name, "writeable");
   }
 }
 
-sub xst_share_nfs_exports_get_next_entry_line  # $infd, $outfd
+sub gst_share_nfs_exports_get_next_entry_line  # $infd, $outfd
 {
   my ($infd, $outfd) = @_;
 
@@ -497,7 +497,7 @@ sub xst_share_nfs_exports_get_next_entry_line  # $infd, $outfd
     # <point> <clients>
     my @line = split /[ \t]+/, $_;
     if ($line[0] eq "") { shift @line; }
-    if (@line < 1 || &xst_ignore_line (@line)) { print $outfd $_; next; }
+    if (@line < 1 || &gst_ignore_line (@line)) { print $outfd $_; next; }
 
     return $_;
   }
@@ -505,7 +505,7 @@ sub xst_share_nfs_exports_get_next_entry_line  # $infd, $outfd
   return undef;
 }
 
-sub xst_share_nfs_exports_get_entry_line_fields  # line
+sub gst_share_nfs_exports_get_entry_line_fields  # line
 {
   my ($line) = @_;
 
@@ -518,41 +518,41 @@ sub xst_share_nfs_exports_get_entry_line_fields  # line
   return split /[ \t]+/, $line;
 }
 
-sub xst_share_nfs_info_print_clients
+sub gst_share_nfs_info_print_clients
 {
   my ($info) = @_;
   my $line = "";
   my $clients, $client;
 
-  $clients = &xst_share_nfs_info_get_client_table ($info);
+  $clients = &gst_share_nfs_info_get_client_table ($info);
 
   for $client (@$clients)
   {
-    $line .= &xst_share_nfs_client_info_get_pattern ($client);
-    $line .= "(rw)" if (&xst_share_nfs_client_info_get_write ($client));
+    $line .= &gst_share_nfs_client_info_get_pattern ($client);
+    $line .= "(rw)" if (&gst_share_nfs_client_info_get_write ($client));
     $line .= " ";
   }
 
   return $line;
 }
 
-sub xst_share_nfs_info_print_entry
+sub gst_share_nfs_info_print_entry
 {
   my ($info) = @_;
   my $line;
 
   # <point>
 
-  $line = sprintf ("%-15s ", &xst_share_nfs_info_get_point ($info));
+  $line = sprintf ("%-15s ", &gst_share_nfs_info_get_point ($info));
 
   # <clients>
 
-  $line .= &xst_share_nfs_info_print_clients ($info);
+  $line .= &gst_share_nfs_info_print_clients ($info);
 
   return $line;
 }
 
-sub xst_share_nfs_client_print_option_hash
+sub gst_share_nfs_client_print_option_hash
 {
   my ($opthash) = @_;
   my $string = "";
@@ -577,15 +577,15 @@ sub xst_share_nfs_client_print_option_hash
   return $string;
 }
 
-sub xst_share_nfs_info_print_synthesized_entry
+sub gst_share_nfs_info_print_synthesized_entry
 {
   my ($info, $line) = @_;
   my $outline;
-  my $ctable = &xst_share_nfs_info_get_client_table ($info);
+  my $ctable = &gst_share_nfs_info_get_client_table ($info);
 
   # <point>
 
-  $outline = sprintf ("%-15s", &xst_share_nfs_info_get_point ($info));
+  $outline = sprintf ("%-15s", &gst_share_nfs_info_get_point ($info));
 
   # <clients>
 
@@ -623,10 +623,10 @@ sub xst_share_nfs_info_print_synthesized_entry
 
   for $cinfo (@$ctable)
   {
-    my $pattern = &xst_share_nfs_client_info_get_pattern ($cinfo);
+    my $pattern = &gst_share_nfs_client_info_get_pattern ($cinfo);
     my $opthash = $$chash{$pattern};
 
-    if (&xst_share_nfs_client_info_get_write ($cinfo))
+    if (&gst_share_nfs_client_info_get_write ($cinfo))
     {
       $$opthash{'rw'} = "";
     }
@@ -635,8 +635,8 @@ sub xst_share_nfs_info_print_synthesized_entry
       delete $$opthash{'rw'};
     }
 
-    $outline .= " " . &xst_share_nfs_client_info_get_pattern ($cinfo);
-    my $client_string = &xst_share_nfs_client_print_option_hash ($opthash);
+    $outline .= " " . &gst_share_nfs_client_info_get_pattern ($cinfo);
+    my $client_string = &gst_share_nfs_client_print_option_hash ($opthash);
     if ($client_string ne "")
     {
       $outline .= "(" . $client_string . ")";
@@ -646,39 +646,39 @@ sub xst_share_nfs_info_print_synthesized_entry
   return $outline;
 }
 
-sub xst_share_nfs_exports_add_entry
+sub gst_share_nfs_exports_add_entry
 {
   my ($file, $info) = @_;
   my ($infd, $outfd);
   my ($line);
 
-  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  ($infd, $outfd) = &gst_file_open_filter_write_from_names ($file);
   return undef if !$outfd;
 
   while (<$infd>) { print $outfd $_; }
-  &xst_file_close ($infd);
+  &gst_file_close ($infd);
 
-  print $outfd &xst_share_nfs_info_print_entry ($info) . "\n";
-  &xst_file_close ($outfd);
+  print $outfd &gst_share_nfs_info_print_entry ($info) . "\n";
+  &gst_file_close ($outfd);
 }
 
-sub xst_share_nfs_exports_update_entry  # filename, filesys_info
+sub gst_share_nfs_exports_update_entry  # filename, filesys_info
 {
   my ($file, $info) = @_;
   my ($infd, $outfd);
   my ($line);
   my $replaced = 0;
 
-  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  ($infd, $outfd) = &gst_file_open_filter_write_from_names ($file);
   return undef if !$outfd;
 
-  while ($line = &xst_share_nfs_exports_get_next_entry_line ($infd, $outfd))
+  while ($line = &gst_share_nfs_exports_get_next_entry_line ($infd, $outfd))
   {
-    my $point = &xst_share_nfs_exports_get_entry_line_point ($line);
+    my $point = &gst_share_nfs_exports_get_entry_line_point ($line);
 
-    if (!$replaced && $point eq &xst_share_nfs_info_get_point ($info))
+    if (!$replaced && $point eq &gst_share_nfs_info_get_point ($info))
     {
-      print $outfd &xst_share_nfs_info_print_synthesized_entry ($info, $line) . "\n";
+      print $outfd &gst_share_nfs_info_print_synthesized_entry ($info, $line) . "\n";
       $replaced = 1;
     }
     else
@@ -687,34 +687,34 @@ sub xst_share_nfs_exports_update_entry  # filename, filesys_info
     }
   }
 
-  &xst_file_close ($infd);
-  &xst_file_close ($outfd);
+  &gst_file_close ($infd);
+  &gst_file_close ($outfd);
 }
 
-sub xst_share_nfs_exports_remove_entry
+sub gst_share_nfs_exports_remove_entry
 {
   my ($file, $info) = @_;
   my ($infd, $outfd);
   my ($line);
 
-  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  ($infd, $outfd) = &gst_file_open_filter_write_from_names ($file);
   return undef if !$outfd;
 
-  while ($line = &xst_share_nfs_exports_get_next_entry_line ($infd, $outfd))
+  while ($line = &gst_share_nfs_exports_get_next_entry_line ($infd, $outfd))
   {
-    my $point = &xst_share_nfs_exports_get_entry_line_point ($line);
+    my $point = &gst_share_nfs_exports_get_entry_line_point ($line);
 
-    if ($point ne &xst_share_nfs_info_get_point ($info))
+    if ($point ne &gst_share_nfs_info_get_point ($info))
     {
       print $outfd $line;
     }
   }
 
-  &xst_file_close ($infd);
-  &xst_file_close ($outfd);
+  &gst_file_close ($infd);
+  &gst_file_close ($outfd);
 }
 
-sub xst_share_nfs_exports_get_entry_line_point
+sub gst_share_nfs_exports_get_entry_line_point
 {
   my ($line) = @_;
   my $point;
@@ -723,28 +723,28 @@ sub xst_share_nfs_exports_get_entry_line_point
   return $point;
 }
 
-sub xst_share_replace_nfs_exports  # filename, table
+sub gst_share_replace_nfs_exports  # filename, table
 {
   my ($file, $table) = @_;
   my ($new_table, $old_table);
 
-  $old_table = &xst_share_parse_nfs_exports ($file);
-  $new_table = &xst_share_nfs_table_dup ($table);
+  $old_table = &gst_share_parse_nfs_exports ($file);
+  $new_table = &gst_share_nfs_table_dup ($table);
 
   for $info (@$new_table)
   {
-    my $old_info = &xst_share_nfs_table_find_info_equivalent ($old_table, $info);
+    my $old_info = &gst_share_nfs_table_find_info_equivalent ($old_table, $info);
 
 #    print "Looking for entry - ";
     if (!$old_info)
     {
 #      print "adding.\n";
-      &xst_share_nfs_exports_add_entry ($file, $info);
+      &gst_share_nfs_exports_add_entry ($file, $info);
     }
-    elsif ($old_info && !&xst_share_nfs_info_match_data ($old_info, $info))
+    elsif ($old_info && !&gst_share_nfs_info_match_data ($old_info, $info))
     {
 #      print "updating.\n";
-      &xst_share_nfs_exports_update_entry ($file, $info);
+      &gst_share_nfs_exports_update_entry ($file, $info);
     }
     else
     {
@@ -755,10 +755,10 @@ sub xst_share_replace_nfs_exports  # filename, table
   for $old_info (@$old_table)
   {
 #    print "Looking for entry - ";
-    if (!&xst_share_nfs_table_find_info_equivalent ($new_table, $old_info))
+    if (!&gst_share_nfs_table_find_info_equivalent ($new_table, $old_info))
     {
 #      print "removing.\n";
-      &xst_share_nfs_exports_remove_entry ($file, $old_info);
+      &gst_share_nfs_exports_remove_entry ($file, $old_info);
     }
     else
     {
@@ -768,24 +768,24 @@ sub xst_share_replace_nfs_exports  # filename, table
 }
 
 
-sub xst_share_get_smbclient_list_cmd
+sub gst_share_get_smbclient_list_cmd
 {
   my ($host) = @_;
   my ($tool_smbclient);
 
-  $tool_smbclient = &xst_file_locate_tool ("smbclient");
+  $tool_smbclient = &gst_file_locate_tool ("smbclient");
 
   return "$tool_smbclient -N -U % -L -I $host";
 }
 
 
-sub xst_share_scan_smb_host_call
+sub gst_share_scan_smb_host_call
 {
   my ($host) = @_;
   my ($cmd, $dirs);
   local *SMBCLIENT;
 
-  $cmd = &xst_share_get_smbclient_list_cmd ($host);
+  $cmd = &gst_share_get_smbclient_list_cmd ($host);
   open (SMBCLIENT, "/bin/sh -c \"$cmd\" 2> /dev/null |");
 
   while (<SMBCLIENT>)
@@ -809,27 +809,27 @@ sub xst_share_scan_smb_host_call
 }
 
 
-sub xst_share_scan_smb_start
+sub gst_share_scan_smb_start
 {
   my (@hosts) = @_;
   my ($host, @procs);
 
   foreach $host (@hosts)
   {
-    push @procs, &xst_process_fork (\&xst_share_scan_smb_host_call, $host);
+    push @procs, &gst_process_fork (\&gst_share_scan_smb_host_call, $host);
   }
 
   return \@procs;
 }
 
 
-sub xst_share_scan_nfs_host_call
+sub gst_share_scan_nfs_host_call
 {
   my ($host) = @_;
   my ($cmd, $dirs);
   local *SHOWMOUNT;
 
-  $cmd = &xst_share_get_showmount_cmd ($host);
+  $cmd = &gst_share_get_showmount_cmd ($host);
   open (SHOWMOUNT, "/bin/sh -c \"$cmd\" 2> /dev/null |");
   while (<SHOWMOUNT>)
   {
@@ -842,21 +842,21 @@ sub xst_share_scan_nfs_host_call
 }
 
 
-sub xst_share_scan_nfs_start
+sub gst_share_scan_nfs_start
 {
   my (@hosts) = @_;
   my ($host, @procs);
 
   foreach $host (@hosts)
   {
-    push @procs, &xst_process_fork (\&xst_share_scan_nfs_host_call, $host);
+    push @procs, &gst_process_fork (\&gst_share_scan_nfs_host_call, $host);
   }
 
   return \@procs;
 }
 
 
-sub xst_share_scan_share_collect
+sub gst_share_scan_share_collect
 {
   my ($procs, $host2name) = @_;
   my ($proc, $str, %hash, $host, @dirs);
@@ -870,32 +870,32 @@ sub xst_share_scan_share_collect
       $host = shift @dirs;
       $hash{$$host2name{$host}} = [ @dirs ];
     }
-    &xst_process_kill ($proc);
+    &gst_process_kill ($proc);
   }
 
   return \%hash;
 }
 
 
-sub xst_share_scan_network
+sub gst_share_scan_network
 {
   my ($host, @hosts);
   my ($proc, @procs, $lookup_procs, $nfs_procs, $smb_procs);
   my ($i, @names, %host2name, $nfs_table, $smb_table);
 
-  @hosts = &xst_network_find_hosts ();
+  @hosts = &gst_network_find_hosts ();
   
-  $lookup_procs = &xst_network_lookup_address_start (@hosts);
-  $nfs_procs = &xst_share_scan_nfs_start (@hosts);
-  $smb_procs = &xst_share_scan_smb_start (@hosts);
+  $lookup_procs = &gst_network_lookup_address_start (@hosts);
+  $nfs_procs = &gst_share_scan_nfs_start (@hosts);
+  $smb_procs = &gst_share_scan_smb_start (@hosts);
 
-  &xst_process_list_check_ready (10, [@$lookup_procs, @$nfs_procs, @$smb_procs]);
+  &gst_process_list_check_ready (10, [@$lookup_procs, @$nfs_procs, @$smb_procs]);
 
-  @names = &xst_network_lookup_address_collect ($lookup_procs);
+  @names = &gst_network_lookup_address_collect ($lookup_procs);
   # http://tlc.perlarchive.com/articles/perl/ug0001.shtml
   @host2name{@hosts} = @names;
 
-  return &xst_share_scan_collect ([@$nfs_procs, @$smb_procs], \%host2name);
+  return &gst_share_scan_collect ([@$nfs_procs, @$smb_procs], \%host2name);
 }
 
 1;

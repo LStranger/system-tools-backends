@@ -38,7 +38,7 @@ use File::Basename;
 use IO::File;
 use English;
 
-my $XST_FONT_DIR = "/usr/share/fonts/xst";
+my $GST_FONT_DIR = "/usr/share/fonts/gst";
 
 
 # This code is some experimental stuff that may be useful on the future.
@@ -62,7 +62,7 @@ sub regexp_cmp_foreach
 }
 
 # Heuristics to deduct the foundry from a copyright notice.
-sub xst_font_info_get_foundry_from_notice
+sub gst_font_info_get_foundry_from_notice
 {
   my ($notice) = @_;
   my ($ret);
@@ -114,7 +114,7 @@ sub xst_font_info_get_foundry_from_notice
   return "misc";
 }
 
-sub xst_font_info_get_setwidth_from_label
+sub gst_font_info_get_setwidth_from_label
 {
   my ($label) = @_;
   my ($ret);
@@ -131,12 +131,12 @@ sub xst_font_info_get_setwidth_from_label
   return "normal";
 }
 
-sub xst_font_info_deduct_extras
+sub gst_font_info_deduct_extras
 {
   my ($info) = @_;
   
-  $$info{"foundry"} = &xst_font_info_get_foundry_from_notice ($$info{"notice"});
-  $$info{"setwidth"} = &xst_font_info_get_setwidth_from_label ($$info{"label"});
+  $$info{"foundry"} = &gst_font_info_get_foundry_from_notice ($$info{"notice"});
+  $$info{"setwidth"} = &gst_font_info_get_setwidth_from_label ($$info{"label"});
   $$info{"weight"} = " $$info{weight} ";
   $$info{"weight"} =~ s/[ \t]+/ /g;
 
@@ -155,7 +155,7 @@ sub xst_font_info_deduct_extras
 }
 
 # buff is an array with one line of text per entry.
-sub xst_font_info_get_from_afm_buff
+sub gst_font_info_get_from_afm_buff
 {
   my ($buff) = @_;
   my ($line, $key, $value, %info);
@@ -179,22 +179,22 @@ sub xst_font_info_get_from_afm_buff
     $info{$map{$key}} = $value if exists $map{$key};
   }
 
-  &xst_font_info_deduct_extras (\%info);
+  &gst_font_info_deduct_extras (\%info);
 
   return \%info;
 }
 
-sub xst_font_info_get_from_afm_str
+sub gst_font_info_get_from_afm_str
 {
   my ($str) = @_;
   my (@buff);
 
   @buff = split ('\n', $str);
 
-  return &xst_font_info_get_from_afm_buff (\@buff);
+  return &gst_font_info_get_from_afm_buff (\@buff);
 }
 
-sub xst_font_info_get_from_afm
+sub gst_font_info_get_from_afm
 {
   my ($file) = @_;
   local *AFM;
@@ -204,24 +204,24 @@ sub xst_font_info_get_from_afm
   @buff = (<AFM>);
   close AFM;
 
-  $info = &xst_font_info_get_from_afm_buff (\@buff);
+  $info = &gst_font_info_get_from_afm_buff (\@buff);
   $$info{"file"} = $file;
   $$info{"file"} =~ s/.*\///;
   
   return $info;
 }
 
-sub xst_font_info_get_from_ttf2pt1
+sub gst_font_info_get_from_ttf2pt1
 {
   my ($file) = @_;
   my ($key, $value, @buff, $info);
   my $fd;
   
-  $fd = &xst_file_run_pipe_read ("ttf2pt1 -A $file -");
+  $fd = &gst_file_run_pipe_read ("ttf2pt1 -A $file -");
   @buff = <$fd>;
-  &xst_file_close ($fd);
+  &gst_file_close ($fd);
 
-  $info = &xst_font_info_get_from_afm_buff (\@buff);
+  $info = &gst_font_info_get_from_afm_buff (\@buff);
   $$info{"file"} = $file;
   $$info{"file"} =~ s/.*\///;
 
@@ -257,7 +257,7 @@ sub namerec_value
   return $apple if $apple ne undef;
 }
 
-sub xst_font_info_get_from_ttf
+sub gst_font_info_get_from_ttf
 {
   my ($file) = @_;
   my ($font, $t, $post, %info);
@@ -281,14 +281,14 @@ sub xst_font_info_get_from_ttf
   $info{"file"} = $file;
   $info{"file"} =~ s/.*\///;
 
-  &xst_font_info_deduct_extras (\%info);
+  &gst_font_info_deduct_extras (\%info);
 
   $font->DESTROY;
 
   return \%info;
 }
 
-sub xst_font_info_to_fontdir
+sub gst_font_info_to_fontdir
 {
   my ($info) = @_;
   my ($line, $i);
@@ -464,13 +464,13 @@ sub xfs_parse
   my $config = {};
   return unless $fname;
 
-  my $buf = &xst_file_buffer_load ($fname);
+  my $buf = &gst_file_buffer_load ($fname);
   return unless $buf;
 
   while (@$buf)
   {
     my $line = shift @$buf;
-    next if &xst_ignore_line ($line);
+    next if &gst_ignore_line ($line);
 
     chomp ($line);
     my ($kw, $val) = split (/[ \t]*=[ \t]*/, $line, 2);
@@ -506,7 +506,7 @@ sub xfs_parse
 ################################
 
 BEGIN {
-  &xst_report_table ({
+  &gst_report_table ({
     'font_install_success'    => ['info',  _('Font [%s] installed successfully.')],
     'font_install_fail'       => ['warn',  _('File [%s] not installed.')],
     'font_remove_success'     => ['info',  _('Font [%s] removed successfully.')],
@@ -560,7 +560,7 @@ sub font_list
   {
     my $func = $$list[$i];
 
-    &xst_report ("font_list", $$names[$i]);
+    &gst_report ("font_list", $$names[$i]);
 
     my $tmp = &$func ();
     $fonts->{$$names[$i]} = $tmp if $tmp;
@@ -647,8 +647,8 @@ sub font_file_copy
       my $path = $file->{'path'};
       next unless &font_file_copy_need ($path);
 
-      my $new_path = "$XST_FONT_DIR/$type/";
-      &xst_file_create_path ($new_path, 0755) unless (-d $new_path);
+      my $new_path = "$GST_FONT_DIR/$type/";
+      &gst_file_create_path ($new_path, 0755) unless (-d $new_path);
       $new_path .= lc (basename ($path));
 
       unless (-f $new_path)
@@ -712,18 +712,18 @@ sub font_xml_print
   {
     my $font = $fonts->{$_};
 
-    &xst_xml_print_line ("<font format=\"$font->{format}\" name=\"$font->{name}\" version=\"$font->{version}\"" .
+    &gst_xml_print_line ("<font format=\"$font->{format}\" name=\"$font->{name}\" version=\"$font->{version}\"" .
                          " familyname=\"$font->{familyname}\" speciesname=\"$font->{speciesname}\"" .
                          " psname=\"$font->{psname}\" weight=\"$font->{weight}\" italicangle=\"$font->{italicangle}\">");
 
-    &xst_xml_enter ();
+    &gst_xml_enter ();
     foreach my $file (@{$font->{'file'}})
     {
-      &xst_xml_print_line ("<file type=\"$file->{type}\" path=\"$file->{path}\"" .
+      &gst_xml_print_line ("<file type=\"$file->{type}\" path=\"$file->{path}\"" .
                            " size=\"$file->{size}\" mtime=\"$file->{mtime}\"/>");
     }
-    &xst_xml_leave ();
-    &xst_xml_print_line ("</font>");
+    &gst_xml_leave ();
+    &gst_xml_print_line ("</font>");
   }
 }
 
@@ -841,9 +841,9 @@ sub gp_invoke
   my $set = shift;
   my $user = $UID; # Used as a boolean here, we care only for root (uid 0, false) or other (!0, true).
 
-  my $proc = &xst_process_fork (\&gp_run, $dir, $user, $set);
-  &xst_process_list_check_ready (60, $proc);
-  my $list = &xst_process_result_collect ($proc, \&gp_run_collect);
+  my $proc = &gst_process_fork (\&gp_run, $dir, $user, $set);
+  &gst_process_list_check_ready (60, $proc);
+  my $list = &gst_process_result_collect ($proc, \&gp_run_collect);
 
   return $list;
 }
@@ -877,15 +877,15 @@ sub gp_parse
   my $fname = shift;
   my $font_list = {};
 
-  my $tree = &xst_xml_scan ($fname);
+  my $tree = &gst_xml_scan ($fname);
 
   if ($$tree[0] eq 'fontmap')
   {
     $tree = $$tree[1];
-    unless (&xst_xml_get_attribute ($tree, 'version') >= 2)
+    unless (&gst_xml_get_attribute ($tree, 'version') >= 2)
     {
       # TODO: report
-      &xst_debug_print_line ("gp_parse: File '$fname' fontmap version should be 2.0 or higher.");
+      &gst_debug_print_line ("gp_parse: File '$fname' fontmap version should be 2.0 or higher.");
       return;
     }
   }
@@ -899,7 +899,7 @@ sub gp_parse
   else
   {
     # TODO: report
-    &xst_debug_print_line ("gp_parse: File '$fname' doesn't seem to be fontmap file.");
+    &gst_debug_print_line ("gp_parse: File '$fname' doesn't seem to be fontmap file.");
     return;
   }
 
@@ -999,7 +999,7 @@ sub gp_font_set
 
 sub xfs_get_fontpath
 {
-  my $cmd = &xst_file_locate_tool ('chkfontpath');
+  my $cmd = &gst_file_locate_tool ('chkfontpath');
   return unless $cmd;
 
   my $fh = IO::File->new ("$cmd |");
@@ -1024,17 +1024,17 @@ sub xfs_get_fontpath
 sub xfs_add_fontpath
 {
   my $paths = shift || return;
-  my $cmd = &xst_file_locate_tool ('chkfontpath');
+  my $cmd = &gst_file_locate_tool ('chkfontpath');
 
   foreach my $path (@$paths)
   {
-    &xst_file_run ("$cmd -a $path");
+    &gst_file_run ("$cmd -a $path");
   }
 }
 
 sub xfs_reload
 {
-  &xst_service_sysv_restart (90, 'xfs');
+  &gst_service_sysv_restart (90, 'xfs');
 }
 
 
@@ -1057,16 +1057,16 @@ push @{$font_map->{'set'}}, \&x_font_set;
 
 sub x_fontpath_get
 {
-  my $cmd = &xst_file_locate_tool ('xset');
+  my $cmd = &gst_file_locate_tool ('xset');
   return unless $cmd;
 
-  my $output = &xst_file_run_backtick ("$cmd q");
+  my $output = &gst_file_run_backtick ("$cmd q");
   return unless $output;
 
   $output = $1 if $output =~ /Font Path:\n\s+(.+)/;
   unless ($output)
   {
-    &xst_debug_print_line ("x_fontpath_get: Couldn't find 'Font Path' from 'xset q' output.");
+    &gst_debug_print_line ("x_fontpath_get: Couldn't find 'Font Path' from 'xset q' output.");
     return;
   }
 
@@ -1109,7 +1109,7 @@ sub x_fontpath_add
 sub x_fonts_refresh
 {
   &xfs_reload ();
-  &xst_file_run ("xset fp rehash");
+  &gst_file_run ("xset fp rehash");
 }
 
 sub x_fonts_dir_parse
@@ -1150,7 +1150,7 @@ sub x_fonts_dir_modify
   return unless $path;
   my $file = shift || 'fonts.dir';
 
-  my $buf = &xst_file_buffer_load ("$path/$file");
+  my $buf = &gst_file_buffer_load ("$path/$file");
   return unless $buf;
 
   # Find files which are to be removed
@@ -1168,23 +1168,23 @@ sub x_fonts_dir_modify
     my $line = $$buf[$i];
     my ($fname, $xname) = split ('/ /', $line);
 
-    if (&xst_item_is_in_list ($fname, @del_files))
+    if (&gst_item_is_in_list ($fname, @del_files))
     {
       $line = '';
       $$buf[0]--;
     }
   }
 
-  &xst_file_buffer_save ($buf, $file);
+  &gst_file_buffer_save ($buf, $file);
   
   # Add:
   # Bad bad hack, FIXME.
   my $cmd = "type1inst -nolog -q -d " .
-      "$XST_FONT_DIR/type1/";
-  &xst_file_run ($cmd);
+      "$GST_FONT_DIR/type1/";
+  &gst_file_run ($cmd);
 
-  $cmd = &xst_file_locate_tool ('ttmkfdir');
-  &xst_file_run ("$cmd -d $XST_FONT_DIR/truetype/ -o $XST_FONT_DIR/truetype/fonts.scale");
+  $cmd = &gst_file_locate_tool ('ttmkfdir');
+  &gst_file_run ("$cmd -d $GST_FONT_DIR/truetype/ -o $GST_FONT_DIR/truetype/fonts.scale");
 }
 
 sub x_get_fonts
@@ -1237,9 +1237,9 @@ sub x_font_dirs
 sub x_add_font
 {
   my $add = shift;
-  my $type1_tool = &xst_file_locate_tool ("$SCRIPTSDIR/type1inst");
-  my $true_tool  = &xst_file_locate_tool ("ttmkfdir");
-  my $true_tool2 = &xst_file_locate_tool ("mkfontdir");
+  my $type1_tool = &gst_file_locate_tool ("$SCRIPTSDIR/type1inst");
+  my $true_tool  = &gst_file_locate_tool ("ttmkfdir");
+  my $true_tool2 = &gst_file_locate_tool ("mkfontdir");
   my $tmp;
 
   my $type1 = [];
@@ -1254,7 +1254,7 @@ sub x_add_font
     if    ($font->{'format'} eq 'type1') { push @$type1, $font; }
     elsif ($font->{'format'} eq 'truetype') { push @$true, $font; }
 
-    else { &xst_debug_print_line ("x_add_font: unknonw font type: $font->{format}.") }
+    else { &gst_debug_print_line ("x_add_font: unknonw font type: $font->{format}.") }
   }
 
   # Install type1 fonts.
@@ -1262,7 +1262,7 @@ sub x_add_font
   push @$path, @$tmp if $tmp;
   foreach my $dir (@$tmp)
   {
-    &xst_file_run ("$type1_tool -q -d $dir");
+    &gst_file_run ("$type1_tool -q -d $dir");
   }
 
   # Install TrueType fonts.
@@ -1270,8 +1270,8 @@ sub x_add_font
   push @$path, @$tmp if $tmp;  
   foreach my $dir (@$tmp)
   {
-    &xst_file_run ("$true_tool -d $dir -o $dir/fonts.scale");
-    &xst_file_run ("$true_tool2 $dir");
+    &gst_file_run ("$true_tool -d $dir -o $dir/fonts.scale");
+    &gst_file_run ("$true_tool2 $dir");
   }
 
   &x_fontpath_add ($path);

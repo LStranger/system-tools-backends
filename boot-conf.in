@@ -77,7 +77,7 @@ end_of_description;
 
 # Find the tools
 
-$tool_lilo = &xst_file_locate_tool ("lilo");
+$tool_lilo = &gst_file_locate_tool ("lilo");
 
 
 # --- XML parsing ---
@@ -90,7 +90,7 @@ sub xml_parse
   my ($tree, %hash, $elem);
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan ();
+  $tree = &gst_xml_scan ();
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "boot" tag.
@@ -98,7 +98,7 @@ sub xml_parse
   while ($elem = shift @$tree)
   {
     if ($elem eq "boot") { &xml_parse_boot (shift @$tree, \%hash); }
-    else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   return(\%hash);
@@ -116,17 +116,17 @@ sub xml_parse_boot
 
   while ($elem = shift @$tree)
   {
-    if    ($elem eq "prompt")    { $$hash{"prompt"}    = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "boot")      { $$hash{"boot"}      = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "root")      { $$hash{"root"}      = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "timeout")   { $$hash{"timeout"}   = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "default")   { $$hash{"default"}   = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "append")    { $$hash{"append"}    = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "pixmap")    { $$hash{"pixmap"}    = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "pixmapsup") { $$hash{"pixmapsup"} = &xst_xml_get_pcdata (shift @$tree); }
+    if    ($elem eq "prompt")    { $$hash{"prompt"}    = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "boot")      { $$hash{"boot"}      = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "root")      { $$hash{"root"}      = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "timeout")   { $$hash{"timeout"}   = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "default")   { $$hash{"default"}   = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "append")    { $$hash{"append"}    = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "pixmap")    { $$hash{"pixmap"}    = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "pixmapsup") { $$hash{"pixmapsup"} = &gst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "entry")     { &xml_parse_entry (shift @$tree, \@entries); }
     elsif ($elem eq "partitions") { shift @$tree; } # Just skip it.
-    else { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    else { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$hash{"entry"} = \@entries unless scalar @entries == 0;
@@ -142,7 +142,7 @@ sub xml_parse_entry
 
   while ($elem = shift @$tree)
   {
-    $hash{$elem} = &xst_xml_get_pcdata (shift @$tree);
+    $hash{$elem} = &gst_xml_get_pcdata (shift @$tree);
   }
 
   push @$entries, \%hash;
@@ -156,14 +156,14 @@ sub xml_print
   my ($h) = @_;
   my @scalars = qw(default timeout pixmap pixmapsup prompt boot root);
 
-  &xst_xml_print_begin ();
+  &gst_xml_print_begin ();
 
-  &xst_xml_print_hash ($$h{"partitions"}, "partitions");
-  &xst_xml_print_vspace ();
-  &xst_xml_print_scalars ($h, @scalars);
-  &xst_xml_print_structure ($$h{"entry"}, "entry");
+  &gst_xml_print_hash ($$h{"partitions"}, "partitions");
+  &gst_xml_print_vspace ();
+  &gst_xml_print_scalars ($h, @scalars);
+  &gst_xml_print_structure ($$h{"entry"}, "entry");
 
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
 }
   
 
@@ -172,10 +172,10 @@ sub get
 {
   my ($hash);
 
-  $hash = &xst_boot_conf_get ();
-  &xst_boot_fix ($hash);
+  $hash = &gst_boot_conf_get ();
+  &gst_boot_fix ($hash);
   
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -189,13 +189,13 @@ sub set
 
   if ($hash)
   {
-    &xst_boot_fix ($hash);
-    &xst_boot_conf_set ($hash);
+    &gst_boot_fix ($hash);
+    &gst_boot_conf_set ($hash);
 
     # It runs LILO if it's the default bootloader
-    if (&xst_boot_bootloader_get () eq "lilo")
+    if (&gst_boot_bootloader_get () eq "lilo")
     {
-      &xst_file_run ($tool_lilo);
+      &gst_file_run ($tool_lilo);
     }
   }
   else
@@ -204,7 +204,7 @@ sub set
     1;
   }
   
-  &xst_report_end ();
+  &gst_report_end ();
 }
 
 
@@ -213,7 +213,7 @@ sub filter
 {
   my $hash = &xml_parse;
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -221,9 +221,9 @@ sub verify_print
 {
   my ($res) = @_;
 
-  &xst_xml_print_begin ("verify");
-  &xst_xml_print_structure ($res, "result");
-  &xst_xml_print_end ("verify");
+  &gst_xml_print_begin ("verify");
+  &gst_xml_print_structure ($res, "result");
+  &gst_xml_print_end ("verify");
 }
 
 sub verify
@@ -233,14 +233,14 @@ sub verify
 
   my %bootloader =
       (
-       "lilo" => \&xst_boot_lilo_verify,
-       "grub" => \&xst_boot_grub_verify
+       "lilo" => \&gst_boot_lilo_verify,
+       "grub" => \&gst_boot_grub_verify
        );
 
-  $loader = &xst_boot_bootloader_get ();
+  $loader = &gst_boot_bootloader_get ();
   $proc = $bootloader{$loader};
   $res = &$proc ($key, @values);
-  &xst_report_end ();
+  &gst_report_end ();
   &verify_print ($res);
 }
 
@@ -248,7 +248,7 @@ sub verify
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"    => [ \&get,    [], "" ],
@@ -257,6 +257,6 @@ $directives = {
   "verify" => [ \&verify, [ "type", "value", "xtravalues*" ], "Verifies the values, depending on the type." ]
     };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-#&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+#&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);

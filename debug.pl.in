@@ -35,50 +35,50 @@ require "$SCRIPTSDIR/general.pl$DOTIN";
 require "$SCRIPTSDIR/file.pl$DOTIN";
 
 
-%xst_debug_fd_hash = ();
+%gst_debug_fd_hash = ();
 
 
-sub xst_debug_open_output_file
+sub gst_debug_open_output_file
 {
   local *FILE;
-  my $debug_path = &xst_file_get_debug_path () . "/$xst_name/1/$_[0]";
+  my $debug_path = &gst_file_get_debug_path () . "/$gst_name/1/$_[0]";
 
-  if (!exists $xst_debug_fd_hash{$debug_path})
+  if (!exists $gst_debug_fd_hash{$debug_path})
   {
-    &xst_debug_rotate_try ();
+    &gst_debug_rotate_try ();
     open (FILE, ">>$debug_path");
-    $xst_debug_fd_hash{$debug_path} = *FILE;
+    $gst_debug_fd_hash{$debug_path} = *FILE;
   }
   
-  return $xst_debug_fd_hash{$debug_path};
+  return $gst_debug_fd_hash{$debug_path};
 }
 
-sub xst_debug_close_all
+sub gst_debug_close_all
 {
     my ($file, @files);
 
-    @files = keys %xst_debug_fd_hash;
+    @files = keys %gst_debug_fd_hash;
     foreach $file (@files)
     {
-        &xst_file_close ($xst_debug_fd_hash{$file});
-        delete $xst_debug_fd_hash{$file};
+        &gst_file_close ($gst_debug_fd_hash{$file});
+        delete $gst_debug_fd_hash{$file};
     }
 }
 
-sub xst_debug_print_string_to_file
+sub gst_debug_print_string_to_file
 {
   my $debug_file;
 
-  $debug_file = &xst_debug_open_output_file ($_[0]);
+  $debug_file = &gst_debug_open_output_file ($_[0]);
   print $debug_file $_[1];
 }
 
-sub xst_debug_print_log_to_file
+sub gst_debug_print_log_to_file
 {
   my ($file, $doc) = @_;
   my (@buff, $line, $fd);
 
-  $fd = &xst_debug_open_output_file ($file);
+  $fd = &gst_debug_open_output_file ($file);
   
   @buff = split ("\n", $doc);
   foreach $line (@buff)
@@ -88,58 +88,58 @@ sub xst_debug_print_log_to_file
 }
 
 
-sub xst_debug_print_string
+sub gst_debug_print_string
 {
-  if ($xst_debug) { print STDERR $_[0]; }
-  &xst_debug_print_string_to_file ("debug", $_[0]);
+  if ($gst_debug) { print STDERR $_[0]; }
+  &gst_debug_print_string_to_file ("debug", $_[0]);
 }
 
 
-sub xst_debug_print_line
+sub gst_debug_print_line
 {
-  &xst_debug_print_string ($_[0] . "\n");
+  &gst_debug_print_string ($_[0] . "\n");
 }
 
 
-sub xst_debug_print_indent
+sub gst_debug_print_indent
 {
   my $indent = $_[0];
   my $indent_string = "";
   
   $indent_string = "  " x $indent;
-  &xst_debug_print_string ($indent_string);
+  &gst_debug_print_string ($indent_string);
 }
 
 
-sub xst_debug_print_indented_string
+sub gst_debug_print_indented_string
 {
   my ($indent, @string) = @_;
 
-  &xst_debug_print_indent ($indent);
-  &xst_debug_print_string (@string);
+  &gst_debug_print_indent ($indent);
+  &gst_debug_print_string (@string);
 }
 
 
-sub xst_debug_print_indented_line
+sub gst_debug_print_indented_line
 {
   my $indent = shift @_;
   my @line = @_;
 
-  &xst_debug_print_indent ($indent);
-  &xst_debug_print_line (@line);
+  &gst_debug_print_indent ($indent);
+  &gst_debug_print_line (@line);
 }
 
 
-sub xst_debug_print_struct
+sub gst_debug_print_struct
 {
   foreach $i (@_)
   {
-    &xst_debug_print_struct_r (0, 0, $i);
+    &gst_debug_print_struct_r (0, 0, $i);
   }
 }
 
 
-sub xst_debug_print_struct_r
+sub gst_debug_print_struct_r
 {
   my ($indent) = $_[0];
   my $is_hash_value = $_[1];
@@ -151,60 +151,60 @@ sub xst_debug_print_struct_r
 
   $type = ref $a;
 
-  if (!$is_hash_value) { &xst_debug_print_indent ($indent); }
+  if (!$is_hash_value) { &gst_debug_print_indent ($indent); }
 
   if ($type eq "SCALAR")
   {
-    &xst_debug_print_line ($$a);
+    &gst_debug_print_line ($$a);
   }
   elsif ($type eq "ARRAY")
   {
-    &xst_debug_print_line ("[ARRAY]");
+    &gst_debug_print_line ("[ARRAY]");
 
     for ($i = 0; $i <= $#$a; $i++)
     {
-      &xst_debug_print_struct_r ($indent + 1, 0, $$a[$i]);
+      &gst_debug_print_struct_r ($indent + 1, 0, $$a[$i]);
     }
   }
   elsif ($type eq "HASH")
   {
     @keys = sort keys (%$a);
 
-    &xst_debug_print_line ("[HASH]");
+    &gst_debug_print_line ("[HASH]");
 
     foreach $i (@keys)
     {
-      &xst_debug_print_indented_string ($indent + !$is_hash_value, $i . " -> ");
-      &xst_debug_print_struct_r ($indent + !$is_hash_value + 1, 1, $$a{$i});
+      &gst_debug_print_indented_string ($indent + !$is_hash_value, $i . " -> ");
+      &gst_debug_print_struct_r ($indent + !$is_hash_value + 1, 1, $$a{$i});
     }
   }
   else
   {
-    &xst_debug_print_line ($a);
+    &gst_debug_print_line ($a);
   }
 }
 
 
-$xst_debug_dir_rotation_was_made = 0;
+$gst_debug_dir_rotation_was_made = 0;
 
-sub xst_debug_rotate_try
+sub gst_debug_rotate_try
 {
 
   my $debug_file = $_[0];
-  my $debug_tool_dir = &xst_file_get_debug_path () . "/$xst_name";
+  my $debug_tool_dir = &gst_file_get_debug_path () . "/$gst_name";
 
   # If this is the first debug created by this tool on this invocation,
   # rotate the debug directories and create a new, empty one.
 
-  if (!$xst_debug_dir_rotation_was_made)
+  if (!$gst_debug_dir_rotation_was_made)
   {
     my $i;
 
-    $xst_debug_dir_rotation_was_made = 1;
+    $gst_debug_dir_rotation_was_made = 1;
 
     if (-e "$debug_tool_dir/9")
     {
-      &xst_file_rmtree ("$debug_tool_dir/9", 0, 1);
+      &gst_file_rmtree ("$debug_tool_dir/9", 0, 1);
     }
 
     for ($i = 8; $i; $i--)
@@ -215,7 +215,7 @@ sub xst_debug_rotate_try
       }
     }
     
-    &xst_file_create_path ("$debug_tool_dir/1");
+    &gst_file_create_path ("$debug_tool_dir/1");
   }
 }
 

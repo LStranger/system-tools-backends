@@ -33,23 +33,23 @@ require "$SCRIPTSDIR/xml.pl$DOTIN";
 require "$SCRIPTSDIR/parse.pl$DOTIN";
 
 
-# xst_media_get_ide_device_from_proc
+# gst_media_get_ide_device_from_proc
 #
 # Read IDE device specs for a single device from constructed /proc subdir and
 # a couple of other places.
 
-sub xst_media_get_ide_device_from_proc
+sub gst_media_get_ide_device_from_proc
 {
   my ($path) = "/proc/ide/$_[0]/$_[1]";
   my (%device);
 
   %device->{"device"}   = $_[1];
   %device->{"type"}     = "ide";
-  %device->{"media"}    = &xst_parse_line_first ("$path/media");
-  %device->{"model"}    = &xst_parse_line_first ("$path/model");
-  %device->{"cache"}    = &xst_parse_line_first ("$path/cache");
-  %device->{"capacity"} = &xst_parse_line_first ("$path/capacity");
-  %device->{"driver"}   = (split ' ', &xst_parse_line_first ("$path/driver")) [0];
+  %device->{"media"}    = &gst_parse_line_first ("$path/media");
+  %device->{"model"}    = &gst_parse_line_first ("$path/model");
+  %device->{"cache"}    = &gst_parse_line_first ("$path/cache");
+  %device->{"capacity"} = &gst_parse_line_first ("$path/capacity");
+  %device->{"driver"}   = (split ' ', &gst_parse_line_first ("$path/driver")) [0];
 
   # TODO: We need a detailed list of media types that can occur, and what
   # special handling they need. Currently recognized are: disk, cdrom.
@@ -69,10 +69,10 @@ sub xst_media_get_ide_device_from_proc
   {
     %device->{"is_removable"} = 1;
 
-    %device->{"point_listed"} = &xst_parse_split_first_str ("/etc/fstab", "/dev/$_[1]", "[ \t]+");
-    %device->{"point_actual"} = &xst_parse_split_first_str ("/etc/mtab", "/dev/$_[1]", "[ \t]+");
-    %device->{"fs_listed"}    = (&xst_parse_split_all ("/etc/fstab", "/dev/$_[1]", "[ \t]+")) -> [1];
-    %device->{"fs_actual"}    = (&xst_parse_split_all ("/etc/mtab", "/dev/$_[1]", "[ \t]+")) -> [1];
+    %device->{"point_listed"} = &gst_parse_split_first_str ("/etc/fstab", "/dev/$_[1]", "[ \t]+");
+    %device->{"point_actual"} = &gst_parse_split_first_str ("/etc/mtab", "/dev/$_[1]", "[ \t]+");
+    %device->{"fs_listed"}    = (&gst_parse_split_all ("/etc/fstab", "/dev/$_[1]", "[ \t]+")) -> [1];
+    %device->{"fs_actual"}    = (&gst_parse_split_all ("/etc/mtab", "/dev/$_[1]", "[ \t]+")) -> [1];
 
     if (%device->{"point_actual"})
     {
@@ -88,11 +88,11 @@ sub xst_media_get_ide_device_from_proc
 }
 
 
-# xst_media_get_list_from_proc
+# gst_media_get_list_from_proc
 #
 # Scan /proc files for media devices, and return a list of hashes.
 
-sub xst_media_get_list_from_proc
+sub gst_media_get_list_from_proc
 {
   local (*PROC_IDE_DIR, *PROC_IDE_CHANNEL_DIR);
   my (@devices);
@@ -122,7 +122,7 @@ sub xst_media_get_list_from_proc
 
         closedir (PROC_IDE_DEVICE);
 
-        my %device = &xst_media_get_ide_device_from_proc ($ide_entry, $ide_channel_entry);
+        my %device = &gst_media_get_ide_device_from_proc ($ide_entry, $ide_channel_entry);
         if (%device)
         {
           push @devices, \%device;
@@ -135,70 +135,70 @@ sub xst_media_get_list_from_proc
 }
 
 
-# xst_media_get_list
+# gst_media_get_list
 #
 # Return a list of hashes describing the media devices present
 # on this machine.
 
-sub xst_media_get_list
+sub gst_media_get_list
 {
   my @devices;
 
-  @devices = &xst_media_get_list_from_proc();
+  @devices = &gst_media_get_list_from_proc();
   return @devices;
 }
 
 
-# xst_media_xml_print
+# gst_media_xml_print
 #
 # Given a media hash-list, prints the media inside a <media> tag
 # pair, using current indent levels.
 
-sub xst_media_xml_print
+sub gst_media_xml_print
 {
   my @devices = @_;
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<media>\n");
-  &xst_xml_enter ();
+  &gst_xml_print_vspace ();
+  &gst_xml_print_line ("<media>\n");
+  &gst_xml_enter ();
 
   for $dev (@devices)
   {
-    &xst_xml_print_vspace ();
-    &xst_xml_print_line ("<device>\n");
-    &xst_xml_enter ();
-    &xst_xml_print_line ("<name>" . $dev->{"device"} . "</name>\n"); 
-    &xst_xml_print_line ("<type>" . $dev->{"media"} . "</type>\n"); 
-    &xst_xml_print_line ("<interface>" . $dev->{"type"} . "</interface>\n"); 
-    &xst_xml_print_line ("<driver>" . $dev->{"driver"} . "</driver>\n"); 
-    &xst_xml_print_line ("<model>" . $dev->{"model"} . "</model>\n");
+    &gst_xml_print_vspace ();
+    &gst_xml_print_line ("<device>\n");
+    &gst_xml_enter ();
+    &gst_xml_print_line ("<name>" . $dev->{"device"} . "</name>\n"); 
+    &gst_xml_print_line ("<type>" . $dev->{"media"} . "</type>\n"); 
+    &gst_xml_print_line ("<interface>" . $dev->{"type"} . "</interface>\n"); 
+    &gst_xml_print_line ("<driver>" . $dev->{"driver"} . "</driver>\n"); 
+    &gst_xml_print_line ("<model>" . $dev->{"model"} . "</model>\n");
 
     if ($dev->{"media"} ne "disk")
     {
-      &xst_xml_print_vspace ();
+      &gst_xml_print_vspace ();
       if ($dev->{"point_listed"})
       {
-        &xst_xml_print_line ("<point_listed>" . $dev->{"point_listed"} . "</point_listed>\n");
+        &gst_xml_print_line ("<point_listed>" . $dev->{"point_listed"} . "</point_listed>\n");
       }
 
-      xst_xml_print_state_tag ("mounted", $dev->{"is_mounted"});
+      gst_xml_print_state_tag ("mounted", $dev->{"is_mounted"});
     }
 
-    &xst_xml_leave ();
-    &xst_xml_print_line ("</device>\n");
-    &xst_xml_print_vspace ();
+    &gst_xml_leave ();
+    &gst_xml_print_line ("</device>\n");
+    &gst_xml_print_vspace ();
   }
 
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</media>\n");
-  &xst_xml_print_vspace ();
+  &gst_xml_leave ();
+  &gst_xml_print_line ("</media>\n");
+  &gst_xml_print_vspace ();
 }
 
 
-# xst_media_xml_parse
+# gst_media_xml_parse
 #
 #
 
-sub xst_media_xml_parse
+sub gst_media_xml_parse
 {
 }

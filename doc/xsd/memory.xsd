@@ -17,7 +17,7 @@
   </annotation>
   
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
 
   <element type="memoryType" name="memory"/>
   
@@ -32,19 +32,19 @@
 
   <complexType name="partitionType">
     <sequence>
-      <element type="xstFilePath" name="device"/>
+      <element type="gstFilePath" name="device"/>
       <element type="string"      name="size"/>
     </sequence>
   </complexType>
 
   <complexType name="swapdevType">
     <sequence>
-      <element type="xstFilePath"  name="device"/>
-      <element type="xstBoolState" name="enabled"/>
+      <element type="gstFilePath"  name="device"/>
+      <element type="gstBoolState" name="enabled"/>
       <element type="integer"      name="priority"/>
-      <element type="xstBoolState" name="isfile"/>
+      <element type="gstBoolState" name="isfile"/>
       <element type="string"       name="size"/>
-      <element type="xstBoolState" name="isnew"/>
+      <element type="gstBoolState" name="isnew"/>
     </sequence>
   </complexType>
   

@@ -46,7 +46,7 @@ require "$SCRIPTSDIR/boot-lilo.pl$DOTIN";
 # The main reason for these functions is to add default values to xml so the
 # frontend doesn't have to know anything about lilo or its defaults.
 
-sub xst_boot_fix_default
+sub gst_boot_fix_default
 {
   my ($hash) = @_;
   my ($entries, $found, $entry);
@@ -84,16 +84,16 @@ sub xst_boot_fix_default
 }
 
 # Internal. Should be run after fix_entries.
-sub xst_boot_fix_globals
+sub gst_boot_fix_globals
 {
   my ($hash) = @_;
   
   return unless $hash;
-  &xst_boot_fix_default ($hash);
+  &gst_boot_fix_default ($hash);
 }
 
 # Internal
-sub xst_boot_fix_entry
+sub gst_boot_fix_entry
 {
   my ($entry) = @_;
   my ($name);
@@ -117,7 +117,7 @@ sub xst_boot_fix_entry
 }
 
 # Internal
-sub xst_boot_fix_entries
+sub gst_boot_fix_entries
 {
   my ($hash) = @_;
   my ($entries, $entry);
@@ -129,28 +129,28 @@ sub xst_boot_fix_entries
 
   foreach $entry (@$entries)
   {
-    &xst_boot_fix_entry ($entry);
+    &gst_boot_fix_entry ($entry);
   }
 }
 
-sub xst_boot_fix
+sub gst_boot_fix
 {
   my ($hash) = @_;
   
   return unless $hash;
   
-  &xst_boot_fix_entries ($hash);
-  &xst_boot_fix_globals ($hash);
+  &gst_boot_fix_entries ($hash);
+  &gst_boot_fix_globals ($hash);
 }
 
 # --------------------------------------------------------
 
-sub xst_boot_bootloader_get
+sub gst_boot_bootloader_get
 {
   my ($current_tool, $current_date, $tool, $date);
 
   $current_date = 0;
-  $tool = xst_file_locate_tool ("lilo");
+  $tool = gst_file_locate_tool ("lilo");
   if ($tool ne "")
   {
     $date = (stat ($tool))[8];
@@ -160,7 +160,7 @@ sub xst_boot_bootloader_get
     }
   }
   
-  $tool = xst_file_locate_tool ("grub-install");
+  $tool = gst_file_locate_tool ("grub-install");
   if ($tool ne "")
   {
     $date = (stat ($tool))[8];
@@ -172,21 +172,21 @@ sub xst_boot_bootloader_get
   
   if ($current_date eq 0)
   {
-    &xst_report ("platform_no_bootloader", $main::xst_dist);
+    &gst_report ("platform_no_bootloader", $main::gst_dist);
     return undef;
   }
   return $current_tool;
 }
 
 
-sub xst_boot_entries_get
+sub gst_boot_entries_get
 {
   my ($partition) = @_;
   my (%dist_attrib, @res, %fn, @entries, $entry);
   my ($dist, $value, $file, $proc);
   my ($entry, $j, $key, $tmp);
 
-  %dist_attrib = &xst_boot_get_entry_parse_table ();
+  %dist_attrib = &gst_boot_get_entry_parse_table ();
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"entries_get"};
   @entries = &$proc (\%fn);
@@ -198,11 +198,11 @@ sub xst_boot_entries_get
   {
     foreach $j (keys (%fn))
     {
-      $tmp = &xst_parse_expand ($fn{$j}, "key", $key);
-      $ {$dist_attrib{"fn"}}{$j} = &xst_parse_expand ($tmp, "label", $entry);
+      $tmp = &gst_parse_expand ($fn{$j}, "key", $key);
+      $ {$dist_attrib{"fn"}}{$j} = &gst_parse_expand ($tmp, "label", $entry);
     }
 
-    $entry = &xst_parse_from_table ($dist_attrib{"fn"},
+    $entry = &gst_parse_from_table ($dist_attrib{"fn"},
                                     $dist_attrib{"table"});
     push @res, $entry;
     $key ++;
@@ -212,10 +212,10 @@ sub xst_boot_entries_get
 }
 
 
-sub xst_boot_conf_get
+sub gst_boot_conf_get
 {
-  my ($tool) = &xst_boot_bootloader_get ();
-  my $config_file = &xst_boot_grub_get_config_file ();
+  my ($tool) = &gst_boot_bootloader_get ();
+  my $config_file = &gst_boot_grub_get_config_file ();
   my %tool_tables =
   (
        "lilo" =>
@@ -226,14 +226,14 @@ sub xst_boot_conf_get
          },
          table =>
              [
-              [ "partitions", \&xst_partition_scan_info ],
-#              [ "pixmapsup", \&xst_parse_trivial,             0 ],
-              [ "timeout",   \&xst_boot_lilo_parse_global,    LILO_CONF, "delay" ],
-              [ "prompt",    \&xst_boot_lilo_parse_global_kw, LILO_CONF, "prompt"  ],
-              [ "default",   \&xst_boot_lilo_parse_global,    LILO_CONF, "default" ],
-              [ "boot",      \&xst_boot_lilo_parse_global,    LILO_CONF, "boot"    ],
-#	      [ "root",      \&xst_boot_lilo_parse_global,    LILO_CONF, "root"    ],
-              [ "entry",     \&xst_boot_lilo_parse_entries,   LILO_CONF, "%partitions%" ],
+              [ "partitions", \&gst_partition_scan_info ],
+#              [ "pixmapsup", \&gst_parse_trivial,             0 ],
+              [ "timeout",   \&gst_boot_lilo_parse_global,    LILO_CONF, "delay" ],
+              [ "prompt",    \&gst_boot_lilo_parse_global_kw, LILO_CONF, "prompt"  ],
+              [ "default",   \&gst_boot_lilo_parse_global,    LILO_CONF, "default" ],
+              [ "boot",      \&gst_boot_lilo_parse_global,    LILO_CONF, "boot"    ],
+#	      [ "root",      \&gst_boot_lilo_parse_global,    LILO_CONF, "root"    ],
+              [ "entry",     \&gst_boot_lilo_parse_entries,   LILO_CONF, "%partitions%" ],
               ] 
        },
 
@@ -247,27 +247,27 @@ sub xst_boot_conf_get
          },
          table =>
              [
-              [ "partitions", \&xst_partition_scan_info ],
-#              [ "pixmapsup", \&xst_parse_trivial,           1 ],
-#              [ "pixmap",    \&xst_boot_grub_parse_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
-              [ "timeout",   \&xst_boot_grub_parse_timeout, GRUB_CONF ],
-              [ "prompt",    \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
-              [ "default",   \&xst_boot_grub_parse_default, GRUB_CONF ],
-              [ "entry",     \&xst_boot_entries_get,        "%partitions%" ],
+              [ "partitions", \&gst_partition_scan_info ],
+#              [ "pixmapsup", \&gst_parse_trivial,           1 ],
+#              [ "pixmap",    \&gst_boot_grub_parse_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
+              [ "timeout",   \&gst_boot_grub_parse_timeout, GRUB_CONF ],
+              [ "prompt",    \&gst_boot_grub_parse_prompt,  GRUB_CONF ],
+              [ "default",   \&gst_boot_grub_parse_default, GRUB_CONF ],
+              [ "entry",     \&gst_boot_entries_get,        "%partitions%" ],
               ] 
        }
   );
        
-  return &xst_parse_from_table ($ {$tool_tables{$tool}}{"fn"},
+  return &gst_parse_from_table ($ {$tool_tables{$tool}}{"fn"},
                                 $ {$tool_tables{$tool}}{"table"});
 }
 
-sub xst_boot_get_entry_parse_table
+sub gst_boot_get_entry_parse_table
 {
-  my $config_file = &xst_boot_grub_get_config_file ();
+  my $config_file = &gst_boot_grub_get_config_file ();
   my %tool_tables =
       (
-         entries_get => \&xst_boot_grub_get_entries_fn,
+         entries_get => \&gst_boot_grub_get_entries_fn,
          fn =>
          {
            KEY        => "#key#",
@@ -278,23 +278,23 @@ sub xst_boot_get_entry_parse_table
          },
          table =>
              [
-              ["key",    \&xst_parse_trivial,          [KEY]],
-              ["label",  \&xst_parse_trivial,          [LABEL]],
-              ["root",   \&xst_boot_grub_parse_root,   [GRUB_CONF, DEVICE_MAP, KEY]],
-              ["type",   \&xst_boot_grub_parse_type,   [GRUB_CONF, KEY, PARTITION], "%root%"],
-              ["image",  \&xst_boot_grub_parse_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
-              ["other",  \&xst_boot_grub_parse_other,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
-              ["append", \&xst_boot_grub_parse_append, [GRUB_CONF, KEY]]
+              ["key",    \&gst_parse_trivial,          [KEY]],
+              ["label",  \&gst_parse_trivial,          [LABEL]],
+              ["root",   \&gst_boot_grub_parse_root,   [GRUB_CONF, DEVICE_MAP, KEY]],
+              ["type",   \&gst_boot_grub_parse_type,   [GRUB_CONF, KEY, PARTITION], "%root%"],
+              ["image",  \&gst_boot_grub_parse_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
+              ["other",  \&gst_boot_grub_parse_other,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
+              ["append", \&gst_boot_grub_parse_append, [GRUB_CONF, KEY]]
               ]
        );
 
   return %tool_tables;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
-sub xst_boot_entry_set
+sub gst_boot_entry_set
 {
   my ($dist_attrib, $values_hash) = @_;
   my ($j, %fn, $res);
@@ -303,19 +303,19 @@ sub xst_boot_entry_set
   foreach $j (keys (%fn))
   {
 		print "$j {$$dist_attrib{\"fn\"}}{$j} $$values_hash{\"key\"} aaa ---\n";
-    $fn{$j} = &xst_parse_expand ($ {$$dist_attrib{"fn"}}{$j}, "key", $$values_hash{"key"});
+    $fn{$j} = &gst_parse_expand ($ {$$dist_attrib{"fn"}}{$j}, "key", $$values_hash{"key"});
   }
   
-  return &xst_replace_from_table (\%fn, $$dist_attrib{"table"}, $values_hash);
+  return &gst_replace_from_table (\%fn, $$dist_attrib{"table"}, $values_hash);
 }
 
-sub xst_boot_entries_set
+sub gst_boot_entries_set
 {
   my ($entries) = @_;
   my (%dist_attrib, %fn, @old, @new, @del);
   my ($i, $proc, $entry);
   my ($tmp, $res);
-  %dist_attrib = &xst_boot_get_entry_replace_table ();
+  %dist_attrib = &gst_boot_get_entry_replace_table ();
   %fn = %{$dist_attrib{"fn"}};
 
   foreach $entry (@$entries)
@@ -325,11 +325,11 @@ sub xst_boot_entries_set
   $proc = $dist_attrib{"entries_get"};
   @old = &$proc (\%fn);
   
-  for ($i = 0; $i < &xst_max (scalar @old, scalar @$entries); $i++)
+  for ($i = 0; $i < &gst_max (scalar @old, scalar @$entries); $i++)
   {
     if ($new[$i] ne undef)
     {
-      $tmp = &xst_boot_entry_set (\%dist_attrib, $new[$i]);
+      $tmp = &gst_boot_entry_set (\%dist_attrib, $new[$i]);
       $res = $tmp if !$res;
     }
     else
@@ -346,24 +346,24 @@ sub xst_boot_entries_set
   return $res;
 }
     
-sub xst_boot_conf_set
+sub gst_boot_conf_set
 {
   my $values_hash = $_[0];
-  my $config_file = &xst_boot_grub_get_config_file ();
-  $tool = &xst_boot_bootloader_get ();
+  my $config_file = &gst_boot_grub_get_config_file ();
+  $tool = &gst_boot_bootloader_get ();
 
   my %tool_tables =
       (
        "lilo" => {
          fn => { LILO_CONF => "/etc/lilo.conf"},
          table => [
-	           [ "boot",    \&xst_boot_lilo_replace_global,    LILO_CONF, "boot"    ],
-#	           [ "root",    \&xst_boot_lilo_replace_global,    LILO_CONF, "root"    ],
-             [ "timeout", \&xst_boot_lilo_replace_global,    LILO_CONF, "timeout" ],
-             [ "timeout", \&xst_boot_lilo_replace_global,    LILO_CONF, "delay" ],
-             [ "prompt",  \&xst_boot_lilo_replace_global_kw, LILO_CONF, "prompt"  ],
-             [ "default", \&xst_boot_lilo_replace_global,    LILO_CONF, "default" ],
-             [ "entry",   \&xst_boot_lilo_entries_set,       LILO_CONF ],
+	           [ "boot",    \&gst_boot_lilo_replace_global,    LILO_CONF, "boot"    ],
+#	           [ "root",    \&gst_boot_lilo_replace_global,    LILO_CONF, "root"    ],
+             [ "timeout", \&gst_boot_lilo_replace_global,    LILO_CONF, "timeout" ],
+             [ "timeout", \&gst_boot_lilo_replace_global,    LILO_CONF, "delay" ],
+             [ "prompt",  \&gst_boot_lilo_replace_global_kw, LILO_CONF, "prompt"  ],
+             [ "default", \&gst_boot_lilo_replace_global,    LILO_CONF, "default" ],
+             [ "entry",   \&gst_boot_lilo_entries_set,       LILO_CONF ],
          ] 
        },
        
@@ -377,26 +377,26 @@ sub xst_boot_conf_set
          },
          table =>
              [
- #             [ "pixmap",  \&xst_boot_grub_replace_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
-              [ "timeout", \&xst_boot_grub_replace_timeout,  GRUB_CONF ],
-              [ "prompt",  \&xst_boot_grub_replace_prompt,   GRUB_CONF ],
-              [ "default", \&xst_boot_grub_replace_default,  GRUB_CONF , "%entry%"],
-              [ "entry",   \&xst_boot_grub_entries_set, [GRUB_CONF, DEVICE_MAP, MTAB] ],
+ #             [ "pixmap",  \&gst_boot_grub_replace_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
+              [ "timeout", \&gst_boot_grub_replace_timeout,  GRUB_CONF ],
+              [ "prompt",  \&gst_boot_grub_replace_prompt,   GRUB_CONF ],
+              [ "default", \&gst_boot_grub_replace_default,  GRUB_CONF , "%entry%"],
+              [ "entry",   \&gst_boot_grub_entries_set, [GRUB_CONF, DEVICE_MAP, MTAB] ],
               ] 
        }
        );
 
-  return &xst_replace_from_table ($ {$tool_tables{$tool}}{"fn"},
+  return &gst_replace_from_table ($ {$tool_tables{$tool}}{"fn"},
                                   $ {$tool_tables{$tool}}{"table"}, $values_hash);
 }
 
-sub xst_boot_get_entry_replace_table
+sub gst_boot_get_entry_replace_table
 {
-  my $config_file = &xst_boot_grub_get_config_file ();
+  my $config_file = &gst_boot_grub_get_config_file ();
   my %tool_tables =
       (
-         entries_get => \&xst_boot_grub_get_entries_fn,
-         entries_del => \&xst_boot_grub_remove_entries,
+         entries_get => \&gst_boot_grub_get_entries_fn,
+         entries_del => \&gst_boot_grub_remove_entries,
          fn =>
          {
            KEY        => "#key#",
@@ -407,12 +407,12 @@ sub xst_boot_get_entry_replace_table
          table =>
              [
               # label has to go first, because it creates the entry if non-existent.
-              ["label",  \&xst_boot_grub_replace_label,  [GRUB_CONF, KEY]],
-#              ["type",   \&xst_boot_grub_replace_type,   [GRUB_CONF, KEY]],
-              ["root",   \&xst_boot_grub_replace_root,   [GRUB_CONF, DEVICE_MAP, KEY, "%type%"]],
-              ["image",  \&xst_boot_grub_replace_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
-              ["other",  \&xst_boot_grub_replace_other,  [GRUB_CONF, DEVICE_MAP, KEY]],
-              ["append", \&xst_boot_grub_replace_append, [GRUB_CONF, DEVICE_MAP, KEY]]
+              ["label",  \&gst_boot_grub_replace_label,  [GRUB_CONF, KEY]],
+#              ["type",   \&gst_boot_grub_replace_type,   [GRUB_CONF, KEY]],
+              ["root",   \&gst_boot_grub_replace_root,   [GRUB_CONF, DEVICE_MAP, KEY, "%type%"]],
+              ["image",  \&gst_boot_grub_replace_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
+              ["other",  \&gst_boot_grub_replace_other,  [GRUB_CONF, DEVICE_MAP, KEY]],
+              ["append", \&gst_boot_grub_replace_append, [GRUB_CONF, DEVICE_MAP, KEY]]
               ]
        );
   return %tool_tables;

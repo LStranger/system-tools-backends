@@ -71,9 +71,9 @@ sub check_lsb
   my %distmap =
       ("Debian" => "debian");
 
-  # xst_prefix not required here: parse already does that for us.
-  $dist = lc (&xst_parse_sh ("/etc/lsb-release", "DISTRIB_ID"));
-  $ver = lc (&xst_parse_sh ("/etc/lsb-release", "DISTRIB_RELEASE"));
+  # gst_prefix not required here: parse already does that for us.
+  $dist = lc (&gst_parse_sh ("/etc/lsb-release", "DISTRIB_ID"));
+  $ver = lc (&gst_parse_sh ("/etc/lsb-release", "DISTRIB_RELEASE"));
   
   $ver = $vermap{$ver} if exists $vermap{$ver};
   $dist = $distmap{$dist} if exists $dirmap{$dir};
@@ -89,7 +89,7 @@ sub check_debian
       ("3.0" => "woody",
        "testing/unstable" => "sarge");
 
-  open DEBIAN, "$xst_prefix/etc/debian_version" or return -1;
+  open DEBIAN, "$gst_prefix/etc/debian_version" or return -1;
   chomp ($ver = <DEBIAN>);
   close DEBIAN;
 
@@ -101,7 +101,7 @@ sub check_debian
 
 sub check_redhat
 {
-  open RELEASE, "$xst_prefix/etc/redhat-release" or return -1;
+  open RELEASE, "$gst_prefix/etc/redhat-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -118,7 +118,7 @@ sub check_redhat
 
 sub check_caldera
 {
-  open INSTALLED, "$xst_prefix/etc/.installed" or return -1;
+  open INSTALLED, "$gst_prefix/etc/.installed" or return -1;
   while (<INSTALLED>)
   {
     chomp;
@@ -135,7 +135,7 @@ sub check_caldera
 
 sub check_suse
 {
-  open RELEASE, "$xst_prefix/etc/SuSE-release" or return -1;
+  open RELEASE, "$gst_prefix/etc/SuSE-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -152,7 +152,7 @@ sub check_suse
 
 sub check_mandrake
 {
-  open MANDRAKE, "$xst_prefix/etc/mandrake-release" or return -1;
+  open MANDRAKE, "$gst_prefix/etc/mandrake-release" or return -1;
   while (<MANDRAKE>)
   {
     chomp;
@@ -169,7 +169,7 @@ sub check_mandrake
 
 sub check_turbolinux
 {
-  open RELEASE, "$xst_prefix/etc/turbolinux-release" or return -1;
+  open RELEASE, "$gst_prefix/etc/turbolinux-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -185,7 +185,7 @@ sub check_turbolinux
 
 sub check_slackware
 {
-  open RELEASE, "$xst_prefix/etc/slackware-version" or return -1;
+  open RELEASE, "$gst_prefix/etc/slackware-version" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -201,12 +201,12 @@ sub check_slackware
 
 sub check_gentoo
 {
-  return "gentoo" if stat ("$xst_prefix/usr/portage");
+  return "gentoo" if stat ("$gst_prefix/usr/portage");
 }
 
 sub check_linuxppc
 {
-  open RELEASE, "$xst_prefix/etc/redhat-release" or return -1;
+  open RELEASE, "$gst_prefix/etc/redhat-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -224,7 +224,7 @@ sub check_freebsd
 {
   my ($sysctl_cmd, @output);
 
-  $sysctl_cmd = &xst_file_locate_tool ("sysctl");
+  $sysctl_cmd = &gst_file_locate_tool ("sysctl");
   @output = (readpipe("$sysctl_cmd -n kern.version"));
   foreach (@output)
   {
@@ -252,28 +252,28 @@ sub check_solaris
   # Solaris 7:   unknown, assume 7.0
   # Solaris 8:   unknown, assume 8.0
   #
-  $fd = &xst_file_run_pipe_read ("uname -r");
+  $fd = &gst_file_run_pipe_read ("uname -r");
   return -1 if $fd eq undef;
   chomp ($dist = <$fd>);
-  &xst_file_close ($fd);
+  &gst_file_close ($fd);
 
   if ($dist =~ /^5\.(\d)/) { return "solaris-2.$1" }
   else { if ($dist =~ /^([78])\.\d/) { return "solaris-$1.0" } }
   return -1;
 }
 
-sub xst_platform_guess
+sub gst_platform_guess
 {
   my ($tool) = @_;
   local *FD;
 
   # get the output of 'uname -s', it returns the system we are running
-  *FD = &xst_file_run_pipe_read ("uname -s");
+  *FD = &gst_file_run_pipe_read ("uname -s");
   $$tool{"system"} = <FD>;
   chomp ($$tool{"system"});
   close FD;
 
-  # set $xst_dist and $xst_dist_version
+  # set $gst_dist and $gst_dist_version
   
   my %check = (
     # Red Hat check must run after Mandrake
@@ -286,9 +286,9 @@ sub xst_platform_guess
   my $plat;
 
   # Fool-the-backend hack.
-  if (exists $ENV{"XST_DIST"})
+  if (exists $ENV{"GST_DIST"})
   {
-    $$tool{"platform"} = $xst_dist = $ENV{"XST_DIST"};
+    $$tool{"platform"} = $gst_dist = $ENV{"GST_DIST"};
     return;
   }
 
@@ -303,23 +303,23 @@ sub xst_platform_guess
         $dist = &$check ();
         if ($dist != -1)
         {
-          $$tool{"platform"} = $xst_dist = $dist;
+          $$tool{"platform"} = $gst_dist = $dist;
           return;
         }
       }
     }
   }
 
-  $$tool{"platform"} = $xst_dist = "unknown";
+  $$tool{"platform"} = $gst_dist = "unknown";
 }
 
 
-# xst_platform_ensure_supported
+# gst_platform_ensure_supported
 #
 # Takes a list of supported platforms and sees if the one detected is found in
 # this list. If not, will report a list of supported platforms and fail.
 
-sub xst_platform_ensure_supported
+sub gst_platform_ensure_supported
 {
   my ($tool, @supported) = @_;
 
@@ -329,7 +329,7 @@ sub xst_platform_ensure_supported
   {
     if ($platform eq $$tool{"platform"})
     {
-      &xst_report ("platform_success", $platform, $$PLATFORM_INFO{$platform});
+      &gst_report ("platform_success", $platform, $$PLATFORM_INFO{$platform});
       return;
     }
   }
@@ -337,17 +337,17 @@ sub xst_platform_ensure_supported
   # Not supported.
   if (exists $$tool{"platform"})
   {
-    &xst_report ("platform_unsup", $$tool{"platform"});
+    &gst_report ("platform_unsup", $$tool{"platform"});
   }
   else
   {
-    &xst_report ("platform_undet");
+    &gst_report ("platform_undet");
   }
 }
 
 
 # A directive handler that sets the currently selected platform.
-sub xst_platform_set
+sub gst_platform_set
 {
   my ($tool, $platform) = @_;
   my ($p);
@@ -356,41 +356,41 @@ sub xst_platform_set
   {
     if ($p eq $platform)
     {
-      $$tool{"platform"} = $xst_dist = $platform;
-      &xst_report ("platform_success", $platform, $$PLATFORM_INFO{$platform});
-      &xst_report_end ();
+      $$tool{"platform"} = $gst_dist = $platform;
+      &gst_report ("platform_success", $platform, $$PLATFORM_INFO{$platform});
+      &gst_report_end ();
       return;
     }
   }
 
-  &xst_report ("platform_unsup", $platform);
-  &xst_report_end ();
+  &gst_report ("platform_unsup", $platform);
+  &gst_report_end ();
 }
 
-sub xst_platform_print_list
+sub gst_platform_print_list
 {
   my ($platforms) = @_;
   my ($platform, $name);
 
-  &xst_xml_print_begin ("platforms");
+  &gst_xml_print_begin ("platforms");
   foreach $platform (sort @$platforms)
   {
     $name = $$PLATFORM_INFO{$platform};
 
-    &xst_xml_container_enter ("platform");
-    &xst_xml_print_line ("<key>$platform</key>");
-    &xst_xml_print_line ("<name>$name</name>");
-    &xst_xml_container_leave ();
+    &gst_xml_container_enter ("platform");
+    &gst_xml_print_line ("<key>$platform</key>");
+    &gst_xml_print_line ("<name>$name</name>");
+    &gst_xml_container_leave ();
   }
-  &xst_xml_print_end ("platforms");
+  &gst_xml_print_end ("platforms");
 }
 
-sub xst_platform_list
+sub gst_platform_list
 {
   my ($tool) = @_;
 
-  &xst_report_end ();
-  &xst_platform_print_list ($$tool{"platforms"});
+  &gst_report_end ();
+  &gst_platform_print_list ($$tool{"platforms"});
 }
 
 1;

@@ -12,7 +12,7 @@ Contents:
 
 - An Example
 
-- How the XST frontends take advantage of the report lines.
+- How the GST frontends take advantage of the report lines.
 
 
 
@@ -81,7 +81,7 @@ the directive may require. An example directive is:
 enable_iface::eth0::1
 
 Once the directive is received, its related code is executed - for more
-info on this, check backend/general.pl.in:xst_directive_run. Then, a
+info on this, check backend/general.pl.in:gst_directive_run. Then, a
 directive may choose to wait for XML to be sent from the frontend.
 Directives that configure the system ususally expect such XML, but not
 all: enable_iface is an example of a directive that doesn't require XML,
@@ -112,7 +112,7 @@ backend), or by the backend, it is terminated with an end of request (eor)
 string, which tells the other side that the XML dumping has finished. The
 eor string looks like this:
 
-<!-- XST: end of request -->
+<!-- GST: end of request -->
 
 
 - An Example
@@ -161,7 +161,7 @@ stdin. Stuff between [] are comments on what's hapenning:
 > </internetsharing>
 [ the XML ends here, so the end-of-request string is printed. ]
 > 
-> <!-- XST: end of request -->
+> <!-- GST: end of request -->
 [ this finalizes the direcive run and makes the backend wait for the next
   directive line. ]
 < dhcp_set_state::0
@@ -174,7 +174,7 @@ stdin. Stuff between [] are comments on what's hapenning:
 .
 > sys::end::End of work report.
 > 
-> <!-- XST: end of request -->
+> <!-- GST: end of request -->
 [ this directive didn't produce any XML because of its nature, so it sends
   the eor string right away, and then the main loop waits again for a new
   directive line.]
@@ -199,7 +199,7 @@ stdin. Stuff between [] are comments on what's hapenning:
 .
 < </internetsharing>
 <
-< <!-- XST: end of request -->
+< <!-- GST: end of request -->
 [ OK, this is the end of the XML, and the backend stops reading stdin.
   Now the backend starts configuring the machine according with this
   information and report strings are stent through stdout to the
@@ -210,7 +210,7 @@ stdin. Stuff between [] are comments on what's hapenning:
 .
 > sys::end::End of work report.
 >
-> <!-- XST: end of request -->
+> <!-- GST: end of request -->
 [ No XML going back to the frontend. In theory, there could be a
   direcive that both expected an XML as input and sent some more XML
   back, but we haven't had such a need. Backend waiting for a new
@@ -220,13 +220,13 @@ stdin. Stuff between [] are comments on what's hapenning:
   all files and finish gracefully. End of the life of the backend.]
 
 
-- How the XST frontends take advantage of the report lines.
+- How the GST frontends take advantage of the report lines.
 
 
 I'll explain this by example.  The case is the boot tool, where the user will
 be warned if the /etc/lilo.conf file doesn't exist.
 
-At the backend, add a report entry at report.pl.in:xst_report_message.
+At the backend, add a report entry at report.pl.in:gst_report_message.
 I'll code a function where you can merge your own report entries with the
 default ones and unclutter that hash declaration, but this is the way to
 do it at the moment.
@@ -236,30 +236,30 @@ In our example, the entry is:
 "boot_conf_read_failed" => ["error", _("Failed to open boot configuration file [%s].")],
 
 
-Then call &xst_report ("my_error", ...) where the error happens or
+Then call &gst_report ("my_error", ...) where the error happens or
 where/when you want the report to occur. In our case:
 
-backend/boot.pl.in:xst_boot_parse_global_kw
+backend/boot.pl.in:gst_boot_parse_global_kw
 .
 .
-  $fd = &xst_file_open_read_from_names ($file);
+  $fd = &gst_file_open_read_from_names ($file);
   if (! $fd)
   {
-    &xst_report ("boot_conf_read_failed", $file);
+    &gst_report ("boot_conf_read_failed", $file);
     return undef;
   }
 .
 .
 
-Now to the frontend: we need to call xst_tool_add_report_hooks (too,
+Now to the frontend: we need to call gst_tool_add_report_hooks (too,
 table). This table looks like this, from our example:
 
 src/boot/main.c:main
 
-XstReportHookEntry report_hooks[] = {
+GstReportHookEntry report_hooks[] = {
 	{ "boot_conf_read_failed",         \\ Report minor we're binding.
           callbacks_conf_read_failed_hook, \\ hook function
-	  XST_REPORT_HOOK_LOAD,            \\ When to check for this hook.
+	  GST_REPORT_HOOK_LOAD,            \\ When to check for this hook.
           FALSE, NULL },                   \\ Repeat?, user data.
 
 	{ NULL, NULL, -1, FALSE, NULL }   \\ Terminating record
@@ -271,10 +271,10 @@ src/boot/callbacks.c:callbacks_conf_read_failed_hook will be called with
 was catched, where the string array args is probably the most interesting
 part.
 
-The "When to check for this hook" can be either XST_REPORT_HOOK_LOAD, SAVE
+The "When to check for this hook" can be either GST_REPORT_HOOK_LOAD, SAVE
 or LOADSAVE. Maybe we should change this to a direct mapping (GET, SET,
 GETSET), but for some strange reason, LOAD == GET and SAVE == LOAD. This
-means that XST_REPORT_HOOK_SAVE hooks will only be called when a
+means that GST_REPORT_HOOK_SAVE hooks will only be called when a
 "set" type directive is requested from the backend.
 
 The repeat field (set to FALSE) tells if the hook should be called every
@@ -288,7 +288,7 @@ need.
 And finally our hook function:
 
 gboolean
-callbacks_conf_read_failed_hook (XstTool *tool, XstReportLine *rline,
+callbacks_conf_read_failed_hook (GstTool *tool, GstReportLine *rline,
 gpointer data)
 {
 	GtkWidget *dialog;

@@ -90,7 +90,7 @@ sub xml_parse
   
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan;
+  $tree = &gst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "time" tag.
@@ -119,7 +119,7 @@ sub xml_parse_time
   while (@$tree)
   {
     if    ($$tree[0] eq "local_time"){ $$hash{"local_time"} = &xml_parse_local_time ($$tree[1]); }
-    elsif ($$tree[0] eq "timezone") { $$hash{"timezone"} = &xst_xml_get_word ($$tree[1]); }
+    elsif ($$tree[0] eq "timezone") { $$hash{"timezone"} = &gst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "sync")     { $$hash{"sync"} = &xml_parse_sync ($$tree[1], $hash); }
 
     shift @$tree;
@@ -134,12 +134,12 @@ sub xml_parse_sync
   my $hash = $_[1];
   my @sync;
 
-  $$hash{"sync_active"} = &xst_util_read_boolean($$tree[0]->{active});
+  $$hash{"sync_active"} = &gst_util_read_boolean($$tree[0]->{active});
   shift @$tree;
 
   while (@$tree)
   {
-    if ($$tree[0] eq "server")  { push (@sync, &xst_xml_get_word($$tree[1])); }
+    if ($$tree[0] eq "server")  { push (@sync, &gst_xml_get_word($$tree[1])); }
     
     shift @$tree;
     shift @$tree;
@@ -158,12 +158,12 @@ sub xml_parse_local_time
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "year")     { $$hash{"year"} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "month")    { $$hash{"month"} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "monthday") { $$hash{"monthday"} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "hour")     { $$hash{"hour"} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "minute")   { $$hash{"minute"} = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "second")   { $$hash{"second"} = &xst_xml_get_word($$tree[1]); }
+    if    ($$tree[0] eq "year")     { $$hash{"year"} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "month")    { $$hash{"month"} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "monthday") { $$hash{"monthday"} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "hour")     { $$hash{"hour"} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "minute")   { $$hash{"minute"} = &gst_xml_get_word($$tree[1]); }
+    elsif ($$tree[0] eq "second")   { $$hash{"second"} = &gst_xml_get_word($$tree[1]); }
     
     shift @$tree;
     shift @$tree;
@@ -183,29 +183,29 @@ sub xml_print
 
   $sync = $$h{"sync"};
 
-  &xst_xml_print_begin ();
+  &gst_xml_print_begin ();
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_hash ($$h{"local_time"}, "local_time");
-  &xst_xml_print_vspace ();
+  &gst_xml_print_vspace ();
+  &gst_xml_print_hash ($$h{"local_time"}, "local_time");
+  &gst_xml_print_vspace ();
   
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<sync active='" . &xst_print_boolean_yesno ($$h{'sync_active'}) . "'>\n");
+  &gst_xml_print_vspace ();
+  &gst_xml_print_line ("<sync active='" . &gst_print_boolean_yesno ($$h{'sync_active'}) . "'>\n");
   
-  &xst_xml_enter ();
+  &gst_xml_enter ();
   foreach $server (@$sync)
   {
-    &xst_xml_print_line ("<server>$server</server>\n");
+    &gst_xml_print_line ("<server>$server</server>\n");
   }
-  &xst_xml_leave ();
+  &gst_xml_leave ();
   
-  &xst_xml_print_line ("</sync>\n");
-  &xst_xml_print_vspace ();
+  &gst_xml_print_line ("</sync>\n");
+  &gst_xml_print_vspace ();
 
-  &xst_xml_print_scalars ($h, @scalar_keys);
-  &xst_xml_print_vspace ();
+  &gst_xml_print_scalars ($h, @scalar_keys);
+  &gst_xml_print_vspace ();
 
-  &xst_xml_print_end ();
+  &gst_xml_print_end ();
 }
 
 # Main operations
@@ -216,7 +216,7 @@ sub get
 
   $hash = &conf_get ();
 
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -228,7 +228,7 @@ sub set
   $hash = &xml_parse ();
 
   &conf_set ($hash);
-  &xst_report_end ();
+  &gst_report_end ();
 }
 
 
@@ -240,7 +240,7 @@ sub filter
   my $hash;
 
   $hash = &xml_parse ();
-  &xst_report_end ();
+  &gst_report_end ();
   &xml_print ($hash);
 }
 
@@ -248,7 +248,7 @@ sub filter
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
-# Read general.pl.in:xst_run_directive to know about the format of this hash.
+# Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
   "get"    => [ \&get,    [], "" ],
@@ -256,9 +256,9 @@ $directives = {
   "filter" => [ \&filter, [], "" ]
     };
 
-$tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
-&xst_run ($tool);
+$tool = &gst_init ($name, $version, $description, $directives, @ARGV);
+&gst_platform_ensure_supported ($tool, @platforms);
+&gst_run ($tool);
 
 # Portable code.
 
@@ -282,10 +282,10 @@ sub time_get_rh62_zone
   my $size_search;
   my $size_test;
 
-  *TZLIST = &xst_file_open_read_from_names($zoneinfo_dir . "/zone.tab");
+  *TZLIST = &gst_file_open_read_from_names($zoneinfo_dir . "/zone.tab");
   if (not *TZLIST) { return; }
 
-  &xst_report ("time_timezone_scan");
+  &gst_report ("time_timezone_scan");
 
   # Get the filesize for /etc/localtime so that we don't have to execute
   # a diff for every file, only for file with the correct size. This speeds
@@ -300,12 +300,12 @@ sub time_get_rh62_zone
 
 
     # See if this zone file matches the installed one.
-    &xst_report ("time_timezone_cmp", $zone);
-    &xst_print_progress();
+    &gst_report ("time_timezone_cmp", $zone);
+    &gst_print_progress();
     $size_test = (stat("$zoneinfo_dir/$zone"))[7];
     if ($size_test eq $size_search)
     {
-      if (!&xst_file_run ("diff $zoneinfo_dir/$zone $local_time_file"))
+      if (!&gst_file_run ("diff $zoneinfo_dir/$zone $local_time_file"))
       {
         # Found a match.
         last;
@@ -326,7 +326,7 @@ sub conf_get
 
   %dist_attrib = &conf_get_parse_table ();
 
-  $hash = &xst_parse_from_table ($dist_attrib{"fn"},
+  $hash = &gst_parse_from_table ($dist_attrib{"fn"},
                                  $dist_attrib{"table"});
 
   return $hash;
@@ -337,28 +337,28 @@ sub time_set_local_time
   my ($time) = @_;
   my ($res, $xscreensaver_owner, $xscreensaver_running);
 
-  &xst_report_enter ();
+  &gst_report_enter ();
 
   # Kill screensaver, so it doesn't confuse the user.
   # FIXME: This should handle multiple processes owned by different users.
-  $xscreensaver_owner   = &xst_service_proc_get_owner ("xscreensaver");
-  $xscreensaver_running = &xst_service_proc_stop      ("xscreensaver");
+  $xscreensaver_owner   = &gst_service_proc_get_owner ("xscreensaver");
+  $xscreensaver_running = &gst_service_proc_stop      ("xscreensaver");
 
   $command = sprintf ("date %02d%02d%02d%02d%04d.%02d", $$time{"month"}, $$time{"monthday"},
                       $$time{"hour"}, $$time{"minute"}, $$time{"year"}, $$time{"second"});
 
-  &xst_report ("time_localtime_set", $command);
+  &gst_report ("time_localtime_set", $command);
 
-  $res = &xst_file_run ($command);
+  $res = &gst_file_run ($command);
 
   # Restart screensaver.
   # FIXME: This should handle multiple processes owned by different users.
   if ($xscreensaver_running)
   {
-    &xst_service_proc_start ("xscreensaver -no-splash", $xscreensaver_owner);
+    &gst_service_proc_start ("xscreensaver -no-splash", $xscreensaver_owner);
   }
 
-  &xst_report_leave ();
+  &gst_report_leave ();
   return -1 if $res;
   return 0;
 }
@@ -367,8 +367,8 @@ sub time_set_rh62_zone
 {
   my ($localtime, $zonebase, $timezone) = @_;
 
-  &xst_report_enter ();
-  &xst_report ("time_timezone_set", $timezone);
+  &gst_report_enter ();
+  &gst_report ("time_timezone_set", $timezone);
 
   $tz = "$zonebase/$timezone";
 
@@ -376,20 +376,20 @@ sub time_set_rh62_zone
   {
     unlink $localtime;  # Important, since it might be a symlink.
     
-    &xst_report_enter ();
+    &gst_report_enter ();
     $res = copy ($tz, $localtime);
-    &xst_report_leave ();
+    &gst_report_leave ();
     return -1 unless $res;
     return 0;
   }
 
-  &xst_report_leave ();
+  &gst_report_leave ();
   return -1;
 }
 
 sub time_sync_hw_from_sys
 {
-  &xst_file_run ("hwclock --systohc");
+  &gst_file_run ("hwclock --systohc");
   return 0;
 }
 
@@ -399,11 +399,11 @@ sub conf_set
   my %dist_attrib;
 
   # we need to init those values to start/stop ntp properly 
-  ($rcd_path, $initd_path, $relative_path) = &xst_service_sysv_get_paths ();
+  ($rcd_path, $initd_path, $relative_path) = &gst_service_sysv_get_paths ();
 
   %dist_attrib = &conf_get_replace_table ();
 
-  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+  $res = &gst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
                                   $values_hash);
 
   &time_sync_hw_from_sys ();
@@ -458,9 +458,9 @@ sub conf_get_parse_table
              [
               [ "local_time",   \&time_get_local_time ],
               [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
-              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&xst_service_sysv_get_status, "xntpd" ],
-              [ "ntpinstalled", \&xst_service_sysv_installed, "xntpd" ],
+              [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_get_status, "xntpd" ],
+              [ "ntpinstalled", \&gst_service_sysv_installed, "xntpd" ],
               ]
                 },
        
@@ -476,9 +476,9 @@ sub conf_get_parse_table
              [
               [ "local_time",   \&time_get_local_time ],
               [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
-              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&xst_service_sysv_get_status, "ntpd" ],
-              [ "ntpinstalled", \&xst_service_sysv_installed, "ntpd" ],
+              [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_get_status, "ntpd" ],
+              [ "ntpinstalled", \&gst_service_sysv_installed, "ntpd" ],
               ]
                 },
 
@@ -494,9 +494,9 @@ sub conf_get_parse_table
              [
               [ "local_time",   \&time_get_local_time ],
               [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
-              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&xst_service_sysv_get_status, "ntpd" ],
-              [ "ntpinstalled", \&xst_service_sysv_installed, "ntp" ],
+              [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_get_status, "ntpd" ],
+              [ "ntpinstalled", \&gst_service_sysv_installed, "ntp" ],
               ]
                 },
 
@@ -512,17 +512,17 @@ sub conf_get_parse_table
              [
               [ "local_time",   \&time_get_local_time ],
               [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
-              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&xst_service_sysv_get_status, "xntpd" ],
-              [ "ntpinstalled", \&xst_service_sysv_installed, "xntpd" ],
+              [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_get_status, "xntpd" ],
+              [ "ntpinstalled", \&gst_service_sysv_installed, "xntpd" ],
               ]
                 }
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
@@ -570,8 +570,8 @@ sub conf_get_replace_table
              [
               [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",  \&time_set_local_time ],
-              [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active", \&xst_service_sysv_set_status, 90, "xntpd" ],
+              [ "sync",        \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active", \&gst_service_sysv_set_status, 90, "xntpd" ],
               ]
                 },
 
@@ -587,8 +587,8 @@ sub conf_get_replace_table
              [
               [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",   \&time_set_local_time ],
-              [ "sync",         \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&xst_service_sysv_set_status, 90, "ntpd" ],
+              [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_set_status, 90, "ntpd" ],
               ]
                 },
 
@@ -604,8 +604,8 @@ sub conf_get_replace_table
              [
               [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",  \&time_set_local_time ],
-              [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active", \&xst_service_sysv_set_status, 23, "ntp" ],
+              [ "sync",        \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active", \&gst_service_sysv_set_status, 23, "ntp" ],
               ]
                 },
        
@@ -621,16 +621,16 @@ sub conf_get_replace_table
              [
               [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "local_time",   \&time_set_local_time ],
-              [ "sync",         \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
-              [ "sync_active",  \&xst_service_sysv_set_status, 90, "xntpd" ],
+              [ "sync",         \&gst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&gst_service_sysv_set_status, 90, "xntpd" ],
               ]
                 }
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 

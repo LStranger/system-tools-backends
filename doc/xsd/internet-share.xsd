@@ -21,7 +21,7 @@
   </annotation>
 
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
     
   <element type="internet-shareType" name="internet-share"/>
 
@@ -35,15 +35,15 @@
 
   <complexType name="optionsType">
     <sequence>
-	 <element type="xstBoolState" name="raudio"     minOccurs="0"/>
-	 <element type="xstBoolState" name="ip_forward" minOccurs="0"/>
+	 <element type="gstBoolState" name="raudio"     minOccurs="0"/>
+	 <element type="gstBoolState" name="ip_forward" minOccurs="0"/>
 	 <element type="quakeType"    name="quake"      minOccurs="0"/>
     </sequence>
   </complexType>
 
   <complexType name="quakeType">
     <complexContent>
-	 <extension base="xstBoolState">
+	 <extension base="gstBoolState">
 	   <sequence>
 		<element type="unsignedInt" name="port"/>
 	   </sequence>
@@ -67,8 +67,8 @@
 
   <complexType name="ip_addressType">
     <complexContent>
-	 <extension base="xstIPv4">
-	   <attribute name="masq" type="xstKeyword">
+	 <extension base="gstIPv4">
+	   <attribute name="masq" type="gstKeyword">
 	 </extension>
     </complexContent>
   </complexType>

@@ -38,35 +38,35 @@ require "$SCRIPTSDIR/xml.pl$DOTIN";
 require "$SCRIPTSDIR/tokenizer.pl$DOTIN";
 
 ## ------------------------ Get ---------------------------------------------
-sub xst_dhcpd_get_host
+sub gst_dhcpd_get_host
 {
     my ($in, $out) = @_;
     my ($mac_address, $next_server, $ip);
     my %host;
-    my $comment = &xst_dhcpd_get_host_comment ($out);
-    my $host_name = &xst_tokenize_get_token ($in, $out);
+    my $comment = &gst_dhcpd_get_host_comment ($out);
+    my $host_name = &gst_tokenize_get_token ($in, $out);
     
-    &xst_tokenize_verify_token ($in, "{", $out);
+    &gst_tokenize_verify_token ($in, "{", $out);
     
-    while (defined (my $token = &xst_tokenize_get_token ($in, $out))) {
+    while (defined (my $token = &gst_tokenize_get_token ($in, $out))) {
         if ("\}" eq $token) {
             last;
         }
         elsif ("hardware" eq $token) {
-            &xst_tokenize_verify_token ($in, "ethernet", $out);
-            $mac_address = &xst_tokenize_get_token ($in, $out);
-            &xst_tokenize_verify_token ($in, ";", $out);
+            &gst_tokenize_verify_token ($in, "ethernet", $out);
+            $mac_address = &gst_tokenize_get_token ($in, $out);
+            &gst_tokenize_verify_token ($in, ";", $out);
         }
         elsif ("fixed-address" eq $token) {
-            $ip = &xst_tokenize_get_token ($in, $out);
-            &xst_tokenize_verify_token ($in, ";", $out);
+            $ip = &gst_tokenize_get_token ($in, $out);
+            &gst_tokenize_verify_token ($in, ";", $out);
         }
         elsif ("next-server" eq $token) {
-            &xst_tokenize_skip_till ($in, ";", $out);
+            &gst_tokenize_skip_till ($in, ";", $out);
         }
         else {
-            &xst_tokenize_warning ("Unexpected token \"$token\"");
-            &xst_tokenize_skip_till ($in, ";", $out);
+            &gst_tokenize_warning ("Unexpected token \"$token\"");
+            &gst_tokenize_skip_till ($in, ";", $out);
         }
     }
 
@@ -79,7 +79,7 @@ sub xst_dhcpd_get_host
     return %host;
 }
 
-sub xst_dhcpd_get_range
+sub gst_dhcpd_get_range
 {
     my ($in, $out) = @_;
     my $size = 0;
@@ -94,7 +94,7 @@ sub xst_dhcpd_get_range
     # range dynamic-bootp a b; start = a, end = b, bootp = TRUE
     # range dynamic-bootp a;   start = a, end = a, bootp = TRUE
 
-    $token = &xst_tokenize_get_token_till ($in, $out, ";");
+    $token = &gst_tokenize_get_token_till ($in, $out, ";");
 
     # bootp for this range ?
     $_ = $token;
@@ -119,13 +119,13 @@ sub xst_dhcpd_get_range
     my $empty      = $tokens[2]; # We should not have any tokens left
 
     if (defined ($empty)) {
-        &xst_tokenize_warning ("Unexpected token $empty");
+        &gst_tokenize_warning ("Unexpected token $empty");
     }
     
     return %hash;
 }
 
-sub xst_dhcpd_get_subnet
+sub gst_dhcpd_get_subnet
 {
     my ($in, $out) = @_;
     my %options;
@@ -135,17 +135,17 @@ sub xst_dhcpd_get_subnet
     my @known_options = qw(domain-name routers);
     my @ignore_options = qw(nis-domain time-offset ntp-servers subnet-mask);    
 
-    $options{"ip"}      = &xst_tokenize_get_token ($in, $out);
-    &xst_tokenize_verify_token ($in, "netmask", $out);
-    $options{"netmask"} =  &xst_tokenize_get_token ($in, $out);
-    &xst_tokenize_verify_token ($in, "{", $out);
+    $options{"ip"}      = &gst_tokenize_get_token ($in, $out);
+    &gst_tokenize_verify_token ($in, "netmask", $out);
+    $options{"netmask"} =  &gst_tokenize_get_token ($in, $out);
+    &gst_tokenize_verify_token ($in, "{", $out);
     
-    while (defined (my $token = &xst_tokenize_get_token ($in, $out))) {
+    while (defined (my $token = &gst_tokenize_get_token ($in, $out))) {
 #        printf STDERR "Token $token\n";
         if ("option" eq $token) {
             my (%h1,%h2);
-            my $value     = &xst_tokenize_get_token ($in, $out);
-            my $pair      = &xst_tokenize_get_token ($in, $out);
+            my $value     = &gst_tokenize_get_token ($in, $out);
+            my $pair      = &gst_tokenize_get_token ($in, $out);
             $pair =~ s/\"//g;
 
   #          printf STDERR "Value $value\n";
@@ -153,52 +153,52 @@ sub xst_dhcpd_get_subnet
             if ($value eq "domain-name-servers") {
                 my $dns_num = 1;
                 $options{"dns1"}=$pair;
-                if ("," eq ($token = &xst_tokenize_get_token ($in, $out))) {
-                    $token = &xst_tokenize_get_token ($in, $out);
+                if ("," eq ($token = &gst_tokenize_get_token ($in, $out))) {
+                    $token = &gst_tokenize_get_token ($in, $out);
                     $options{"dns2"}=$token;
-                    while (";" ne ($token = &xst_tokenize_get_token ($in, $out))){};
+                    while (";" ne ($token = &gst_tokenize_get_token ($in, $out))){};
                     # FIXME
 #                    @$in = (pop @$out, @$in);
                 }
             }
-            elsif (defined &xst_array_find_index (\@known_options, $value)) {
+            elsif (defined &gst_array_find_index (\@known_options, $value)) {
  #               printf STDERR "in array\n";
                 # remove elements as we read them to avoid duplicates
                 @known_options = grep ($_ ne $value, @known_options);
                 $options{$value}=$pair;
-                &xst_tokenize_verify_token ($in, ";", $out);
+                &gst_tokenize_verify_token ($in, ";", $out);
             }
-            elsif (defined &xst_array_find_index (\@ignore_options, $value)) {
-                &xst_tokenize_advance_till ($in, ";", $out);
+            elsif (defined &gst_array_find_index (\@ignore_options, $value)) {
+                &gst_tokenize_advance_till ($in, ";", $out);
             }
             else {
                 printf STDERR "Unknown option : $value (170)\n";
                 if ($token ne ";") {
-                    &xst_tokenize_advance_till ($in, ";", $out);
-#                    &xst_tokenize_verify_token ($in, ";", $out);
+                    &gst_tokenize_advance_till ($in, ";", $out);
+#                    &gst_tokenize_verify_token ($in, ";", $out);
 #                    @$in = (pop @$out, @$in);
                 }
             }
         }
         elsif ("range" eq $token) {
-            my (%range) = &xst_dhcpd_get_range ($in, $out);
+            my (%range) = &gst_dhcpd_get_range ($in, $out);
             my $name = $range{"start"};
             $ranges{$name} = \%range;
         }
         elsif ("host" eq $token) {
-            my (%host) = &xst_dhcpd_get_host ($in, $out);
+            my (%host) = &gst_dhcpd_get_host ($in, $out);
             my $name = $host{"host_name"};
             $hosts{$name}= \%host;
         }
         elsif ("default-lease-time" eq $token) {
-            $token = &xst_tokenize_get_token ($in, $out);
+            $token = &gst_tokenize_get_token ($in, $out);
 #           $options{"default-lease-time"}=$token;
-            $token = &xst_tokenize_get_token ($in, $out);
+            $token = &gst_tokenize_get_token ($in, $out);
         }
         elsif ("max-lease-time" eq $token) {
-            $token = &xst_tokenize_get_token ($in, $out);
+            $token = &gst_tokenize_get_token ($in, $out);
 #           $options{"max-lease-time"}=$token;
-            $token = &xst_tokenize_get_token ($in, $out);
+            $token = &gst_tokenize_get_token ($in, $out);
         }
         elsif ("}" eq $token) {
             my $resp;
@@ -213,15 +213,15 @@ sub xst_dhcpd_get_subnet
             return %resp;
         }
         else {
-            &xst_tokenize_warning ("Unexpected token \"$token\" (205)");
-            &xst_tokenize_skip_till ($in, ";", $out);
+            &gst_tokenize_warning ("Unexpected token \"$token\" (205)");
+            &gst_tokenize_skip_till ($in, ";", $out);
         }
     }
 
     return undef;
 }
 
-sub xst_dhcpd_get_subnets
+sub gst_dhcpd_get_subnets
 {
     my ($fname) = @_;
     my (%subnets);
@@ -229,20 +229,20 @@ sub xst_dhcpd_get_subnets
     my @out_array = "";
     my $out = \@out_array;
 
-    $in = &xst_tokenize ($fname);
+    $in = &gst_tokenize ($fname);
 
-    while (defined (my $token = &xst_tokenize_get_token ($in, $out))) {
+    while (defined (my $token = &gst_tokenize_get_token ($in, $out))) {
         if ("subnet" eq $token) {
-            my %subnet = &xst_dhcpd_get_subnet ($in, $out);
+            my %subnet = &gst_dhcpd_get_subnet ($in, $out);
             my $options = $subnet{"options"};
             my $ip = $$options{"ip"};
             $subnets{$ip} = \%subnet;
         }
         elsif ("group" eq $token) {
-            &xst_tokenizer_error ("Groups not supported\n");
+            &gst_tokenizer_error ("Groups not supported\n");
         }
         elsif ("shared-network" eq $token) {
-            &xst_tokenizer_error ("Shared networks not supported\n");
+            &gst_tokenizer_error ("Shared networks not supported\n");
         }
     }
 
@@ -250,7 +250,7 @@ sub xst_dhcpd_get_subnets
 }
 
 ## ------------------------ XML Parsing --------------------------------------
-sub xst_dhcpd_xml_parse_host
+sub gst_dhcpd_xml_parse_host
 {
   my ($tree, $hosts) = @_;
   my (%hash);
@@ -259,14 +259,14 @@ sub xst_dhcpd_xml_parse_host
   
   while ($elem = shift @$tree)
   {
-    $hash{$elem} = &xst_xml_get_pcdata (shift @$tree);
+    $hash{$elem} = &gst_xml_get_pcdata (shift @$tree);
   }
 
   $name = $hash{"host_name"};
   $$hosts{$name} = \%hash;
 }
         
-sub xst_dhcpd_xml_parse_range
+sub gst_dhcpd_xml_parse_range
 {
   my ($tree, $hosts) = @_;
   my (%hash);
@@ -275,14 +275,14 @@ sub xst_dhcpd_xml_parse_range
   
   while ($elem = shift @$tree)
   {
-    $hash{$elem} = &xst_xml_get_pcdata (shift @$tree);
+    $hash{$elem} = &gst_xml_get_pcdata (shift @$tree);
   }
 
   $name = $hash{"start"};
   $$hosts{$name} = \%hash;
 }
 
-sub xst_dhcpd_xml_parse_subnet
+sub gst_dhcpd_xml_parse_subnet
 {
   my ($tree, $subnets) = @_;
   my ($elem, %subnet, %options);
@@ -292,17 +292,17 @@ sub xst_dhcpd_xml_parse_subnet
   
   while ($elem = shift @$tree)
   {
-    if    ($elem eq "ip")          { $options{"ip"}          = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "netmask")     { $options{"netmask"}     = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "domain-name") { $options{"domain-name"} = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "dns1")        { $options{"dns1"}        = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "dns2")        { $options{"dns2"}        = &xst_xml_get_pcdata (shift @$tree); }
-    elsif ($elem eq "routers")     { $options{"routers"}     = &xst_xml_get_pcdata (shift @$tree); }
+    if    ($elem eq "ip")          { $options{"ip"}          = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "netmask")     { $options{"netmask"}     = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "domain-name") { $options{"domain-name"} = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "dns1")        { $options{"dns1"}        = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "dns2")        { $options{"dns2"}        = &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "routers")     { $options{"routers"}     = &gst_xml_get_pcdata (shift @$tree); }
 
-    elsif ($elem eq "host")        { &xst_dhcpd_xml_parse_host  (shift @$tree, \%hosts); }
-    elsif ($elem eq "range")       { &xst_dhcpd_xml_parse_range (shift @$tree, \%ranges); }
+    elsif ($elem eq "host")        { &gst_dhcpd_xml_parse_host  (shift @$tree, \%hosts); }
+    elsif ($elem eq "range")       { &gst_dhcpd_xml_parse_range (shift @$tree, \%ranges); }
     
-    else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+    else  { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
   $$subnet{"options"} = \%options unless scalar keys %options == 0;
@@ -323,7 +323,7 @@ sub xst_dhcpd_xml_parse_subnet
 }
 
 ## ------------------------ Set ---------------------------------------------
-sub xst_dhcpd_replace_subnets
+sub gst_dhcpd_replace_subnets
 {
   my ($file, $old_values, $new_subnets_ref) = @_;
   my (%old_subnets, %new_subnets);
@@ -332,33 +332,33 @@ sub xst_dhcpd_replace_subnets
   %old_subnets = %{$$old_values{"subnets"}};
   %new_subnets = %{$new_subnets_ref};
 
-  $matching_list = &xst_dhcpd_subnets_match (\%old_subnets, \%new_subnets);
-  &xst_dhcpd_subnets_match_dump ($matching_list);
+  $matching_list = &gst_dhcpd_subnets_match (\%old_subnets, \%new_subnets);
+  &gst_dhcpd_subnets_match_dump ($matching_list);
 
   %m = %$matching_list;
   foreach $key (keys %m) {
       $a=$m{$key};
-      &xst_dhcpd_replace_subnet ($file, $key, $m{$key});
+      &gst_dhcpd_replace_subnet ($file, $key, $m{$key});
   }
 }
 
-sub xst_dhcpd_skip_block
+sub gst_dhcpd_skip_block
 {
     my ($in, $out) = @_;
     my $token;
 
-    while (defined ($token = &xst_tokenize_get_token ($in, $out))) {
+    while (defined ($token = &gst_tokenize_get_token ($in, $out))) {
         if ($token eq "}") {
             return;
         }
         if ($token eq "{") {
-            &xst_dhcpd_skip_block ($in, $out);
+            &gst_dhcpd_skip_block ($in, $out);
         }
     }
 
 }
 
-sub xst_dhcpd_get_host_comment
+sub gst_dhcpd_get_host_comment
 {
     my ($out) = @_;
     my $token, $line, $comment = "";
@@ -376,7 +376,7 @@ sub xst_dhcpd_get_host_comment
     return undef;
 }
 
-sub xst_dhcpd_add_host
+sub gst_dhcpd_add_host
 {
     my ($in, $out, $host, $subnet) = @_;
     my $ws, $ws2;
@@ -387,38 +387,38 @@ sub xst_dhcpd_add_host
     $ws2 = $ws . "\t";
 
     # Add the host
-    &xst_tokenize_append_token ($out, $ws . "\n"); 
+    &gst_tokenize_append_token ($out, $ws . "\n"); 
     if (defined ($$host {"comment"})) {
-        &xst_tokenize_append_token ($out, $ws  . "# " . $$host {"comment"} . "\n");
+        &gst_tokenize_append_token ($out, $ws  . "# " . $$host {"comment"} . "\n");
     }
-    &xst_tokenize_append_token ($out, $ws  . "host " . $$host {"host_name"} . " {\n");
+    &gst_tokenize_append_token ($out, $ws  . "host " . $$host {"host_name"} . " {\n");
     if (defined ($$host {"mac_address"})) {
-        &xst_tokenize_append_token ($out, $ws2 . "hardware ethernet " . $$host {"mac_address"} . ";\n");
+        &gst_tokenize_append_token ($out, $ws2 . "hardware ethernet " . $$host {"mac_address"} . ";\n");
     }
     if (defined (my $ip = $$host {"ip"})) {
-        &xst_tokenize_append_token ($out, $ws2 . "fixed-address "     . $$host {"ip"} . ";\n");
+        &gst_tokenize_append_token ($out, $ws2 . "fixed-address "     . $$host {"ip"} . ";\n");
     }
-    &xst_tokenize_append_token ($out, $ws  . "}\n"); 
+    &gst_tokenize_append_token ($out, $ws  . "}\n"); 
 }
 
-sub xst_dhcpd_replace_host
+sub gst_dhcpd_replace_host
 {
     my ($in, $out, $hosts) = @_;
     my $hostname;
     my $new_values; # array that contains the host information
 
-    $comment = &xst_dhcpd_get_host_comment ($out);
-    $hostname = &xst_tokenize_get_token ($in, $out);
+    $comment = &gst_dhcpd_get_host_comment ($out);
+    $hostname = &gst_tokenize_get_token ($in, $out);
     $new_values = $$hosts{$hostname};
 
     # Delete this host ?
     if (not defined $new_values) {
-        &xst_tokenize_undo ($in, $out, 2); # Return the hostname & "host"
+        &gst_tokenize_undo ($in, $out, 2); # Return the hostname & "host"
         $_ = @$out[-1];
         pop (@$out) if (/\s*\#/);  # remove the comment ?
         $_ = @$out[-1];
         pop (@$out) if (/\s*\n$/); # remove the newline ?
-        &xst_tokenize_skip_till ($in, "}");
+        &gst_tokenize_skip_till ($in, "}");
         return;
     }
 
@@ -429,41 +429,41 @@ sub xst_dhcpd_replace_host
     }
     elsif (defined $new_comment) {
         # Insert a comment
-        &xst_tokenize_undo ($in, $out, 2);
-        &xst_tokenize_append_token ($out, "\t# " . $new_comment . "\n");
-        &xst_tokenize_get_token ($in, $out);
-        &xst_tokenize_get_token ($in, $out);
+        &gst_tokenize_undo ($in, $out, 2);
+        &gst_tokenize_append_token ($out, "\t# " . $new_comment . "\n");
+        &gst_tokenize_get_token ($in, $out);
+        &gst_tokenize_get_token ($in, $out);
     }
 
-    &xst_tokenize_verify_token ($in, "{", $out);
+    &gst_tokenize_verify_token ($in, "{", $out);
 
     # Flags so that we know if we need to add an element or not
     my $hardware_ethernet = 0;
     my $fixed_address = 0;
-    while (defined (my $token = &xst_tokenize_get_token ($in, $out))) {
+    while (defined (my $token = &gst_tokenize_get_token ($in, $out))) {
         if ("hardware" eq $token) {
             my $mac = $$new_values{"mac_address"};
             if ((defined $mac) && ($mac ne "")) {
-                &xst_tokenize_verify_token ($in, "ethernet", $out);
-                &xst_tokenize_replace_token ($out, "ethernet"); # clean if broken
-                &xst_tokenize_get_token ($in, $out);
-                &xst_tokenize_replace_token ($out, $mac);
-                &xst_tokenize_verify_token ($in, ";", $out);
+                &gst_tokenize_verify_token ($in, "ethernet", $out);
+                &gst_tokenize_replace_token ($out, "ethernet"); # clean if broken
+                &gst_tokenize_get_token ($in, $out);
+                &gst_tokenize_replace_token ($out, $mac);
+                &gst_tokenize_verify_token ($in, ";", $out);
             } else {
-                &xst_tokenize_undo ($in, $out, 1);
-                &xst_tokenize_skip_till ($in, ";");
+                &gst_tokenize_undo ($in, $out, 1);
+                &gst_tokenize_skip_till ($in, ";");
             }
             $hardware_ethernet = 1;
         }
         elsif ("fixed-address" eq $token) {
             my $ip = $$new_values{"ip"};
             if ((defined $ip) && ($ip ne "")) {
-                &xst_tokenize_get_token ($in, $out); # discard
-                &xst_tokenize_replace_token ($out, $ip);
-                &xst_tokenize_verify_token ($in, ";", $out);
+                &gst_tokenize_get_token ($in, $out); # discard
+                &gst_tokenize_replace_token ($out, $ip);
+                &gst_tokenize_verify_token ($in, ";", $out);
             } else {
-                &xst_tokenize_undo ($in, $out, 1);
-                &xst_tokenize_skip_till ($in, ";");
+                &gst_tokenize_undo ($in, $out, 1);
+                &gst_tokenize_skip_till ($in, ";");
             }
             $fixed_address = 1;
         }
@@ -471,27 +471,27 @@ sub xst_dhcpd_replace_host
             last;
         }
         else {
-            &xst_tokenize_advance_till ($in, ";", $out);
+            &gst_tokenize_advance_till ($in, ";", $out);
         }
     }
 
-    &xst_tokenize_undo ($in, $out);
+    &gst_tokenize_undo ($in, $out);
     
     # Now add items that where not found
     my $ws = "\t\t";
     if (($fixed_address eq 0) && (defined (my $ip = $$new_values {"ip"}))) {
-        &xst_tokenize_append_token ($out, $ws . "fixed-address " . $ip . ";\n");
+        &gst_tokenize_append_token ($out, $ws . "fixed-address " . $ip . ";\n");
     }
     if (($hardware_ethernet eq 0) && (defined (my $mac = $$new_values {"mac_address"}))) {
-        &xst_tokenize_append_token ($out, $ws . "hardware ethernet " . $mac . ";\n");
+        &gst_tokenize_append_token ($out, $ws . "hardware ethernet " . $mac . ";\n");
     }
 
-    &xst_tokenize_get_token ($in, $out);
+    &gst_tokenize_get_token ($in, $out);
     
     delete $$hosts{$hostname};
 }
 
-sub xst_dhcpd_replace_range
+sub gst_dhcpd_replace_range
 {
     my ($in, $out, $ranges) = @_;
     my $range;
@@ -501,16 +501,16 @@ sub xst_dhcpd_replace_range
     $range = $$ranges{@ranges_keys[0]};
 
     if ($$range{"bootp"}) {
-        &xst_tokenize_append_token ($out, " dynamic-bootp");
+        &gst_tokenize_append_token ($out, " dynamic-bootp");
     }
-    &xst_tokenize_append_token ($out, " " . $$range{"start"});
-    &xst_tokenize_append_token ($out, " " . $$range{"end"} );
-    &xst_tokenize_append_token ($out, ";\n");
-    &xst_tokenize_skip_till ($in, ";");
+    &gst_tokenize_append_token ($out, " " . $$range{"start"});
+    &gst_tokenize_append_token ($out, " " . $$range{"end"} );
+    &gst_tokenize_append_token ($out, ";\n");
+    &gst_tokenize_skip_till ($in, ";");
     
 }
 
-sub xst_tokenize_replace_dns
+sub gst_tokenize_replace_dns
 {
     my ($in, $out, $options) = @_;
     my $token;
@@ -519,9 +519,9 @@ sub xst_tokenize_replace_dns
 
     # Remove this item ?
     if ($dns1 eq undef && $dns2 eq undef) {
-        &xst_tokenize_undo ($in, $out, 2);
-        &xst_tokenize_skip_till ($in, ";");
-        &xst_tokenize_undo ($in, $out, 1);
+        &gst_tokenize_undo ($in, $out, 2);
+        &gst_tokenize_skip_till ($in, ";");
+        &gst_tokenize_undo ($in, $out, 1);
         return;
     }
     
@@ -529,44 +529,44 @@ sub xst_tokenize_replace_dns
     # Dns is tricky because the file has a list of servers, our xml has
     # dns1 and dns2, maybe we should change the xml ?
     # 
-    $token = &xst_tokenize_get_token ($in, $out);
-    &xst_tokenize_replace_token ($out, $dns1);
+    $token = &gst_tokenize_get_token ($in, $out);
+    &gst_tokenize_replace_token ($out, $dns1);
 
-    $token = &xst_tokenize_get_token ($in, $out);
+    $token = &gst_tokenize_get_token ($in, $out);
     
     # If we already have multiple DNS's
     if ($token eq ",") {
-        $token = &xst_tokenize_get_token ($in, $out);
+        $token = &gst_tokenize_get_token ($in, $out);
         if (defined $dns2) {
-            &xst_tokenize_replace_token ($out, $dns2);
-            &xst_tokenize_verify_token ($in, ";", $out);
+            &gst_tokenize_replace_token ($out, $dns2);
+            &gst_tokenize_verify_token ($in, ";", $out);
         } else {
-            &xst_tokenize_remove_token ($out, 2); # Remove "," and dns2
-            &xst_tokenize_skip_till    ($in, ";");
-            &xst_tokenize_append_token ($out, ";\n"); # skip till ; will skip ;
+            &gst_tokenize_remove_token ($out, 2); # Remove "," and dns2
+            &gst_tokenize_skip_till    ($in, ";");
+            &gst_tokenize_append_token ($out, ";\n"); # skip till ; will skip ;
         }
     }
     # If we only had one server before, do we need to add dns2 ?
     elsif (";" eq $token) {
         if (defined $dns2) {
             my $temp = pop (@$out);
-            &xst_tokenize_append_token ($out, ", ");
-            &xst_tokenize_append_token ($out, $dns2);
-            &xst_tokenize_append_token ($out, $temp);
+            &gst_tokenize_append_token ($out, ", ");
+            &gst_tokenize_append_token ($out, $dns2);
+            &gst_tokenize_append_token ($out, $temp);
         }
     } else {
-        &xst_tokenize_warning ("Unexpected token $token\n");
-        &xst_tokenize_advance_till ($in, ";", $out);
+        &gst_tokenize_warning ("Unexpected token $token\n");
+        &gst_tokenize_advance_till ($in, ";", $out);
     }
 
     # Reverse the last token which was ";" so that
     # we leave it there for _verify ($in, ";",... to pass
-    &xst_tokenize_undo ($in, $out);
+    &gst_tokenize_undo ($in, $out);
     
     return;
 }
 
-sub xst_dhcpd_replace_subnet_real
+sub gst_dhcpd_replace_subnet_real
 {
     my ($in, $out, $new_values, $subnet) = @_;
     my $options, $hosts, $ranges;
@@ -578,104 +578,104 @@ sub xst_dhcpd_replace_subnet_real
     $hosts   = $$new_values{"hosts"};
     $ranges  = $$new_values{"ranges"};
 
-    while (defined (my $token = &xst_tokenize_get_token ($in, $out))) {
+    while (defined (my $token = &gst_tokenize_get_token ($in, $out))) {
 #        printf STDERR "Token :: -->$token<--\n";
         if ("option" eq $token) {
-            $token = &xst_tokenize_get_token ($in, $out);
+            $token = &gst_tokenize_get_token ($in, $out);
 #            printf STDERR "Option                 $token\n";
             if ("domain-name" eq $token || "nis-domain" eq $token) {
-                $token = &xst_tokenize_get_token ($in, $out);
-                &xst_tokenize_replace_token ($out, "\"" . $$options{"domain-name"} . "\"");
+                $token = &gst_tokenize_get_token ($in, $out);
+                &gst_tokenize_replace_token ($out, "\"" . $$options{"domain-name"} . "\"");
             }
             elsif ("routers" eq $token) {
-                $token = &xst_tokenize_get_token ($in, $out);
-                &xst_tokenize_replace_token ($out, $$options{"routers"});
+                $token = &gst_tokenize_get_token ($in, $out);
+                &gst_tokenize_replace_token ($out, $$options{"routers"});
             }
             elsif ("subnet-mask" eq $token) {
-                $token = &xst_tokenize_get_token ($in, $out);
-                &xst_tokenize_replace_token ($out, $$options{"netmask"});
+                $token = &gst_tokenize_get_token ($in, $out);
+                &gst_tokenize_replace_token ($out, $$options{"netmask"});
             }
             elsif ("domain-name-servers" eq $token) {
-                &xst_tokenize_replace_dns ($in, $out, $options);
+                &gst_tokenize_replace_dns ($in, $out, $options);
             }
-            elsif (defined &xst_array_find_index (\@ignore_options, $value)) {
-                &xst_tokenize_advance_till ($in, ";", $out);
-                &xst_tokenize_undo ($in, $out, 1);
+            elsif (defined &gst_array_find_index (\@ignore_options, $value)) {
+                &gst_tokenize_advance_till ($in, ";", $out);
+                &gst_tokenize_undo ($in, $out, 1);
             }
             else
             {
                 printf STDERR "--- UNKNOWN option : $token\n";
-                &xst_tokenize_advance_till ($in, ";", $out);
-                &xst_tokenize_undo ($in, $out, 1);
+                &gst_tokenize_advance_till ($in, ";", $out);
+                &gst_tokenize_undo ($in, $out, 1);
             }
-            &xst_tokenize_verify_token ($in, ";", $out);
+            &gst_tokenize_verify_token ($in, ";", $out);
         }
         elsif ("netmask" eq $token) {
             # This is outside of the `{`
-            $token = &xst_tokenize_get_token ($in, $out);
-            &xst_tokenize_replace_token ($out, $$options{"netmask"});
-            &xst_tokenize_verify_token ($in, "{", $out);
+            $token = &gst_tokenize_get_token ($in, $out);
+            &gst_tokenize_replace_token ($out, $$options{"netmask"});
+            &gst_tokenize_verify_token ($in, "{", $out);
         }
         elsif ("range" eq $token) {
             if (not $range_replaced) {
-                &xst_dhcpd_replace_range ($in, $out, $ranges);
+                &gst_dhcpd_replace_range ($in, $out, $ranges);
                 $range_replaced = 1;
             }
         }
         elsif ("host" eq $token) {
-            &xst_dhcpd_replace_host ($in, $out, $hosts);
+            &gst_dhcpd_replace_host ($in, $out, $hosts);
         }
-        elsif (defined &xst_array_find_index (\@ignore_keywords, $value)) {
-            &xst_tokenize_advance_till ($in, ";", $out);
+        elsif (defined &gst_array_find_index (\@ignore_keywords, $value)) {
+            &gst_tokenize_advance_till ($in, ";", $out);
         }
         elsif ("}" eq $token) {
             last;
         } else {
             printf STDERR "Unrecognized Token :: -- $token (545)\n";
-            &xst_tokenize_advance_till ($in, ";", $out);
+            &gst_tokenize_advance_till ($in, ";", $out);
         }             
     }
 
     # What is out, is now our input
-    &xst_tokenize_undo ($in, $out, 1);
+    &gst_tokenize_undo ($in, $out, 1);
 
     foreach $key (keys %$hosts) {
-        &xst_dhcpd_add_host ($in, $out, $$hosts{$key}, $subnet);
+        &gst_dhcpd_add_host ($in, $out, $$hosts{$key}, $subnet);
     }
         
 }
 
-sub xst_dhcpd_replace_subnet
+sub gst_dhcpd_replace_subnet
 {
   my ($file, $subnet, $new_values) = @_;
   my $in;
   my @out_array = "";
   my $out = \@out_array;
   
-  $in = &xst_tokenize ($file);
+  $in = &gst_tokenize ($file);
 
-  &xst_file_buffer_save ($out, $file . ".1");
+  &gst_file_buffer_save ($out, $file . ".1");
   
-  while (defined (my $token = &xst_tokenize_get_token ($in, $out))) {
+  while (defined (my $token = &gst_tokenize_get_token ($in, $out))) {
 
       if ("subnet" eq $token) {
-          $token = &xst_tokenize_get_token ($in, $out);
+          $token = &gst_tokenize_get_token ($in, $out);
           if ($token ne $subnet) {
-              &xst_tokenize_verify_token ($in, "netmask");
-              $token1 = &xst_tokenize_get_token ($in, $out); # 255.255.255.0
-              &xst_tokenize_verify_token ($in, "{");
-              &xst_dhcpd_skip_block ($in, $out);
+              &gst_tokenize_verify_token ($in, "netmask");
+              $token1 = &gst_tokenize_get_token ($in, $out); # 255.255.255.0
+              &gst_tokenize_verify_token ($in, "{");
+              &gst_dhcpd_skip_block ($in, $out);
           } else {
-              &xst_dhcpd_replace_subnet_real ($in, $out, $new_values, $subnet);
+              &gst_dhcpd_replace_subnet_real ($in, $out, $new_values, $subnet);
           }
       }
   }
 
-#  &xst_file_buffer_save ($out, $file . ".new");
-  &xst_file_buffer_save ($out, $file);
+#  &gst_file_buffer_save ($out, $file . ".new");
+  &gst_file_buffer_save ($out, $file);
 }
 
-sub xst_dhcpd_subnets_match_dump
+sub gst_dhcpd_subnets_match_dump
 {
   my ($ref) = @_;
   my %matching_list = %$ref;
@@ -689,7 +689,7 @@ sub xst_dhcpd_subnets_match_dump
   
 }
 
-sub xst_dhcpd_subnets_match
+sub gst_dhcpd_subnets_match
 {
   my ($old_subnets_ref, $new_subnets_ref) = @_;
   my (%matching_list);
@@ -721,7 +721,7 @@ sub xst_dhcpd_subnets_match
 
 ## ------------------------- Parsing tables ---------------------------------
 
-sub xst_dhcpd_conf_get_parse_table
+sub gst_dhcpd_conf_get_parse_table
 {
   my %dist_map =
   (
@@ -740,34 +740,34 @@ sub xst_dhcpd_conf_get_parse_table
          },
          table =>
             [
-              [ "active",      \&xst_service_sysv_get_status, DHCPD_SERVICE ],
-              [ "installed",   \&xst_service_sysv_installed,  DHCPD_SERVICE ],
-              [ "configured",  \&xst_file_exists,             DHCPD_CONF    ],
-              [ "subnets",     \&xst_dhcpd_get_subnets,       DHCPD_CONF],
+              [ "active",      \&gst_service_sysv_get_status, DHCPD_SERVICE ],
+              [ "installed",   \&gst_service_sysv_installed,  DHCPD_SERVICE ],
+              [ "configured",  \&gst_file_exists,             DHCPD_CONF    ],
+              [ "subnets",     \&gst_dhcpd_get_subnets,       DHCPD_CONF],
             ]
               }
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
-sub xst_dhcpd_conf_get
+sub gst_dhcpd_conf_get
 {
   my %dist_attrib;
   my $hash;
 
-  %dist_attrib = &xst_dhcpd_conf_get_parse_table ();
+  %dist_attrib = &gst_dhcpd_conf_get_parse_table ();
 
-  $hash = &xst_parse_from_table ($dist_attrib{"fn"},
+  $hash = &gst_parse_from_table ($dist_attrib{"fn"},
                                  $dist_attrib{"table"});
   return $hash;
 }
 
-sub xst_dhcpd_conf_get_replace_table
+sub gst_dhcpd_conf_get_replace_table
 {
   my %dist_map =
   (
@@ -786,30 +786,30 @@ sub xst_dhcpd_conf_get_replace_table
          },
          table =>
              [
-              [ "subnets", \&xst_dhcpd_replace_subnets,    [DHCPD_CONF, OLD_HASH] ],
-#              [ "active",  \&xst_service_sysv_set_status, [65, DHCPD_SERVICE] ]
+              [ "subnets", \&gst_dhcpd_replace_subnets,    [DHCPD_CONF, OLD_HASH] ],
+#              [ "active",  \&gst_service_sysv_set_status, [65, DHCPD_SERVICE] ]
              ]
                 },
        );
 
-  my $dist = $dist_map {$xst_dist};
+  my $dist = $dist_map {$gst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  &xst_report ("platform_no_table", $xst_dist);
+  &gst_report ("platform_no_table", $gst_dist);
   return undef;
 }
 
 
-sub xst_dhcpd_conf_set
+sub gst_dhcpd_conf_set
 {
   my ($values_hash) = @_;
   my (%dist_attrib, $old_hash);
   my $res;
 
-  %dist_attrib = &xst_dhcpd_conf_get_replace_table ();
+  %dist_attrib = &gst_dhcpd_conf_get_replace_table ();
 
-  $old_hash = &xst_dhcpd_conf_get ();
-  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+  $old_hash = &gst_dhcpd_conf_get ();
+  $res = &gst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
                                   $values_hash, $old_hash);
 
   return $res;

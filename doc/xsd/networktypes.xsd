@@ -17,19 +17,19 @@
   </annotation>
   
   <!-- Include file with useful types and stuff -->
-  <include schemaLocation="xst.xsd"/>
+  <include schemaLocation="gst.xsd"/>
 
   <complexType name="networkType">
     <sequence>
-      <element type="xstHostname"    name="hostname"/>
-      <element type="xstBool"        name="hostmatch"/>
-      <element type="xstBool"        name="winsuse"/>
-      <element type="xstBool"        name="smbuse"/>
-      <element type="xstBool"        name="smartdhcpcd"   minOccurs="0"/>
-      <element type="xstBool"        name="smbinstalled"/>
-      <element type="xstBool"        name="dialinstalled"/>
-      <element type="xstIPv4"        name="nameserver"    minOccurs="0" maxOccurs="unbounded"/>
-      <element type="xstHostname"    name="searchdomain"  minOccurs="0" maxOccurs="unbounded"/>
+      <element type="gstHostname"    name="hostname"/>
+      <element type="gstBool"        name="hostmatch"/>
+      <element type="gstBool"        name="winsuse"/>
+      <element type="gstBool"        name="smbuse"/>
+      <element type="gstBool"        name="smartdhcpcd"   minOccurs="0"/>
+      <element type="gstBool"        name="smbinstalled"/>
+      <element type="gstBool"        name="dialinstalled"/>
+      <element type="gstIPv4"        name="nameserver"    minOccurs="0" maxOccurs="unbounded"/>
+      <element type="gstHostname"    name="searchdomain"  minOccurs="0" maxOccurs="unbounded"/>
       <element type="orderType"      name="order"         minOccurs="0" maxOccurs="unbounded"/>
       <element type="statichostType" name="statichost"    minOccurs="0" maxOccurs="unbounded"/>
       <element type="interfaceType"  name="interface"     minOccurs="0" maxOccurs="unbounded"/>
@@ -47,42 +47,42 @@
 
   <complexType name="statichostType">
     <sequence>
-      <element type="xstIP"       name="ip"/>
-      <element type="xstHostname" name="alias" maxOccurs="unbounded"/>
+      <element type="gstIP"       name="ip"/>
+      <element type="gstHostname" name="alias" maxOccurs="unbounded"/>
     </seqence>
   </complexType>
 
   <complexType name="interfaceType">
     <sequence>
-      <element type="xstIPv4"       name="address"            minOccurs="0"/>
-      <element type="xstBool"       name="auto"               minOccurs="0"/>
+      <element type="gstIPv4"       name="address"            minOccurs="0"/>
+      <element type="gstBool"       name="auto"               minOccurs="0"/>
       <element type="bootprotoType" name="bootproto"/>
-      <element type="xstIPv4"       name="broadcast"          minOccurs="0"/>
-      <element type="xstBool"       name="debug"              minOccurs="0"/>
+      <element type="gstIPv4"       name="broadcast"          minOccurs="0"/>
+      <element type="gstBool"       name="debug"              minOccurs="0"/>
       <element type="string"        name="dev"/>
-      <element type="xstIPv4"       name="dns1"               minOccurs="0"/>
-      <element type="xstIPv4"       name="dns2"               minOccurs="0"/>
-      <element type="xstBool"       name="enabled"/>
+      <element type="gstIPv4"       name="dns1"               minOccurs="0"/>
+      <element type="gstIPv4"       name="dns2"               minOccurs="0"/>
+      <element type="gstBool"       name="enabled"/>
       <element type="string"        name="file"               minOccurs="0"/>
-      <element type="xstIPv4"       name="gateway"            minOccurs="0"/>
+      <element type="gstIPv4"       name="gateway"            minOccurs="0"/>
       <element type="string"        name="login"              minOccurs="0"/>
       <element type="unsignedInt"   name="mtu"                minOccurs="0"/>
       <element type="unsignedInt"   name="mru"                minOccurs="0"/>
       <element type="string"        name="name"               minOccurs="0"/>
-      <element type="xstIPv4"       name="netmask"            minOccurs="0"/>
-      <element type="xstIPv4"       name="network"            minOccurs="0"/>
+      <element type="gstIPv4"       name="netmask"            minOccurs="0"/>
+      <element type="gstIPv4"       name="network"            minOccurs="0"/>
       <element type="string"        name="password"           minOccurs="0"/>
-      <element type="xstBool"       name="persist"            minOccurs="0"/>
+      <element type="gstBool"       name="persist"            minOccurs="0"/>
       <element type="string"        name="ppp_options"        minOccurs="0"/>
       <element type="string"        name="phone_number"       minOccurs="0"/>
-      <element type="xstIPv4"       name="remote_address"     minOccurs="0"/>
-      <element type="xstBool"       name="serial_hwctl"       minOccurs="0"/>
+      <element type="gstIPv4"       name="remote_address"     minOccurs="0"/>
+      <element type="gstBool"       name="serial_hwctl"       minOccurs="0"/>
       <element type="string"        name="serial_escapechars" minOccurs="0"/>
-      <element type="xstFilePath"   name="serial_port"        minOccurs="0"/>
+      <element type="gstFilePath"   name="serial_port"        minOccurs="0"/>
       <element type="unsignedInt"   name="serial_speed"       minOccurs="0"/>
-      <element type="xstBool"       name="set_default_gw"     minOccurs="0"/>
-      <element type="xstBool"       name="update_dns"         minOccurs="0"/>
-      <element type="xstBool"       name="user"               minOccurs="0"/>
+      <element type="gstBool"       name="set_default_gw"     minOccurs="0"/>
+      <element type="gstBool"       name="update_dns"         minOccurs="0"/>
+      <element type="gstBool"       name="user"               minOccurs="0"/>
       <element type="string"        name="wvsection"          minOccurs="0"/>
     </sequence>
   </complexType>
@@ -97,8 +97,8 @@
 
   <complexType name="dialingType">
     <sequence>
-      <element type="xstIPv4"      name="address"        minOccurs="0"/>
-      <element type="xstFilePath"  name="device"         minOccurs="0"/>
+      <element type="gstIPv4"      name="address"        minOccurs="0"/>
+      <element type="gstFilePath"  name="device"         minOccurs="0"/>
       <element type="string"       name="dialcmd"        minOccurs="0"/>
       <element type="string"       name="inherits"       minOccurs="0"/>
       <element type="string"       name="init1"          minOccurs="0"/>
@@ -106,15 +106,15 @@
       <element type="string"       name="login"          minOccurs="0"/>
       <element type="string"       name="name"           minOccurs="0"/>
       <element type="string"       name="password"       minOccurs="0"/>
-      <element type="xstBool"      name="persist"        minOccurs="0"/>
+      <element type="gstBool"      name="persist"        minOccurs="0"/>
       <element type="string"       name="phone"          minOccurs="0"/>
-      <element type="xstBool"      name="set_default_gw" minOccurs="0"/>
+      <element type="gstBool"      name="set_default_gw" minOccurs="0"/>
       <element type="string"       name="setvol"         minOccurs="0"/>
       <element type="unsignedInt"  name="speed"          minOccurs="0"/>
-      <element type="xstBool"      name="stupid"         minOccurs="0"/>
+      <element type="gstBool"      name="stupid"         minOccurs="0"/>
       <element type="dialtypeType" name="type"           minOccurs="0"/>
-      <element type="xstBool"      name="update_dns"     minOccurs="0"/>
-      <element type="string"       name="xst_dev"        minOccurs="0"/>
+      <element type="gstBool"      name="update_dns"     minOccurs="0"/>
+      <element type="string"       name="gst_dev"        minOccurs="0"/>
     </sequence>
   </complexType>
 
