@@ -1,3 +1,8 @@
+2001-06-04  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in (remove_shares_from_filesys_table): Implement.
+	  (set): Remove shares from filesys table.
+
 2001-06-04  Tambet Ingo  <tambet@ximian.com>
 
         * x.pl.in: Add

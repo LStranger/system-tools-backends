@@ -489,6 +489,23 @@ sub xml_print
   &xst_xml_print_end ();
 }
 
+# Misc
+
+sub remove_shares_from_filesys_table
+{
+  my ($table) = @_;
+  my @ltable = @$table;  # We need a shallow copy.
+
+  for $info (@ltable)
+  {
+    my $fs = &xst_filesys_info_get_fs ($info);
+
+    if ($fs eq "smbfs" || $fs eq "nfs")
+    {
+      &xst_filesys_table_remove ($table, $info);
+    }
+  }
+}
 
 # Configuration handling.
 
@@ -551,6 +568,7 @@ sub set
   }
 
   $fs = &xst_filesys_fstab_parse (&distro_file ("fstab"));
+  &remove_shares_from_filesys_table ($fs);
   &xst_filesys_table_set_permanent_true ($fs);
   $fs = &xst_filesys_table_merge_superset ($$config{"imports"}, $fs);
 
