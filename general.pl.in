@@ -453,6 +453,17 @@ sub xst_print_interface
   exit $exit_code if $exit_code ne undef;
 }
 
+
+sub xst_directive_fail
+{
+  my (@report_args) = @_;
+  
+  &xst_report (@report_args);
+  &xst_end ();
+  &xst_xml_print_request_end ();
+  &xst_debug_close_all ();
+}
+
 # Normal use for the direcives hash in the backends is:
 #
 # "name" => [ \&sub, [ "arg1", "arg2", "arg3",... "argN" ], "comment" ]
@@ -491,7 +502,7 @@ sub xst_print_interface
 #  <var-arguments>morefiles</var-arguments>
 # </directive>
 
-sub xst_run_directive
+sub xst_directive_run
 {
   my ($tool, $line) = @_;
   my ($key, @args, $directives, $proc, $reqargs);
@@ -501,7 +512,7 @@ sub xst_run_directive
 
   if (!exists $$directives{$key})
   {
-    &xst_report ("directive_unsup", $key);
+    &xst_directive_fail ("directive_unsup", $key);
     return;
   }
 
@@ -510,12 +521,13 @@ sub xst_run_directive
   {
     if ($#args < ($#$reqargs - 1))
     {
-      &xst_report ("directive_lowargs", $key, $#$reqargs, "$key," . join (',',@args));
+      &xst_directive_fail ("directive_lowargs", $key, $#$reqargs, "$key," . join (',',@args));
+      return;
     }
   }
   if ($#args != $#$reqargs)
   {
-    &xst_report ("directive_badargs", $key, $#$reqargs + 1, "$key," . join (',',@args));
+    &xst_directive_fail ("directive_badargs", $key, $#$reqargs + 1, "$key," . join (',',@args));
     return;
   }
       
@@ -525,6 +537,7 @@ sub xst_run_directive
   &xst_xml_print_request_end ();
   &xst_debug_close_all ();
 }
+
 
 sub xst_run
 {
@@ -548,14 +561,14 @@ sub xst_run
 
   if ($$tool{"directive"})
   {
-    &xst_run_directive ($tool, $$tool{"directive"});
-    &xst_run_directive ($tool, "end");
+    &xst_directive_run ($tool, $$tool{"directive"});
+    &xst_directive_run ($tool, "end"); # running this directive exits the backend.
   }
 
   while ($line = <STDIN>)
   {
     chomp $line;
-    &xst_run_directive ($tool, $line);
+    &xst_directive_run ($tool, $line);
   }
 }
 

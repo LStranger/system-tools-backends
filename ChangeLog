@@ -1,3 +1,12 @@
+2001-08-14  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* general.pl.in (xst_directive_fail): Some functions that
+	have to be called every time a directive fails for different
+	reasons.
+	(xst_directive_run): Use this new thing, which now sends
+	the end directive and the end of request string, so frontend
+	doesn't hang.
+
 2001-08-13  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* file.pl.in (xst_file_close): New abstraction for close.
