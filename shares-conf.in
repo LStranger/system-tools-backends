@@ -1419,11 +1419,11 @@ sub xml_print
       &xst_xml_print ("<import type='$shares[5]'>\n");
       &xst_xml_enter ();
 
-      $shares[0] = &xst_xml_plain_to_entities(\$shares[0]);
-      $shares[1] = &xst_xml_plain_to_entities(\$shares[1]);
-      $shares[2] = &xst_xml_plain_to_entities(\$shares[2]);
-      $shares[6] = &xst_xml_plain_to_entities(\$shares[6]);
-      $shares[7] = &xst_xml_plain_to_entities(\$shares[7]);
+      $shares[0] = &xst_xml_quote($shares[0]);
+      $shares[1] = &xst_xml_quote($shares[1]);
+      $shares[2] = &xst_xml_quote($shares[2]);
+      $shares[6] = &xst_xml_quote($shares[6]);
+      $shares[7] = &xst_xml_quote($shares[7]);
 
       &xst_xml_print ("<host>$shares[0]</host>\n");
       &xst_xml_print ("<path>$shares[1]</path>\n");

@@ -1,3 +1,9 @@
+2001-02-22  Hans Petter Jansson  <hpj@ximian.com>
+
+	* report.pl.in (xst_report): Re-enable report printing. It works.
+
+	* shares-conf.in (xml_print): Move to xst_xml_quote ().
+
 2001-02-22  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_conf_replace_image): Now we can delete image tags too.
