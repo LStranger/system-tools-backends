@@ -172,7 +172,9 @@ sub gst_service_get_verbose_runlevels
 
      "slackware-9.1.0" => "slackware-9.1.0",
 
-     "gentoo"         => "gentoo"
+     "gentoo"         => "gentoo",
+
+     "freebsd-5"      => "freebsd-5"
     );
 
   %runlevels=
@@ -191,6 +193,7 @@ sub gst_service_get_verbose_runlevels
                       "default"   => _("Default runlevel"),
                       "nonetwork" => _("Networkless runlevel")
                      },
+     "freebsd-5"  => {"rc" => "dude, FreeBSD has no runlevels" },
      "slackware-9.1.0" => {"4" => _("Graphical mode") }
     );
 
@@ -724,7 +727,7 @@ sub gst_service_bsd_get_services
 
   foreach $i (@$files)
   {
-      $file = "/etc/rc.d/" . $i;
+    $file = "/etc/rc.d/" . $i;
     $fd = &gst_file_open_read_from_names ($file);
 
     if (!$fd) {
@@ -899,13 +902,88 @@ sub gst_service_gentoo_get_service_info
 sub gst_service_gentoo_get_services
 {
   my ($service);
-  my (@arr,%ret);
-  my ($service_list) = &gst_service_gentoo_get_services_list();
+  my (%ret);
+  my ($service_list) = &gst_service_gentoo_get_services_list ();
 
   foreach $service (@$service_list)
   {
     my (%hash);
     $hash = &gst_service_gentoo_get_service_info ($service);
+
+    $ret{$service} = $hash if ($hash ne undef);
+  }
+
+  return \%ret;
+}
+
+# rcNG functions, mostly for FreeBSD
+
+sub gst_service_rcng_status_by_service
+{
+  my ($service) = @_;
+  my ($fd, $line, $active);
+
+  $fd = &gst_file_run_pipe_read ("/etc/rc.d/$service rcvar");
+
+  while (<$fd>)
+  {
+    $line = $_;
+
+    if ($line =~ /^\$.*=YES$/)
+    {
+      $active = 1;
+      last;
+    }
+  }
+
+  gst_file_close ($fd);
+  return $active;
+}
+
+sub gst_service_rcng_get_service_info
+{
+  my ($service) = @_;
+  my ($script, $name, $description, @actions, @runlevels);
+  my (%hash, @arr, @rl);
+
+  # We have to check if the service is in the "forbidden" list
+  return undef if (&gst_service_list_service_is_forbidden ($service));
+
+  ($name, $description) = &gst_service_list_get_info ($service);
+
+  $hash{"script"} = $service;
+  $hash{"name"} = $name unless ($name eq undef);
+  $hash{"description"} = $description unless ($description eq undef);
+
+  if (gst_service_rcng_status_by_service ($service))
+  {
+    push @arr, { "number" => "rc",
+                 "action" => "start" };
+  }
+  else
+  {
+    push @arr, { "number" => "rc",
+                 "action" => "stop" };
+  }
+
+  push @rl,  { "runlevel", \@arr };
+
+  $hash {"runlevels"} = \@rl;
+
+  return \%hash;
+}
+
+sub gst_service_rcng_get_services
+{
+  my ($service);
+  my (%ret);
+
+  foreach $service (<$gst_prefix/etc/rc.d/*>)
+  {
+    my (%hash);
+    
+    $service =~ s/.*\///;
+    $hash = &gst_service_rcng_get_service_info ($service);
 
     $ret{$service} = $hash if ($hash ne undef);
   }
@@ -923,6 +1001,10 @@ sub gst_get_init_type
   elsif ($gst_dist =~ /slackware/)
   {
     return "bsd";
+  }
+  elsif ($gst_dist =~ /freebsd-5/)
+  {
+    return "rcng";
   }
   elsif ($gst_dist =~ /gentoo/)
   {
@@ -942,6 +1024,7 @@ sub gst_service_get_services
   return &gst_service_filerc_get_services () if ($type eq "file-rc");
   return &gst_service_bsd_get_services ()    if ($type eq "bsd");
   return &gst_service_gentoo_get_services () if ($type eq "gentoo");
+  return &gst_service_rcng_get_services ()   if ($type eq "rcng");
 
   return undef;
 }
@@ -963,6 +1046,7 @@ sub gst_service_get_default_runlevel
     my ($type) = &gst_get_init_type ();
 
     return "default" if ($type eq "gentoo");
+    return "rc"      if ($type eq "rcng");
     return &gst_service_sysv_get_default_runlevel ();
 }
 
@@ -1265,6 +1349,16 @@ sub gst_service_gentoo_get_status
   return 0;
 }
 
+sub gst_service_freebsd_get_status
+{
+  my ($service) = @_;
+
+  $line = gst_file_run_backtick ("/etc/rc.d/$service status");
+
+  return 1 if ($line =~ /pid [0-9]*/);
+  return 0;
+}
+
 # returns true if the service is already running
 sub gst_service_get_status
 {
@@ -1287,7 +1381,9 @@ sub gst_service_get_status
        "redhat-9"     => \&gst_service_redhat_get_status,
        "fedora-1"     => \&gst_service_redhat_get_status,
 
-       "gentoo"       => \&gst_service_gentoo_get_status
+       "gentoo"       => \&gst_service_gentoo_get_status,
+
+       "freebsd-5"    => \&gst_service_freebsd_get_status
       );
   my $proc;
 
@@ -1394,6 +1490,39 @@ sub gst_service_gentoo_run_script
   return -1;
 }
 
+sub gst_service_rcng_run_script
+{
+  my ($service, $arg) = @_;
+  my ($farg);
+
+  my %map =
+    ("stop"  => "forcestop",
+     "start" => "forcestart"
+    );
+
+  &gst_report_enter ();
+
+  if (!exists $map{$arg})
+  {
+    &gst_report ("service_sysv_op_unk", $arg);
+    &gst_report_leave ();
+    return -1;
+  }
+
+  $farg = $map {$arg};
+
+  if (!&gst_file_run ("/etc/rc.d/$service $farg"))
+  {
+    &gst_report ("service_sysv_op_success", $service, $str);
+    &gst_report_leave ();
+    return 0;
+  }
+
+  &gst_report ("service_sysv_op_failed", $service, $str);
+  &gst_report_leave ();
+  return -1;
+}
+
 sub gst_service_run_script
 {
   my ($service, $arg) = @_;
@@ -1402,7 +1531,8 @@ sub gst_service_run_script
       (
        "sysv"   => \&gst_service_sysv_run_initd_script,
        "bsd"    => \&gst_service_bsd_run_script,
-       "gentoo" => \&gst_service_gentoo_run_script
+       "gentoo" => \&gst_service_gentoo_run_script,
+       "rcng"   => \&gst_service_rcng_run_script,
       );
 
   $type = &gst_get_init_type ();
