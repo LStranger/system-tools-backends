@@ -900,6 +900,31 @@ sub xst_network_get_file
   return undef;
 }
 
+
+sub xst_network_route_set_default_gw
+{
+  my ($gateway, $gatewaydev) = @_;
+  my ($tool_route, $curr_gateway);
+  local *ROUTE;
+
+  $tool_route = &xst_file_locate_tool ("route");
+  open (ROUTE, "/bin/sh -c \"$tool_route -n\" 2> /dev/null |");
+  while (<ROUTE>)
+  {
+    if (/^0\.0\.0\.0[ \t]+([0-9.]+) /)
+    {
+      $curr_gateway = $1;
+      last;
+    }
+  }
+  close ROUTE;
+
+  return if ($curr_gateway == $gateway);
+
+  &xst_file_run ("route del default gw $curr_gateway");
+  &xst_file_run ("route add default gw $curr_gateway $gatewaydev");
+}
+
 sub xst_network_run_hostname
 {
   my ($hostname) = @_;
@@ -2190,6 +2215,7 @@ sub xst_network_get_replace_table
            [ "hostname",      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
            [ "hostname",      \&xst_network_run_hostname ],
            [ "gateway",       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+           [ "gatewaydev",    \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
            [ "domain",        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
            [ "nameserver",    \&xst_replace_join_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
            [ "searchdomain",  \&xst_replace_join_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
@@ -2204,6 +2230,7 @@ sub xst_network_get_replace_table
            [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
            [ "dialing",       \&xst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
+           [ "gateway",       \&xst_network_route_set_default_gw, "%gatewaydev%" ],
            ]
              },
     
@@ -2224,6 +2251,7 @@ sub xst_network_get_replace_table
            [ "hostname",      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
            [ "hostname",      \&xst_network_run_hostname ],
            [ "gateway",       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+           [ "gatewaydev",    \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
            [ "domain",        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
            [ "nameserver",    \&xst_replace_join_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
            [ "searchdomain",  \&xst_replace_join_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
@@ -2238,6 +2266,7 @@ sub xst_network_get_replace_table
            [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
            [ "dialing",       \&xst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
+           [ "gateway",       \&xst_network_route_set_default_gw, "%gatewaydev%" ],
            ]
              },
 

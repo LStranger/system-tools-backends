@@ -1,5 +1,10 @@
 2001-07-10  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network.pl.in (xst_network_get_replace_table): Oops:
+	support gatewaydev for replacing too.
+	(xst_network_route_set_default_gw): Run route to set
+	default gw as required.
+
 	* network-conf.in (xml_print): Print the gwdevunsup
 	tag as well.
 
