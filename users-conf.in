@@ -774,7 +774,7 @@ sub xml_print
 	
   &be_xml_print ("<!-- When was the group file last modified (since the epoch)? -->\n");
   &be_xml_vspace ();
-  &be_xml_print ("<group_last_modified>$group_last_modified</groupa_last_modified>\n");
+  &be_xml_print ("<group_last_modified>$group_last_modified</group_last_modified>\n");
   &be_xml_vspace ();
 	
 	&be_xml_print ("<groupdb>\n");
