@@ -325,6 +325,7 @@ sub get
   
   # network interface stuff
   $hash = &xst_network_conf_get ();
+  &xst_network_ensure_loopback ($hash);
 
   &xst_end();
   &xml_print ($hash);

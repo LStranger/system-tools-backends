@@ -304,7 +304,14 @@ sub xst_network_rh62_interface_set
   my $dev;
 
   if ($enabled) {
-    $dev = $$hash{"file"} if (!$old_hash || !$$old_hash{"enabled"});
+    if (!exists $$hash{"file"})
+    {
+      $dev = $$hash{"dev"};
+    }
+    else
+    {
+      $dev = $$hash{"file"} if (!$old_hash || !$$old_hash{"enabled"});
+    }
   }
   else
   {
@@ -363,6 +370,32 @@ sub xst_network_interfaces_down_changed
   }
 }
 
+sub xst_network_interface_set
+{
+  my ($dev, $values_hash, $old_hash) = @_;
+  my %dist_attrib, %fn;
+  my $proc, $i, $res;
+  
+  %dist_attrib = &xst_network_get_interface_replace_table ();
+  $proc = $dist_attrib{"iface_set"};
+  %fn = %{$dist_attrib{"fn"}};
+  
+  foreach $i (keys (%fn))
+  {
+    $value = $fn{$i};
+    $value =~ s/\#iface\#/$dev/;
+    $ {$dist_attrib{"fn"}}{$i} = $value;
+  }
+  
+  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
+                                  $values_hash, $old_hash);
+  
+  # if success saving the settings for the interface, set up immediatly.
+  &$proc ($values_hash, $old_hash, $$values_hash{"enabled"}) if (!$res);
+
+  return $res;
+}
+
 sub xst_network_interfaces_set
 {
   my ($old_hash, $values_hash) = @_; 
@@ -384,24 +417,9 @@ sub xst_network_interfaces_set
     &$proc ($$old_hash{$i}) if !exists ($$values_hash{$i}) && exists ($$old_hash{$i});
   }
 
-  $proc = $dist_attrib{"iface_set"};
-
-  %fn = %{$dist_attrib{"fn"}};
   foreach $i (keys %$values_hash)
   {
-    foreach $j (keys (%fn))
-    {
-      $value = $fn{$j};
-      $value =~ s/\#iface\#/$i/;
-      $ {$dist_attrib{"fn"}}{$j} = $value;
-    }
-    
-    $tmp = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
-                                    $$values_hash{$i}, $$old_hash{$i});
-
-    # if success saving the settings for the interface, set up immediatly.
-    &$proc ($$values_hash{$i}, $old_hash{$i}, $ {$$values_hash{$i}}{"enabled"}) if (!$tmp);
-    
+    $tmp = &xst_network_interface_set ($i, $$values_hash{$i}, $$old_hash{$i});
     $res = $tmp if !$res;
   }
 
@@ -495,10 +513,12 @@ sub xst_network_ensure_loopback_interface
                  "netmask" => "255.0.0.0",
                  "broadcast" => "127.255.255.255",
                  "network" => "127.0.0.0",
-                 "bootproto" => "none"
+                 "bootproto" => "none",
+                 "enabled" => 1
                  );
 
     $$interface{$dev} = \%iface;
+    &xst_network_interface_set ($dev, \%iface);
   }
 }
 
@@ -543,7 +563,7 @@ sub xst_network_ensure_loopback
   my $statichost = $$values_hash{"statichost"};
 
   &xst_network_ensure_loopback_statichost ($statichost, $hostname, $lo_ip);
-  &xst_network_enusre_loopback_interface ($interface, $lo_ip);
+  &xst_network_ensure_loopback_interface ($interface, $lo_ip);
 }
 
 sub xst_network_get_parse_table
