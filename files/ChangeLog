@@ -1,3 +1,9 @@
+2005-01-02  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* debian_ipchains: removed, obviously unused
+	* general_isdn_ppp_options: added
+	* Makefile.am: reflect this
+
 2004-12-21  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* Release 1.1.3

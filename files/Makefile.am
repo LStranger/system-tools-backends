@@ -1,4 +1,4 @@
 files_DATA = \
-	debian_ipchains
+	general_isdn_ppp_options
 
 EXTRA_DIST = $(files_DATA)
