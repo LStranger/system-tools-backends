@@ -1,3 +1,8 @@
+Wed Jul 25 03:45:51 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_interface_ensure_broadcast_and_network):
+	Oops: forgot to receive the arguments.
+
 2001-07-24  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_interface_ensure_broadcast_and_network):

@@ -425,6 +425,8 @@ sub xst_network_interface_active
 
 sub xst_network_interface_ensure_broadcast_and_network
 {
+  my ($iface) = @_;
+    
   if (exists $$iface{"netmask"} &&
       exists $$iface{"address"})
   {
