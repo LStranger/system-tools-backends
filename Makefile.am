@@ -1,6 +1,5 @@
 backends = \
 disks-conf \
-hardware-conf \
 memory-conf \
 nameresolution-conf \
 networking-conf \
@@ -13,7 +12,6 @@ scripts_SCRIPTS = $(backends) be.pl
 EXTRA_DIST = \
 be.pl \
 disks-conf.in \
-hardware-conf.in \
 memory-conf.in \
 nameresolution-conf.in \
 networking-conf.in \
@@ -26,5 +24,3 @@ CLEANFILES = $(backends)
 $(backends): %-conf: %-conf.in
 	sed s#___scriptsdir___#$(scriptsdir)# < $< > $@
 	chmod +x $@
-
-
