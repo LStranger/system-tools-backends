@@ -1452,35 +1452,42 @@ sub get_host_mounts
 
   # List NFS shares.
 
-  $i = 0; $j = 0;
-  for $host (@hosts)
+  if ($showmount_tool eq "")
   {
-    if ($host eq $cf_hostip) { next; }
-    open(MOUNTS_HD, "$showmount_tool --directories --no-headers $host 2>/dev/null |");
-    while (<MOUNTS_HD>)
-    {
-      if (/[Dd]irectories.*:/) { next; }
-      push(@cf_shares_list, $host);                          # Host
-      push(@cf_shares_list, ($_ =~ /[ \t]*([^ \t\n\r]+)/));  # Path
-      push(@cf_shares_list, "");                             # Comment
-      push(@cf_shares_list, 0);                              # Mounted
-      push(@cf_shares_list, 1);                              # Detected
-      push(@cf_shares_list, "nfs");                          # Type
-      push(@cf_shares_list, "");                             # User
-      push(@cf_shares_list, "");                             # Password
-      push(@cf_shares_list, "");                             # Mount point
-      push(@cf_shares_list, 0);                              # Flag: Printed.
-      push(@cf_shares_list, 0);                              # Listed.
-      
-      $j++;
-    }
-    close(MOUNTS_HD);
-
-    $i++;
+    if ($be_verbose) { print STDERR "Can't locate showmount - NFS scan skipped.\n"; }
   }
+  else
+  {
+    $i = 0; $j = 0;
+    for $host (@hosts)
+    {
+      if ($host eq $cf_hostip) { next; }
+      open(MOUNTS_HD, "$showmount_tool --directories --no-headers $host 2>/dev/null |");
+      while (<MOUNTS_HD>)
+      {
+        if (/[Dd]irectories.*:/) { next; }
+        push(@cf_shares_list, $host);                          # Host
+        push(@cf_shares_list, ($_ =~ /[ \t]*([^ \t\n\r]+)/));  # Path
+        push(@cf_shares_list, "");                             # Comment
+        push(@cf_shares_list, 0);                              # Mounted
+        push(@cf_shares_list, 1);                              # Detected
+        push(@cf_shares_list, "nfs");                          # Type
+        push(@cf_shares_list, "");                             # User
+        push(@cf_shares_list, "");                             # Password
+        push(@cf_shares_list, "");                             # Mount point
+        push(@cf_shares_list, 0);                              # Flag: Printed.
+        push(@cf_shares_list, 0);                              # Listed.
+      
+        $j++;
+      }
+      close(MOUNTS_HD);
 
-  if ($be_verbose) { print STDERR "Found $j NFS exports on $i hosts.\n"; }
-  be_print_progress ();
+      $i++;
+    }
+
+    if ($be_verbose) { print STDERR "Found $j NFS exports on $i hosts.\n"; }
+    be_print_progress ();
+  }
 
   # List SMB shares if applicable.
 
