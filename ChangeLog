@@ -1,3 +1,7 @@
+2001-07-04  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_add_keyword): Quote new values if neccesary.
+
 2001-07-03  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (general_parse_section): Split lines with

@@ -743,11 +743,12 @@ sub x_update_keyword
 
 sub x_add_keyword
 {
-  my ($outfd, $new_section, $pre_space, $val_col) = @_;
+  my ($outfd, $new_section, $pre_space, $val_col, $section_list) = @_;
   my ($key);
 
   foreach $key (keys %$new_section) {
     my ($kw, $val);
+    my $quote = $section_list->{keywords}{$key}[2] ? "\"" : "";
     my $type = ref ($new_section->{$key});
 
     if (!$type) {
@@ -769,7 +770,7 @@ sub x_add_keyword
       foreach (@{$new_section->{$key}}) {
         if (scalar keys %$_) {
           print $outfd $pre_space, "Subsection \"$key\"\n";
-          &x_add_keyword ($outfd, $_, $sub_space, $val_col);
+          &x_add_keyword ($outfd, $_, $sub_space, $val_col, $section_list->{$key});
           print $outfd $pre_space, "EndSubsection\n";
         }
       }
@@ -820,7 +821,7 @@ sub x_update_section
   while ($line = <$infd>) {
     if (&x_section_end ($line, $sub_sec)) {
 
-      &x_add_keyword ($outfd, $new_section, $pre_space, $val_col);
+      &x_add_keyword ($outfd, $new_section, $pre_space, $val_col, $section_list->{$section_name});
       
       print $outfd $line;
       return;
