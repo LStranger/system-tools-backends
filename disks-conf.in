@@ -44,7 +44,7 @@ require "___scriptsdir___/xml.pl";
 
 $name = "disks";
 $version = "0.1.0";
-@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2");
+@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0");
 
 $description =<<"end_of_description;";
        Configures locally mounted partitioned media.
