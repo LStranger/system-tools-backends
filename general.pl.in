@@ -211,7 +211,7 @@ sub xst_init
     elsif ($args[0] eq "--progress")                    { $xst_progress = 1; }
     elsif ($args[0] eq "--report")
     {
-      $xst_do_verbose = 1;
+      $xst_do_report = 1;
       &xst_report_set_threshold (99);
     }
     elsif ($args[0] eq "--debug")                       { $xst_debug = 1; }

@@ -112,16 +112,12 @@ sub xst_report
   }
 
   # Report (-r) output is machine-readable.
-
-  $format = sprintf ("%s %s\n", $key, $str);
-  $res = sprintf ($format, @args);
-  printf (STDOUT $res) if $xst_do_report;
+  print STDOUT join ("::", $key, @args) . "\n" if $xst_do_report;
 
   # Verbose (-v) output is human-readable only.
-
-  $format = sprintf ("%s\n", $str);
+  $format = "$str\n";
   $res = sprintf ($format, @args);
-  printf (STDERR $res) if $xst_do_verbose;
+  print STDERR $res if $xst_do_verbose;
 
   &xst_debug_print_indented_string ($xst_report_level, "report $key: $res");
 }
@@ -132,8 +128,8 @@ sub xst_report
 
 %xst_report_message =
     (
-     "begin"    => ["sys", "Start of work report"],
-     "end"      => ["sys", "End of work report\n"],
+     "begin"    => ["sys", "Start of work report."],
+     "end"      => ["sys", "End of work report."],
      "progress" => ["sys", "%d"],
      "compat"   => ["info", "%s."],
 

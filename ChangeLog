@@ -1,3 +1,10 @@
+2001-03-30  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* report.pl.in (xst_report): new "::" separated report format.
+
+	* general.pl.in: when asking for report, set $xst_do_report, not
+	$xst_do_verbose.
+
 2001-03-29  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_scan): Now accepts a filename to scan from. Fallback
