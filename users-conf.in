@@ -474,8 +474,7 @@ sub add_group
 {
 	my $data = $_[0];
 	
-	# We'll have to check this -f flag.
-	$command = "$cmd_groupadd -f -g \'" . $$data[$groups_prop_map{"gid"}] .
+	$command = "$cmd_groupadd -g \'" . $$data[$groups_prop_map{"gid"}] .
 	  "\' " . $$data[$groups_prop_map{"name"}];
 	my_system ($command);
 }
