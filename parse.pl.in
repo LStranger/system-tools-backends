@@ -349,6 +349,36 @@ sub xst_parse_split_hash
   return \%res;
 }
 
+sub xst_parse_split_hash_with_continuation
+{
+  my ($file, $key_re, $value_re) = @_;
+  my ($fd, $l, @line, %res, $key);
+
+  &xst_report_enter ();
+  &xst_report ("parse_split_hash_cont", $file);
+  
+  $fd = &xst_file_open_read_from_names ($file);
+  
+  while (($l = &xst_parse_ini_line_read ($fd)) != -1)
+  {
+    $_ = $$l;
+    chomp;
+    s/^[ \t]+//;
+    s/[ \t]+$//;
+    s/\#.*$//;
+    next if (/^$/);
+    @line = split ($key_re, $_, 2);
+
+    $key = shift (@line);
+    $res{$key} = [ split ($value_re, $line[0]) ];
+  }
+
+  close $fd;
+  &xst_report_leave ();
+  return undef if (scalar keys (%res) == 0);
+  return \%res;
+}
+
 sub xst_shell_escape
 {
   my $ret = $_[0];

@@ -1,8 +1,12 @@
-2001-05-09  Hans Petter Jansson  <hpj@ximian.com>
+2001-05-10  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_split_hash_with_continuation): Implement.
+
+2001-05-10  Hans Petter Jansson  <hpj@ximian.com>
 
 	* disks-conf.in: Include '-' in fstab option matching.
 
-2001-05-09  Hans Petter Jansson  <hpj@ximian.com>
+2001-05-10  Hans Petter Jansson  <hpj@ximian.com>
 
 	* network.pl.in: For redhat-7.0, smb.conf is in /etc/samba/smb.conf. Make
 	  a new pair of parse/replace-tables for this.
