@@ -24,6 +24,7 @@
 
 use File::Path;
 use File::Copy;
+use Carp;
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
@@ -157,7 +158,7 @@ sub xst_file_backup_rotate_dirs
     my $i;
 
     $xst_file_backup_dir_rotation_was_made = 1;
-    rmtree ("$backup_tool_dir/9");
+    &xst_file_rmtree ("$backup_tool_dir/9");
 
     for ($i = 8; $i; $i--)
     {
@@ -490,6 +491,105 @@ sub xst_file_remove
 
   unlink $name;
   &xst_report_leave ();
+}
+
+sub xst_file_rmtree
+{
+  my($roots, $verbose, $safe) = @_;
+  my(@files);
+  my($count) = 0;
+  $verbose ||= 0;
+  $safe ||= 0;
+
+  if ( defined($roots) && length($roots) ) {
+    $roots = [$roots] unless ref $roots;
+  }
+  else {
+    carp "No root path(s) specified\n";
+    return 0;
+  }
+
+  my($root);
+  foreach $root (@{$roots}) {
+    $root =~ s#/\z##;
+    (undef, undef, my $rp) = lstat $root or next;
+    $rp &= 07777;	# don't forget setuid, setgid, sticky bits
+    
+    if ( -d $root ) { # $root used to be _, which is a bug.
+                      # this is why we are replicating this function.
+      
+	    # notabene: 0777 is for making readable in the first place,
+	    # it's also intended to change it to writable in case we have
+	    # to recurse in which case we are better than rm -rf for 
+	    # subtrees with strange permissions
+	    chmod(0777, ($Is_VMS ? VMS::Filespec::fileify($root) : $root))
+          or carp "Can't make directory $root read+writeable: $!"
+              unless $safe;
+
+	    if (opendir my $d, $root) {
+        @files = readdir $d;
+        closedir $d;
+	    }
+	    else {
+        carp "Can't read $root: $!";
+        @files = ();
+	    }
+
+	    # Deleting large numbers of files from VMS Files-11 filesystems
+	    # is faster if done in reverse ASCIIbetical order 
+	    @files = reverse @files if $Is_VMS;
+	    ($root = VMS::Filespec::unixify($root)) =~ s#\.dir\z## if $Is_VMS;
+	    @files = map("$root/$_", grep $_!~/^\.{1,2}\z/s,@files);
+	    $count += &xst_file_rmtree(\@files,$verbose,$safe);
+	    if ($safe &&
+          ($Is_VMS ? !&VMS::Filespec::candelete($root) : !-w $root)) {
+        print "skipped $root\n" if $verbose;
+        next;
+	    }
+	    chmod 0777, $root
+          or carp "Can't make directory $root writeable: $!"
+              if $force_writeable;
+	    print "rmdir $root\n" if $verbose;
+	    if (rmdir $root) {
+        ++$count;
+	    }
+	    else {
+        carp "Can't remove directory $root: $!";
+        chmod($rp, ($Is_VMS ? VMS::Filespec::fileify($root) : $root))
+            or carp("and can't restore permissions to "
+                    . sprintf("0%o",$rp) . "\n");
+	    }
+    }
+    else { 
+	    if ($safe &&
+          ($Is_VMS ? !&VMS::Filespec::candelete($root)
+           : !(-l $root || -w $root)))
+	    {
+        print "skipped $root\n" if $verbose;
+        next;
+	    }
+	    chmod 0666, $root
+          or carp "Can't make file $root writeable: $!"
+              if $force_writeable;
+	    print "unlink $root\n" if $verbose;
+	    # delete all versions under VMS
+	    for (;;) {
+        unless (unlink $root) {
+          carp "Can't unlink file $root: $!";
+          if ($force_writeable) {
+            chmod $rp, $root
+                or carp("and can't restore permissions to "
+                        . sprintf("0%o",$rp) . "\n");
+          }
+          last;
+        }
+        ++$count;
+        last unless $Is_VMS && lstat $root;
+	    }
+    }
+  }
+
+  $count;
 }
 
 # --- Buffer operations --- #

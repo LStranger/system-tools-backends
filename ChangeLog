@@ -1,3 +1,12 @@
+2001-09-10  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* file.pl.in (xst_file_rmtree): replicated File::Path::rmtree,
+	because it has a bug that prevents it from removing directories.
+	Any suggestions for an alternative?
+	(xst_file_backup_rotate_dirs): use replacement.
+
+	* debug.pl.in (xst_debug_rotate_try): same.
+
 2001-09-05  Tambet Ingo  <tambet@ximian.com>
 
 	* time-conf.in: Use perl functions to copy, move and delete.

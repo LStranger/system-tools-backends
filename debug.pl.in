@@ -202,16 +202,16 @@ sub xst_debug_rotate_try
 
     $xst_debug_dir_rotation_was_made = 1;
 
-    if (stat ("$debug_tool_dir/9"))
+    if (-e "$debug_tool_dir/9")
     {
-      rmtree ("$debug_tool_dir/9");
+      &xst_file_rmtree ("$debug_tool_dir/9", 0, 1);
     }
 
     for ($i = 8; $i; $i--)
     {
-      if (stat ("$debug_tool_dir/$i"))
+      if (-e "$debug_tool_dir/$i")
       {
-        move ("$debug_tool_dir/$i", "$debug_tool_dir/" . ($i+1));
+        move ("$debug_tool_dir/$i", "$debug_tool_dir/" . ($i + 1));
       }
     }
     
