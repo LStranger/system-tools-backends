@@ -25,6 +25,8 @@
 
 $rcd_path;
 $initd_path;
+$relative_path;
+
 $SCRIPTSDIR = "___scriptsdir___";
 $FILESDIR = "___filesdir___";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
@@ -46,23 +48,23 @@ sub xst_service_sysv_get_paths
   my %dist_map =
       (
        # xst_dist => [rc.X dirs location, init.d scripts location]
-       "redhat-5.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-6.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-6.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-6.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-7.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-7.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-5.2"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "redhat-6.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "redhat-6.1"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "redhat-6.2"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "redhat-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "redhat-7.1"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "redhat-7.2"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
 
-       "mandrake-7.1" => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "mandrake-7.2" => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "mandrake-7.1" => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "mandrake-7.2" => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
 
-       "debian-2.2"   => ["/etc", "/etc/init.d"],
-       "debian-woody" => ["/etc", "/etc/init.d"],
+       "debian-2.2"   => ["/etc", "/etc/init.d", "../init.d"],
+       "debian-woody" => ["/etc", "/etc/init.d", "../init.d"],
 
-       "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d"],
+       "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d", "../"],
 
-       "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"]
+       "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"]
        );
   my $res;
 
@@ -571,7 +573,7 @@ sub xst_service_sysv_add_link
   my ($runlevel, $action, $priority, $service) = @_;
   my ($prio) = sprintf ("%0.2d",$priority);
 
-  symlink ("$initd_path/$service", "$rcd_path/rc$runlevel.d/$action$prio$service");
+  symlink ("$reltative_path/$service", "$rcd_path/rc$runlevel.d/$action$prio$service");
   
   &xst_report_enter ();
   &xst_report ("service_sysv_add_link", "$rcd_path/rc$runlevel.d/$action$prio$service");
@@ -596,7 +598,7 @@ sub xst_service_sysv_set_service
   my ($script, $priority, $runlevels);
   my ($action);
 
-  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+  ($rcd_path, $initd_path, $relative_path) = &xst_service_sysv_get_paths ();
 
   $script = $$service{"script"};
   $priority = $$service{"priority"};
