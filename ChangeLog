@@ -6,6 +6,9 @@
 
 	* replace.pl.in: xst_replace_join_hash, the last of the replacing
 	  functions for network to be finished.
+	* network-conf.in: bug in xml_parse_network for nameserver and 
+	  searchdomain.
+	* General bug fixes on all the new code and other parts.
 
 2001-02-06  Arturo Espinosa  <arturo@ximian.com>
 

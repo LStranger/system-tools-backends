@@ -130,7 +130,7 @@ $be_verbose = 0;
 $be_do_immediate = 1;
 
 # For debugging (perl -d) purposes. set to "" for normal operation:
-$be_input_file = "";
+$be_input_file = "aaa";
 
 
 # --- Progress printing --- #
@@ -864,13 +864,23 @@ sub be_buffer_save
   my ($buffer, $file) = @_;
   my $fd, $i;
 
-  $fd = &be_open_from_names ($file);
+  #debuging
+
+  print STDERR "\nfile:$file\n";
+  
+  foreach $i (@$buffer)
+  {
+    print STDERR "|" . $i;
+  }
+
+  #debuging
+  
+  $fd = &be_open_write_from_names ($file);
   return -1 if !$fd;
 
   foreach $i (@$buffer)
   {
-    chomp $i;
-    print $fd $i . "\n";
+    print $fd $i;
   }
 
   close $fd;
@@ -886,11 +896,10 @@ sub be_buffer_clean
 
   for ($i = 0; $i <= $#$buffer; $i++)
   {
-    splice (@$buffer, $i, 1) if ($$buffer[$i] eq "");
+    splice (@$buffer, $i, 1) if $$buffer[$i] eq "";
   }
 }
 
-# Join those lines in the buffer that end with \.
 sub be_buffer_join_lines
 {
   my $buffer = $_[0];
@@ -898,8 +907,10 @@ sub be_buffer_join_lines
 
   for ($i = 0; $i <= $#$buffer; $i++)
   {
-    while ($$buffer[$i] =~ /\\\n/)
+    while ($$buffer[$i] =~ /\\$/)
     {
+	 chomp $$buffer[$i];
+	 chop $$buffer[$i];
 	 $$buffer[$i] .= $$buffer[$i + 1];
 	 splice (@$buffer, $i + 1, 1);
     }
@@ -1984,28 +1995,28 @@ sub be_network_get
 # Compresses node into a word and returns it.
 
 sub be_xml_get_word
+{
+  my $tree = $_[0];
+  
+  shift @$tree;		# Skip attributes.
+  
+  while (@$tree)
   {
-    my $tree = $_[0];
+    if ($$tree[0] == 0)
+    {
+	 my $retval;
+	 
+	 ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
+	 $retval = &be_xml_entities_to_plain(\$retval);
+	 return($retval);
+    }
     
-    shift @$tree;		# Skip attributes.
-    
-    while (@$tree)
-      {
-	if ($$tree[0] == 0)
-	  {
-	    my $retval;
-	    
-	    ($retval = $$tree[1]) =~ tr/ \n\r\t\f//d;
-	    $retval = &be_xml_entities_to_plain(\$retval);
-	    return($retval);
-	  }
-	
-	shift @$tree;
-	shift @$tree;
-      }
-    
-    return("");
+    shift @$tree;
+    shift @$tree;
   }
+    
+  return("");
+}
 
 # Compresses node into a size and returns it.
 
@@ -2040,24 +2051,24 @@ sub be_xml_get_size
 # Replaces misc. whitespace with spaces and returns text.
 
 sub be_xml_get_text
+{
+  my $tree = $_[0];
+  
+  shift @$tree;		# Skip attributes.
+  
+  while (@$tree)
   {
-    my $tree = $_[0];
+    if ($$tree[0] == 0)
+    {
+	 ($retval = $$tree[1]) =~ tr/\n\r\t\f/    /;
+	 $retval = &be_xml_entities_to_plain(\$retval);
+	 return($retval);
+    }
     
-    shift @$tree;		# Skip attributes.
-    
-    while (@$tree)
-      {
-	if ($$tree[0] == 0)
-	  {
-	    ($retval = $$tree[1]) =~ tr/\n\r\t\f/    /;
-	    $retval = &be_xml_entities_to_plain(\$retval);
-	    return($retval);
-	  }
-	
-	shift @$tree;
-	shift @$tree;
-      }
+    shift @$tree;
+    shift @$tree;
   }
+}
 
 
 # --- Others --- #
