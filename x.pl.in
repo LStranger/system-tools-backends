@@ -341,9 +341,10 @@ ModeLine "1920x1440@75" 297.0 1920 2064 2288 2640   1440 1441 1444 1500 -hsync +
 BEGIN {
   &xst_report_table ({
     'x_version'      => ['info',  _('Detected X version [%s].')],
-    'x_parse'        => ['info',  _('Configuration file [%s] successfully parsed')],
-    'x_parse_error'  => ['error', _('Error parsing keyword [%s]')],
-    'x_general_warn' => ['warn',  _('Internal error: [%s]')],
+    'x_parse'        => ['info',  _('Configuration file [%s] successfully parsed.')],
+    'x_parse_error'  => ['error', _('Error parsing keyword [%s].')],
+    'x_probe_needed' => ['info',  _('Going to probe your X server, hold on.')],
+    'x_general_warn' => ['warn',  _('Internal error: [%s].')],
   }
                      );
 }
@@ -939,6 +940,8 @@ sub x_add_modeline
     foreach my $key (@{$modeline->{'flags'}}) {
       &x_update_add_token ($buf, $ptr, $key, 1);
     }
+
+    &x_update_add_token ($buf, $ptr, "\n");
   }
 }
 
@@ -1928,7 +1931,7 @@ sub x_probe_run
   
   my $command = &xst_file_locate_tool ("XFree86");
   foreach my $depth (@x_colordepths) {
-    open (FD, "$command :9 -xf86config $cfg_file -probeonly -depth $depth -screen XstTestScreen 2>&1 |");
+    open (FD, "$command :9 -xf86config $cfg_file -probeonly -depth $depth -screen XstTestScreen -logfile log 2>&1 |");
     if (FD) {
       my @content = (<FD>);
       close (FD);
@@ -1958,10 +1961,8 @@ sub x_probe_print_xml
 {
   my $list = shift;
 
-  return unless $list;  
+  return unless $list;    
 
-  &xst_report_end ();
-  
   &xst_xml_print_begin ();
   &xst_xml_print_vspace ();
   
@@ -2004,16 +2005,13 @@ sub x_probe_load
   # TODO: Check if monitor || card is changed
 
   my $file = &xst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $x_probe_file;
-
   my $fh = &xst_file_open_read_from_names ($file);
-  &xst_report_end ();
 
   if ($fh) {
     my @content = <$fh>;
     close ($fh);
 
-    print @content;
-    return 1;
+    return @content if (scalar @content > 0);
   }
 
   return;
@@ -2028,22 +2026,28 @@ sub x_probe
   return unless $orig_file;
   return unless $config;  
 
-  return if (!$direct && &x_probe_load ($config));
-  
+  unless ($direct) {
+    my @content = &x_probe_load ($config);
+    &xst_report ('x_probe_needed') unless @content;
+    &xst_report_end ();
+    print @content;
+    return;
+  }
+
   my $modes = &x_probe_get_modelines ($config);
   my $screen = &x_probe_get_screen ($config);
   my $monitor = &x_probe_get_monitor ($config, $screen);
-  
+
   $monitor = &x_probe_add_monitor ($config, $monitor, $modes);
   &x_probe_add_screen ($config, $screen, $monitor);
 
   my $cfg_file = &x_probe_save ($orig_file, $config);
-#  print STDERR $cfg_file;
   my $list = &x_probe_run ($cfg_file, $modes);
   unlink ($cfg_file);
 
-  &x_probe_print_xml ($list);
   &x_probe_store ($config, $list);
+  &xst_report_end ();
+  &x_probe_print_xml ($list);  
 }
 
 

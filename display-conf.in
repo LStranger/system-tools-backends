@@ -167,7 +167,7 @@ sub test
   
   &x_config_set ($tmp_file, $config, $xml_config);
 
-  $res = &xst_file_run ("$testX_cmd --config=$tmp_file");  
+  $res = &xst_file_run ("$testX_cmd --config=$tmp_file");
   unlink ($tmp_file);
 
   &xst_report_end ();
