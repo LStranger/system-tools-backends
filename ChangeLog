@@ -1,5 +1,9 @@
 2005-01-12  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* Release 1.1.4
+
+2005-01-12  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* users-conf.in: added default groups to profiles
 
 2005-01-11  Carlos Garnacho Parro  <carlosg@gnome.org>
