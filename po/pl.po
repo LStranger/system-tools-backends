@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-15 23:51+0200\n"
+"POT-Creation-Date: 2004-08-18 08:24+0200\n"
 "PO-Revision-Date: 2002-05-29 18:42+0200\n"
 "Last-Translator: GNOME PL Team <translators@gnome.pl>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -364,7 +364,7 @@ msgstr "Uruchamia i zatrzymuje obsługę ISDN"
 
 #: service-list.pl.in:76
 msgid "Check and fix joystick device nodes"
-msgstr ""
+msgstr "Sprawdza i poprawia węzły urządzenia joysticka"
 
 #: service-list.pl.in:76
 msgid ""
@@ -372,6 +372,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
+"Uruchamia joystick-device-check. Program joystick-device-check sprawdza czy "
+"węzły urządzeń /dev/js* są poprawne dla wersji używanego jądra."
 
 #: service-list.pl.in:77
 msgid ""
@@ -379,6 +381,9 @@ msgid ""
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
 "leave this enabled for most machines."
 msgstr ""
+"Pakiet wczytuje wybraną (zgodnie z /etc/sysconfig/keyboard) mapę klawiatury. "
+"Ustawień można dokonać za pomocą narzędzia kbdconfig. Dla większości maszyn, "
+"opcja ta powinna zostać włączona."
 
 #: service-list.pl.in:78
 msgid "Kernel Log Daemon"
@@ -388,27 +393,32 @@ msgstr "Demon dziennika jądra"
 msgid ""
 "klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr ""
+"Systemowy demon klogd przechwytuje i zapisuje w dzienniku komunikaty jądra."
 
 #: service-list.pl.in:79
 msgid ""
 "This runs the hardware probe, and optionally configures changed hardware."
-msgstr ""
+msgstr "Uruchamia sprawdzanie sprzętu i opcjonalnie konfiguruje jego zmiany."
 
 #: service-list.pl.in:80 service-list.pl.in:81
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
 msgstr ""
+"Pakiet LIRC pozwala na dekodowanie i wysyłanie sygnałów podczerwonych wielu "
+"powszechnie używanych pilotów zdalnego sterowania"
 
 #: service-list.pl.in:82
 msgid "Starts misc programs that should be started"
-msgstr ""
+msgstr "Uruchamia różne programy, które powinny zostać uruchomione"
 
 #: service-list.pl.in:83
 msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
+"Demon wydruku lpd jest wymagany do poprawnej pracy lpr. W uproszczeniu jest "
+"serwerem zarządzającym zadaniami wysyłanymi do drukarek."
 
 #: service-list.pl.in:84
 msgid "Create devices"
@@ -419,30 +429,32 @@ msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
 msgstr ""
+"Skrypt tworzący urządzenia w /dev, używane do współpracy ze sterownikami "
+"znajdującymi się w jądrze"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
-msgstr ""
+msgstr "Zastępnik Syslog"
 
 #: service-list.pl.in:85
 msgid "Modern logging daemon"
-msgstr ""
+msgstr "Nowoczesny demon dzinnika"
 
 #: service-list.pl.in:86
 msgid "Load kernel modules"
-msgstr ""
+msgstr "Wczytywanie modułów jądra"
 
 #: service-list.pl.in:87
 msgid "tools for managing Linux kernel modules"
-msgstr ""
+msgstr "Narzędzia do zarządzania modułami jądra"
 
 #: service-list.pl.in:88 service-list.pl.in:105
 msgid "database server"
-msgstr ""
+msgstr "Serwer bazy danych"
 
 #: service-list.pl.in:88
 msgid "MySQL, a SQL-based relational database daemon"
-msgstr ""
+msgstr "MySQL, demon bazującej na SQL, relacyjnej bazy danych"
 
 #: service-list.pl.in:89
 msgid "dns server"
@@ -453,18 +465,24 @@ msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
+"Name (BIND) jest serwerem nazw domen (DNS) używanym do wyszukiwania adresów "
+"IP komputerów na podstawie ich nazw."
 
 #: service-list.pl.in:90
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
+"Montuje i odmontowuje wszystkie punkty montowania sieciowych systemów "
+"plikowych (NFS), SMB (Lan Manager/Windows) oraz NCP (NetWare)."
 
 #: service-list.pl.in:91
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
 msgstr ""
+"Aktywuje/Wyłącza wszystkie interfejsy sieciowe skonfigurowane do "
+"uruchamiania przy starcie systemu."
 
 #: service-list.pl.in:92
 msgid ""
@@ -472,52 +490,62 @@ msgid ""
 "service provides NFS server functionality, which is configured via the /etc/"
 "exports file."
 msgstr ""
+"NFS jest popularnym protokołem udostępniania plików poprzez sieci TCP/IP. To "
+"jest usługa udostępniająca funkcjonalność serwera NFS, którą konfiguruje się "
+"poprzez plik /etc/exports."
 
 #: service-list.pl.in:93
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS file locking functionality."
 msgstr ""
+"NFS jest popularnym protokołem udostępniania plików poprzez sieci TCP/IP. To "
+"jest usługa udostępniająca funkcjonalność blokowania plików"
 
 #: service-list.pl.in:94
 msgid "Name service cache daemon"
-msgstr ""
+msgstr "Demon bufora serwera nazw"
 
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
 msgstr ""
+"Demon udostępniający bufor dla najpopularniejszych zapytań serwera nazw."
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
-msgstr ""
+msgstr "Demon sieciowego protokołu czasu (NTP)"
 
 #: service-list.pl.in:95
 msgid "ntpd is the NTPv4 daemon."
-msgstr ""
+msgstr "Ntpd jest demonem NTPv4."
 
 #: service-list.pl.in:96 service-list.pl.in:97
 msgid "Update the system time over the network"
-msgstr ""
+msgstr "Aktualizuje poprzez sieć czas systemowy"
 
 #: service-list.pl.in:96 service-list.pl.in:97
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
 msgstr ""
+"Sprawdza czas na serwerze sieciowego protokołu czasu (NTP) i odpowiednio "
+"ustawia czas systemowy."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
-msgstr ""
+msgstr "Serwer sieciowego protokołu czasu (NTP)"
 
 #: service-list.pl.in:98
 msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
 msgstr ""
+"Demon ustawiający i utrzymujący czas systemowy w zgodności z internetowymi "
+"serwerami czasu"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
-msgstr ""
+msgstr "Pośrednik buforujący HTTP"
 
 #: service-list.pl.in:100
 msgid "PCMCIA Services"
@@ -525,15 +553,16 @@ msgstr "Usługi PCMCIA"
 
 #: service-list.pl.in:101
 msgid "Caching-Only DNS Server"
-msgstr ""
+msgstr "Buforujący serwer DNS"
 
 #: service-list.pl.in:102
 msgid "IPsec tunnel implementation"
-msgstr ""
+msgstr "Implementacja tunelu IPsec"
 
+# FIXME - bełkotliwe
 #: service-list.pl.in:103
 msgid "DARPA port to RPC program number mapper"
-msgstr ""
+msgstr "Port DARPA programu mapującego numery RPC"
 
 #: service-list.pl.in:103
 msgid ""
@@ -541,30 +570,37 @@ msgid ""
 "NFS and NIS. The portmap server must be running on machines which act as "
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
+"Program portmap zarządza połączeniami RPC, które są używane przez protokoły "
+"takie jak NFS i NIS. Serwer portmap musi być uruchomiany na komputerach, "
+"które działają jako serwery protokołów korzystających z mechanizmu RPC."
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
-msgstr ""
+msgstr "Agent przesyłu poczty (MTA)"
 
 #: service-list.pl.in:106
 msgid "Point to Point Protocol daemon"
-msgstr ""
+msgstr "Demon protokołu punkt - punkt (PPP)"
 
 #: service-list.pl.in:106
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
 msgstr ""
+"Protokół punkt - punkt (PPP) pozwala na transmisję danych poprzez szeregowe "
+"połączenia punkt - punkt."
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
-msgstr ""
+msgstr "Zwiększający prywatność pośrdenik HTTP"
 
 #: service-list.pl.in:108
 msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
 msgstr ""
+"Zapisuje i odtwarza systemową entropię dla lepszej jakości generownych liczb "
+"losowych."
 
 #: service-list.pl.in:109
 msgid ""
@@ -573,6 +609,10 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
+"Skrypt przypisujący surowe urządzenia do urządzeń blokowych (takich jak "
+"partycje na dyskach twardych). Wykorzystywane jest to przez aplikacje typu "
+"Oracle. Mapowanie urządzenia surowego na blokowe odbywa się poprzez "
+"modyfikację pliku /etc/sysconfig/rawdevices."
 
 #: service-list.pl.in:110
 msgid ""
@@ -581,66 +621,86 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
+"Demon obsługujący zadanie okresowego łączenia z serwerami Red Hat Network w "
+"celu pobrania aktualizacji, powiadomień i monitorowania systemu, zależnie od "
+"wykupionego poziomu obsługi."
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
+"Serwer rsync jest dobrym dodatkiem do serwera ftp, ponieważ pozwala na "
+"sprawdzanie sumy kontrolnej crc. Należy włączyć xinetd aby móc użyć tej "
+"usługi."
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
-msgstr ""
+msgstr "Szybszy, elastyczny zastępnik rcp"
 
 #: service-list.pl.in:113
 msgid "A Windows SMB/CIFS fileserver for UNIX"
-msgstr ""
+msgstr "Serwer plików Windows SMB/CIFS dla UNIXa"
 
 #: service-list.pl.in:113
 msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
+"Zestaw oprogramowania Samba realizuje w systemach UNIXowych protokół Server "
+"Message Block."
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
+"Proces serwerowy saslauthd obsługujący uwierzytelnianie tekstowe biblioteki "
+"cyrus-sasl."
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
+"Agent przesyłu poczty sendmail, jest programem przenoszącym pocztę pomiędzy "
+"komputerami."
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
+"Wewnętrzna usługa xinetd, podająca aktywne serwery. Należy włączyć xinetd "
+"aby móc użyć tej usługi."
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
 msgstr ""
+"Wewnętrzna usługa xinetd, podająca aktywne usługi. Należy włączyć xinetd aby "
+"móc użyć tej usługi."
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
-msgstr ""
+msgstr "Ustawia porty szeregowe"
 
 #: service-list.pl.in:118
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
 msgstr ""
+"Program setserial jest przeznaczony do ustawiania i pobierania konfiguracji "
+"portów szeregowych."
 
 #: service-list.pl.in:119
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
+"FAM jest demonem monitorującym pliki. Jest używany do raportowania zmian "
+"plików. Należy włączyć xinetd aby móc użyć tej usługi."
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
