@@ -306,13 +306,14 @@ sub xst_network_dialing_get
        "Username"        => "login",
        "Password"        => "password",
        "Dial Command"    => "dialcmd",
-       "SetVolume"       => "setvol",
+       "SetVolume"       => "volume",
        "Stupid mode"     => "stupid",
        "Auto Reconnect"  => "persist",
        "Force Address"   => "address",
        "Auto DNS"        => "update_dns",
        "Check Def Route" => "set_default_gw",
-       "XST Device"      => "xst_dev"
+       "XST Device"      => "xst_dev",
+       "Dial Command"    => "dial_command"
        );
   my %title2type =
       (
@@ -350,7 +351,24 @@ sub xst_network_dialing_get
       $val = &xst_parse_ini ($file, $i, $j);
       $hash{$vars{$j}} = $val if ($val ne undef);
     }
-  }
+
+    # we add the volume label, it's not a line in the wvdial config,
+    # it's a hayes command in the init2 string, it can be ATM0 or ATL[1-3]
+    if ($hash{"init2"} =~ /M0/)
+    {
+      $hash{"volume"} = 0;
+    }
+    elsif ($hash{"init2"} =~ /L[1-3]/)
+    {
+      $hash{"init2"} =~ /.*L([1-3]).*/;
+      $volume = ($1);
+      $hash{"volume"} = $volume;
+    }
+    else
+    {
+      $hash{"volume"} = 3;
+    }
+}
   
   &xst_report_leave ();
   return \%ret;
@@ -1090,7 +1108,8 @@ sub xst_network_dialing_set
     "address"        => "Force Address",
     "update_dns"     => "Auto DNS",
     "set_default_gw" => "Check Def Route",
-    "xst_dev"        => "XST Device"
+    "xst_dev"        => "XST Device",
+    "dial_command"   => "Dial Command"
 	  );
 
   my (%hash, $section);
@@ -1121,6 +1140,30 @@ sub xst_network_dialing_set
     $section = xst_network_dialing_get_section_name (\%hash);
     delete $hash{"type"};
     delete $hash{"name"};
+
+    # if init1 doesnt exist add one with ATZ
+    if (!$hash{"init1"})
+    {
+      $hash{"init1"} = "ATZ";
+    }
+
+    # add the volume settings to init2
+    if ($hash{"init2"} !~ /^(AT)/)
+    {
+      $hash{"init2"} = "AT";
+    }
+    $hash {"init2"} =~ s/L[1-3]//;
+    $hash {"init2"} =~ s/M[0-2]//;
+    if ($hash{"volume"} == 0)
+    {
+      $hash{"init2"} .= "M0";
+    }
+    else
+    {
+      $volume = $hash{"volume"};
+      $hash {"init2"} .= "L$volume";
+    }
+    delete $hash {"volume"};
 
     foreach $j (keys %hash)
     {

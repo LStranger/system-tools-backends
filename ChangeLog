@@ -1,3 +1,8 @@
+2003-02-06  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network.pl.in: added more modem options for ppp connection, such
+	  as modem volume and dialing type (pulses, tones)
+
 2003-01-14  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* boot-conf.in, network-conf.in, network-pl-in, platform.pl.in,
