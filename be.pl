@@ -799,6 +799,311 @@ sub be_create_path
   }
 
 
+# --- Service/daemon utilities --- #
+
+
+# be_service_enable (<sysv pri>, <args>, <name>, <name>, ...)
+#
+# Enables a service permanently, using the SYSV scheme if present, and
+# more direct means if it is not.
+#
+# <sysv pri> is the priority (0-99) with which it will be started.
+# <args> is the arguments to pass if started directly.
+# <name> ... are names to look for in sysv dirs and, failing that, of binaries.
+
+sub be_service_enable
+{
+  my ($pri, $args, $name, $path, $fullname);
+
+  # Save the SYSV priority as a two-digit string.
+  
+  $pri = sprintf("%02d", @_[0]);
+  shift @_;
+
+  # Save the arguments (to be used in brute approach).
+
+  $args = @_[0];
+  shift @_;
+
+  # Look for SYSV files.
+
+  for $coin (@_)
+  {
+    if (-f "/etc/rc.d/init.d/$coin")
+    {
+      $path = "/etc/rc.d/init.d/";
+      $name = $coin;
+      last;
+    }
+    elsif (-f "/etc/init.d/$coin")
+    {
+      $path = "/etc/init.d/";
+      $name = $coin;
+      last;
+    }
+  }
+
+  # If no SYSV files found, take the brute approach. This won't survive a
+  # reboot. Also, it relies on the daemon's reluctance to start multiple
+  # instances of itself.
+
+  if ($name eq "")
+  {
+    for $coin (@_)
+    {
+      $fullname = be_locate_tool($coin);
+      if ($fullname) { last; }
+    }
+
+    if ($fullname eq "") { return; }
+
+    system("$fullname $args >/dev/null 2>/dev/null &");
+    return 1;
+  }
+
+  # Otherwise, do it the SYSV way.
+  # TODO: Save return value from system() call.
+
+  system("$path$name start >/dev/null 2>/dev/null");
+
+  # Ensure rc.d start links and remove any kill links in runlevel 3 and 5.
+
+  # This works with the two rc.d locs I know: /etc/rc.d/rcN.d/  /etc/rcN.d/
+  # And their corresponding init.d locs:      /etc/rc.d/init.d/ /etc/init.d/
+
+  for $rc_dir ("/etc/rc.d/rc3.d/", "/etc/rc.d/rc5.d/", "/etc/rc3.d/", "/etc/rc5.d/")
+  {
+    local *RC_DIR;
+    my $have_start_link = 0;
+
+    if (!(opendir RC_DIR, $rc_dir)) { next; }
+
+    foreach $link (readdir(RC_DIR))
+    {
+      if ($link =~ /K[0-9]+$name/)
+      {
+        unlink("$rc_dir$link");
+      }
+      elsif ($link =~ /S[0-9]+$name/)
+      {
+        $have_start_link = 1;
+      }
+    }
+    
+    closedir RC_DIR;
+
+    if (!$have_start_link)
+    {
+      symlink("../init.d/$name", "$rc_dir" . "S$pri$name");
+    }
+  }
+  
+  return 1;
+}
+
+
+# be_service_disable (<sysv pri>, <args>, <name>, <name>, ...)
+#
+# Disables a service permanently, using the SYSV scheme if present, and
+# more direct means if it is not.
+#
+# <sysv pri> is the priority (0-99) with which it will be stopped.
+# <args> is the arguments to pass if stopped directly. [NOT USED YET]
+# <name> ... are names to look for in sysv dirs and, failing that, of binaries.
+
+sub be_service_disable
+{
+  my ($pri, $args, $name, $path, $fullname);
+
+  # Save the SYSV priority as a two-digit string.
+  
+  $pri = sprintf("%02d", @_[0]);
+  shift @_;
+
+  # Save the arguments (to be used in brute approach).
+
+  $args = @_[0];
+  shift @_;
+
+  # Look for SYSV files.
+
+  for $coin (@_)
+  {
+    if (-f "/etc/rc.d/init.d/$coin")
+    {
+      $path = "/etc/rc.d/init.d/";
+      $name = $coin;
+      last;
+    }
+    elsif (-f "/etc/init.d/$coin")
+    {
+      $path = "/etc/init.d/";
+      $name = $coin;
+      last;
+    }
+  }
+
+  # If no SYSV files found, take the brute approach. Currently this just
+  # leaves the daemon alone. FIXME: Find a reliable way to get the PID and
+  # kill it. Remember that "killall" is a bit _too_ radical on some systems.
+
+  if ($name eq "")
+  {
+#    for $coin (@_)
+#    {
+#      $fullname = be_locate_tool($coin);
+#      if ($fullname) { last; }
+#    }
+#
+#    if ($fullname eq "") { return; }
+#
+#    system("$fullname $args >/dev/null 2>/dev/null &");
+    return 0;
+  }
+
+  # Otherwise, do it the SYSV way.
+  # TODO: Save return value from system() call.
+
+  system("$path$name stop >/dev/null 2>/dev/null");
+
+  # Ensure rc.d kill links and remove any start links in runlevel 3 and 5.
+
+  # This works with the two rc.d locs I know: /etc/rc.d/rcN.d/  /etc/rcN.d/
+  # And their corresponding init.d locs:      /etc/rc.d/init.d/ /etc/init.d/
+
+  for $rc_dir ("/etc/rc.d/rc3.d/", "/etc/rc.d/rc5.d/", "/etc/rc3.d/", "/etc/rc5.d/")
+  {
+    local *RC_DIR;
+    my $have_stop_link = 0;
+
+    if (!(opendir RC_DIR, $rc_dir)) { next; }
+
+    foreach $link (readdir(RC_DIR))
+    {
+      if ($link =~ /S[0-9]+$name/)
+      {
+        unlink("$rc_dir$link");
+      }
+      elsif ($link =~ /K[0-9]+$name/)
+      {
+        $have_stop_link = 1;
+      }
+    }
+    
+    closedir RC_DIR;
+
+    if (!$have_stop_link)
+    {
+      symlink("../init.d/$name", "$rc_dir" . "K$pri$name");
+    }
+  }
+  
+  return 1;
+}
+
+
+# be_service_restart (<sysv pri>, <args>, <name>, <name>, ...)
+#
+# Enables a service permanently, using the SYSV scheme if present, and
+# more direct means if it is not. If already enabled, it is restarted, useful
+# e.g. if you want its configuration reloaded.
+#
+# <sysv pri> is the priority (0-99) with which it will be started.
+# <args> is the arguments to pass if started directly.
+# <name> ... are names to look for in sysv dirs and, failing that, of binaries.
+
+sub be_service_restart
+{
+  my ($pri, $args, $name, $path, $fullname);
+
+  # Save the SYSV priority as a two-digit string.
+  
+  $pri = sprintf("%02d", @_[0]);
+  shift @_;
+
+  # Save the arguments (to be used in brute approach).
+
+  $args = @_[0];
+  shift @_;
+
+  # Look for SYSV files.
+
+  for $coin (@_)
+  {
+    if (-f "/etc/rc.d/init.d/$coin")
+    {
+      $path = "/etc/rc.d/init.d/";
+      $name = $coin;
+      last;
+    }
+    elsif (-f "/etc/init.d/$coin")
+    {
+      $path = "/etc/init.d/";
+      $name = $coin;
+      last;
+    }
+  }
+
+  # If no SYSV files found, take the brute approach. This won't survive a
+  # reboot. Also, it relies on the daemon's reluctance to start multiple
+  # instances of itself. The arguments supplied should make the command send
+  # a reload signal to any existing instances.
+
+  if ($name eq "")
+  {
+    for $coin (@_)
+    {
+      $fullname = be_locate_tool($coin);
+      if ($fullname) { last; }
+    }
+
+    if ($fullname eq "") { return; }
+
+    system("$fullname $args >/dev/null 2>/dev/null &");
+    return 1;
+  }
+
+  # Otherwise, do it the SYSV way.
+  # TODO: Save return value from system() call.
+
+  system("$path$name restart >/dev/null 2>/dev/null");
+
+  # Ensure rc.d start links and remove any kill links in runlevel 3 and 5.
+
+  # This works with the two rc.d locs I know: /etc/rc.d/rcN.d/  /etc/rcN.d/
+  # And their corresponding init.d locs:      /etc/rc.d/init.d/ /etc/init.d/
+
+  for $rc_dir ("/etc/rc.d/rc3.d/", "/etc/rc.d/rc5.d/", "/etc/rc3.d/", "/etc/rc5.d/")
+  {
+    local *RC_DIR;
+    my $have_start_link = 0;
+
+    if (!(opendir RC_DIR, $rc_dir)) { next; }
+
+    foreach $link (readdir(RC_DIR))
+    {
+      if ($link =~ /K[0-9]+$name/)
+      {
+        unlink("$rc_dir$link");
+      }
+      elsif ($link =~ /S[0-9]+$name/)
+      {
+        $have_start_link = 1;
+      }
+    }
+
+    closedir RC_DIR;
+
+    if (!$have_start_link)
+    {
+      symlink("../init.d/$name", "$rc_dir" . "S$pri$name");
+    }
+  }
+
+  return 1;
+}
+
+
 # --- Name resolution utilities --- #
 
 
