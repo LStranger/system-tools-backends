@@ -100,6 +100,20 @@ sub xst_service_sysv_get_status
   return $res;
 }
 
+# If any of the passed services is running, return true.
+sub xst_service_sysv_get_status_any
+{
+  my (@services) = @_;
+  my $i;
+
+  foreach $i (@services)
+  {
+    return 1 if &xst_service_sysv_get_status ($i);
+  }
+
+  return 0;
+}
+
 
 # Where is the SysV subsystem installed?
 sub xst_service_sysv_get_paths
