@@ -2,7 +2,7 @@ backends = \
 disks-conf \
 memory-conf \
 nameresolution-conf \
-networking-conf \
+network-conf \
 shares-conf \
 time-conf \
 users-conf
@@ -14,7 +14,7 @@ be.pl \
 disks-conf.in \
 memory-conf.in \
 nameresolution-conf.in \
-networking-conf.in \
+network-conf.in \
 shares-conf.in \
 time-conf.in \
 users-conf.in
