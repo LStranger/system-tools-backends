@@ -181,6 +181,101 @@ End_of_Usage;
 @cf_nic = ();
 
 
+# --- XML parsing --- #
+
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+  {
+    # Scan XML to tree.
+    
+    $tree = be_xml_scan;
+    
+    # Walk the tree recursively and extract configuration parameters.
+    # This is the top level - find and enter the "networking" tag.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] eq "memory") { xml_parse_memory(@$tree[1]); }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+    
+    return($tree);
+  }
+
+
+# <memory>...</memory>
+
+sub xml_parse_memory
+  {
+    my $tree = $_[0];
+    
+    shift @$tree;		# Skip attributes.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] eq "swapdev") 
+	  { 
+	    push @cf_swapinfo, xml_parse_swapinfo (@$tree[1]); 
+	  }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+  }
+
+
+# <swap-device>...</swap-device>
+
+sub xml_parse_swapinfo
+  {
+    my $tree = $_[0];
+    my $node;
+    my $entry = {};
+    
+    shift @$tree;		# Skip attributes.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] eq 'device') 
+	  { 
+	    $entry->{device} = be_xml_get_word (@$tree[1]);
+	  }
+	elsif (@$tree[0] eq 'enabled') 
+	  {
+	    $node = @$tree[1];
+	    $entry->{enabled} = be_read_boolean (@$node[0]->{state});
+	  }
+	elsif (@$tree[0] eq 'priority') 
+	  { 
+	    $entry->{priority} = be_xml_get_word (@$tree[1]);
+	  }
+	elsif (@$tree[0] eq 'size') 
+	  { 
+	    $entry->{size} = be_xml_get_word (@$tree[1]);
+	  }
+	elsif (@$tree[0] eq 'isfile') 
+	  { 
+	    $node = @$tree[1];
+	    $entry->{is_file} = be_read_boolean (@$node[0]->{state});
+	  }
+	elsif (@$tree[0] eq 'isnew') 
+	  { 
+	    $node = @$tree[1];
+	    $entry->{is_new} = be_read_boolean (@$node[0]->{state});
+	  }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+
+    return $entry;
+  }
+
+
 # --- XML printing --- #
 
 
@@ -725,7 +820,7 @@ sub set
       }
 
     if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-    be_xml_parse ();
+    xml_parse ();
     
     if ($be_do_immediate)
       {
@@ -744,7 +839,7 @@ sub set
 
 sub filter
   {
-    be_xml_parse ();
+    xml_parse ();
     xml_print ();
   }
 

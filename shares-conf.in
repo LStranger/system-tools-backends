@@ -965,6 +965,247 @@ sub write_exports
 }
 
 
+# --- XML parsing --- #
+
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  # Scan XML to tree.
+
+  $tree = be_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the toplevel tag.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "shares") { xml_parse_toplevel(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($tree);
+}
+
+
+sub xml_parse_toplevel
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "import") { xml_parse_import(@$tree[1]); }
+    elsif (@$tree[0] eq "export") { xml_parse_export(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+sub xml_parse_import
+{
+  my $tree = $_[0];
+  my $type = "", $host = "", $path = "", $comment = "", $user = "",
+     $password = "", $mounted = 0, $detected = 0, $point = "", $listed = 0;
+
+  $type = @$tree[0]->{type};
+  shift @$tree;
+  
+  while (@$tree)
+  {
+    if (@$tree[0] eq "host")        { $host = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "path")     { $path = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "user")     { $user = be_xml_get_text(@$tree[1]); }
+    elsif (@$tree[0] eq "password") { $password = be_xml_get_text(@$tree[1]); }
+    elsif (@$tree[0] eq "comment")  { $comment = be_xml_get_text(@$tree[1]); }
+    elsif (@$tree[0] eq "point")    { $point = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "mounted")  { $mounted = xml_parse_mounted(@$tree[1]); }
+    elsif (@$tree[0] eq "detected") { $detected = xml_parse_detected(@$tree[1]); }
+    elsif (@$tree[0] eq "listed")   { $listed = xml_parse_listed(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  push(@cf_shares_list, $host);      # Host
+  push(@cf_shares_list, $path);      # Path
+  push(@cf_shares_list, $comment);   # Comment
+  push(@cf_shares_list, $mounted);   # Mounted
+  push(@cf_shares_list, $detected);  # Detected
+  push(@cf_shares_list, $type);      # Type
+  push(@cf_shares_list, $user);      # User
+  push(@cf_shares_list, $password);  # Password
+  push(@cf_shares_list, $point);     # Point
+  push(@cf_shares_list, 0);          # Printed
+  push(@cf_shares_list, $listed);    # Listed
+}
+
+sub xml_parse_mounted
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  return(be_read_boolean(@$tree[0]->{state}));
+}
+
+
+sub xml_parse_detected
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  return(be_read_boolean(@$tree[0]->{state}));
+}
+
+
+sub xml_parse_listed
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  return(be_read_boolean(@$tree[0]->{state}));
+}
+
+
+sub xml_parse_export
+{
+  my $tree = $_[0];
+  my $type = "";
+
+  $type = @$tree[0]->{type};
+  shift @$tree;
+  
+  if ($type eq "nfs")
+  {
+    my $path = "", $clients = [];
+    
+    while (@$tree)
+    {
+      if (@$tree[0] eq "path")          { $path = be_xml_get_word(@$tree[1]); }
+      elsif (@$tree[0] eq "allow")      { push(@$clients, xml_parse_allow(@$tree[1])); }
+
+      shift @$tree;
+      shift @$tree;
+    }
+    
+    if ($path ne "")
+    {
+      push @cf_exports_list, "nfs";     # Type
+      push @cf_exports_list, $path;     # Path
+      push @cf_exports_list, $clients;  # Clients
+    }
+  }
+  elsif ($type eq "smb")
+  {
+    my $name = "", $path = "", $comment = "", $enabled = 0, $browseable = 0,
+       $public = 0, $writeable = 0;
+
+    while (@$tree)
+    {
+      if (@$tree[0] eq "name")          { $name = be_xml_get_word(@$tree[1]); }
+      elsif (@$tree[0] eq "path")       { $path = be_xml_get_word(@$tree[1]); }
+      elsif (@$tree[0] eq "comment")    { $comment = be_xml_get_text(@$tree[1]); }
+      elsif (@$tree[0] eq "enabled")    { $enabled = xml_parse_enabled(@$tree[1]); }
+      elsif (@$tree[0] eq "browse")     { $browseable = xml_parse_browseable(@$tree[1]); }
+      elsif (@$tree[0] eq "public")     { $public = xml_parse_public(@$tree[1]); }
+      elsif (@$tree[0] eq "write")      { $writeable = xml_parse_writeable(@$tree[1]); }
+
+      shift @$tree;
+      shift @$tree;
+    }
+
+    if ($path ne "")
+    {
+      push @cf_exports_list, "smb";        # Type
+      push @cf_exports_list, $path;        # Path
+      push @cf_exports_list, $name;        # Name
+      push @cf_exports_list, $comment;     # Comment
+      push @cf_exports_list, $enabled;     # Enabled
+      push @cf_exports_list, $browseable;  # Browseable
+      push @cf_exports_list, $public;      # Public
+      push @cf_exports_list, $writeable;   # Writeable
+    }
+  }
+  else
+  {
+    # Unsupported share type.
+    
+    return;
+  }
+}
+
+
+sub xml_parse_allow
+{
+  my $tree = $_[0];
+  my $pattern = "", $write = 0;
+  my @list;
+
+  shift @$tree;  # No attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "pattern")       { $pattern = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "write")      { $write = xml_parse_writeable(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  push @list, $pattern;
+  push @list, $write;
+  return @list;
+}
+
+
+sub xml_parse_enabled
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  return(be_read_boolean(@$tree[0]->{state}));
+}
+
+
+sub xml_parse_browseable
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  return(be_read_boolean(@$tree[0]->{state}));
+}
+
+
+sub xml_parse_public
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  return(be_read_boolean(@$tree[0]->{state}));
+}
+
+
+sub xml_parse_writeable
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  return(be_read_boolean(@$tree[0]->{state}));
+}
+
+
 # --- XML printing --- #
 
 
@@ -1464,7 +1705,7 @@ sub set
   if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
 
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-  be_xml_parse ();
+  xml_parse ();
 
   write_fstab;
   write_exports;
@@ -1483,7 +1724,7 @@ sub set
 
 sub filter
 {
-  be_xml_parse ();
+  xml_parse ();
   xml_print ();
 }
 

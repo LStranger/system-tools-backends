@@ -112,6 +112,26 @@ $version = "0.1.0";
 
 # --- XML scanning --- #
 
+sub xml_parse
+  {
+    # Scan XML to tree.
+    
+    $tree = be_xml_scan;
+    
+    # Walk the tree recursively and extract configuration parameters.
+    # This is the top level - find and enter the "memory" tag.
+    
+    while (@$tree)
+      {
+	if (@$tree[0] eq "memory") { xml_parse_memory(@$tree[1]); }
+	
+	shift @$tree;
+	shift @$tree;
+      }
+    
+    return($tree);
+  }
+	
 sub xml_parse_memory
   {
     my $tree = @_[0];
@@ -533,7 +553,7 @@ sub set
       }
 
     if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-    be_xml_parse ();
+    xml_parse ();
     
     if ($be_do_immediate)
       {
@@ -553,7 +573,7 @@ sub set
 
 sub filter
   {
-    be_xml_parse ();
+    xml_parse ();
     xml_print ();
   }
 

@@ -730,6 +730,28 @@ sub write_smb_conf
 
 # --- XML parsing ---
 
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  # Scan XML to tree.
+
+  $tree = be_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "resolving" tag.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "nameresolution") { xml_parse_resolving(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($tree);
+}
+
 # <resolving>...</resolving>
 
 sub xml_parse_resolving
@@ -1055,7 +1077,7 @@ sub set
   if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
 
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-  be_xml_parse ();
+  xml_parse ();
 
   write_smb_conf ();
   write_rc_config ();
@@ -1077,7 +1099,7 @@ sub set
 
 sub filter
 {
-  be_xml_parse ();
+  xml_parse ();
   xml_print ();
 }
 

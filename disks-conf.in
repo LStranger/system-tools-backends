@@ -584,6 +584,109 @@ sub get_fdisk
 }
 
 
+# --- XML parsing --- #
+
+
+sub xml_parse
+{
+  # Scan XML to tree.
+
+  $tree = be_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the toplevel tag.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "disks") { xml_parse_toplevel(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($tree);
+}
+
+
+sub xml_parse_toplevel
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "disk") { xml_parse_disk(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+sub xml_parse_disk
+{
+  my %disk;
+
+  my $tree = $_[0];
+  shift @$tree;  # Skip attributes.
+
+  %disk->{partitions} = [];  # Init partition list.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "device") { %disk->{device} = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "size") { %disk->{size} = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "partition")
+    {
+      my %partition = xml_parse_partition(@$tree[1]);
+      $bleh = %disk->{partitions};
+      push(@$bleh, \%partition);
+    }
+    
+    shift @$tree; shift @$tree;
+  }
+
+  push(@cf_disks, \%disk);
+}
+
+
+sub xml_parse_partition
+{
+  my %partition;
+
+  my $tree = $_[0];
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "device") { %partition->{device} = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "type") { %partition->{type} = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "point") { %partition->{point} = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "size") { %partition->{size} = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "bootable") { %partition->{bootable} = xml_parse_state(@$tree[1]); }
+    elsif (@$tree[0] eq "integritycheck") { %partition->{check} = xml_parse_state(@$tree[1]); }
+    elsif (@$tree[0] eq "mounted") { %partition->{mounted} = xml_parse_state(@$tree[1]); }
+    elsif (@$tree[0] eq "listed") { %partition->{listed} = xml_parse_state(@$tree[1]); }
+    elsif (@$tree[0] eq "detected") { %partition->{detected} = xml_parse_state(@$tree[1]); }
+    
+    shift @$tree; shift @$tree;
+  }
+
+  return(%partition);
+}
+
+
+sub xml_parse_state
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  return(be_read_boolean(@$tree[0]->{state}));
+}
+
+
 # --- XML printing --- #
 
 
@@ -735,7 +838,7 @@ sub set
   if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
 
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-  be_xml_parse ();
+  xml_parse ();
 
   write_fstab;
 
@@ -752,7 +855,7 @@ sub set
 
 sub filter
 {
-  be_xml_parse ();
+  xml_parse ();
   xml_print ();
 }
 

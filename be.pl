@@ -473,28 +473,6 @@ sub be_create_path
 # --- XML parsing --- #
 
 
-# Scan XML from standard input to an internal tree.
-
-sub be_xml_parse
-  {
-    # Scan XML to tree.
-    
-    $tree = be_xml_scan;
-    
-    # Walk the tree recursively and extract configuration parameters.
-    # This is the top level - find and enter the "memory" tag.
-    
-    while (@$tree)
-      {
-	if (@$tree[0] eq "memory") { be_xml_parse_memory(@$tree[1]); }
-	
-	shift @$tree;
-	shift @$tree;
-      }
-    
-    return($tree);
-  }
-
 # Compresses node into a word and returns it.
 
 sub be_xml_get_word

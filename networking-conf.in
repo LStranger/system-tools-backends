@@ -1153,6 +1153,80 @@ sub write_rc_config
 }
 
 
+# --- XML parsing --- #
+
+
+# Scan XML from standard input to an internal tree.
+
+sub xml_parse
+{
+  # Scan XML to tree.
+
+  $tree = be_xml_scan;
+
+  # Walk the tree recursively and extract configuration parameters.
+  # This is the top level - find and enter the "networking" tag.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "networking") { xml_parse_networking(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($tree);
+}
+
+
+# <networking>...</networking>
+
+sub xml_parse_networking
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if    (@$tree[0] eq "primaryinterface") { $cf_interface = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "knowninterface")   { push(@cf_interface_list, be_xml_get_word(@$tree[1])); }
+    elsif (@$tree[0] eq "hostip")           { $cf_hostip = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "netmask")          { $cf_netmask = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "gateway")          { $cf_gateway = be_xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "enabled")          { xml_parse_enabled(@$tree[1]); }
+    elsif (@$tree[0] eq "forward")          { xml_parse_forward(@$tree[1]); }
+    elsif (@$tree[0] eq "method")
+    {
+      $cf_method = be_xml_get_word(@$tree[1]);
+      if (($cf_method ne "dhcp") && ($cf_method ne "bootp")) { $cf_method = "static"; }
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+sub xml_parse_enabled
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  $cf_onboot = be_read_boolean(@$tree[0]->{state});
+}
+
+
+sub xml_parse_forward
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+
+  $cf_forward = be_read_boolean(@$tree[0]->{state});
+}
+
+
 # --- XML printing --- #
 
 
@@ -1316,7 +1390,7 @@ sub set
   if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
 
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-  be_xml_parse ();
+  xml_parse ();
 
   $cf_networking = 1;  # This should really be calculated from the old value
                        # and $cf_onboot. This hack will make it work, possibly
@@ -1342,7 +1416,7 @@ sub set
 
 sub filter
 {
-  be_xml_parse ();
+  xml_parse ();
   xml_print ();
 }
 
