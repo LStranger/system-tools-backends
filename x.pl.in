@@ -95,7 +95,7 @@ $sections = {
     KEY => Identifier,
     keywords => {
       Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      Screen     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Screen     => [ \&parse_serverlayout_screen, \&xml_parse_kw_unique ],
     },
     options => {},
   }
@@ -326,6 +326,23 @@ sub parse_modeline
   bless \@array, "XstXModeLine";
 }
 
+sub parse_serverlayout_screen
+{
+  my $line = shift;
+  my (%hash);
+
+  # TODO: Supports screen identifier only, screen_num and
+  # screen_position are missing.
+  
+  shift @$line; #Dump "Screen" keyword.
+
+  foreach (@$line) {
+    $hash{'name'} = $1 if (/^\"(.+)\"$/);
+  }
+  
+  bless \%hash, "XstXServerLayoutScreen";
+}
+  
 sub section2config
 {
   my $config = shift;
@@ -383,7 +400,12 @@ sub add2section
 
     foreach (@$source) { push @{$dest->{'ModeLine'}{$name}}, $_; }
     bless $dest->{'ModeLine'}, $type;
-  }    
+  }
+
+  elsif ($type eq "XstXServerLayoutScreen") {
+    $dest->{'Screen'} = $source;
+    bless $dest->{'Screen'}, $type;
+  }
   
   else {
     # TODO: give warning
@@ -485,6 +507,17 @@ sub x_xml_print_hash
   }
 }
 
+# Internal
+sub x_xml_print_serverlayout_screen
+{
+  my $key = shift;
+  my $hash = shift;
+
+  # TODO: Supports currently only screen name.
+
+  &xst_xml_print_pcdata ($key, $hash->{'name'});
+}
+
 sub x_xml_print_section
 {
   my $hash = shift;
@@ -525,6 +558,10 @@ sub x_xml_print_section
 
     elsif ($type eq "XstXModeLine") {
       &x_xml_print_hash ($key, $hash->{$key});
+    }
+
+    elsif ($type eq "XstXServerLayoutScreen") {
+      &x_xml_print_serverlayout_screen ($key, $hash->{$key});
     }
     
     elsif ($type eq "XstXSubsection") {
@@ -847,6 +884,7 @@ sub x_config_set
   close ($infd);
   close ($outfd);
 }
+
 
 
 1;
