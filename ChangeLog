@@ -1,3 +1,7 @@
+2001-03-20  Tambet Ingo  <tambet@ximian.com>
+
+        * users-conf.in: Initial support for profiles.
+
 2001-03-20  Michael Meeks  <michael@ximian.com>
 
 	* xml.pl.in (xst_xml_print_line): print @_ not $_[0] -

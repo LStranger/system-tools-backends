@@ -100,6 +100,8 @@ $parse_tree = 0;
 $passwd_last_modified = 0; # For /etc/passwd, since the epoch.
 $group_last_modified = 0; # For /etc/group, since the epoch.
 
+$profiles = 0;
+
 # --- Mapping constants --- #
 
 %users_prop_map = ();
@@ -315,6 +317,11 @@ sub read_group
   }
 
   close (FILE);
+}
+
+sub read_profiles
+{
+  $profiles = &xst_buffer_load ("/var/cache/ximian-setup-tools/data/users/profiles.xml");
 }
 
 sub write_group_passwd
@@ -712,6 +719,23 @@ sub xml_parse_group
   
 # --- XML printing --- #
 
+sub xml_print_profiles
+{
+  my $i;
+  
+  &xst_xml_print_line ("<profiles>\n");
+  &xst_xml_enter ();
+
+  foreach $i (@$profiles)
+  {
+    &xst_xml_print_line ($i);
+  }
+  
+	&xst_xml_leave ();
+	&xst_xml_print_line ("</profiles>\n");
+	&xst_xml_print_vspace ();
+}
+
 sub xml_print_nis
 {
   my ($key, $i, $j, $k);
@@ -720,7 +744,7 @@ sub xml_print_nis
 	&xst_xml_enter ();
 	foreach $i (@users)
 	{
-          &xst_xml_print_vspace ();
+    &xst_xml_print_vspace ();
 	  &xst_xml_print_line ("<user>\n");
 		&xst_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
@@ -786,6 +810,9 @@ sub xml_print
 	&xst_xml_leave ();
 	&xst_xml_print_line ("</logindefs>\n");
 	&xst_xml_print_vspace ();
+
+  &xml_print_profiles ();
+  
   &xst_xml_print_line ("<!-- Now the users -->\n");
   &xst_xml_print_vspace ();
 	
@@ -862,6 +889,7 @@ sub get
   &read_login_defs (); &xst_print_progress ();
   &read_group (); &xst_print_progress ();
   &read_passwd_shadow (); &xst_print_progress ();
+  &read_profiles (); &xst_print_progress ();
 
   &xst_end();
   &xml_print ();
