@@ -1,5 +1,9 @@
 2002-02-10  Chema Celorio  <chema@celorio.com>
 
+	* Port to the GNOME 2.0 platform
+
+2002-02-10  Chema Celorio  <chema@celorio.com>
+
 	* configure.in : portify AC_INIT and AM_INIT_AUTOMAKE
 
 2002-02-08  Chema Celorio  <chema@celorio.com>
