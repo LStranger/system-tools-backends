@@ -51,7 +51,7 @@
       <element type="xstBool" name="kerneltool"/>
 	 
 	 <!-- landev: Those network adapters that will be used as landevs. -->
-      <element type="xstBool" name="landev"    minOccurs="0" maxOccurs="unbounded"/>
+      <element type="string" name="landev"    minOccurs="0" maxOccurs="unbounded"/>
 	 
 	 <!-- masquerading: Is there kernel masquerading support? -->
       <element type="xstBool" name="masquerading"/>
@@ -77,7 +77,7 @@
 
 	 <!-- dev: Those network adapters that will be listened to for dhcp requests. -->
 	 <!-- Must have HWaddr (mac or similar).-->
-      <element type="xstBool" name="dev"       minOccurs="0" maxOccurs="unbounded"/>
+      <element type="string" name="dev"       minOccurs="0" maxOccurs="unbounded"/>
 
 	 <!-- installed: Is dhcpd or equivalent installed? -->
       <element type="xstBool" name="installed"/>
