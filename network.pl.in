@@ -1502,6 +1502,7 @@ sub gst_network_interfaces_down_and_up_changed
     if (&gst_network_interface_changed ($$values_hash{$i}, $$old_hash{$i}))
     {
       &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 0, 1);
+      sleep 2;
       &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 1, 1);
     }
   }
