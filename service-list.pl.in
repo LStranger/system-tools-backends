@@ -148,10 +148,23 @@ sub gst_service_list_service_is_forbidden
 		#"halt" => 1 in debian too
 		"devpts.sh" => 1,
 		"console-screen.sh" => 1,
-		"checkroot" => 1,
-		"checkfs" => 1,
+		"checkroot.sh" => 1,
+		"checkfs.sh" => 1,
 		"bootmisc.sh" => 1,
-		"checkfs.sh" => 1
+		"checkfs.sh" => 1,
+    "keymap.sh" => 1,
+    "hwclockfirst.sh" => 1,
+    "etc-setserial" => 1,
+    "procps.sh" => 1,
+    "mountall.sh" => 1,
+    "dns-clean" => 1,
+    "ifupdown" => 1,
+    "networking" => 1,
+    "mountnfs.sh" => 1,
+    "setserial" => 1,
+    "hwclock.sh" => 1,
+    "urandom" => 1,
+    "nviboot" => 1
 	);
 	
 	$ret = $service_forbidden_list{$service};
