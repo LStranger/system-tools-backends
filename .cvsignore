@@ -12,6 +12,7 @@ be.pl
 parse.pl
 replace.pl
 file.pl
+filesys.pl
 general.pl
 platform.pl
 report.pl
