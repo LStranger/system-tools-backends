@@ -114,12 +114,19 @@ sub gst_replace_from_table
   {
     @cp = @$i;
     $key = shift (@cp);
+
+    $proc = shift (@cp);
+    @files = &gst_parse_replace_files (shift (@cp), $fn);
+    unshift @cp, @files if (scalar @files) > 0;
+
     if ((exists $$values_hash{$key}) or ($key eq "_always_"))
     {
-      $proc = shift (@cp);
-      @files = &gst_parse_replace_files (shift (@cp), $fn);
-      unshift @cp, @files if (scalar @files) > 0;
       $res = &gst_replace_run_entry ($values_hash, $key, $proc, \@cp, $$values_hash{$key});
+    }
+    elsif ((!exists $$values_hash{$key}) && (exists $$old_hash{$key}))
+    {
+      # we need to remove all the instances of the known variables that doesn't exist in the XML
+      $res = &gst_replace_run_entry ($values_hash, $key, $proc, \@cp, undef);
     }
   }
 
@@ -178,7 +185,7 @@ sub gst_replace_split
   foreach $i (@$buff)
   {
     $pre_space = $post_comment = "";
-    
+
     chomp $i;
     $pre_space    = $1 if $i =~ s/^([ \t]+)//;
     $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
@@ -187,29 +194,31 @@ sub gst_replace_split
     {
       @line = split ($re, $i, 2);
       $line_key = shift (@line);
-      
+
       # found the key?
       if ($line_key eq $key)
       {
         shift (@value) while ($value[0] eq "" && (scalar @value) > 0);
-        
+
         if ((scalar @value) == 0)
         {
           $i = "";
           next;
         }
-        
+
         $val = shift (@value);
+
         chomp $val;
         $i = &set_value ($key, $val, $re);
       }
     }
+
     $i = $pre_space . $i . $post_comment . "\n";
   }
 
   foreach $i (@value)
   {
-    push (@$buff, &set_value ($key, $i, $re) . "\n");
+    push (@$buff, &set_value ($key, $i, $re) . "\n") if ($i ne "");
   }
 
   &gst_file_buffer_clean ($buff);
