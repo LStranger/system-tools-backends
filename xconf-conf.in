@@ -1,0 +1,172 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Shares configurator. Designed to be architecture and distribution independent.
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+# Best viewed with 100 columns of width.
+
+# Configuration files affected:
+#
+# /etc/resolv.conf
+# /etc/host.conf
+# /etc/hosts
+# /etc/sysconfig/network
+# /etc/rc.config
+# /etc/smb.conf
+
+# Running programs affected:
+#
+# smbd
+# nmbd
+# ifconfig: check current interfaces and activate/deactivate.
+
+
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/platform.pl";
+require "___scriptsdir___/util.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/xml.pl";
+require "___scriptsdir___/x.pl";
+
+# --- Tool information --- #
+
+$name = "XConfig";
+$version = "0.1.0";
+@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
+              "mandrake-7.2", "debian-2.2", "debian-woody", "suse-7.0");
+
+#              "freebsd-4", "freebsd-5");
+
+$description =<<"end_of_description;";
+       Configures network shares for import or export.
+end_of_description;
+
+# --- Platform handling --- #
+
+$platmap =
+{
+  "redhat-5.2"   => "redhat-6.2",
+  "redhat-6.0"   => "redhat-6.2",
+  "redhat-6.1"   => "redhat-6.2",
+  "redhat-6.2"   => "redhat-6.2",
+  "redhat-7.0"   => "redhat-7.0",
+  "redhat-7.1"   => "redhat-7.0",
+  "debian-2.2"   => "redhat-7.0",
+  "debian-woody" => "redhat-7.0",
+  "mandrake-7.2" => "redhat-7.0",
+  "suse-7.0"     => "redhat-6.2",
+  "freebsd-4"    => "freebsd-4",
+  "freebsd-5"    => "freebsd-4"
+};
+
+$filemap =
+{
+  "redhat-6.2" =>
+  {
+    "fstab"    => "/etc/fstab",
+    "mtab"     => "/etc/mtab",
+    "exports"  => "/etc/exports",
+    "smb.conf" => "/etc/smb.conf"
+  },
+
+  "redhat-7.0" =>
+  {
+    "fstab"    => "/etc/fstab",
+    "mtab"     => "/etc/mtab",
+    "exports"  => "/etc/exports",
+    "smb.conf" => "/etc/samba/smb.conf"
+  },
+
+  "freebsd-4" =>
+  {
+    "fstab"    => "/etc/fstab",
+    "exports"  => "/etc/exports",
+    "smb.conf" => "/usr/local/etc/smb.conf"
+  }
+};
+
+sub distro_file
+{
+  my ($file) = @_;
+  return $$filemap{$$platmap{$xst_dist}}->{$file};
+}
+
+# --- XML parsing ---
+
+# Scan XML from standard input to an internal tree.
+
+# --- XML printing --- #
+
+sub xml_print
+{
+  &xst_xml_print_begin ();
+
+  &xst_xml_print_vspace ();
+
+  &xst_xml_print_end ();
+}
+
+# Configuration handling.
+
+sub get_config
+{
+  my $config;
+  my $file = "/etc/X11/XF86Config";
+
+  $config = &xst_xfree4_conf_get ($file);
+  return $config;
+}
+
+# Top-level actions.
+
+sub get
+{
+  my $config = &get_config ();
+      
+  &xst_end();
+  &xml_print ($config);
+}
+
+sub set
+{
+  &xst_end ();
+}
+
+sub filter
+{
+  my $config;
+
+  $config = &xml_parse ();
+  &xst_end ();
+  &xml_print ($config);
+}
+
+
+# --- Main --- #
+
+&xst_init ($name, $version, $description, @ARGV);
+&xst_platform_ensure_supported (@platforms);
+
+# Do our thing.
+
+if    ($xst_operation eq "get")    { &get; }
+elsif ($xst_operation eq "set")    { &set; }
+elsif ($xst_operation eq "filter") { &filter; }

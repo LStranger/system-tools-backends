@@ -1,0 +1,144 @@
+#!/usr/bin/env perl
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
+
+# Common functions for exporting network shares (NFS or SMB).
+#
+# Copyright (C) 2000-2001 Ximian, Inc.
+#
+# Authors: Hans Petter Jansson <hpj@ximian.com>
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU Library General Public License as published
+# by the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Library General Public License for more details.
+#
+# You should have received a copy of the GNU Library General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
+
+
+require "___scriptsdir___/general.pl";
+require "___scriptsdir___/file.pl";
+require "___scriptsdir___/parse.pl";
+require "___scriptsdir___/replace.pl";
+
+# XFree86 version 4
+
+@xfree4_section_list = ("Files", "ServerFlags", "Module", "InputDevice",
+                        "Device", "VideoAdaptor", "Monitor", "Modes",
+                        "Screen", "ServerLayout", "DRI", "Vendor");
+
+# Returns 1 if keyword is in list.
+# Difference from xst_item_is_in_list is that XF86Config keywords are
+# case-insensitive and "_" characters are ignored.
+sub xst_x_keyword_in_list
+{
+  my $keyword = shift @_;
+
+  $keyword =~ s/\_//g;
+  
+  foreach my $item (@_)
+  {
+    return 1 if ($keyword =~ /^$item$/i);
+  }
+
+  return 0;
+}
+ 
+sub xst_x_get_section_files
+{
+  my ($buff) = @_;
+  my @vars = ("FontPath", "RGBPath", "ModulePath");
+  my $line;
+
+  #Fill with defaults
+  my %Files =
+  {
+    FontPath => (
+                 "/usr/X11R6/lib/X11/fonts/misc/",
+                 "/usr/X11R6/lib/X11/fonts/Speedo/",
+                 "/usr/X11R6/lib/X11/fonts/Type1/",
+                 "/usr/X11R6/lib/X11/fonts/CID/",
+                 "/usr/X11R6/lib/X11/fonts/75dpi/",
+                 "/usr/X11R6/lib/X11/fonts/100dpi/"
+                 ),
+    RGBPath => "/usr/X11R6/lib/X11/rgb",
+    ModulePath => (),
+  };
+        
+
+  foreach $line (@$buff)
+  {
+    next if &xst_ignore_line ($line);
+
+    if ($line =~ /^\s*Section\s+\"([a-z]+)\"/i)
+    {
+      $found++ if $1 =~ /Files/i;
+    }
+    next if !$found;
+    last if ($line =~ /^[ \t]*EndSection/i);
+    
+    # Inside section
+#    if (!&xst_x_keyword_in_list (, @vars))
+#    {
+#      &xst_report ("xst_x_get_section_failed: Invalid line.");
+#    }    
+  }
+    
+  return \%Files;
+}
+
+  
+
+# Returns "SectionName" if $line is section beginning, 0 otherwise.
+sub xst_x_section_start
+{
+  my ($line) = @_;
+
+  if ($line =~ /^\s*Section\s+\"([a-zA-Z]+)\"/)
+  {
+    my $section = $1;
+
+    &xst_report_enter ();
+    if (&xst_item_is_in_list ($section, @xfree4_section_list))
+    {
+      &xst_report ("xst_x_section_start_success", $section);
+    }
+    else
+    {
+      &xst_report ("xst_x_section_start_failed", $section);
+      $section = 0;
+    }
+    
+    &xst_report_leave ();
+    return $section;
+  }
+
+  return 0;
+}
+
+sub xst_xfree4_conf_get
+{
+  my $file;
+  local *FILE;
+  my ($fname) = @_;
+
+  $file = &xst_file_open_read_from_names ($fname);
+  return if not $file;
+  *FILE = $file;
+
+  while (<FILE>)
+  {
+    next if &xst_ignore_line ($_);
+    chomp;
+
+    &xst_x_section_start ($_);
+  }
+
+  close (FILE);
+}
