@@ -1,3 +1,8 @@
+2003-10-22  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* time-conf.in: added gentoo to conf_get_replace_table(). fixes
+	  bug #123400
+
 2003-10-20  Carlos Garnacho Parro  <garnacho@tuxerver.net>
  
          * time-conf.in: made the XML to send the months beginning from 1
