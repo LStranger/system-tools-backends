@@ -1,3 +1,7 @@
+2004-12-27  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* users-conf.in: fixed a couple of typos. fixes #162333 and #162336
+
 2004-12-21  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* Release 1.1.3

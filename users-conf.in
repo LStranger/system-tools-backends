@@ -176,11 +176,11 @@ for ($i = 0; $groups_prop_array[$i] ne ""; $i += 2)
 # Please, keep this list sorted
 %groups_desc_map = (
   # TRANSLATORS: this is a list of infinitive actions
-  "adm"       => _("Monitorize system logs"),
+  "adm"       => _("Monitor system logs"),
   "audio"     => _("Use audio devices"),
   "cdrom"     => _("Access to CD-ROM drives"),
   "dialout"   => _("Access to modem devices"),
-  "dip"       => _("Connect to internet through modem devices"),
+  "dip"       => _("Connect to Internet through modem devices"),
   "fax"       => _("Send and receive faxes"),
   "floppy"    => _("Access to floppy drives"),
   "plugdev"   => _("Mount removable devices automatically"),
