@@ -1,3 +1,22 @@
+2001-12-13  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* util.pl.in (xst_item_is_in_list): style fix.
+
+	* general.pl.in (xst_directive_run): bugfix: the min arg count
+	was wrong.
+
+	* boot-lilo.pl.in (xst_boot_lilo_verify_entrylabel): Verify
+	an entry label's lilo.conf compliance. Uff: no docs on this in
+	the man page.
+	(xst_boot_lilo_verify): The lilo verification routine.
+
+	* boot-grub.pl.in (xst_boot_grub_verify): No verification
+	cases required for this to this moment. Just return success.
+
+	* boot-conf.in (verify_print): print verification result.
+	(verify): new verification directive. Other pertinent backends
+	should implement this too.
+
 2001-12-12  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_get_interface_replace_table): Don't replace

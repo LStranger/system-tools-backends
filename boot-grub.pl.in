@@ -37,6 +37,10 @@ require "$SCRIPTSDIR/parse.pl$DOTIN";
 require "$SCRIPTSDIR/replace.pl$DOTIN";
 require "$SCRIPTSDIR/partition.pl$DOTIN";
 
+sub xst_boot_grub_verify
+{
+  return "success";
+}
 
 # Grub device notation converters.
 sub xst_boot_grub_linux2grub

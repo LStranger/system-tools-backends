@@ -535,7 +535,7 @@ sub xst_directive_parse_line
 sub xst_directive_run
 {
   my ($tool, $line) = @_;
-  my ($key, @args, $directives, $proc, $reqargs);
+  my ($key, @args, $directives, $proc, $reqargs, $i);
 
   ($key, @args) = &xst_directive_parse_line ($line);
   $directives = $$tool{"directives"};
@@ -548,13 +548,19 @@ sub xst_directive_run
     return;
   }
 
-  $reqargs = $ {$$directives{$key}}[1];
+  $reqargs = [];
+  foreach $i (@{$ {$$directives{$key}}[1]})
+  {
+    push @$reqargs, $i if not ($i =~ /\*$/);
+  }
+  
   if (scalar @args < scalar @$reqargs)
   {
     &xst_directive_fail ("directive_lowargs", $key, $#$reqargs, join (',', $key, @args));
     return;
   }
 
+  $reqargs = $ {$$directives{$key}}[1];
   if ((scalar @args != scalar @$reqargs) &&
       !($$reqargs[$#$reqargs] =~ /\*$/))
   {

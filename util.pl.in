@@ -134,11 +134,12 @@ sub xst_ignore_line
 
 sub xst_item_is_in_list
 {
-  my $value = shift @_;
+  my ($value, @arr) = @_;
+  my ($item);
 
-  foreach my $item (@_)
+  foreach $item (@arr)
   {
-    if ($value eq $item) { return 1; }
+    return 1 if $value eq $item;
   }
 
   return 0;

@@ -56,6 +56,8 @@ BEGIN {
   require "$SCRIPTSDIR/xml.pl$DOTIN";
   require "$SCRIPTSDIR/parse.pl$DOTIN";
   require "$SCRIPTSDIR/boot.pl$DOTIN";
+  require "$SCRIPTSDIR/boot-lilo.pl$DOTIN";
+  require "$SCRIPTSDIR/boot-grub.pl$DOTIN";
 }
 
 
@@ -213,6 +215,52 @@ sub filter
   &xml_print ($hash);
 }
 
+sub verify_print
+{
+  my ($res) = @_;
+
+  &xst_xml_print_begin ("verify");
+  &xst_xml_print_structure ($res, "result");
+  &xst_xml_print_end ("verify");
+}
+
+sub verify
+{
+  my ($tool, $key, @values) = @_;
+  my ($i, $proc, $res, $loader);
+
+  my %bootloader =
+      (
+       "lilo" => \&xst_boot_lilo_verify,
+       "grub" => \&xst_boot_grub_verify
+       );
+
+  my %dist_map =
+      (
+       "lilo" => ["redhat-6.0", "redhat-6.1", "redhat-6.2" , "redhat-7.0", "redhat-7.1",
+                  "mandrake-7.1", "debian-2.2", "debian-woody", "suse-7.0", "turbolinux-7.0"],
+       "grub" => ["redhat-7.2", "mandrake-7.2"]
+       );
+  
+  foreach $i (keys %dist_map)
+  {
+    $loader = $i if &xst_item_is_in_list ($$tool{"platform"}, @{$dist_map{$i}});
+  }
+
+  if ($loader eq undef)
+  {
+    &xst_report ("platform_no_table", $$tool{"platform"});
+    &xst_report_end ();
+  }
+  else
+  {
+    $proc = $bootloader{$loader};
+    $res = &$proc ($key, @values);
+    &xst_report_end ();
+    &verify_print ($res);
+  }
+}
+
 
 # --- Main --- #
 
@@ -222,7 +270,8 @@ sub filter
 $directives = {
   "get"    => [ \&get,    [], "" ],
   "set"    => [ \&set,    [], "" ],
-  "filter" => [ \&filter, [], "" ]
+  "filter" => [ \&filter, [], "" ],
+  "verify" => [ \&verify, [ "type", "value", "xtravalues*" ], "Verifies the values, depending on the type." ]
     };
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);
