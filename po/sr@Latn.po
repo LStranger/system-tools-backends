@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-system-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-12-29 23:39+0100\n"
-"PO-Revision-Date: 2004-01-02 17:43+0100\n"
+"POT-Creation-Date: 2004-01-10 03:01+0100\n"
+"PO-Revision-Date: 2004-01-10 03:10+0100\n"
 "Last-Translator: Danilo Šegan <danilo@prevod.org>\n"
 "Language-Team: Serbian (sr) <serbiangnome-lista@nongnu.org>\n"
 "MIME-Version: 1.0\n"
@@ -29,7 +29,8 @@ msgstr "veb server"
 #: service-list.pl.in:37 service-list.pl.in:61
 msgid ""
 "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
-msgstr "Apač predstavlja veb server.  Koristi se za služenje HTML datoteka i CGI-a."
+msgstr ""
+"Apač predstavlja veb server.  Koristi se za služenje HTML datoteka i CGI-a."
 
 #: service-list.pl.in:38
 msgid "Run missed scheduled jobs at startup"
@@ -47,7 +48,9 @@ msgstr "Usluga samoupravljanja napajanjem (ampd)"
 msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
-msgstr "apmd se koristi za praćenje stanja baterije i prijavljivanje istog putem syslog(8). Takođe se može koristiti za gašenje računara kada je baterija slaba."
+msgstr ""
+"apmd se koristi za praćenje stanja baterije i prijavljivanje istog putem syslog"
+"(8). Takođe se može koristiti za gašenje računara kada je baterija slaba."
 
 #: service-list.pl.in:40
 msgid "Runs a command at a given time"
@@ -57,7 +60,9 @@ msgstr "Pokreni naredbe u zadato vreme"
 msgid ""
 "Runs commands scheduled by the at command at the time specified when at was "
 "run, and runs batch commands when the load average is low enough."
-msgstr "Pokreće naredbe zakazane naredbom at u vreme navedeno pri pokretanju, i pokreće paket naredbi kada je opterećenje dovoljno nisko."
+msgstr ""
+"Pokreće naredbe zakazane naredbom at u vreme navedeno pri pokretanju, i "
+"pokreće paket naredbi kada je opterećenje dovoljno nisko."
 
 #: service-list.pl.in:41
 msgid "BinFormat Support"
@@ -74,7 +79,10 @@ msgid ""
 "service which continuously generates characters until the connection is "
 "dropped.  This is the tcp version. You must enable xinetd to use this "
 "service."
-msgstr "Unutrašnja usluga xinetd-a koja obrazuje znakove. Unutrašnja usluga xinetd-a koja neprekidno obrazuje znakove dok se veza ne prekine. Ovo je TCP izdanje. Morate uključiti xinetd da biste koristili ovu uslugu."
+msgstr ""
+"Unutrašnja usluga xinetd-a koja obrazuje znakove. Unutrašnja usluga xinetd-a "
+"koja neprekidno obrazuje znakove dok se veza ne prekine. Ovo je TCP izdanje. "
+"Morate uključiti xinetd da biste koristili ovu uslugu."
 
 # bug: udb -> UDP
 #: service-list.pl.in:43
@@ -83,7 +91,10 @@ msgid ""
 "service which continuously generates characters until the connection is "
 "dropped.  This is the udp version. You must enable xinetd to use this "
 "service."
-msgstr "Unutrašnja usluga xinetd-a koja obrazuje znakove. Unutrašnja usluga xinetd-a koja neprekidno obrazuje znakove dok se veza ne prekine. Ovo je UDP izdanje. Morate uključiti xinetd da biste koristili ovu uslugu."
+msgstr ""
+"Unutrašnja usluga xinetd-a koja obrazuje znakove. Unutrašnja usluga xinetd-a "
+"koja neprekidno obrazuje znakove dok se veza ne prekine. Ovo je UDP izdanje. "
+"Morate uključiti xinetd da biste koristili ovu uslugu."
 
 #: service-list.pl.in:44
 msgid "daemon to execute scheduled commands"
@@ -98,7 +109,10 @@ msgid ""
 "cron is a standard UNIX program that runs user-specified programs at "
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
-msgstr "Kron (cron) je uobičajeni Uniks program koji pokreće programe koje je naveo korisnik u određeno vreme. Viksi kron dodaje brojne mogućnosti osnovnom Uniks kronu, uključujući bolju bezbednost i više naprednih podešavanja."
+msgstr ""
+"Kron (cron) je uobičajeni Uniks program koji pokreće programe koje je naveo "
+"korisnik u određeno vreme. Viksi kron dodaje brojne mogućnosti osnovnom "
+"Uniks kronu, uključujući bolju bezbednost i više naprednih podešavanja."
 
 #: service-list.pl.in:46
 msgid "Common Unix Printing System"
@@ -118,17 +132,16 @@ msgid ""
 "version. You must enable xinetd to use this service."
 msgstr ""
 
-# bug: Dinamic -> Dynamic
 #: service-list.pl.in:49 service-list.pl.in:50
-msgid "Dinamic DNS Client"
+msgid "Dynamic DNS Client"
 msgstr "Klijent za dinamički DNS"
 
 #: service-list.pl.in:49
-msgid "A Dinamic DNS Name service from www.dyndns.org"
+msgid "A Dynamic DNS Name service from www.dyndns.org"
 msgstr "Usluga dinamičkog imena domena sa www.dyndns.org"
 
 #: service-list.pl.in:50
-msgid "A Dinamic DNS Name service from www.dhis.org"
+msgid "A Dynamic DNS Name service from www.dhis.org"
 msgstr "Usluga dinamičkog imena domena sa www.dhis.org"
 
 #: service-list.pl.in:51
@@ -172,7 +185,7 @@ msgid "IPv6 Tunnel Broker"
 msgstr ""
 
 #: service-list.pl.in:58
-msgid "A IPv6 Dinamic Tunnel Broker"
+msgid "A IPv6 Dynamic Tunnel Broker"
 msgstr ""
 
 #: service-list.pl.in:59
@@ -190,7 +203,7 @@ msgstr "podrška za konzolni miš"
 #: service-list.pl.in:60
 msgid ""
 "GPM adds mouse support to text-based Linux applications such the Midnight "
-"Commander. Is also allows mouse-based console cut-and-paste operations, and "
+"Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
 msgstr ""
 
@@ -248,7 +261,9 @@ msgid ""
 msgstr ""
 
 #: service-list.pl.in:70 service-list.pl.in:71
-msgid "LIRC is a package that allows you to decode and send"
+msgid ""
+"LIRC is a package that allows you to decode and send infra-red signals of "
+"many commonly used remote controls"
 msgstr ""
 
 #: service-list.pl.in:72
@@ -401,13 +416,13 @@ msgstr ""
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
-msgstr ""
+msgstr "Unutrašnja xinetd usluga, koja ispisuje aktivne servere. Morate uključiti xinetd da biste koristili ovu uslugu."
 
 #: service-list.pl.in:97
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
-msgstr ""
+msgstr "Unutrašnja xinetd usluga, koja ispisuje aktivne usluge. Morate uključiti xinetd da biste koristili ovu uslugu."
 
 #: service-list.pl.in:98
 msgid "get/set serial port information"
@@ -417,43 +432,43 @@ msgstr "saznaj/postavi podatke o serijskom portu"
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
-msgstr ""
+msgstr "setserial je program napravljen za postavljanje i/ili prijavu podataka o podešavanjima u vezi serijskog porta."
 
 #: service-list.pl.in:99
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
-msgstr ""
+msgstr "FAM služi za praćenje datoteka. Može se koristiti za obaveštavanje o izmenama datoteka. Morate uključiti xinetd da biste koristili ovu uslugu."
 
 #: service-list.pl.in:100
 msgid "control and monitor storage systems using S.M.A.R.T."
-msgstr ""
+msgstr "upravljanje i praćenje diskova pomoću S.M.A.R.T.-a"
 
 #: service-list.pl.in:101
 msgid "Perl-based spam filter using text analysis"
-msgstr ""
+msgstr "Filter spama u Perlu koji koristi analizu teksta"
 
 #: service-list.pl.in:102
 msgid "Simple Network Management Protocol (SNMP) Daemon"
-msgstr ""
+msgstr "Uslužni program jednostavnog protokola za upravljanje mrežama (SNMP)"
 
 #: service-list.pl.in:103 service-list.pl.in:104
 msgid "OpenSSH SSH server"
-msgstr ""
+msgstr "OpenSSH SSH server"
 
 #: service-list.pl.in:103
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
-msgstr ""
+msgstr "ssh je program za prijavu na udaljeni računar i izvršavanje naredbi na njemu."
 
 #: service-list.pl.in:104
 msgid "OpenSSH server daemon"
-msgstr ""
+msgstr "Uslužni program OpenSSH servera"
 
 #: service-list.pl.in:105
 msgid "Linux system logging utilities"
-msgstr ""
+msgstr "Alati za praćenje sistema"
 
 #: service-list.pl.in:105
 msgid ""
@@ -473,7 +488,7 @@ msgid ""
 "readable date and time. The Time service sends back to the originating "
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
-msgstr ""
+msgstr "Server vremena prema RFC-u 868. Ovaj protokol obezbeđuje nezavistan od mesta, mašinski čitljiv datum i vreme. Usluga vremena šalje vreme u sekundama od ponoći, 1. januara 1900. Ovo je TCP verzija. Morate uključiti xinetd da biste koristili ovu uslugu."
 
 #: service-list.pl.in:108
 msgid ""
@@ -481,22 +496,22 @@ msgid ""
 "readable date and time. The Time service sends back to the originating "
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
-msgstr ""
+msgstr "Server vremena prema RFC-u 868. Ovaj protokol obezbeđuje nezavistan od mesta, mašinski čitljiv datum i vreme. Usluga vremena šalje vreme u sekundama od ponoći, 1. januara 1900. Ovo je UDP verzija. Morate uključiti xinetd da biste koristili ovu uslugu."
 
 #: service-list.pl.in:109
 msgid "kernel random number source devices"
-msgstr ""
+msgstr "izvorni uređaji jezgra za slučajne brojeve"
 
 #: service-list.pl.in:109
 msgid ""
 "The  random  number  generator  gathers environmental noise from device "
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
-msgstr ""
+msgstr "Generator slučajnih brojeva skuplja šum okoline iz upravljačkih programa i ostalih izvora u bunar entropije. Odavde se obrazuju slučajni brojevi."
 
 #: service-list.pl.in:110
 msgid "Intel(TM) x86(TM)-based virtual machine"
-msgstr ""
+msgstr "Virtuelna mašina zasnovana na Intelu x86"
 
 #: service-list.pl.in:110
 msgid ""
@@ -510,7 +525,7 @@ msgstr "Skup alata za administraciju preko veba"
 
 #: service-list.pl.in:112
 msgid "Starts and stops the Samba winbind daemon"
-msgstr ""
+msgstr "Pokreće i zaustavlja Sambin uslužni program winbind"
 
 #: service-list.pl.in:113
 msgid ""
@@ -520,13 +535,13 @@ msgstr ""
 
 #: service-list.pl.in:114
 msgid "X font server"
-msgstr ""
+msgstr "Iks server za fontove"
 
 #: service-list.pl.in:114
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
-msgstr ""
+msgstr "Xfs je server za fontove za Iks sistem prozora. On obezbeđuje fontove Iks serverima za prikaz."
 
 #: service-list.pl.in:115
 msgid ""
@@ -536,18 +551,18 @@ msgid ""
 "can be started, among other things."
 msgstr ""
 
-#: service.pl.in:166 service.pl.in:171
+#: service.pl.in:169 service.pl.in:174
 msgid "Halting the system"
 msgstr "Gasim operativni sistem"
 
-#: service.pl.in:167 service.pl.in:173
+#: service.pl.in:170 service.pl.in:176
 msgid "Text mode"
 msgstr "Tekstualni režim"
 
-#: service.pl.in:168 service.pl.in:172 service.pl.in:176
+#: service.pl.in:171 service.pl.in:175 service.pl.in:179
 msgid "Graphical mode"
 msgstr "Grafički režim"
 
-#: service.pl.in:169 service.pl.in:174
+#: service.pl.in:172 service.pl.in:177
 msgid "Rebooting the system"
 msgstr "Resetujem operativni sistem"
