@@ -33,7 +33,7 @@ dnl ==============================================================
 GETTEXT_PACKAGE=setup-tools-backends
 AC_SUBST(GETTEXT_PACKAGE)
 
-ALL_LINGUAS="cs da de es ja ko lt no pt sr sr@Latn"
+ALL_LINGUAS="cs da de es hr ja ko lt no pt sr sr@Latn"
 AM_GLIB_GNU_GETTEXT
 
 AC_OUTPUT([
