@@ -25,6 +25,8 @@ require "___scriptsdir___/general.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
 
+use Text::ParseWords;
+
 # XFree86 version 4 sections:
 # Files
 # ServerFlags
@@ -39,63 +41,67 @@ require "___scriptsdir___/xml.pl";
 # DRI
 # Vendor
 
+
+# Keywords are hashes with name as key, and values containing lists of:
+# function_to_parse_from_conf, function_to_parse_from_xml, quoted (1/0).
+
 $sections = {};
 
 $sections = {
   Monitor => {
     KEY => Identifier,
     keywords => {
-      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      VendorName => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      ModelName  => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      HorizSync  => [ \&parse_range_hz,  \&xml_parse_kw_unique ],
-      VertRefresh =>[ \&parse_range_hz,  \&xml_parse_kw_unique ],
+      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      VendorName => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      ModelName  => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      HorizSync  => [ \&parse_range_hz,  \&xml_parse_kw_unique, 0 ],
+      VertRefresh =>[ \&parse_range_hz,  \&xml_parse_kw_unique, 0 ],
     },
     options => {},
   },
   Device => {
     KEY => Identifier,
     keywords => {
-      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      Driver     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      BusID      => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      Screen     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      Chipset    => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      Ramdac     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      ClockChip  => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      VideoRam   => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      BiosBase   => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      MemBase    => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      IOBase     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      ChipID     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      ChipRev    => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      TextClockFreq => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      Driver     => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      BusID      => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      Screen     => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+      Chipset    => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      Ramdac     => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      ClockChip  => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      VideoRam   => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+      BiosBase   => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+      MemBase    => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+      IOBase     => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+      ChipID     => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+      ChipRev    => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+      TextClockFreq => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
     },
     options => {},
   },
   Screen => {
     KEY => Identifier,
     keywords => {
-      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      Device     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      Monitor    => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      DefaultDepth => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      DefaultFbBpp => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      Device     => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      Monitor    => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      DefaultDepth => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+      DefaultFbBpp => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
     },
     options => {},
     Display => {
       KEY => Depth,
       keywords => {
-        Depth => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-        Modes => [ \&parse_kw_list, \&xml_parse_kw_list ],
+        Depth => [ \&parse_kw_unique, \&xml_parse_kw_unique, 0 ],
+        Modes => [ \&parse_kw_list, \&xml_parse_kw_list, 1 ],
       }
     }
   },
   ServerLayout => {
     KEY => Identifier,
     keywords => {
-      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
-      Screen     => [ \&parse_serverlayout_screen, \&xml_parse_kw_unique ],
+      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique, 1 ],
+      Screen     => [ \&parse_serverlayout_screen, \&xml_parse_kw_unique, 1 ],
     },
     options => {},
   }
@@ -190,8 +196,9 @@ sub general_parse_section
     chomp;
     s/^[ \t]*//g;
     
-    return split (/[ \t]+/);    
+    return &quotewords('[ \t]+', 1, $_);
   }
+  return;
 }
 
 # Parse general unique value 
@@ -242,7 +249,7 @@ sub parse_kw_list
   foreach (@$line) {
     last if /^\#/;
     s/\"//g;    
-    push @val, $_;
+    push @val, $_ if defined $_;
   }
   
   bless \@val, "XstXKeywordList";
@@ -682,7 +689,8 @@ sub x_delete_section
 
 sub x_update_keyword
 {
-  my ($line, $section, $new_section, $kw) = @_;
+  my ($line, $section, $new_section, $kw, $quoted) = @_;
+  my $quote = $quoted ? "\"" : "";
   
   if (exists ($new_section->{$kw})) {
     my $type = ref ($new_section->{$kw});
@@ -703,8 +711,15 @@ sub x_update_keyword
         my $a = $1 if $line =~ s/^(\S+[ \t]*)//;
         
         if ($$new_array[$i]) {
-          $a =~ s/$$array[$i]/$$new_array[$i]/;
-          $new_line .= $a;
+          # If in old array replace, else add
+          if ($a) {
+            $a =~ s/$$array[$i]/$$new_array[$i]/;
+          } else {
+            $a = $quote . $$new_array[$i] . $quote;
+          }
+          # Remove spaces from the end of a and add to the end new_line. 
+          $a =~ s/[ \t]+$//;
+          $new_line .= "$a ";
         } else {
           last;
         }
@@ -737,12 +752,12 @@ sub x_add_keyword
 
     if (!$type) {
       $kw = "$key";
-      $val = "$new_section->{$key}";
+      $val = $quote . "$new_section->{$key}". $quote;
     }
 
     elsif ($type eq "XstXKeywordList") {
       foreach (@{$new_section->{$key}}) {
-        $val .= "$_ ";
+        $val .= $quote . $_ . $quote . " ";
       }
       chop $val;
       $kw = "$key";
@@ -820,7 +835,8 @@ sub x_update_section
       
       # Keyword
       if (exists $section_list->{$section_name}{'keywords'}{$kw}) {
-        $line = &x_update_keyword ($line, $section, $new_section, $kw);
+        my $quoted = $section_list->{$section_name}{'keywords'}{$kw}[2];
+        $line = &x_update_keyword ($line, $section, $new_section, $kw, $quoted);
       }
 
       # Option
