@@ -1,3 +1,8 @@
+2003-10-19  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network.pl.in, network-conf.in: added wireless interfaces support
+	  for debian >= woody, redhat >= 7.2 and mandrake >= 9.0
+
 2003-10-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* release 0.28.0

@@ -42,6 +42,29 @@ require "$SCRIPTSDIR/service.pl$DOTIN";
 require "$SCRIPTSDIR/util.pl$DOTIN";
 require "$SCRIPTSDIR/xml.pl$DOTIN";
 
+# Returns an array with the wireless devices found
+sub gst_network_get_wireless_ifaces
+{
+  my ($fd, $line);
+  my (@ifaces);
+  
+  $fd = &gst_file_run_pipe_read ("/sbin/iwconfig");
+  return {} if $fd eq undef;
+
+  while (<$fd>)
+  {
+    if (/^([a-zA-Z0-9]+)[\t ].*$/)
+    {
+      push @ifaces, $1;
+    }
+  }
+
+  &gst_file_close ($fd);
+
+  &gst_report_leave ();
+  return \@ifaces;
+}
+
 # Tries to detect modem in a closed list of devices
 sub gst_network_autodetect_modem
 {
@@ -964,7 +987,9 @@ sub gst_network_conf_get
 
   $hash = &gst_parse_from_table ($dist_attrib{"fn"},
                                  $dist_attrib{"table"});
-  
+
+  $$hash {"wireless_device"} = &gst_network_get_wireless_ifaces ();
+
   return $hash;
 }
 
@@ -2490,13 +2515,13 @@ sub gst_network_get_interface_parse_table
 	  "redhat-7.0"   => "redhat-6.2",
 	  "redhat-7.1"   => "redhat-6.2",
 	  "redhat-7.2"   => "redhat-7.2",
-    "redhat-8.0"   => "redhat-7.2",
-    "redhat-9"     => "redhat-7.2",
+    "redhat-8.0"   => "redhat-8.0",
+    "redhat-9"     => "redhat-8.0",
 	  "openna-1.0"   => "redhat-6.2",
 	  "mandrake-7.1" => "redhat-6.2",
     "mandrake-7.2" => "redhat-6.2",
-    "mandrake-9.0" => "redhat-6.2",
-    "mandrake-9.1" => "redhat-6.2",
+    "mandrake-9.0" => "mandrake-9.0",
+    "mandrake-9.1" => "mandrake-9.0",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-woody",
     "debian-sarge" => "debian-woody",
@@ -2584,6 +2609,7 @@ sub gst_network_get_interface_parse_table
            [ "broadcast",          \&gst_parse_sh,      IFCFG, BROADCAST ],
            [ "network",            \&gst_parse_sh,      IFCFG, NETWORK ],
            [ "gateway",            \&gst_parse_sh,      IFCFG, GATEWAY ],
+           [ "essid",              \&gst_parse_sh,      IFCFG, ESSID ],
            [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
            [ "update_dns",         \&gst_parse_sh_bool, IFCFG, PEERDNS ],
            [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
@@ -2606,6 +2632,113 @@ sub gst_network_get_interface_parse_table
            [ "phone_number",       \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
            [ "enabled",            \&gst_network_interface_active, "%dev%",
                                                                    \&gst_network_active_interfaces_get ],
+           [ "enabled",            \&gst_network_interface_active, IFACE,
+                                                                   \&gst_network_active_interfaces_get ],
+           [ "enabled",            \&gst_parse_trivial, 0 ]
+           ]
+             },
+
+	  "redhat-8.0" =>
+	  {
+	    ifaces_get => \&gst_network_sysconfig_rh72_ifaces_get_existing,
+	    fn =>
+	    {
+        IFCFG => ["/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
+                  "/etc/sysconfig/networking/devices/ifcfg-#iface#",
+                  "/etc/sysconfig/network-scripts/ifcfg-#iface#"],
+        CHAT  => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE => "#iface#",
+        PAP   => "/etc/ppp/pap-secrets",
+        CHAP  => "/etc/ppp/chap-secrets",
+        PUMP  => "/etc/pump.conf"
+      },
+	    table =>
+          [
+           [ "bootproto",          \&gst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
+           [ "auto",               \&gst_parse_sh_bool, IFCFG, ONBOOT ],
+           [ "user",               \&gst_parse_sh_bool, IFCFG, USERCTL ],
+           [ "name",               \&gst_parse_sh,      IFCFG, NAME ],
+           [ "name",               \&gst_parse_trivial, IFACE ],
+           [ "dev",                \&gst_parse_sh,      IFCFG, DEVICE ],
+           [ "address",            \&gst_parse_sh,      IFCFG, IPADDR ],
+           [ "netmask",            \&gst_parse_sh,      IFCFG, NETMASK ],
+           [ "broadcast",          \&gst_parse_sh,      IFCFG, BROADCAST ],
+           [ "network",            \&gst_parse_sh,      IFCFG, NETWORK ],
+           [ "gateway",            \&gst_parse_sh,      IFCFG, GATEWAY ],
+           [ "essid",              \&gst_parse_sh,      IFCFG, WIRELESS_ESSID ],
+           [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&gst_parse_sh_bool, IFCFG, PEERDNS ],
+           [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
+           [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
+           [ "mtu",                \&gst_parse_sh,      IFCFG, MTU ],
+           [ "mru",                \&gst_parse_sh,      IFCFG, MRU ],
+           [ "remote_address",     \&gst_parse_sh,      IFCFG, REMIP ],
+           [ "login",              \&gst_parse_sh,      IFCFG, PAPNAME ],
+           [ "password",           \&gst_network_get_pap_passwd, PAP,  "%login%" ],
+           [ "password",           \&gst_network_get_pap_passwd, CHAP, "%login%" ],
+           [ "serial_port",        \&gst_parse_sh,      IFCFG, MODEMPORT ],
+           [ "serial_speed",       \&gst_parse_sh,      IFCFG, LINESPEED ],
+           [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
+           [ "wvsection",          \&gst_parse_sh,      IFCFG, WVDIALSECT ],
+           [ "set_default_gw",     \&gst_parse_sh_bool, IFCFG, DEFROUTE ],
+           [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
+           [ "persist",            \&gst_parse_sh_bool, IFCFG, PERSIST ],
+           [ "serial_escapechars", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+           [ "serial_hwctl",       \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+           [ "phone_number",       \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           [ "enabled",            \&gst_network_interface_active, "%dev%",
+                                                                   \&gst_network_active_interfaces_get ],
+           [ "enabled",            \&gst_network_interface_active, IFACE,
+                                                                   \&gst_network_active_interfaces_get ],
+           [ "enabled",            \&gst_parse_trivial, 0 ]
+           ]
+             },
+    
+    "mandrake-9.0" =>
+	  {
+	    ifaces_get => \&gst_network_sysconfig_rh62_ifaces_get_existing,
+	    fn =>
+	    {
+        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT  => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE => "#iface#",
+        PAP   => "/etc/ppp/pap-secrets",
+        CHAP  => "/etc/ppp/chap-secrets",
+        PUMP  => "/etc/pump.conf"
+      },
+	    table =>
+          [
+           [ "bootproto",          \&gst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
+           [ "auto",               \&gst_parse_sh_bool, IFCFG, ONBOOT ],
+           [ "user",               \&gst_parse_sh_bool, IFCFG, USERCTL ],
+           [ "name",               \&gst_parse_sh,      IFCFG, NAME ],
+           [ "dev",                \&gst_parse_sh,      IFCFG, DEVICE ],
+           [ "address",            \&gst_parse_sh,      IFCFG, IPADDR ],
+           [ "netmask",            \&gst_parse_sh,      IFCFG, NETMASK ],
+           [ "broadcast",          \&gst_parse_sh,      IFCFG, BROADCAST ],
+           [ "network",            \&gst_parse_sh,      IFCFG, NETWORK ],
+           [ "gateway",            \&gst_parse_sh,      IFCFG, GATEWAY ],
+           [ "essid",              \&gst_parse_sh,      IFCFG, WIRELESS_ESSID ],
+           [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&gst_parse_sh_bool, IFCFG, PEERDNS ],
+           [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
+           [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
+           [ "mtu",                \&gst_parse_sh,      IFCFG, MTU ],
+           [ "mru",                \&gst_parse_sh,      IFCFG, MRU ],
+           [ "remote_address",     \&gst_parse_sh,      IFCFG, REMIP ],
+           [ "login",              \&gst_parse_sh,      IFCFG, PAPNAME ],
+           [ "password",           \&gst_network_get_pap_passwd, PAP,  "%login%" ],
+           [ "password",           \&gst_network_get_pap_passwd, CHAP, "%login%" ],
+           [ "serial_port",        \&gst_parse_sh,      IFCFG, MODEMPORT ],
+           [ "serial_speed",       \&gst_parse_sh,      IFCFG, LINESPEED ],
+           [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
+           [ "wvsection",          \&gst_parse_sh,      IFCFG, WVDIALSECT ],
+           [ "set_default_gw",     \&gst_parse_sh_bool, IFCFG, DEFROUTE ],
+           [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
+           [ "persist",            \&gst_parse_sh_bool, IFCFG, PERSIST ],
+           [ "serial_escapechars", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+           [ "serial_hwctl",       \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+           [ "phone_number",       \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
            [ "enabled",            \&gst_network_interface_active, IFACE,
                                                                    \&gst_network_active_interfaces_get ],
            [ "enabled",            \&gst_parse_trivial, 0 ]
@@ -2691,6 +2824,7 @@ sub gst_network_get_interface_parse_table
            [ "broadcast",          \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "broadcast" ],
            [ "network",            \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
            [ "gateway",            \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
+           [ "essid",              \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "wireless_essid" ],
            [ "wvsection",          \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
            [ "update_dns",         \&gst_network_pump_get_nodns,         PUMP, "%dev%", "%bootproto%" ],
            [ "update_dns",         \&gst_parse_kw,                       PPP_OPTIONS, "usepeerdns" ],
@@ -3069,12 +3203,12 @@ sub gst_network_get_interface_replace_table
 	  "redhat-7.0"   => "redhat-6.2",
 	  "redhat-7.1"   => "redhat-6.2",
 	  "redhat-7.2"   => "redhat-7.2",
-    "redhat-8.0"   => "redhat-7.2",
-    "redhat-9"     => "redhat-7.2",
+    "redhat-8.0"   => "redhat-8.0",
+    "redhat-9"     => "redhat-8.0",
 	  "mandrake-7.1" => "redhat-6.2",
     "mandrake-7.2" => "redhat-6.2",
-    "mandrake-9.0" => "redhat-6.2",
-    "mandrake-9.1" => "redhat-6.2",
+    "mandrake-9.0" => "mandrake-9.0",
+    "mandrake-9.1" => "mandrake-9.0",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-woody",
     "debian-sarge" => "debian-woody",
@@ -3158,6 +3292,7 @@ sub gst_network_get_interface_replace_table
         [ "broadcast",          \&gst_replace_sh,      IFCFG, BROADCAST ],
         [ "network",            \&gst_replace_sh,      IFCFG, NETWORK ],
         [ "gateway",            \&gst_replace_sh,      IFCFG, GATEWAY ],
+        [ "essid",              \&gst_replace_sh,      IFCFG, ESSID ],
         [ "update_dns",         \&gst_network_pump_set_nodns, PUMP, "%dev%", "%bootproto%" ],
         [ "update_dns",         \&gst_replace_sh_bool, IFCFG, PEERDNS ],
         [ "dns1",               \&gst_replace_sh,      IFCFG, DNS1 ],
@@ -3179,6 +3314,102 @@ sub gst_network_get_interface_replace_table
       ]
     },
    
+    "redhat-8.0" =>
+	  {
+      iface_set    => \&gst_network_rh62_interface_activate,
+      iface_delete => \&gst_network_rh72_interface_delete,
+      ifaces_get   => \&gst_network_sysconfig_rh72_ifaces_get_existing,
+      fn =>
+	    {
+        IFCFG => ["/etc/sysconfig/network-scripts/ifcfg-#iface#",
+                  "/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
+                  "/etc/sysconfig/networking/devices/ifcfg-#iface#"],
+        CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE  => "#iface#",
+        WVDIAL => "/etc/wvdial.conf",
+        PUMP   => "/etc/pump.conf"
+      },
+      table =>
+       [
+        [ "bootproto",          \&gst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
+        [ "auto",               \&gst_replace_sh_bool, IFCFG, ONBOOT ],
+        [ "user",               \&gst_replace_sh_bool, IFCFG, USERCTL ],
+        [ "name",               \&gst_replace_sh,      IFCFG, NAME ],
+        [ "dev",                \&gst_replace_sh,      IFCFG, DEVICE ],
+        [ "address",            \&gst_replace_sh,      IFCFG, IPADDR ],
+        [ "netmask",            \&gst_replace_sh,      IFCFG, NETMASK ],
+        [ "broadcast",          \&gst_replace_sh,      IFCFG, BROADCAST ],
+        [ "network",            \&gst_replace_sh,      IFCFG, NETWORK ],
+        [ "gateway",            \&gst_replace_sh,      IFCFG, GATEWAY ],
+        [ "essid",              \&gst_replace_sh,      IFCFG, WIRELESS_ESSID ],
+        [ "update_dns",         \&gst_network_pump_set_nodns, PUMP, "%dev%", "%bootproto%" ],
+        [ "update_dns",         \&gst_replace_sh_bool, IFCFG, PEERDNS ],
+        [ "dns1",               \&gst_replace_sh,      IFCFG, DNS1 ],
+        [ "dns2",               \&gst_replace_sh,      IFCFG, DNS2 ],
+        [ "mtu",                \&gst_replace_sh,      IFCFG, MTU ],
+        [ "mru",                \&gst_replace_sh,      IFCFG, MRU ],
+        [ "remote_address",     \&gst_replace_sh,      IFCFG, REMIP ],
+        [ "login",              \&gst_replace_sh,      IFCFG, PAPNAME ],
+        [ "serial_port",        \&gst_replace_sh,      IFCFG, MODEMPORT ],
+        [ "serial_speed",       \&gst_replace_sh,      IFCFG, LINESPEED ],
+        [ "ppp_options",        \&gst_replace_sh,      IFCFG, PPPOPTIONS ],
+        [ "wvsection",          \&gst_replace_sh,      IFCFG, WVDIALSECT ],
+        [ "set_default_gw",     \&gst_replace_sh_bool, IFCFG, DEFROUTE ],
+        [ "debug",              \&gst_replace_sh_bool, IFCFG, DEBUG ],
+        [ "persist",            \&gst_replace_sh_bool, IFCFG, PERSIST ],
+        [ "serial_escapechars", \&gst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+        [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+        [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+      ]
+    },
+   
+    "mandrake-9.0" =>
+	  {
+      iface_set    => \&gst_network_rh62_interface_activate,
+      iface_delete => \&gst_network_rh62_interface_delete,
+      ifaces_get   => \&gst_network_sysconfig_rh62_ifaces_get_existing,
+      fn =>
+	    {
+        IFCFG  => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE  => "#iface#",
+        WVDIAL => "/etc/wvdial.conf",
+        PUMP   => "/etc/pump.conf"
+      },
+      table =>
+       [
+        [ "bootproto",          \&gst_network_rh62_replace_bootproto, IFCFG, BOOTPROTO ],
+        [ "auto",               \&gst_replace_sh_bool, IFCFG, ONBOOT ],
+        [ "user",               \&gst_replace_sh_bool, IFCFG, USERCTL ],
+        [ "name",               \&gst_replace_sh,      IFCFG, NAME ],
+        [ "dev",                \&gst_replace_sh,      IFCFG, DEVICE ],
+        [ "address",            \&gst_replace_sh,      IFCFG, IPADDR ],
+        [ "netmask",            \&gst_replace_sh,      IFCFG, NETMASK ],
+        [ "broadcast",          \&gst_replace_sh,      IFCFG, BROADCAST ],
+        [ "network",            \&gst_replace_sh,      IFCFG, NETWORK ],
+        [ "gateway",            \&gst_replace_sh,      IFCFG, GATEWAY ],
+        [ "essid",              \&gst_replace_sh,      IFCFG, WIRELESS_ESSID ],
+        [ "update_dns",         \&gst_network_pump_set_nodns, PUMP, "%dev%", "%bootproto%" ],
+        [ "update_dns",         \&gst_replace_sh_bool, IFCFG, PEERDNS ],
+        [ "dns1",               \&gst_replace_sh,      IFCFG, DNS1 ],
+        [ "dns2",               \&gst_replace_sh,      IFCFG, DNS2 ],
+        [ "mtu",                \&gst_replace_sh,      IFCFG, MTU ],
+        [ "mru",                \&gst_replace_sh,      IFCFG, MRU ],
+        [ "remote_address",     \&gst_replace_sh,      IFCFG, REMIP ],
+        [ "login",              \&gst_replace_sh,      IFCFG, PAPNAME ],
+        [ "serial_port",        \&gst_replace_sh,      IFCFG, MODEMPORT ],
+        [ "serial_speed",       \&gst_replace_sh,      IFCFG, LINESPEED ],
+        [ "ppp_options",        \&gst_replace_sh,      IFCFG, PPPOPTIONS ],
+        [ "wvsection",          \&gst_replace_sh,      IFCFG, WVDIALSECT ],
+        [ "set_default_gw",     \&gst_replace_sh_bool, IFCFG, DEFROUTE ],
+        [ "debug",              \&gst_replace_sh_bool, IFCFG, DEBUG ],
+        [ "persist",            \&gst_replace_sh_bool, IFCFG, PERSIST ],
+        [ "serial_escapechars", \&gst_replace_sh_bool, IFCFG, ESCAPECHARS ],
+        [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
+        [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ]
+      ]
+    },
+
     "debian-2.2" =>
 	  {
       iface_set    => \&gst_network_rh62_interface_activate, # They use the same ifup/ifdown cmds.
@@ -3256,6 +3487,7 @@ sub gst_network_get_interface_replace_table
            [ "network",            \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "network" ],
            [ "gateway",            \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "gateway" ],
            [ "wvsection",          \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
+           [ "essid",              \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "wireless_essid" ],
            [ "update_dns",         \&gst_network_pump_set_nodns,           PUMP, "%dev%", "%bootproto%" ],
            [ "update_dns",         \&gst_replace_kw,                       PPP_OPTIONS, "usepeerdns" ],
 # not sup  [ "dns1",               \&gst_replace_sh,                       IFCFG,       DNS1 ],

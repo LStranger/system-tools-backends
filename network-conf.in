@@ -300,7 +300,7 @@ sub xml_print
          hostmatch workgroup smbdesc winsserver winsuse smbuse
          smartdhcpcd smbinstalled dialinstalled);
   my @array_keys =
-      qw(nameserver searchdomain order);
+      qw(wireless_device nameserver searchdomain order);
 
   &gst_xml_print_begin ();
 
