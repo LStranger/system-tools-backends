@@ -1397,11 +1397,11 @@ sub gst_service_gentoo_get_status
   return 0;
 }
 
-sub gst_service_freebsd_get_status
+sub gst_service_rcng_get_status
 {
   my ($service) = @_;
 
-  $line = gst_file_run_backtick ("/etc/rc.d/$service status");
+  $line = gst_file_run_backtick ("/etc/rc.d/$service forcestatus");
 
   return 1 if ($line =~ /pid [0-9]*/);
   return 0;
@@ -1431,7 +1431,7 @@ sub gst_service_get_status
 
        "gentoo"       => \&gst_service_gentoo_get_status,
 
-       "freebsd-5"    => \&gst_service_freebsd_get_status
+       "freebsd-5"    => \&gst_service_rcng_get_status
       );
   my $proc;
 
@@ -1627,6 +1627,14 @@ sub gst_service_gentoo_installed
   return 0;
 }
 
+sub gst_service_rcng_installed
+{
+  my ($service) = @_;
+
+  return 1 if ( -f "/etc/rc.d/$service");
+  return 0;
+}
+
 sub gst_service_installed
 {
   my ($service) = @_;
@@ -1636,6 +1644,9 @@ sub gst_service_installed
   return &gst_service_sysv_installed ($service) if (($type eq "sysv") || ($type eq "file-rc"));
   return &gst_service_bsd_installed ($service) if ($type eq "bsd");
   return &gst_service_gentoo_installed ($service) if ($type eq "gentoo");
+  return &gst_service_rcng_installed ($service) if ($type eq "rcng");
+
+  return 0;
 }
 
 sub gst_service_list_any_installed

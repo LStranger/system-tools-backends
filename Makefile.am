@@ -48,9 +48,9 @@ perl_libs = \
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh type1inst
 
 EXTRA_DIST = \
-	intltool-extract.in \
-	intltool-merge.in \
-	intltool-update.in \
+	intltool-extract \
+	intltool-merge \
+	intltool-update \
 	system-tools-backends.pc \
 	guess_system.sh \
 	type1inst       \

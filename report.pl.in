@@ -303,7 +303,7 @@ sub gst_report
      
      "service_status_running"   => ["info",  "Service [%s] is running."],
      "service_status_stopped"   => ["info",  "Service [%s] is stopped."],
-     "service_sysv_unsupported" => ["error", "No SystemV support for platform [%s]."],
+     "service_sysv_unsupported" => ["info",  "No SystemV support for platform [%s]."],
      "service_sysv_not_found"   => ["warn",  "Could not find SystemV scripts for service [%s]."],
      "service_sysv_no_runlevel" => ["warn",  "Could not find SystemV runlevel [%s] directory [%s]."],
      "service_sysv_remove_link" => ["info",  "Removed SystemV link [%s]."],
