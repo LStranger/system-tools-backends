@@ -1233,21 +1233,7 @@ sub xst_replace_xml_pcdata
 
   &xst_xml_model_set_pcdata ($branch, $data);
 
-  if ($compressed == 1)
-  {
-    $fd = &xst_file_open_write_compressed ($file);
-  }
-  else
-  {
-    $fd = &xst_file_open_write_from_names ($file);
-  }
-
-  if ($fd == -1) { return -1; }
-
-  print $fd &xst_xml_model_print ($model);
-  close $fd;
-
-  return 0;
+  return &xst_xml_model_save ($model, $file, $compressed);
 }
 
 sub xst_replace_xml_attribute
@@ -1260,21 +1246,7 @@ sub xst_replace_xml_attribute
 
   &xst_xml_model_set_attribute ($branch, $attr, $value);
 
-  if ($compressed == 1)
-  {
-    $fd = &xst_file_open_write_compressed ($file);
-  }
-  else
-  {
-    $fd = &xst_file_open_write_from_names ($file);
-  }
-
-  if ($fd == -1) { return -1; }
-
-  print $fd &xst_xml_model_print ($model);
-  close $fd;
-
-  return 0;
+  return &xst_xml_model_save ($model, $file, $compressed);
 }
 
 sub xst_replace_xml_pcdata_with_type
@@ -1288,21 +1260,7 @@ sub xst_replace_xml_pcdata_with_type
   &xst_xml_model_set_pcdata ($branch, $data);
   &xst_xml_model_set_attribute ($branch, "TYPE", $type);
 
-  if ($compressed == 1)
-  {
-    $fd = &xst_file_open_write_compressed ($file);
-  }
-  else
-  {
-    $fd = &xst_file_open_write_from_names ($file);
-  }
-
-  if ($fd == -1) { return -1; }
-
-  print $fd &xst_xml_model_print ($model);
-  close $fd;
-
-  return 0;
+  return &xst_xml_model_save ($model, $file, $compressed);
 }
 
 sub xst_replace_xml_attribute_with_type
@@ -1316,21 +1274,7 @@ sub xst_replace_xml_attribute_with_type
   &xst_xml_model_set_attribute ($branch, $attr, $value);
   &xst_xml_model_set_attribute ($branch, "TYPE", $type);
 
-  if ($compressed == 1)
-  {
-    $fd = &xst_file_open_write_compressed ($file);
-  }
-  else
-  {
-    $fd = &xst_file_open_write_from_names ($file);
-  }
-
-  if ($fd == -1) { return -1; }
-
-  print $fd &xst_xml_model_print ($model);
-  close $fd;
-
-  return 0;
+  return &xst_xml_model_save ($model, $file, $compressed);
 }
 
 sub xst_replace_alchemist
@@ -1380,6 +1324,7 @@ sub xst_replace_alchemist_print_option
   if (!$option)
   {
     $option = &xst_xml_model_add ($branch, "", $option_default);
+    &xst_xml_model_set_attribute ($option, "TYPE", "LIST");
   }
 
   # Set the option attributes.
@@ -1396,21 +1341,5 @@ sub xst_replace_alchemist_print_option
   &xst_xml_model_set_attribute ($node, "TYPE", "STRING");
   &xst_xml_model_set_attribute ($node, "VALUE", $value);
 
-  # Store it back.
-
-  if ($compressed == 1)
-  {
-    $fd = &xst_file_open_write_compressed ($file);
-  }
-  else
-  {
-    $fd = &xst_file_open_write_from_names ($file);
-  }
-
-  if ($fd == -1) { return -1; }
-
-  print $fd &xst_xml_model_print ($model);
-  close $fd;
-
-  return 0;
+  return &xst_xml_model_save ($model, $file, $compressed);
 }

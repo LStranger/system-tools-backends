@@ -531,7 +531,6 @@ sub xst_xml_model_scan_recurse
   return \@list;
 }
 
-
 sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
 {
   my ($file) = @_;
@@ -561,6 +560,28 @@ sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
   $tree = &xst_xml_model_scan_recurse;
 
   return $tree, $compressed;
+}
+
+sub xst_xml_model_save
+{
+  my ($model, $file, $compressed) = @_;
+  my $fd;
+
+  if ($compressed == 1)
+  {
+    $fd = &xst_file_open_write_compressed ($file);
+  }
+  else
+  {
+    $fd = &xst_file_open_write_from_names ($file);
+  }
+
+  if ($fd == -1) { return -1; }
+
+  print $fd &xst_xml_model_print ($model);
+  close $fd;
+
+  return 0;
 }
 
 # Quote/unquote.

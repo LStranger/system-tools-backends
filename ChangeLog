@@ -1,3 +1,13 @@
+2001-07-20  Hans Petter Jansson  <hpj@ximian.com>
+
+	* xml.pl.in (xst_xml_model_save): Implement.
+
+	* replace.pl.in (xst_replace_xml_pcdata): Use xst_xml_model_save ().
+	  (xst_replace_xml_attribute): Ditto.
+	  (xst_replace_xml_pcdata_with_type): Ditto.
+	  (xst_replace_xml_attribute_with_type): Ditto.
+	  (xst_replace_xml_alchemist_print_option): Ditto.
+
 2001-07-19  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_scan_make_kid_array): Accept '.' in attribute values.
