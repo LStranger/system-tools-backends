@@ -1,3 +1,7 @@
+2002-12-26  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* service-list.pl.in: added some descriptions to the list.
+
 2002-12-18  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network.pl.in: fixed ppp interface creation in debian (other distros

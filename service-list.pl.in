@@ -5,7 +5,7 @@
 #
 # Copyright (C) 2002 Ximian, Inc.
 #
-# Authors: Carlos Garnacho Parro <garparr@teleline.es>
+# Authors: Carlos Garnacho Parro <garnacho@tuxerver.net>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -32,20 +32,27 @@ sub xst_service_list_get_info
 	# This is the hash that describes all the known services
 	%service_description_list = 
 	(
+    # please, keep this list sorted
 		# service => [long_name, description]
-		"postgresql"	=>	["PosgreSQL Database Server", ""],
-		"xfs"		=>	["X Font Server", ""],
-		"iptables"	=>	["Iptables firewalling system", ""],
-		"sysklogd"	=>	["sysklogd - Linux system logging utilities", ""],
-		"klogd"		=>	["klogd - Kernel Log Daemon", ""],
-		"urandom"	=>	["urandom - kernel random number source devices", ""],
-		"cupsys"	=>	["CUPS - Common Unix Printing System", ""],
-		"gpm"		=>	["gpm - console mouse server", ""],
-		"inetd"		=>	["Inetd - internet superserver", ""],
-		"ssh"		=>	["ssh - OpenSSH SSH server", ""],
-		"apache"	=>	["Apache web server", ""],
-		"cron"		=>	["cron - daemon to execute scheduled commands", ""],
-		"gdm"		=>	["gdm - GNOME Display Manager", ""]
+		"apache"            =>	[ "web server", "" ],
+		"cron"              =>	[ "daemon to execute scheduled commands", "" ],
+		"cupsys"            =>	[ "Common Unix Printing System", "" ],
+    "fam"               =>  [ "file alteration monitor", "" ],
+    "gdm"               =>	[ "GNOME Display Manager", "gdm provides the GNOME equivalent of a «login:» prompt." ],
+		"gpm"               =>	[ "gpm - console mouse server", "" ],
+		"inetd"             =>	[ "internet superserver", "inetd allows running one daemon to invoke several others, reducing load on the system." ],
+		"iptables"          =>	[ "administration tool for IPv4 packet filtering and NAT", "Iptables is used to set up, maintain, and inspect the tables of IP packet filter rules in the Linux kernel." ],
+		"klogd"             =>	[ "Kernel Log Daemon", "klogd is a system daemon which intercepts and logs Linux kernel messages." ],
+    "portmap"           =>  [ "DARPA port to RPC program number mapper", "Portmap is a server that converts RPC program numbers into DARPA protocol port numbers.  It must be running in order to make RPC calls." ],
+    "postfix"           =>  [ "Mail Transport Agent", "" ],
+		"postgresql"        =>	[ "database server", "" ],
+    "ppp"               =>  [ "Point to Point Protocol daemon", "The  Point-to-Point Protocol (PPP) provides a method for transmitting datagrams over serial point-to-point links." ],
+    "setserial"         =>  [ "get/set serial port information", "setserial is a program designed to set and/or report the configuration information associated with a serial port." ],
+		"ssh"               =>	[ "OpenSSH SSH server", "ssh is a program for logging into a remote machine and for executing commands on a remote machine." ],
+		"sysklogd"          =>	[ "Linux system logging utilities", "Sysklogd provides two system utilities which provide support for system  logging  and  kernel  message  trapping." ],
+		"urandom"           =>	[ "kernel random number source devices", "The  random  number  generator  gathers environmental noise from device drivers and other sources into an entropy pool. From this entropy pool random numbers are created." ],
+    "vmware"            =>  [ "Intel(TM) x86(TM)-based virtual machine", "The vmware command starts an Intel X86-based virtual machine. This script manages the services needed to run VMware software." ],
+    "xfs"               =>	[ "X font server", "Xfs is the X Window System font server. It supplies fonts to X Window System display servers." ]
 	);
 
 	$desc = $service_description_list{$service};
