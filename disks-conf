@@ -37,7 +37,7 @@
 my $Usage =<<"End_of_Usage;";
 Usage: disks-conf <--get | --set | --filter | --help>
                   [--prefix <location>] [--disable-immediate]
-                  [--verbose]
+                  [--verbose] [--progress]
 
        Major operations (specify one of these):
 
