@@ -93,7 +93,7 @@ sub be_xml_scan_recurse
   {
 	$el = $be_xml_scan_list[0]; shift @be_xml_scan_list;
 	
-    if ((not $el) || $el =~ /^\<[!?].*\>$/s) { next; } # Empty strings, PI and DTD must go.
+    if (($el eq "") || $el =~ /^\<[!?].*\>$/s) { next; } # Empty strings, PI and DTD must go.
     if ($el =~ /^\<.*\/\>$/s) # Empty.
     {
 	    $el =~ /^\<([a-zA-Z_-]+).*\/\>$/s;
