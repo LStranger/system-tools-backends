@@ -3,6 +3,8 @@
 	* boot-conf.in, network-conf.in, network-pl-in, platform.pl.in,
 	  runlevel-conf.in, service.pl.in, time-conf.in, users-conf.in:
 	  Added RH8.0 in the supported distros list
+	* platform.pl.in: added codename for RH7.3, the dialog looks prettier
+	  with codenames :-)
 
 2002-12-28  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
