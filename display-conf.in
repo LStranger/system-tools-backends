@@ -31,7 +31,8 @@
 #
 
 require "___scriptsdir___/platform.pl";
-require "___scriptsdir___/x.pl";
+# require "___scriptsdir___/x.pl";
+require "./x.pl";
 
 # --- Tool information --- #
 
@@ -47,14 +48,16 @@ end_of_description;
 
 $platmap =
 {
-  "redhat-7.0"   => XFree4,
-  "redhat-7.1"   => XFree4,
+  "redhat-7.0"     => XFree4,
+  "redhat-7.1"     => XFree4,
   "turbolinux-7.0" => XFree4,
 };
 
 $filemap = {
   XFree4 => "/etc/X11/XF86Config-4",
 };
+
+@display_sections = qw(Device Monitor Screen Display ServerLayout);
 
 sub distro_file
 {
@@ -63,6 +66,27 @@ sub distro_file
 
 # --- XML parsing ---
 # Scan XML from standard input to an internal tree.
+
+sub xml_parse ()
+{
+  my ($tree, $hash);
+
+  $tree = &xst_xml_scan ();
+
+  # This is the top level - find and enter the "Display" tag.
+
+  shift @$tree;
+  
+  while (@$tree)
+  {
+    if ($$tree[0] eq "Display") { $hash = &x_xml_parse ($$tree[1], $hash); }
+    
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return($hash);
+}
 
 sub xml_print
 {
@@ -81,7 +105,7 @@ sub xml_print
     my ($arrayref) = $$config{$section};
 
     foreach $hash (@$arrayref) {      
-      &x_xml_print_section ($hash, $section);
+      &x_xml_print_section ($hash, $section, \@display_sections);
       &xst_xml_print_vspace ();
     }
   }
@@ -91,90 +115,16 @@ sub xml_print
 
 # Configuration handling.
 
-# Sections hash is in format:
-# %sections = ( Section name => {
-#                 keywords => {
-#                   keyword1, \&function_to_parse_keyword1,
-#                   ...
-#                 },
-#                 options => (list of known options)
-#               }
-#               ...
-#              )
-# Note that "Section name" must match with real section name,
-# same about "keyword1" and list of options.
-#
-# currently implemented functions to parse sections:
-# general_parse_kw, parse_range_hz, parse_kw_list
-
-my %sections = (
-                Monitor => {
-                  keywords => {
-                    ( Identifier,  \&general_parse_kw ),
-                    ( VendorName,  \&general_parse_kw ),
-                    ( ModelName,   \&general_parse_kw ),
-                    ( HorizSync,   \&parse_range_hz   ),
-                    ( VertRefresh, \&parse_range_hz   ),
-                    ( Mode,        \&parse_modeline   ),
-                    ( ModeLine,    \&parse_modeline   ),
-                  },
-                  options => [(DPMS, SyncOnGreen)],
-                },
-                Device => {
-                  keywords => {
-                    ( Identifier,    \&general_parse_kw ),
-                    ( Driver,        \&general_parse_kw ),
-                    ( BusID,         \&general_parse_kw ),
-                    ( Screen,        \&general_parse_kw ),
-                    ( Chipset,       \&general_parse_kw ),
-                    ( Ramdac,        \&general_parse_kw ),
-                    ( ClockChip,     \&general_parse_kw ),
-                    ( VideoRam,      \&general_parse_kw ),
-                    ( BiosBase,      \&general_parse_kw ),
-                    ( MemBase,       \&general_parse_kw ),
-                    ( IOBase,        \&general_parse_kw ),
-                    ( ChipID,        \&general_parse_kw ),
-                    ( ChipRev,       \&general_parse_kw ),
-                    ( TextClockFreq, \&general_parse_kw ),
-                  },
-                  options => [()],
-                },
-                Screen => {
-                  keywords => {
-                    ( Identifier,   \&general_parse_kw ),
-                    ( Device,       \&general_parse_kw ),
-                    ( Monitor,      \&general_parse_kw ),
-                    ( DefaultDepth, \&general_parse_kw ),
-                    ( DefaultFbBpp, \&general_parse_kw ),
-                  },
-                  options => [()],
-                  Display => {
-                    keywords => {
-                      ( Depth, \&general_parse_kw ),
-                      ( Modes, \&parse_kw_list ),
-                    }
-                  }
-                },
-                ServerLayout => {
-                  keywords => {
-                    ( Identifier, \&general_parse_kw ),
-                    ( Screen,     \&general_parse_kw ),
-                  },
-                  options => [()],
-                }
-                
-                );
-
-sub get_config
+sub parse
 {
-  return &xst_xfree4_conf_get (&distro_file (), \%sections);
+  return &x_parse (&distro_file ());
 }
 
 # Top-level actions.
 
 sub get
 {
-  my $config = &get_config ();
+  my $config = &parse ();
       
   &xst_end();
   &xml_print ($config);
@@ -182,14 +132,17 @@ sub get
 
 sub set
 {
+  my $config = &parse ();
+  my $xml_config = &xml_parse ();  
+  
   &xst_end ();
+  &x_config_set (&distro_file (), $config, $xml_config);
 }
 
 sub filter
 {
-  my $config;
-
-  $config = &xml_parse ();
+  my $config = &xml_parse ();
+  
   &xst_end ();
   &xml_print ($config);
 }
@@ -203,8 +156,8 @@ sub filter
 $directives = {
   "get"    => [ \&get,    [], "" ],
   "set"    => [ \&set,    [], "" ],
-  "filter" => [ \&filter, [], "" ]
-    };
+  "filter" => [ \&filter, [], "" ],
+};
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);
 &xst_platform_ensure_supported ($tool, @platforms);

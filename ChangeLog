@@ -1,3 +1,14 @@
+2001-06-29  Tambet Ingo  <tambet@ximian.com>
+
+	* display-conf.in (xml_parse): Write conf when asked to.
+
+	* x.pl.in (x_update_section): Now we can write XF86Config files too.
+
+2001-06-27  Tambet Ingo  <tambet@ximian.com>
+
+	* util.pl.in (xst_ignore_line): Allow spaces before comments at
+	the start of a line.
+
 2001-06-29  Hans Petter Jansson  <hpj@ximian.com>
 
 	This implements printer settings replacement and makes more code
@@ -108,6 +119,7 @@ Tue Jun 12 04:41:33 2001  Arturo Espinosa  <arturo@ximian.com>
 	  (xst_replace_cap): Implement.
 	  (xst_replace_remove_cap_section): Implement.
 
+>>>>>>> 1.280
 2001-06-26  Tambet Ingo  <tambet@ximian.com>
 
 	* xml.pl.in (xst_xml_get_text): ref safe now. Don't return 'ARRAY'

@@ -39,6 +39,69 @@ require "___scriptsdir___/xml.pl";
 # DRI
 # Vendor
 
+$sections = {};
+
+$sections = {
+  Monitor => {
+    KEY => Identifier,
+    keywords => {
+      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      VendorName => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      ModelName  => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      HorizSync  => [ \&parse_range_hz,  \&xml_parse_kw_unique ],
+      VertRefresh =>[ \&parse_range_hz,  \&xml_parse_kw_unique ],
+      Mode       => [ \&parse_modeline,  \&xml_parse_kw_unique ],
+      ModeLine   => [ \&parse_modeline,  \&xml_parse_kw_unique ],
+    },
+    options => {},
+  },
+  Device => {
+    KEY => Identifier,
+    keywords => {
+      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Driver     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      BusID      => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Screen     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Chipset    => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Ramdac     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      ClockChip  => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      VideoRam   => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      BiosBase   => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      MemBase    => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      IOBase     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      ChipID     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      ChipRev    => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      TextClockFreq => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+    },
+    options => {},
+  },
+  Screen => {
+    KEY => Identifier,
+    keywords => {
+      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Device     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Monitor    => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      DefaultDepth => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      DefaultFbBpp => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+    },
+    options => {},
+    Display => {
+      KEY => Depth,
+      keywords => {
+        Depth => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+        Modes => [ \&parse_kw_list, \&xml_parse_kw_list ],
+      }
+    }
+  },
+  ServerLayout => {
+    KEY => Identifier,
+    keywords => {
+      Identifier => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+      Screen     => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
+    },
+    options => {},
+  }
+};
 
 
 # Difference from xst_item_is_in_list is that XF86Config keywords are
@@ -78,7 +141,7 @@ sub x_section_start
 {
   my $line = shift;
   my $subsection = shift;
-  my (@section_list) = @_;
+  my (@section_list) = keys %$sections;
 
   if ($subsection) {
     return $1 if ($line =~ /^\s*Subsection\s+\"([a-zA-Z]+)\"/i);
@@ -134,7 +197,25 @@ sub general_parse_section
 }
 
 # Parse general unique value 
-sub general_parse_kw
+sub parse_kw_unique
+{  
+  my ($line) = shift;
+  my ($kw) = shift @$line;
+  my ($val);
+
+  foreach (@$line) {
+    last if /^\#/;
+    $val .= $_ . ' ';
+  }
+  
+  chop $val;                # Remove trailing space
+  $val =~ s/\"//g if $val;  # Remove quotes.
+  
+  bless [ $kw, $val ], "XstXKeywordUnique";
+}
+
+# Parse general value with non-unique value
+sub parse_kw
 {  
   my ($line) = shift;
   my ($kw) = shift @$line;
@@ -151,22 +232,22 @@ sub general_parse_kw
   bless [ $kw, $val ], "XstXKeyword";
 }
 
-# Parse general value with non-unique value
+# Parse something like: 'Modes "640x480" "800x600" "1024x768" "1280x1024"'
 sub parse_kw_list
 {  
   my ($line) = shift;
   my ($kw) = shift @$line;
-  my ($val);
+  my (@val);
 
+  push @val, $kw;
+  
   foreach (@$line) {
     last if /^\#/;
-    $val .= $_ . ' ';
+    s/\"//g;    
+    push @val, $_;
   }
   
-  chop $val;                # Remove trailing space
-  $val =~ s/\"//g if $val;  # Remove quotes.
-  
-  bless [ $kw, $val ], "XstXKeywordList";
+  bless \@val, "XstXKeywordList";
 }
 
 # Parse VertRefresh and HorizSync
@@ -271,13 +352,20 @@ sub add2section
   my $source = shift;
   my $type = ref ($source);
 
-  if ($type eq "XstXKeyword") {
+  if ($type eq "XstXKeywordUnique") {
     $dest->{$$source[0]} = $$source[1];
   }
 
-  elsif ($type eq "XstXKeywordList") {    
+  elsif ($type eq "XstXKeyword") {    
     push @ {$dest->{$$source[0]}}, $$source[1];
     bless $dest->{$$source[0]}, $type;
+  }
+
+  elsif ($type eq "XstXKeywordList") {
+    my $kw = shift @$source;
+
+    foreach (@$source) { push @{$dest->{$kw}}, $_; }
+    bless $dest->{$kw}, $type;
   }
 
   elsif ($type eq "XstXOption") {
@@ -296,7 +384,7 @@ sub add2section
     my ($name) = shift @$source;
 
     foreach (@$source) { push @{$dest->{'ModeLine'}{$name}}, $_; }
-#    bless $dest->{'ModeLine'}{$name}, $type;
+    bless $dest->{'ModeLine'}, $type;
   }    
   
   else {
@@ -305,15 +393,15 @@ sub add2section
   }
 }
 
-# get_section:
+# x_parse_section:
 # Parses Sections from XF86Config.
 #
 # Returns hash containg the section.
-sub get_section
+sub x_parse_section
 {
   my ($config, $buff, $section_desc, $section) = @_;
   my ($keywords) = $section_desc->{keywords};
-  my ($options) = $section_desc->{options};
+  my ($options) = $section_desc->{options};  
   my (@line, $ref);
 
   my $hash = bless {}, "XstX" . $section;
@@ -322,7 +410,7 @@ sub get_section
     my ($kw, $func);
     
     if ($kw = &xst_x_keyword_in_list ($line[0], keys %$keywords)) {
-      $func = $$keywords{$kw};
+      $func = $keywords->{$kw}[0];
     }
     
     elsif ($line[0] =~ /^Option/i && &xst_x_option_in_list ($line[1], @$options)) {
@@ -330,7 +418,7 @@ sub get_section
     }
 
     elsif (exists $section_desc->{$line[0]}) {
-      &get_section ($hash, $buff, $section_desc->{$line[0]}, $line[0]);
+      &x_parse_section ($hash, $buff, $section_desc->{$line[0]}, $line[0]);
     }
     
     if ($func) {
@@ -343,15 +431,16 @@ sub get_section
   &section2config ($config, $hash, $section);
 }
 
-sub xst_xfree4_conf_get
+# Main parser from XF86Config file to XstXConfig
+sub x_parse
 {
-  my ($fname, $section_list) = @_;
+  my $fname = shift;
   my ($file, $section);
   local *FILE;
   my ($config) = bless {}, "XstXConfig";
 
   $file = &xst_file_open_read_from_names ($fname);
-  return undef if not $file;
+  return undef unless $file;
   *FILE = $file;
 
   while (<FILE>)
@@ -359,12 +448,12 @@ sub xst_xfree4_conf_get
     next if &xst_ignore_line ($_);
     chomp;
 
-    $section = &x_section_start ($_, 0, keys %$section_list);
+    $section = &x_section_start ($_, 0);
     if ($section) {
-      &get_section ($config, \*FILE, $section_list->{$section}, $section);
+      &x_parse_section ($config, \*FILE, $sections->{$section}, $section);
     }
   }
-
+  
   close (FILE);
 
   return $config;
@@ -402,8 +491,11 @@ sub x_xml_print_section
 {
   my $hash = shift;
   my $section = shift;
+  my $section_list = shift;
   my ($key);
 
+  return if (!&xst_x_keyword_in_list ($section, @$section_list));
+  
   &xst_xml_container_enter ("$section");
 
   foreach $key (keys %$hash) {
@@ -413,6 +505,10 @@ sub x_xml_print_section
       &xst_xml_print_pcdata ($key, $$hash{$key});
     }
     
+    elsif ($type eq "XstXKeyword") {
+      &x_xml_print_array ($key, $hash->{$key});
+    }
+
     elsif ($type eq "XstXKeywordList") {
       &x_xml_print_array ($key, $hash->{$key});
     }
@@ -428,12 +524,16 @@ sub x_xml_print_section
     elsif ($type eq "XstXDisplay") {
       &x_xml_print_hash ($key, $hash->{$key});
     }
+
+    elsif ($type eq "XstXModeLine") {
+      &x_xml_print_hash ($key, $hash->{$key});
+    }
     
     elsif ($type eq "XstXSubsection") {
       my ($tmp);
       
       foreach $tmp (@{$hash->{$key}}) {
-        &x_xml_print_section ($tmp, $key);
+        &x_xml_print_section ($tmp, $key, $section_list);
       }
     }
     
@@ -445,5 +545,298 @@ sub x_xml_print_section
 
   &xst_xml_container_leave ();  
 }
+
+# XML parser
+
+# Internal
+sub xml_parse_kw_unique
+{
+  my $kw = shift;
+  my $val = &xst_xml_get_text (shift);
+
+  bless [ $kw, $val ], "XstXKeywordUnique";
+}
+
+# Internal
+sub xml_parse_kw_list
+{
+  my $kw = shift;
+  my $val = &xst_xml_get_text (shift);
+
+  bless [ $kw, $val ], "XstXKeywordList";
+}
+
+# Internal
+sub x_xml_parse_section
+{
+  my ($config, $tree, $section_desc, $section) = @_;
+  my ($keywords) = $section_desc->{'keywords'};
+  my ($options) = $section_desc->{'options'};
+  my ($val, $type);
+
+  my $hash = bless {}, "XstX" . $section;
+  shift @$tree;
+
+  while (@$tree) {
+    my ($ref, $func);
+
+    if (exists $keywords->{$$tree[0]}) {
+      $func = $keywords->{$$tree[0]}[1];
+      $ref = &$func ($$tree[0], $$tree[1]);
+    }
+    
+    elsif (exists $options->{$$tree[0]}) {
+      $func = $options->{$$tree[0]}[1];
+      $ref = &$func ($$tree[0], $$tree[1]);
+    }
+
+    elsif (exists $section_desc->{$$tree[0]}) {
+      &x_xml_parse_section ($hash, $$tree[1], $section_desc->{$$tree[0]}, $$tree[0]);
+    }
+    
+    if ($ref) {
+      &add2section ($hash, $ref);
+    }
+  
+    shift @$tree;
+    shift @$tree;
+  }
+  
+  &section2config ($config, $hash, $section);
+}
+
+sub x_xml_parse
+{  
+  my $tree = shift;
+  my $config = shift;  
+  
+  shift @$tree;  # Skip attributes.
+
+  $config = bless {}, "XstXConfig";
+  
+  while (@$tree) {
+    my ($section);
+
+    if ($section = &xst_x_keyword_in_list ($$tree[0], keys %$sections)) {
+      &x_xml_parse_section ($config, $$tree[1], $sections->{$section}, $section);
+    }
+    
+    else {
+      # TODO: Probably give a warning.
+      1;
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return $config;
+}
+
+# Update functions
+
+sub x_delete_section
+{
+  my $infd = shift;
+  my $sub_sec = shift;
+
+  while (<$infd>) {
+    return if &x_section_end ($_, $sub_sec);
+  }
+}
+
+sub x_update_keyword
+{
+  my ($line, $section, $new_section, $kw) = @_;
+  
+  if (exists ($new_section->{$kw})) {
+    my $type = ref ($new_section->{$kw});
+
+    if (!$type) {
+      $line =~ s/$section->{$kw}/$new_section->{$kw}/;
+    }
+
+    elsif ($type eq "XstXKeywordList") {
+      my $array = $section->{$kw};
+      my $new_array = $new_section->{$kw};
+      my $i = 0;
+
+      # Take the name of keyword.
+      my $new_line = $1 if $line =~ s/^([ \t]*\S+[ \t]*)//;
+                               
+      while (1) {
+        my $a = $1 if $line =~ s/^(\S+[ \t]*)//;
+        
+        if ($$new_array[$i]) {
+          $a =~ s/$$array[$i]/$$new_array[$i]/;
+          $new_line .= $a;
+        } else {
+          last;
+        }
+        $i++;
+      }
+      $line = $new_line . "\n";
+    }
+
+    else {
+      # TODO: Implement, give warning.
+      1;
+    }
+
+    delete $new_section->{$kw};
+    return $line;
+  }
+  
+  # Known keyword, doesn't exist, let' remove.
+  return "";
+}
+
+sub x_add_keyword
+{
+  my ($outfd, $new_section, $pre_space, $val_col) = @_;
+  my ($key);
+
+  foreach $key (keys %$new_section) {
+    my ($kw, $val);
+    my $type = ref ($new_section->{$key});
+
+    if (!$type) {
+      $kw = "$key";
+      $val = "$new_section->{$key}";
+    }
+
+    elsif ($type eq "XstXKeywordList") {
+      foreach (@{$new_section->{$key}}) {
+        $val .= "$_ ";
+      }
+      chop $val;
+      $kw = "$key";
+    }
+
+    elsif ($type eq "XstXSubsection") {
+      my $sub_space = $pre_space . " " x 4;
+
+      foreach (@{$new_section->{$key}}) {
+        if (scalar keys %$_) {
+          print $outfd $pre_space, "Subsection \"$key\"\n";
+          &x_add_keyword ($outfd, $_, $sub_space, $val_col);
+          print $outfd $pre_space, "EndSubsection\n";
+        }
+      }
+    }
+
+    else {
+      # TODO: give warning.
+      1;
+    }
+
+    if ($kw) {
+      print $outfd $pre_space, $kw;
+
+      if ($val) {
+        my $spaces = " " x ($val_col - length ($kw));
+        print $outfd $spaces, $val;
+      }
+
+      print $outfd "\n";
+    }
+  }
+}
+
+sub x_update_section
+{
+  my ($infd, $outfd, $config, $xml_config, $section_name, $section_list, $sub_sec, $section_start) = @_;
+  my ($section, $new_section, $ident_str);
+  my ($pre_space, $val_col);
+  
+  my $section = shift @{$config->{$section_name}};
+  my $ident_str = $section_list->{$section_name}{KEY};
+
+  # Find section from xml config
+  foreach (@{$xml_config->{$section_name}}) {
+    if ($_->{$ident_str} eq $section->{$ident_str}) {
+      $new_section = $_;
+      last;
+    }
+  }
+  
+  unless ($new_section) {
+    &x_delete_section ($infd, $sub_sec);
+    return;
+  }
+
+  print $outfd $section_start;
+  
+  while ($line = <$infd>) {
+    if (&x_section_end ($line, $sub_sec)) {
+
+      &x_add_keyword ($outfd, $new_section, $pre_space, $val_col);
+      
+      print $outfd $line;
+      return;
+    }
+
+    my $kw = $2 if ($line =~ /^([ \t]*)(\w+)([ \t]+)/);
+    
+    if ($kw) {
+
+      $pre_space = $1;
+      $val_col = length ($kw) + length ($3);
+      
+      # Keyword
+      if (exists $section_list->{$section_name}{'keywords'}{$kw}) {
+        $line = &x_update_keyword ($line, $section, $new_section, $kw);
+      }
+
+      # Option
+      elsif (exists $section_list->{$section_name}{'options'}{$kw}) {
+        # TODO: Implement.
+        1;
+      }
+          
+      # Subsection
+      elsif ($s = &x_section_start ($line, 1)) {
+        &x_update_section ($infd, $outfd, $section, $new_section,
+                           $s, $section_list->{$section_name}, 1, $line);
+        next;
+      }
+      
+    }
+    
+    print $outfd $line;
+  }
+}
+
+sub x_config_set
+{
+  my $fname = shift;
+  my $config = shift;
+  my $xml_config = shift;
+
+#  open ($infd, "$fname");
+#  open ($outfd, ">$fname");
+  
+  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($fname);
+  return undef unless $outfd;
+
+  while (<$infd>)
+  {
+    if (&xst_ignore_line ($_)) {
+      print $outfd $_ ;
+      next;
+    }
+
+    $section = &x_section_start ($_, 0);
+    if ($section) {
+      &x_update_section ($infd, $outfd, $config, $xml_config, $section, $sections, 0, $_);
+      next;
+    }
+    print $outfd $_;
+  }
+
+  close ($infd);
+  close ($outfd);
+}
+
 
 1;

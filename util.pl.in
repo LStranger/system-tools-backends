@@ -93,7 +93,7 @@ sub xst_push_unique
 
 sub xst_ignore_line
 {
-  if (($_[0] =~ /^\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return 1; }
+  if (($_[0] =~ /^[ \t]*\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return 1; }
   return 0;
 }
 
