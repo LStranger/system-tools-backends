@@ -1,3 +1,9 @@
+2004-06-08  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* file.pl.in (gst_file_get_cmd_path): added LC_ALL=C when running
+	  a command, this should get rid of any problem when running obscure 
+	  i18n-ed commands. Very probably fixes bug #142786
+
 2004-05-28  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* boot-grub.pl.in (gst_boot_grub_get_config_file): placed menu.lst
