@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-01-22 12:41+0100\n"
+"POT-Creation-Date: 2005-02-06 15:18+0100\n"
 "PO-Revision-Date: 2005-01-22 21:30+0800\n"
 "Last-Translator: Funda Wang <fundawang@linux.net.cn>\n"
 "Language-Team: zh_CN  <i18n-translation@lists.linux.net.cn>\n"
@@ -831,8 +831,8 @@ msgid "Access to floppy drives"
 msgstr "访问软盘驱动器"
 
 #: users-conf.in:186
-msgid "Mount removable devices automatically"
-msgstr "自动挂载可移动设备"
+msgid "Enable access to external storage devices automatically"
+msgstr "允许自动访问外部存储设备"
 
 #: users-conf.in:187
 msgid "Access to tape drives"
@@ -842,10 +842,10 @@ msgstr "访问磁带驱动器"
 msgid "Be able to get administrator privileges"
 msgstr "可以获得管理员权限"
 
-#: users-conf.in:459
+#: users-conf.in:491
 msgid "Default"
 msgstr "默认"
 
-#: users-conf.in:460
+#: users-conf.in:492
 msgid "Default profile"
 msgstr "默认配置文件"
