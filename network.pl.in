@@ -247,6 +247,22 @@ sub gst_network_enable_isdn
   return &gst_file_run ($command);
 }
 
+sub drop_dhcp_connection ($dev)
+{
+  my ($dev) = @_;
+  my ($pidfile, $buf, $pid);
+
+  $pidfile = "/var/run/dhclient.$dev.pid";
+
+  if (&gst_file_exists ($pidfile))
+  {
+      $buf = &gst_file_buffer_load ($pidfile);
+      $pid = $$buf[0];
+
+      &gst_file_run ("kill -9 $pid");
+  }
+}
+
 sub gst_network_enable_iface_with_config
 {
   my ($hash) = @_;
@@ -264,6 +280,8 @@ sub gst_network_enable_iface_with_config
 
   $command = "$command_ifconfig $dev down";
   $ret = &gst_file_run ($command);
+
+  &drop_dhcp_connection ($dev);
 
   if (exists ($$hash{"configuration"}))
   {

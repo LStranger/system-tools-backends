@@ -1,3 +1,9 @@
+2005-01-22  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in (drop_dhcp_connection): function to drop dhclient
+	proccess when disabling an interface. (enable_iface_with_config): use
+	this. Definitely fixes bug #157343
+
 2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* network.pl.in: use [0-9*#]+ as regexp for getting the dial prefix
