@@ -249,12 +249,12 @@ sub xst_network_rh62_interface_set_by_dev
   if ($enabled)
   {
     print STDERR "\n\nifup $dev\n\n";
-#    return -1 if &xst_run ("ifup $dev");
+    return -1 if &xst_run ("ifup $dev");
   }
   else
   {
     print STDERR "\n\nifdown $dev\n\n";
-#    return -1 if &xst_run ("ifdown $dev");
+    return -1 if &xst_run ("ifdown $dev");
   }
 
   return 0;
