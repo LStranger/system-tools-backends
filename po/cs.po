@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-setup-tools VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-12-24 20:41+0100\n"
-"PO-Revision-Date: 2004-12-25 15:58+0100\n"
+"POT-Creation-Date: 2005-01-02 12:32+0100\n"
+"PO-Revision-Date: 2005-01-02 15:11+0100\n"
 "Last-Translator: Miloslav Trmac <mitr@volny.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -864,9 +864,8 @@ msgstr "Implicitní úroveň běhu"
 msgid "Networkless runlevel"
 msgstr "Úroveň běhu bez sítě"
 
-# FIXME: s/monitorize/monitor/
 #: users-conf.in:179
-msgid "Monitorize system logs"
+msgid "Monitor system logs"
 msgstr "Sledovat záznamy systému"
 
 #: users-conf.in:180
@@ -882,8 +881,8 @@ msgid "Access to modem devices"
 msgstr "Přístup k zařízením modemu"
 
 #: users-conf.in:183
-msgid "Connect to internet through modem devices"
-msgstr "Připojit se k internetu zařízeními modemu"
+msgid "Connect to Internet through modem devices"
+msgstr "Připojit se k Internetu zařízeními modemu"
 
 #: users-conf.in:184
 msgid "Send and receive faxes"
