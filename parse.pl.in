@@ -503,7 +503,7 @@ sub gst_parse_split_hash
     @line = split ($key_re, $_, 2);
 
     $key = shift (@line);
-    $res{$key} = [ split ($value_re, $line[0]) ];
+    push @{$res{$key}}, split ($value_re, $line[0]);
   }
 
   &gst_file_close ($fd);
