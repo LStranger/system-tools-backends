@@ -1809,14 +1809,14 @@ sub xst_network_debian_woody_get_auto_by_stanza
     }
   }
 
-  return 0;
+  return undef;
 }
 
 sub xst_network_debian_woody_get_auto
 {
   my ($file, $iface) = @_;
 
-  return &xst_network_debian_woody_get_auto_by_stanza ($file, $iface);
+  return (&xst_network_debian_woody_get_auto_by_stanza ($file, $iface) ne undef)? 1 : 0;
 }
 
 sub xst_network_debian_woody_set_auto

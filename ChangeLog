@@ -1,3 +1,8 @@
+2001-12-17  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_debian_woody_get_auto): Hmm... this
+	should return 1/0. Fixes #12983
+
 2001-12-16  Chema Celorio  <chema@celorio.com>
 
 	* network-conf.in: remove rh 7.2 from supported list
