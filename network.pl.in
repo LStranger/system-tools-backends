@@ -4723,7 +4723,7 @@ sub gst_network_get_replace_table
            [ "smbdesc",       \&gst_replace_ini,              SMB_CONF,    "global", "server string" ],
            [ "winsserver",    \&gst_replace_ini,              SMB_CONF,    "global", "wins server" ],
            [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,    "global", "wins support" ],
-           [ "smbuse",        \&gst_service_sysv_set_status,  91, "smb", "%smbuse%" ],
+           [ "smbuse",        \&gst_service_sysv_set_status,  91, "samba" ],
            [ "dialing",       \&gst_network_dialing_set,      [WVDIAL, OLD_HASH] ],
            [ "interface",     \&gst_network_interfaces_set,		OLD_HASH ]
            ]
