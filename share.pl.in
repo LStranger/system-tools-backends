@@ -402,8 +402,7 @@ sub xst_share_replace_nfs_exports
   $outfd = &xst_file_open_write_from_names ($file);
   if (not $outfd) { return; }
 
-  # We rewrite everything, as we have complete command of the things to go
-  # in this file.
+  # We rewrite everything. This is not really a good solution, since we lose unhandled options.
 
   for $export (@$table)
   {

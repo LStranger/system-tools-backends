@@ -309,7 +309,7 @@ sub xml_parse_export
     if ($path ne "")
     {
       &xst_share_smb_info_set_name    ($info, $name);
-      &xst_share_smb_info_set_point   ($info, $point);
+      &xst_share_smb_info_set_point   ($info, $path);
       &xst_share_smb_info_set_comment ($info, $comment);
       &xst_share_smb_info_set_enabled ($info, $enabled);
       &xst_share_smb_info_set_browse  ($info, $browseable);

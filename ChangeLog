@@ -1,3 +1,7 @@
+2001-05-22  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in (xml_parse_conf): It's path, not point.
+
 2001-05-20  Theo van Klaveren <t.vanklaveren@student.utwente.nl>
 
 	* filesys.pl.in (xst_filesys_mount_cmd_parse): New function,
