@@ -1,5 +1,8 @@
 2001-07-12  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* users-conf.in (xml_parse_users): Ignore files and shells
+	tags when parsing, instead of complaining.
+
 	* file.pl.in (xst_file_open_write_from_names): Wrong report
 	call.
 
