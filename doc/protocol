@@ -6,12 +6,12 @@ Arturo Espinosa <arturo@ximian.com>
 
 
 We have our own format to report eventualities during the run of a backend
-directive. This format is line-oriented, with fields divided by '::'. This
-string can be used within a value by escaping it with '\::'. \ is escaped
+directive. This format is line-oriented, with fields divided by '::'. The
+sepparator can be used within a value by escaping it with '\::'. \ is escaped
 using '\\' (we haven't implemented escaping jet). Every line looks like
 this:
 
-minor_key::printf_format::arg1...::argN
+major::minor::printf_format::arg1...::argN
 
 The advantage of this line-oriented format is that all the reports can be
 parsed individually as they appear, instead of having to wait for all of
@@ -20,25 +20,24 @@ don't think there will be any problem wrapping this with CORBA, although
 the round trip cost may be an issue.
 
 The printf_format field is translated at runtime in the backend using
-gettext. If there is a minor key, where is the major? Well, it is not
-printed a the moment, but the major will appear before the minor real soon
-now. An example of a current report line is:
+gettext. An example of a report line is:
 
-parse_sh::Getting shell option [%s] from [%s].::HELLO::/etc/file
+info::parse_sh::Getting shell option [%s] from [%s].::HELLO::/etc/file
 
 A report block is a set of report lines, which ends with the "end" report,
 which looks like this:
 
-end::End of work report.
+sys::end::End of work report.
 
-(or in Spanish, for example, end::Fin del reporte de progreso.).
+(or in Spanish, for example, sys::end::Fin del reporte de progreso.).
 
-So, the minor_key is used for computer recognition, and the format can be
+So, mayors and minors are used for computer recognition, and the format can be
 used to optionally display stuff on the GUI. The current fontend code can
 hook any minor to a set of functions, which will be called every time such
-report appears. In the future, both the major, which will be transfered,
-and the minor will have to match, and there will be a default policy for
-every major. Majors can be "sys", "info", "error" and "warning".
+report appears. Note that all minors are different: there can't be equal
+minors, even if they have a different major. The major is useful to set
+default policy handlers at the frontend level. Majors can be "sys", "info",
+"error", "warning" and "debug".
 
 
 - How backends work on interactive mode
@@ -53,16 +52,17 @@ At first, the backend initializes, and dumps a report block where it
 states all kind of stuff, like platform detection and support and other
 things. This may look like so, after some backup report lines:
 
-platform_success::Configuring for platform [%s].::mandrake-7.2
-end::End of work report.
+sys::platform_success::Configuring for platform [%s].::mandrake-7.2
+sys::end::End of work report.
 
 
 -- Directive line format
 
 
 The main loop has now started, where the backend waits for a directive to
-be received. A directive line has almost the same format as a report line,
-but it doesn't have a format field. An example directive is:
+be received. A directive line has the same format as a report line, being
+the first field the name of the directive and the rest for parameters that
+the directive may require. An example directive is:
 
 enable_iface::eth0::1
 
@@ -110,22 +110,22 @@ with '> ' are those that the backend is printing to stdout, and those with
 stdin. Stuff between [] are comments on what's hapenning:
 
 [ The backend starts and turns some reports on initialization.]
-> begin::Start of work report.
+> sys::begin::Start of work report.
 .
 .
-> platform_success::Configuring for platform [%s].::mandrake-7.2
-> end::End of work report.
+> sys::platform_success::Configuring for platform [%s].::mandrake-7.2
+> sys::end::End of work report.
 
 [ Here the backend waits for a direcive.]
 
 < get
 
-> begin::Start of work report.
+> sys::begin::Start of work report.
 .
-> parse_split::Getting option [%s] from [%s].::DHCP.interface::/etc/conf.linuxconf
+> info::parse_split::Getting option [%s] from [%s].::DHCP.interface::/etc/conf.linuxconf
 [ and many others like this ]
 .
-> end::End of work report. 
+> sys::end::End of work report. 
 [ the 'end' report line has been given: this lets the frontend know that
   the XML document will be dumped now. ]
 > <?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
@@ -155,17 +155,17 @@ stdin. Stuff between [] are comments on what's hapenning:
   start hapenning right away. The frontend should not send any XML, or
   the protocol would break. Maybe the backend should wait for an eor
   string so it doesn't get confused by XML wrongly sent by the frontend.]
-> begin::Start of work report.
+> sys::begin::Start of work report.
 .
 .
-> end::End of work report.
+> sys::end::End of work report.
 > 
 > <!-- XST: end of request -->
 [ this directive didn't produce any XML because of its nature, so it sends
   the eor string right away, and then the main loop waits again for a new
   directive line.]
 < set
-[ OK, set requires XML. The backend waits for such input. ]
+[ OK, 'set' requires XML. The backend waits for such input. ]
 < <?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>
 < <!DOCTYPE internetsharing []>
 < 
@@ -190,11 +190,11 @@ stdin. Stuff between [] are comments on what's hapenning:
   Now the backend starts configuring the machine according with this
   information and report strings are stent through stdout to the
   frontend.]
-> begin::Start of work report.
+> sys::begin::Start of work report.
 .
 .
 .
-> end::End of work report.
+> sys::end::End of work report.
 >
 > <!-- XST: end of request -->
 [ No XML going back to the frontend. In theory, there could be a
@@ -204,9 +204,3 @@ stdin. Stuff between [] are comments on what's hapenning:
 < end
 [ The end directive! The code for this directive makes the backend close
   all files and finish gracefully. End of the life of the backend.]
-
-
-
-
-
-

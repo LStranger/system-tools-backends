@@ -1,3 +1,7 @@
+2001-08-17  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* protocol (all): Updated to new version that transmits the major.
+
 2001-08-14  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* protocol: An aptempt to explain how backend-frontend interaction
