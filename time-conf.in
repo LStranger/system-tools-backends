@@ -338,11 +338,6 @@ sub time_set_rh62_zone
 
   if (stat($tz) ne "")
   {
-    $fd = &xst_file_open_write_from_names ($localtime);
-    &xst_report_leave ();
-    return -1 if !$fd;
-    close $fd;
-
     unlink $localtime;  # Important, since it might be a symlink.
     
     &xst_report_enter ();
