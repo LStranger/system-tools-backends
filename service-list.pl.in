@@ -163,7 +163,10 @@ sub gst_service_list_service_is_forbidden
     "setserial" => 1,
     "hwclock.sh" => 1,
     "urandom" => 1,
-    "nviboot" => 1
+    "nviboot" => 1,
+
+    # this shouldn't be shown in slackware
+    "inet2" => 1
 	);
 	
 	$ret = $service_forbidden_list{$service};

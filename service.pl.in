@@ -777,7 +777,7 @@ sub gst_service_bsd_get_service_info
 sub gst_service_bsd_get_services
 {
   my (%ret);
-  my ($files) = [ "rc.M", "rc.4" ];
+  my ($files) = [ "rc.M", "rc.inet2", "rc.4" ];
   my ($file);
 
   foreach $i (@$files)
@@ -794,7 +794,7 @@ sub gst_service_bsd_get_services
     {
       $line = $_;
 
-      if ($line =~ /^if[ \t]+\[[ \t]+\-x[ \t]([0-9a-zA-Z\/\.\-]+) .*\]/)
+      if ($line =~ /^if[ \t]+\[[ \t]+\-x[ \t]([0-9a-zA-Z\/\.\-_]+) .*\]/)
       {
         my (%hash);
         $service = $1;
