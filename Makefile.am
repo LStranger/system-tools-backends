@@ -15,25 +15,26 @@ backends = \
 	display-conf
 
 PERLBODY = \
-	gettext.pl.in \
-	parse.pl.in \
-	replace.pl.in \
-	file.pl.in \
-	general.pl.in \
+	boot.pl.in     \
+	debug.pl.in    \
+	file.pl.in     \
+	filesys.pl.in  \
+	font.pl.in     \
+	general.pl.in  \
+	gettext.pl.in  \
+	ishare.pl.in   \
+	media.pl.in    \
+	network.pl.in  \
+	parse.pl.in    \
 	platform.pl.in \
-	report.pl.in \
-	xml.pl.in \
-	service.pl.in \
-	util.pl.in \
-	network.pl.in \
-	boot.pl.in \
-	filesys.pl.in \
-	media.pl.in \
-	debug.pl.in \
-	print.pl.in \
-	share.pl.in \
-	x.pl.in \
-	font.pl.in
+	print.pl.in    \
+	replace.pl.in  \
+	report.pl.in   \
+	service.pl.in  \
+	share.pl.in    \
+	util.pl.in     \
+	x.pl.in        \
+	xml.pl.in
 
 
 perl_libs = \

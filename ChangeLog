@@ -1,5 +1,10 @@
 2001-08-06  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* Makefile.am (PERLBODY): Generate ishare.pl.
+
+	* ishare.pl.in: Added. Moved all xst_ishare* functions
+	from internetsharing-conf.in.
+
 	* file.pl.in (xst_file_get_base_path): Store setup and
 	backups in /var/cache/setup-tool-backends.
 	* files/Makefile.am, files/ChangeLog: created directory

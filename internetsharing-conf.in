@@ -26,15 +26,12 @@
 
 
 BEGIN {
+require "___scriptsdir___/ishare.pl";
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
-require "___scriptsdir___/service.pl";
-require "___scriptsdir___/parse.pl";
-require "___scriptsdir___/replace.pl";
-require "___scriptsdir___/network.pl";
 }
 
 
@@ -140,78 +137,6 @@ sub xml_parse_dhcp
 }
 
 
-sub xst_ishare_get_linux22_support_active
-{
-  my ($hash) = @_;
-  my $forward_file = "/proc/sys/net/ipv4/ip_forward";
-  my ($fd, $val);
-  
-  $fd = &xst_file_open_read_from_names ($forward_file);
-  $val = <$fd>;
-  chomp $val;
-  $$hash{"active"} = ($val == 1)? 1: 0;
-  close $fd;
-}
-  
-
-sub xst_ishare_get_linux22_support
-{
-  my ($hash) = @_;
-  my ($forward_file, $masq_file) =
-      ("/proc/sys/net/ipv4/ip_forward", "/proc/sys/net/ipv4/ip_masq_debug");
-
-  $$hash{"forwarding"}   = (-f $forward_file)? 1: 0;
-  $$hash{"masquerading"} = (-f $masq_file)?    1: 0;
-}
-
-
-sub xst_ishare_fwrules_get_ipchains
-{
-  my ($ipchains_conf) = @_;
-  my (%hash, $fd, $val);
-
-  $hash{"tools"} = &xst_file_tool_installed ("ipchains");
-
-  if ($hash{"tools"})
-  {
-    $fd = &xst_file_open_read_from_names ($ipchains_conf);
-    if ($fd ne undef)
-    {
-      $val = <$fd>;
-      $hash{"configured"} = ($val =~ /^-A forward.*MASQ$/)? 1: 0;
-      close $fd;
-    }
-  }
-
-  &xst_ishare_get_linux22_support (\%hash);
-  &xst_ishare_get_linux22_support_active (\%hash) if ($hash{"configured"});
-
-  return \%hash;
-}
-
-
-sub xst_ishare_fwrules_set_ipchains
-{
-  my ($ipchains_conf, $interface, $values_hash) = @_;
-  my ($fd, $val);
-
-  
-}
-
-
-sub xst_ishare_dhcp_isc_get
-{
-  my ($dhcpd_conf) = @_;
-  my (%hash);
-
-  $hash{"installed"}  = &xst_service_sysv_installed ("dhcpd");
-  $hash{"configured"} = ((-f "/etc/dhcpd.conf")? 1: 0)         if $hash{"installed"};
-  $hash{"active"}     = &xst_service_sysv_get_status ("dhcpd") if $hash{"configured"};
-  
-  return \%hash;
-}
-
-
 # --- XML printing --- #
 
 
@@ -232,7 +157,7 @@ sub get
 {
   my $hash;
   
-  $hash = &conf_get ();
+  $hash = &xst_ishare_conf_get ();
 
   &xst_end();
   &xml_print ($hash);
@@ -244,7 +169,7 @@ sub set
   my $hash;
 
   $hash = &xml_parse ();
-  &conf_set ($hash);
+  &xst_ishare_conf_set ($hash);
   &xst_end();
 }
 
@@ -276,97 +201,3 @@ $tool = &xst_init ($name, $version, $description, $directives, @ARGV);
 &xst_platform_ensure_supported ($tool, @platforms);
 &xst_run ($tool);
 
-# Portable code.
-sub conf_get
-{
-  my %dist_attrib;
-  my $hash;
-
-  %dist_attrib = &conf_get_parse_table ();
-
-  $hash = &xst_parse_from_table ($dist_attrib{"fn"},
-                                 $dist_attrib{"table"});
-  return $hash;
-}
-
-sub conf_set
-{
-  my ($values_hash) = @_;
-  my (%dist_attrib, $old_hash);
-
-  %dist_attrib = &conf_get_replace_table ();
-
-  $old_hash = &xst_network_conf_get ();
-  $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
-                                  $values_hash, $old_hash);
-
-  return $res;
-}
-
-sub conf_get_parse_table
-{
-  my %dist_map =
-  (
-   "redhat-7.0"   => "mandrake-7.2",
-   "redhat-7.1"   => "mandrake-7.2",
-   "mandrake-7.2" => "mandrake-7.2",
-   );
-
-  my %dist_tables =
-      (
-       "mandrake-7.2" =>
-       {
-         fn =>
-         {
-           IPCHAINS_CONF => "/etc/sysconfig/ipchains",
-           DHCPD_CONF    => "/etc/dhcpd.conf"
-         },
-         table =>
-             [
-              [ "interface", \&xst_network_interfaces_get ],
-              [ "fwrules",   \&xst_ishare_fwrules_get_ipchains, IPCHAINS_CONF],
-              [ "dhcp",      \&xst_ishare_dhcp_isc_get,       DHCPD_CONF],
-              ]
-                },
-       );
-
-  my $dist = $dist_map {$xst_dist};
-  return %{$dist_tables{$dist}} if $dist;
-
-  &xst_report ("platform_no_table", $xst_dist);
-  return undef;
-}
-
-sub conf_get_replace_table
-{
-  my %dist_map =
-  (
-   "redhat-7.0"   => "mandrake-7.2",
-   "redhat-7.1"   => "mandrake-7.2",
-   "mandrake-7.2" => "mandrake-7.2",
-   );
-
-  my %dist_tables =
-      (
-       "mandrake-7.2" =>
-       {
-         fn =>
-         {
-           IPCHAINS_CONF => "/etc/sysconfig/ipchains",
-           DHCPD_CONF    => "/etc/dhcpd.conf"
-         },
-         table =>
-             [
-              [ "interface", \&xst_network_interfaces_set,      OLD_HASH ],
-              [ "fwrules",   \&xst_ishare_fwrules_set_ipchains, IPCHAINS_CONF, "%interface%" ],
-              [ "dhcp",      \&xst_ishare_dhcp_isc_set,         DHCPD_CONF,    "%interface%" ],
-              ]
-                },
-       );
-
-  my $dist = $dist_map {$xst_dist};
-  return %{$dist_tables{$dist}} if $dist;
-
-  &xst_report ("platform_no_table", $xst_dist);
-  return undef;
-}
