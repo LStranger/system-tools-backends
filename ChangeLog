@@ -1,5 +1,9 @@
 2002-12-02  Carlos Garnacho Parro <garnacho@tuxerver.net>
 
+	* time-conf.in: solved bug #99744
+
+2002-12-02  Carlos Garnacho Parro <garnacho@tuxerver.net>
+
 	* added README with some contents
 
 2002-11-28  Carlos Garnacho Parro <garnacho@tuxerver.net>

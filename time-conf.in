@@ -398,6 +398,9 @@ sub conf_set
   my $values_hash = $_[0];
   my %dist_attrib;
 
+  # we need to init those values to start/stop ntp properly 
+  ($rcd_path, $initd_path, $relative_path) = &xst_service_sysv_get_paths ();
+
   %dist_attrib = &conf_get_replace_table ();
 
   $res = &xst_replace_from_table ($dist_attrib{"fn"}, $dist_attrib{"table"},
