@@ -1,19 +1,19 @@
 SUBDIRS = files
 
-backends = \
-	boot-conf            \
-	disks-conf           \
-	display-conf         \
-	internetsharing-conf \
-	memory-conf          \
-	mouse-conf           \
-	network-conf         \
-	package-conf         \
-	print-conf           \
-	runlevel-conf        \
-	shares-conf          \
-	time-conf            \
-	users-conf
+BACKENDSBODY = \
+	disks-conf.in \
+	memory-conf.in \
+	network-conf.in \
+	runlevel-conf.in \
+	shares-conf.in \
+	time-conf.in \
+	users-conf.in \
+	boot-conf.in \
+	print-conf.in \
+	mouse-conf.in \
+	internetsharing-conf.in \
+	package-conf.in \
+	display-conf.in
 
 PERLBODY = \
 	boot.pl.in     \
@@ -37,26 +37,15 @@ PERLBODY = \
 	x.pl.in        \
 	xml.pl.in
 
+perl_libs = $(PERLBODY:.pl.in=.pl)
 
-perl_libs = \
-	$(PERLBODY:.pl.in=.pl)
+backends = $(BACKENDSBODY:.in=)
 
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh
 
 EXTRA_DIST = \
 	$(PERLBODY) \
-	disks-conf.in \
-	memory-conf.in \
-	network-conf.in \
-	shares-conf.in \
-	time-conf.in \
-	users-conf.in \
-	boot-conf.in \
-	print-conf.in \
-	mouse-conf.in \
-	internetsharing-conf.in \
-	package-conf.in \
-	display-conf.in \
+	$(BACKENDSBODY) \
 	guess_system.sh \
 	\
 	README \
