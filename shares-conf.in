@@ -150,7 +150,7 @@ sub read_network_interfaces_into_hash
   local *FILE;
   my (%ifaces, $current_name, $current_iface);
 
-  *FILE = &xst_open_read_from_names(@network_interfaces_names);
+  *FILE = &xst_file_open_read_from_names(@network_interfaces_names);
   if (not *FILE) { return; }
 
   # Build a list of all interfaces
@@ -189,7 +189,7 @@ sub read_network_interfaces_into_hash
       # NOTE: This will weed out any loopback or dummy interfaces.
       if (not &xst_item_is_in_list($line[1], @cf_interface_list))
       {
-        &xst_report_warning(3, "$line[1] isn't an available, configured interface");
+        &xst_report ("compat", "$line[1] isn't an available, configured interface");
         next;
       }
 
@@ -199,7 +199,7 @@ sub read_network_interfaces_into_hash
       # Also make sure there is a &set configuration method.
       if ($line[3] eq "" || &xst_ignore_line($line[3]))
       {
-        &xst_report_warning(4, "Interface $line[1] has no configuration method");
+        &xst_report ("compat" "Interface $line[1] has no configuration method");
         next;
       }
 
@@ -266,14 +266,14 @@ sub read_network_interfaces
   {
     $chosen_name = (keys(%ifaces))[0];
 
-    &xst_report_info(9, "Only one interface, $chosen_name, exists. It is being " .
-                      "selected as the primary interface");
+    &xst_report ("compat" "Only one interface, $chosen_name, exists. It is being " .
+                 "selected as the primary interface");
   }
 
   # For that matter, do any interfaces exist at all.
   elsif ( scalar(keys(%ifaces)) == 0 )
   {
-    &xst_report_warning(5, "No network interfaces found");
+    &xst_report ("compat", "No network interfaces found");
     return;
   }
 
@@ -332,7 +332,7 @@ sub read_sysconfig_network_scripts_ifcfg
 
   # Find the file.
 
-  *FILE = &xst_open_read_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
+  *FILE = &xst_file_open_read_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
   if (not *FILE) { return; }
 
   # Parse the file.
@@ -438,7 +438,7 @@ sub read_sysconfig_network
 
   # Find the file.
 
-  *FILE = &xst_open_read_from_names(@sysconfig_network_names);
+  *FILE = &xst_file_open_read_from_names(@sysconfig_network_names);
   if (not *FILE) { return; }  # We didn't find it.
 
   # Parse the file.
@@ -482,7 +482,7 @@ sub read_rc_config
 
   # Find the file.
 
-  *FILE = &xst_open_read_from_names(@rc_config_names);
+  *FILE = &xst_file_open_read_from_names(@rc_config_names);
   if (not *FILE) { return; }  # We didn't find it.
 
   # Parse the file.
@@ -559,7 +559,7 @@ sub read_smb_conf
 
   # Find the file.
 
-  *FILE = &xst_open_read_from_names(@smb_conf_names);
+  *FILE = &xst_file_open_read_from_names(@smb_conf_names);
   if (not *FILE) { return; }  # We didn't find it.
 
   # Parse the file.
@@ -655,7 +655,7 @@ sub write_smb_conf
   my ($section, $printable, $wrote_security) = ("", 0, 0);
   my @buf = ();
 
-  (*INFILE, *OUTFILE) = &xst_open_filter_write_from_names(@smb_conf_names);
+  (*INFILE, *OUTFILE) = &xst_file_open_filter_write_from_names(@smb_conf_names);
   if (not *OUTFILE) { return; }  # No point if we can't write.
 
   while (<INFILE>)
@@ -762,7 +762,7 @@ sub read_fstab
 
   # Find the file.
 
-  $ifh = &xst_open_read_from_names(@fstab_names);
+  $ifh = &xst_file_open_read_from_names(@fstab_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
 
@@ -850,7 +850,7 @@ sub write_fstab
   my ($ifh, $ofh);
   local (*INFILE, *OUTFILE);
   
-  ($ifh, $ofh) = &xst_open_filter_write_from_names(@fstab_names);
+  ($ifh, $ofh) = &xst_file_open_filter_write_from_names(@fstab_names);
   if (not $ofh) { return; }  # No point if we can't write.
   *INFILE = $ifh; *OUTFILE = $ofh;
 
@@ -1066,7 +1066,7 @@ sub read_exports
 
   # Find the file.
 
-  $ifh = &xst_open_read_from_names(@exports_names);
+  $ifh = &xst_file_open_read_from_names(@exports_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
 
@@ -1109,7 +1109,7 @@ sub write_exports
 
   # Find the file.
 
-  $ofh = &xst_open_write_from_names(@exports_names);
+  $ofh = &xst_file_open_write_from_names(@exports_names);
   if (not $ofh) { return; }
   *FILE = $ofh;
 
@@ -1571,14 +1571,14 @@ sub get_interfaces
   # Get a list of all interfaces, both configured and unconfigured.
   # Should work on both GNU and Solaris.
 
-  $if_cmd = &xst_locate_tool("ifconfig");
+  $if_cmd = &xst_file_locate_tool("ifconfig");
   $iftext = `$if_cmd -a 2>/dev/null`;
 
   @list = ($iftext =~ /^([a-z0-9]+)[ :\t].*/mg);
 
   if (not @list)
   {
-    &xst_report_warning(01, "Could not find any network devices");
+    &xst_report ("compat", "Could not find any network devices");
     return(0);
   }
   
@@ -1598,15 +1598,15 @@ sub get_host_mounts
   my @hosts;
   my ($i, $j);
 
-  $ping_tool = &xst_locate_tool("ping");
-  $showmount_tool = &xst_locate_tool("showmount");
-  $nmblookup_tool = &xst_locate_tool("nmblookup");
-  $smbclient_tool = &xst_locate_tool("smbclient");
+  $ping_tool = &xst_file_locate_tool("ping");
+  $showmount_tool = &xst_file_locate_tool("showmount");
+  $nmblookup_tool = &xst_file_locate_tool("nmblookup");
+  $smbclient_tool = &xst_file_locate_tool("smbclient");
 
   $broadcast_ip = &ip_calc_broadcast($cf_hostip, $cf_netmask);
   $network_ip = &ip_calc_network($cf_hostip, $cf_netmask);
 
-  &xst_report_info(15, "Mapping IP subnet " . $network_ip);
+  &xst_report ("compat", "Mapping IP subnet " . $network_ip);
 
   # Map subnet.
 
@@ -1638,24 +1638,24 @@ sub get_host_mounts
     close(PING_HD);
   }
 
-  &xst_report_info(1, "Subnet ping found " . ($#hosts + 1) . " hosts");
+  &xst_report ("compat", "Subnet ping found " . ($#hosts + 1) . " hosts");
   &xst_print_progress ();
 
   # List NFS shares.
 
   if ($showmount_tool eq "")
   {
-    &xst_report_error(1, "Can't locate showmount - NFS scan skipped");
+    &xst_report ("compat", "Can't locate showmount - NFS scan skipped");
   }
   else
   {
-    &xst_report_info(16, "Doing NFS detection on broadcast " . $broadcast_ip);
+    &xst_report ("compat", "Doing NFS detection on broadcast " . $broadcast_ip);
   
     $i = 0; $j = 0;
     for $host (@hosts)
     {
       if ($host eq $cf_hostip) { next; }
-      &xst_report_info(17, "Querying NFS service on " . $host);
+      &xst_report ("compat", "Querying NFS service on " . $host);
       open(MOUNTS_HD, "$showmount_tool --directories --no-headers $host 2>/dev/null |");
       while (<MOUNTS_HD>)
       {
@@ -1679,7 +1679,7 @@ sub get_host_mounts
       $i++;
     }
 
-    &xst_report_info(02, "Found $j NFS exports on $i hosts");
+    &xst_report ("compat", "Found $j NFS exports on $i hosts");
     &xst_print_progress ();
   }
 
@@ -1690,7 +1690,7 @@ sub get_host_mounts
     my ($smb_master_ip, $smb_master_name);
     my @smb_hosts;
     
-    &xst_report_info(03, "Doing SMB detection in workgroup $cf_workgroup");
+    &xst_report ("compat", "Doing SMB detection in workgroup $cf_workgroup");
 
     # Find the workgroup master.
   
@@ -1713,7 +1713,7 @@ sub get_host_mounts
 
     if ($smb_master_name ne "")
     {
-      &xst_report_info(04, "Workgroup master is $smb_master_name ($smb_master_ip)");
+      &xst_report ("compat", "Workgroup master is $smb_master_name ($smb_master_ip)");
 
       # List computers.
 
@@ -1730,10 +1730,10 @@ sub get_host_mounts
       }
       close(FD);
 
-      if ($#smb_hosts + 1) { &xst_report_info(05, "Master reported " . ($#smb_hosts + 1) . " hosts in workgroup"); }
-      else { &xst_report_info(06, "No hosts reported by master - asking others"); }
+      if ($#smb_hosts + 1) { &xst_report ("compat", "Master reported " . ($#smb_hosts + 1) . " hosts in workgroup"); }
+      else { &xst_report ("compat", "No hosts reported by master - asking others"); }
     }
-    else { &xst_report_warning(02, "No workgroup master found"); }
+    else { &xst_report ("compat", "No workgroup master found"); }
 
     if (!@smb_hosts)
     {
@@ -1749,7 +1749,7 @@ sub get_host_mounts
         # since they have service entries for their own IPs, whereas Windows
         # boxen don't.
         
-        &xst_report_info(07, "Asking $host for host list");
+        &xst_report ("compat", "Asking $host for host list");
 
         open(FD, "$smbclient_tool -N -U % -L $host -I $host |");
         while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
@@ -1766,10 +1766,10 @@ sub get_host_mounts
 
         if (@smb_hosts)
         {
-          &xst_report_info(8, "Got " . ($#smb_hosts + 1) . " SMB hosts");
+          &xst_report ("compat", "Got " . ($#smb_hosts + 1) . " SMB hosts");
           last;
         }
-        else { &xst_report_warning(9, "No SMB hosts found"); }
+        else { &xst_report ("compat", "No SMB hosts found"); }
       }
     }
 
@@ -1810,16 +1810,16 @@ sub get_host_mounts
       $i++;
     }
     
-    &xst_report_info(10, "Found $j SMB exports on $i hosts");
+    &xst_report ("compat", "Found $j SMB exports on $i hosts");
     &xst_print_progress ();
   }
-  else { &xst_report_warning(10, "No workgroup configured - SMB scan skipped"); }
+  else { &xst_report ("compat", "No workgroup configured - SMB scan skipped"); }
 }
 
 
 sub get
 {
-  &xst_report_info(20, "Finding interfaces");
+  &xst_report ("compat", "Finding interfaces");
 
   &get_interfaces; &xst_print_progress ();          # Needed for primary interface detection.
   &read_rc_config;                          # Ditto.
@@ -1846,9 +1846,9 @@ sub set_immediate
   my $mount_tool;
   my $umount_tool;
 
-  $exportfs_tool = &xst_locate_tool("exportfs");
-  $mount_tool = &xst_locate_tool("mount");
-  $umount_tool = &xst_locate_tool("umount");
+  $exportfs_tool = &xst_file_locate_tool("exportfs");
+  $mount_tool = &xst_file_locate_tool("mount");
+  $umount_tool = &xst_file_locate_tool("umount");
 
   # Update exports.
 
@@ -1857,12 +1857,12 @@ sub set_immediate
 
   if ($exportfs_tool eq "")
   {
-    &xst_report_error(4, "Could not reload NFS export tables");
+    &xst_report ("compat", "Could not reload NFS export tables");
   }
   else
   {
     system "$exportfs_tool -a >/dev/null 2>/dev/null";
-    &xst_report_info(12, "NFS export tables reloaded");
+    &xst_report ("compat", "NFS export tables reloaded");
   }
 
   &xst_progress(80);
@@ -1881,12 +1881,12 @@ sub set_immediate
       {
         if ($shares[3])
         {
-          &xst_report_info(13, "Mounting $shares[8]");
+          &xst_report ("compat", "Mounting $shares[8]");
           system "$mount_tool $shares[8] >/dev/null 2>/dev/null";
         }
         else
         {
-          &xst_report_info(14, "Unmounting $shares[8]");
+          &xst_report ("compat", "Unmounting $shares[8]");
           system "$umount_tool $shares[8] >/dev/null 2>/dev/null";
         }
       }
@@ -1901,7 +1901,7 @@ sub set_immediate
   }
   else
   {
-    &xst_report_error(6, "Could not find mount tools. No mounting done");
+    &xst_report ("compat", "Could not find mount tools. No mounting done");
   }
 }
 

@@ -263,10 +263,10 @@ sub time_get_rh62_zone
   my $size_search;
   my $size_test;
 
-  *TZLIST = &xst_open_read_from_names($zoneinfo_dir . "/zone.tab");
+  *TZLIST = &xst_file_open_read_from_names($zoneinfo_dir . "/zone.tab");
   if (not *TZLIST) { return; }
 
-  &xst_report_info(8, "Scanning timezones");
+  &xst_report ("time_timezone_scan");
 
   # Get the filesize for /etc/localtime so that we don't have to execute
   # a diff for every file, only for file with the correct size. This speeds
@@ -281,12 +281,12 @@ sub time_get_rh62_zone
 
 
     # See if this zone file matches the installed one.
-    &xst_report_info(9, "Scanning timezones: $zone");
+    &xst_report ("time_timezone_cmp", $zone);
     &xst_print_progress();
     $size_test = (stat("$zoneinfo_dir/$zone"))[7];
     if ($size_test eq $size_search)
     {
-      if (!&xst_run ("diff $zoneinfo_dir/$zone $local_time_file"))
+      if (!&xst_file_run ("diff $zoneinfo_dir/$zone $local_time_file"))
       {
         # Found a match.
         last;
@@ -316,10 +316,14 @@ sub time_set_local_time
 {
   my ($time) = @_;
 
+  &xst_report_enter ();
+  &xst_report ("time_localtime_set", "%{$time}");
+  
   $command = sprintf ("date %02d%02d%02d%02d%04d.%02d", $$time{"month"}, $$time{"monthday"},
                       $$time{"hour"}, $$time{"minute"}, $$time{"year"}, $$time{"second"});
-  $res = &xst_run ($command);
+  $res = &xst_file_run ($command);
 
+  &xst_report_leave ();
   return -1 if $res;
   return 0;
 }
@@ -328,23 +332,28 @@ sub time_set_rh62_zone
 {
   my ($localtime, $zonebase, $timezone) = @_;
 
-  &xst_report_info(10, "Setting timezone");
+  &xst_report_enter ();
+  &xst_report ("time_timezone_set", $timezone);
 
   $tz = "$zonebase/$timezone";
 
   if (stat($tz) ne "")
   {
-    $fd = &xst_open_write_from_names ($localtime);
+    $fd = &xst_file_open_write_from_names ($localtime);
+    &xst_report_leave ();
     return -1 if !$fd;
     close $fd;
 
     unlink $localtime;  # Important, since it might be a symlink.
     
-    $res = &xst_run("cp $tz $localtime");
+    &xst_report_enter ();
+    $res = &xst_file_run("cp $tz $localtime");
+    &xst_report_leave ();
     return -1 if $res;
     return 0;
   }
 
+  &xst_report_leave ();
   return -1;
 }
 

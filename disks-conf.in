@@ -271,7 +271,7 @@ sub read_fstab
 
   # Find the file.
 
-  $fstab_file = &xst_open_read_from_names(@fstab_names);
+  $fstab_file = &xst_file_open_read_from_names(@fstab_names);
   if (not $fstab_file) { return; }  # We didn't find it.
   *FSTAB_FILE = $fstab_file;
 
@@ -319,7 +319,7 @@ sub write_fstab
   my ($ifh, $ofh);
   local (*INFILE, *OUTFILE);
 
-  ($ifh, $ofh) = &xst_open_filter_write_from_names(@fstab_names);
+  ($ifh, $ofh) = &xst_file_open_filter_write_from_names(@fstab_names);
   if (not $ofh) { return; }  # No point if we can't write.
   *INFILE = $ifh; *OUTFILE = $ofh;
 
@@ -411,7 +411,7 @@ sub write_fstab
       {
         my $part = $cf_disks[$i]->{partitions}[$j];
 
-        &xst_report_info(01, "Adding " . $cf_disks[$i]->{partitions}[$j]->{device} . " to fstab");
+        &xst_report ("disks_fstab_add", $cf_disks[$i]->{partitions}[$j]->{device});
         
         # Write record.
 
@@ -483,13 +483,13 @@ sub get_fdisk
                      
                      "/dev/xda", "/dev/xdb" );
 
-  $fdisk_tool = &xst_locate_tool("fdisk");
+  $fdisk_tool = &xst_file_locate_tool("fdisk");
 
   for $dev (@check_devs)
   {
     my ($disk, $device, $point, $fs, $options, $check, $size, $bootable);
     
-    &xst_report_info(02, "Looking for partitions on $dev");
+    &xst_report ("disks_partition_probe", $dev);
 
     open(FDISK_HD, "$fdisk_tool -l $dev 2>/dev/null |");
     while (<FDISK_HD>)
@@ -529,7 +529,7 @@ sub get_fdisk
     }
     close(FDISK_HD);
 
-    &xst_report_info(03, "Querying size of $dev");
+    &xst_report ("disks_size_query", $dev);
 
     open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
     ($size) = (<FDISK_HD> =~ /([0-9]+)/);
@@ -732,8 +732,8 @@ sub set_immediate
   my $mount_tool;
   my $umount_tool;
 
-  $mount_tool = &xst_locate_tool("mount");
-  $umount_tool = &xst_locate_tool("umount");
+  $mount_tool = &xst_file_locate_tool("mount");
+  $umount_tool = &xst_file_locate_tool("umount");
 
   # Count partitions.
 
@@ -761,24 +761,24 @@ sub set_immediate
       {
         if ($cf_disks[$i]->{partitions}[$j]->{mounted})
         {
-          &xst_report_info(4, "Mounting " . $cf_disks[$i]->{partitions}[$j]->{device});
+          &xst_report ("disks_mount", $cf_disks[$i]->{partitions}[$j]->{device});
           system "$mount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " " .
                  $cf_disks[$i]->{partitions}[$j]->{point} . " >/dev/null 2>/dev/null";
         }
         else
         {
-          &xst_report_info(5, "Unmounting " . $cf_disks[$i]->{partitions}[$j]->{device});
+          &xst_report ("disks_umount", $cf_disks[$i]->{partitions}[$j]->{device});
           system "$umount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " >/dev/null 2>/dev/null";
         }
 	
-	$num_done++;
+        $num_done++;
         &xst_progress(10 + (80 / ($num_partitions - $num_done + 1)));
       }
     }
   }
   else
   {
-    &xst_report_error(01, "Could not find mount tools. No mounting done");
+    &xst_report ("disks_mount_error");
   }
   
   &xst_progress(90);

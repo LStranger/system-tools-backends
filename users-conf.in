@@ -77,13 +77,13 @@ $progress_max = 3;
 
 # Where are the tools?
 
-$cmd_usermod  = &xst_locate_tool ("usermod");
-$cmd_userdel  = &xst_locate_tool ("userdel");
-$cmd_useradd  = &xst_locate_tool ("useradd");	
-$cmd_groupdel = &xst_locate_tool ("groupdel");
-$cmd_groupadd = &xst_locate_tool ("groupadd");
-$cmd_groupmod = &xst_locate_tool ("groupmod");
-$cmd_gpasswd  = &xst_locate_tool ("gpasswd");	
+$cmd_usermod  = &xst_file_locate_tool ("usermod");
+$cmd_userdel  = &xst_file_locate_tool ("userdel");
+$cmd_useradd  = &xst_file_locate_tool ("useradd");	
+$cmd_groupdel = &xst_file_locate_tool ("groupdel");
+$cmd_groupadd = &xst_file_locate_tool ("groupadd");
+$cmd_groupmod = &xst_file_locate_tool ("groupmod");
+$cmd_gpasswd  = &xst_file_locate_tool ("gpasswd");	
 
 
 # --- Internal configuration variables --- #
@@ -211,7 +211,7 @@ sub read_login_defs
   local *FILE;
   my @line;
 	
-  $ifh = &xst_open_read_from_names(@login_defs_names);
+  $ifh = &xst_file_open_read_from_names(@login_defs_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
 
@@ -237,7 +237,7 @@ sub read_passwd_shadow
 
   # Find the passwd file.
 
-  $ifh = &xst_open_read_from_names(@passwd_names);
+  $ifh = &xst_file_open_read_from_names(@passwd_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
     $passwd_last_modified = (stat (FILE))[9]; # &get the mtime.
@@ -264,7 +264,7 @@ sub read_passwd_shadow
 	
   # Find the shadow file.
 
-  *FILE = &xst_open_read_from_names(@shadow_names);
+  *FILE = &xst_file_open_read_from_names(@shadow_names);
   if (*FILE) {
     my ($login, $passwd);
     my $passwd_pos = $users_prop_map{"password"};
@@ -293,7 +293,7 @@ sub read_group
 
   # Find the file.
 
-  $ifh = &xst_open_read_from_names(@group_names);
+  $ifh = &xst_file_open_read_from_names(@group_names);
   if (not $ifh) { return; }  # We didn't find it.
   *FILE = $ifh;
   $group_last_modified = (stat (FILE))[9]; # &get the mtime.
@@ -325,7 +325,7 @@ sub read_profiles
   my $path;
 
   $path = &xst_file_get_data_path . "/users/profiles.xml";
-  $profiles = &xst_buffer_load ($path);
+  $profiles = &xst_file_buffer_load ($path);
 }
 
 sub write_logindefs
@@ -555,7 +555,7 @@ sub save_profiles
     my $path;
 
     $path = &xst_file_get_data_path . "/users/profiles.xml"; 
-    &xst_buffer_save ($1, $path);
+    &xst_file_buffer_save ($1, $path);
   }
 }
 
@@ -630,7 +630,7 @@ sub xml_parse_users
 		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1]); }
 		else
 		{
-		  &xst_report_warning(1, "Unexpected tag " . $$tree[0] . " while parsing users");
+		  &xst_report ("xml_unexp_tag", $$tree[0]);
 		}
 
     shift @$tree;
@@ -652,7 +652,7 @@ sub xml_parse_login_defs
 		}
 		else
 		{
-		  &xst_report_warning(2, "Unexpected tag " . $$tree[0] . " while parsing logindefs");
+		  &xst_report ("xml_unexp_tag", $$tree[0]);
 		}
 		
 		shift @$tree;
@@ -666,7 +666,7 @@ sub xml_parse_passwd_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	&xst_report_warning(3, "passwd_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
+	&xst_report ("xml_unexp_arg", "", "passwd_last_modified") if ($$tree[0] ne "0");
 	$passwd_last_modified = $$tree[1];
 }	
 
@@ -676,7 +676,7 @@ sub xml_parse_group_last_modified
 	
   shift @$tree;  # Skip attributes.
 	
-	&xst_report_warning(4, "group_last_modified tag contents is not PCDATA only") if ($$tree[0] ne "0");
+	&xst_report ("xml_unexp_arg", "", "group_last_modified") if ($$tree[0] ne "0");
 	$group_last_modified = $$tree[1];
 }	
 
@@ -691,7 +691,7 @@ sub xml_parse_userdb
 	  if ($$tree[0] eq "user") { &xml_parse_user ($$tree[1]); }
 		else
 		{
-		  &xst_report_warning(5, "Unexpected tag " . $$tree[0] . " while parsing userdb");
+		  &xst_report ("xml_unexp_tag", $$tree[0]);
 		}
 
     shift @$tree;
@@ -714,7 +714,7 @@ sub xml_parse_user
 		}
 		else
 		{
-		  &xst_report_warning(6, "Unexpected tag " . $$tree[0] . " while parsing user");
+		  &xst_report ("xml_unexp_tag", $$tree[0]);
 		}
 		
 		shift @$tree;
@@ -736,7 +736,7 @@ sub xml_parse_groupdb
     if ($$tree[0] eq "group") { &xml_parse_group ($$tree[1]); }
     else
     {
-      &xst_report_warning(7, "Unexpected tag " . $$tree[0] . " while parsing groupdb");
+		  &xst_report ("xml_unexp_tag", $$tree[0]);
     }
 
     shift @$tree;
@@ -760,7 +760,7 @@ sub xml_parse_group
 		}
 		else
 		{
-		  &xst_report_warning(9, "Unexpected tag " . $$tree[0] . " while parsing group");
+		  &xst_report ("xml_unexp_tag", $$tree[0]);
 		}
 		
 		shift @$tree;
@@ -776,7 +776,7 @@ sub xml_parse_group
 		}
 		else
 		{
-		  &xst_report_warning(8, "Unexpected tag " . $$a[0] . " while parsing users");
+		  &xst_report ("xml_unexp_tag", $$tree[0]);
 		}
 		shift @$a;
 		shift @$a;
@@ -958,7 +958,7 @@ sub xml_print
 
 sub get
 {
-  &xst_report_info(1, "Getting user database");
+  &xst_report ("users_getting_db");
 
   &read_login_defs (); &xst_print_progress ();
   &read_group (); &xst_print_progress ();

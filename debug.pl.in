@@ -65,21 +65,15 @@ sub xst_debug_print_indent
 {
   my $indent = $_[0];
   my $indent_string = "";
-  my $i;
-
-  for ($i = 0; $i < $indent; $i++)
-  {
-    $indent_string .= "  ";
-  }
-
+  
+  $indent_string = "  " x  $indent;
   &xst_debug_print_string ($indent_string);
 }
 
 
 sub xst_debug_print_indented_string
 {
-  my $indent = shift @_;
-  my @string = @_;
+  my ($indent, @string) = @_;
 
   &xst_debug_print_indent ($indent);
   &xst_debug_print_string (@string);
@@ -148,7 +142,7 @@ sub xst_debug_print_struct_r
 }
 
 
-$xst_debug_was_made = 0;
+$xst_debug_dir_rotation_was_made = 0;
 
 sub xst_debug_rotate_try
 {
@@ -159,25 +153,26 @@ sub xst_debug_rotate_try
   # If this is the first debug created by this tool on this invocation,
   # rotate the debug directories and create a new, empty one.
 
-  if (!$xst_debug_was_made)
+  if (!$xst_debug_dir_rotation_was_made)
   {
     my $i;
 
+    $xst_debug_dir_rotation_was_made = 1;
+
     if (stat ("$debug_tool_dir/9"))
     {
-      &xst_run ("rm -Rf $debug_tool_dir/9");
+      &xst_file_run ("rm -Rf $debug_tool_dir/9");
     }
 
     for ($i = 8; $i; $i--)
     {
       if (stat ("$debug_tool_dir/$i"))
       {
-        &xst_run ("mv $debug_tool_dir/$i $debug_tool_dir/" . ($i+1));
+        &xst_file_run ("mv $debug_tool_dir/$i $debug_tool_dir/" . ($i+1));
       }
     }
     
-    &xst_create_path ("$debug_tool_dir/1");
-    $xst_debug_was_made = 1;
+    &xst_file_create_path ("$debug_tool_dir/1");
   }
 }
 

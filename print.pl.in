@@ -31,7 +31,7 @@ require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
 
 #
-# Tried to split thi, but suffered from indirection fatigue
+# Tried to split this, but suffered from indirection fatigue
 # before referencing the output hash correctly.
 #
 sub parse_vars
@@ -40,18 +40,22 @@ sub parse_vars
 
   $$$spools{'lp'}{'lpr'}{'JIM'} = "BOB";
 
-  if (-f $dir . "/$section.cfg") {
-      my $j;
-      
-      print STDERR "Parse vars in section '$i'\n";
-
-      foreach $j (@known_options) {
-          print STDERR "option '$j'\n";
-          $val = &xst_parse_sh_export ($dir . "/$section.cfg", $j);
-          $$$spools{$i}{'rhs-general'}{$j} = $val;
-      }
-  } else {
-      &xst_report_info (96, "No $dir/$section.cfg");
+  if (-f $dir . "/$section.cfg")
+  {
+    my $j;
+    
+    &xst_debug_print_line ("Parse vars in section '$i'");
+    
+    foreach $j (@known_options)
+    {
+      &xst_debug_print_line ("option '$j'");
+      $val = &xst_parse_sh_export ($dir . "/$section.cfg", $j);
+      $$$spools{$i}{'rhs-general'}{$j} = $val;
+    }
+  }
+  else
+  {
+    &xst_report ("file_open_read_failed", "$dir/$section.cfg");
   }
 }
 
@@ -62,7 +66,7 @@ sub xst_printcap_read
   my (%spools);
   my ($type, $description);
 
-  $fd = &xst_open_read_from_names ("$file");
+  $fd = &xst_file_open_read_from_names ("$file");
   return undef if !$fd;
     
   $in_spool = 0;
@@ -126,7 +130,7 @@ sub xst_printcap_read
                   $spools{$i}{"rhs-$section"}{$j} = $val;
               }
           } else {
-              &xst_report_info (96, "No $dir/$section.cfg");
+            &xst_report ("file_open_read_failed", "$dir/$section.cfg");
           }
 
           # Parse postscript.cfg.
@@ -145,7 +149,7 @@ sub xst_printcap_read
                   $spools{$i}{"rhs-$section"}{$j} = $val;
               }
           } else {
-              &xst_report_info (96, "No $dir/$section.cfg");
+            &xst_report ("file_open_read_failed", "$dir/$section.cfg");
           }
 
           # Parse textonly.cfg.
@@ -161,11 +165,11 @@ sub xst_printcap_read
                   $spools{$i}{"rhs-$section"}{$j} = $val;
               }
           } else {
-              &xst_report_info (96, "No $dir/$section.cfg");
+            &xst_report ("file_open_read_failed", "$dir/$section.cfg");
           }
 
       } else {
-          &xst_report_warning (96, "No printtool setup in directory '$i'");
+          &xst_report ("print_no_printtool", $i);
       }
   }
 

@@ -67,11 +67,11 @@ $progress_max = 3;
 
 # Where are the tools?
 
-$cmd_swapon = &xst_locate_tool ("swapon");
-$cmd_swapoff = &xst_locate_tool ("swapoff");
-$cmd_mkswap = &xst_locate_tool ("mkswap");
-$cmd_fdisk = &xst_locate_tool ("fdisk");
-$cmd_dd = &xst_locate_tool ("dd");
+$cmd_swapon = &xst_file_locate_tool ("swapon");
+$cmd_swapoff = &xst_file_locate_tool ("swapoff");
+$cmd_mkswap = &xst_file_locate_tool ("mkswap");
+$cmd_fdisk = &xst_file_locate_tool ("fdisk");
+$cmd_dd = &xst_file_locate_tool ("dd");
 
 
 # --- Internal configuration variables --- #
@@ -243,7 +243,7 @@ sub get_memory
   my $ifh;
   local *FILE;
 
-  $ifh = &xst_open_read_from_names(@meminfo_names);
+  $ifh = &xst_file_open_read_from_names(@meminfo_names);
   if (not $ifh) { return; } # We didn't find it.
   *FILE = $ifh;
 
@@ -286,7 +286,7 @@ sub get_fdisk
   {
     my ($disk, $device, $point, $fs, $options, $check, $size, $bootable);
     
-    &xst_report_info(01, "Looking for partitions on $dev");
+    &xst_report ("disks_partition_probe", $dev);
 
     open(FDISK_HD, "$cmd_fdisk -l $dev 2>/dev/null |");
     while (<FDISK_HD>)
@@ -318,7 +318,7 @@ sub get_fdisk
     }
     close(FDISK_HD);
 
-    &xst_report_info(02, "Querying size of $dev");
+    &xst_report ("disks_size_query", $dev);
 
 #    open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
 #    ($size) = (<FDISK_HD> =~ /([0-9]+)/);
@@ -366,7 +366,7 @@ sub get_swap_entries
     my $fstab_file;
     local *FSTAB_FILE;
 
-    $fstab_file = &xst_open_read_from_names (@fstab_names);
+    $fstab_file = &xst_file_open_read_from_names (@fstab_names);
     if (!$fstab_file) { return; }
     *FSTAB_FILE = $fstab_file;
 
@@ -382,7 +382,7 @@ sub get_swap_entries
 
 	next if $type ne 'swap';
 
-	&xst_report_info(03, "Found swap entry $device");
+	&xst_report ("memory_swap_found", $device);
 
 	if ($device =~ /^#(.*)/)
 	  {
@@ -422,7 +422,7 @@ sub get_swap_entries
 
 sub get
 {
-    &xst_report_info(04, "Getting swap entries");
+    &xst_report ("memory_swap_probe");
 
     &get_memory; &xst_print_progress();
     &get_fdisk;  &xst_print_progress();
@@ -440,7 +440,7 @@ sub setup_swap_files
   my $command;
 
   $command = "$cmd_swapoff -a";  # To make sure removed swap spaces &get removed
-  &xst_run ($command);
+  &xst_file_run ($command);
     
   my $num_done = 0;
 
@@ -455,11 +455,11 @@ sub setup_swap_files
          $size *= 1024;		# Make it to Kb
 
          $command = "$cmd_dd if=/dev/null of=$entry->{device} bs=1024 count=$size";
-         &xst_run ($command);
+         &xst_file_run ($command);
        }
 
        $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
-       &xst_run ($command);
+       &xst_file_run ($command);
     }
 
     elsif ($entry->{is_file})
@@ -471,10 +471,10 @@ sub setup_swap_files
       if ($size != $entry->{size})
       {
         $command = "$cmd_dd if=/dev/zero of=$entry->{device} bs=1024 count=$size";
-        &xst_run ($command);
+        &xst_file_run ($command);
 
         $command = "$cmd_mkswap $entry->{device} >/dev/null 2>/dev/null";
-        &xst_run ($command);
+        &xst_file_run ($command);
       }
     }
 
@@ -490,7 +490,7 @@ sub setup_swap_files
     if ($entry->{enabled})
     {
       $command = "$cmd_swapon $entry->{device} $priority >/dev/null 2>/dev/null";
-      &xst_run ($command);
+      &xst_file_run ($command);
     }
 	
     $num_done++;
@@ -506,7 +506,7 @@ sub set_swap_entries
     my ($priority_str);
 
     ($fstab_in_file, $fstab_out_file) = 
-      &xst_open_filter_write_from_names (@fstab_names);
+      &xst_file_open_filter_write_from_names (@fstab_names);
     if (!$fstab_out_file) { return; }
     *FSTAB_IN_FILE = $fstab_in_file; *FSTAB_OUT_FILE = $fstab_out_file;
 

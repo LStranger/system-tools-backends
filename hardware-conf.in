@@ -338,7 +338,7 @@ sub read_conf_modules
     local (*CONF_MODULES_FILE);
     my (%real_names);
 
-    *CONF_MODULES_FILE = &xst_open_read_from_names (@conf_modules_names);
+    *CONF_MODULES_FILE = &xst_file_open_read_from_names (@conf_modules_names);
 
   LINE: while (<CONF_MODULES_FILE>)
       {
@@ -398,7 +398,7 @@ sub read_XF86Config
     my (%section_handler_table) = 
       ( 'InputDevice' => \&handle_input_device );
 
-    *XF86CONFIG_FILE = &xst_open_read_from_names (@XF86Config_names);
+    *XF86CONFIG_FILE = &xst_file_open_read_from_names (@XF86Config_names);
 
     while (<XF86CONFIG_FILE>)
       {

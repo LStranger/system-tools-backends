@@ -54,7 +54,7 @@ end_of_description;
 
 # Find the tools
 
-$tool_lilo = &xst_locate_tool ("lilo");
+$tool_lilo = &xst_file_locate_tool ("lilo");
 
 
 # --- XML parsing ---
@@ -229,13 +229,13 @@ sub get
 
 sub set_immediate
 {
-  if (&xst_run("lilo"))
+  if (&xst_file_run("lilo"))
   {
-    &xst_report_warning(3, "Failed to run lilo");
+    &xst_report ("boot_lilo_failed");
   }
   else
   {
-    &xst_report_info(1, "Succesfully executed lilo");
+    &xst_report ("boot_lilo_success");
   }
 }
 

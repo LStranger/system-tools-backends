@@ -159,7 +159,7 @@ sub xst_platform_guess
     #
     # if ($? >> 8)
     # {
-    #   &xst_report_warning ("Couldn't guess system.");
+    #   &xst_report ("Couldn't guess system.");
     #   return;
     # }
   }
@@ -201,28 +201,32 @@ sub xst_platform_ensure_supported
 
   for $platform (@supported)
   {
-    if ($platform eq $xst_dist) { return; }
+    if ($platform eq $xst_dist)
+    {
+      &xst_report ("platform_success", $platform);
+      return;
+    }
   }
 
   # Not supported. Now list the ones we do support, and die.
 
-  for $platform (@supported)
+  foreach $platform (@supported)
   {
-    &xst_report_info (96, "Supported: [$platform]");
+    &xst_report ("platform_list",  $platform);
   }
 
   if ($xst_dist)
   {
-    &xst_report_fatal (98, "Your platform is not supported");
-    if (!$xst_reporting && !$xst_verbose)
+    &xst_report ("platform_unsup");
+    if (!$xst_report_threshold && !$xst_verbose)
     {
       print STDERR "Fatal error: Your platform is not supported.\n";
     }
   }
   else
   {
-    &xst_report_fatal (99, "Unable to determine host platform");
-    if (!$xst_reporting && !$xst_verbose)
+    &xst_report ("platform_undet");
+    if (!$xst_report_threshold && !$xst_verbose)
     {
       print STDERR "Fatal error: Unable to determine host platform.\n";
     }

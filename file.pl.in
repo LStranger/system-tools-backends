@@ -60,32 +60,34 @@ sub xst_file_get_data_path
 }
 
 
-sub xst_create_path
+sub xst_file_create_path
 {
-  my $path;
-
-  $path = $_[0];
+  my $path = $_[0];
+  my @pelem;
+  
   $path =~ tr/\///s;
+  @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
 
-  my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
-    
   for ($path = ""; @pelem; shift @pelem)
   {
     $path = "$path$pelem[0]";
     mkdir($path, 0770);
     $path = "$path/";
   }
+
+  &xst_report_enter ();
+  &xst_report ("file_create_path", $_[0]);
+  &xst_report_leave ();
 }
 
 
-sub xst_create_path_for_file
+sub xst_file_create_path_for_file
 {
-  my $path;
-
-  $path = $_[0];
+  my $path = $_[0];
+  my @pelem;
+  
   $path =~ tr/\///s;
-
-  my @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
+  @pelem = split(/\//, $path); # 'a/b/c/d/' -> 'a', 'b', 'c', 'd', ''
     
   for ($path = ""; @pelem; shift @pelem)
   {
@@ -96,69 +98,93 @@ sub xst_create_path_for_file
       $path = "$path/";
     }
   }
+
+  &xst_report_enter ();
+  &xst_report ("file_path_create", $_[0]);
+  &xst_report_leave ();
 }
 
 
-$xst_backup_was_made = 0;
+$xst_file_backup_dir_rotation_was_made = 0;
 
-sub xst_backup_file
+# If this is the first backup created by this tool on this invocation,
+# rotate the backup directories and create a new, empty one.
+sub xst_file_backup_rotate_dirs
 {
-  my $backup_file = $_[0];
-  my $backup_tool_dir = &xst_file_get_backup_path () . "/$xst_name/";
-
-  # If this is the first backup created by this tool on this invocation,
-  # rotate the backup directories and create a new, empty one.
-
-  if (!$xst_backup_was_made)
+  my $backup_tool_dir = $_[0];
+  
+  &xst_report_enter ();
+  
+  if (!$xst_file_backup_dir_rotation_was_made)
   {
     my $i;
 
+    $xst_file_backup_dir_rotation_was_made = 1;
     if (stat ("$backup_tool_dir/9") && !stat ("$backup_tool_dir/First"))
     {
       # The first rotated-up backup is the beginning of history. It is kept forever.
 
-      &xst_run ("mv $backup_tool_dir/9 $backup_tool_dir/First");
+      &xst_file_run ("mv $backup_tool_dir/9 $backup_tool_dir/First");
     }
     else
     {
       # FIXME: rm -Rf might not work on all systems.
 
-      &xst_run ("rm -Rf $backup_tool_dir/9");
+      &xst_file_run ("rm -Rf $backup_tool_dir/9");
     }
 
     for ($i = 8; $i; $i--)
     {
       if (stat ("$backup_tool_dir/$i"))
       {
-        &xst_run ("mv $backup_tool_dir/$i $backup_tool_dir/" . ($i+1));
+        &xst_file_run ("mv $backup_tool_dir/$i $backup_tool_dir/" . ($i+1));
       }
     }
     
-    &xst_create_path_for_file ("$backup_tool_dir/1/");
-    $xst_backup_was_made = 1;
+    &xst_file_create_path_for_file ("$backup_tool_dir/1/");
+    &xst_report ("file_backup_rotated", $backup_tool_dir);
   }
+  
+  &xst_report_enter ();
+}
 
+sub xst_file_backup
+{
+  my $backup_file = $_[0];
+  my $backup_tool_dir;
+
+  &xst_report_enter ();
+  
+  $backup_tool_dir = &xst_file_get_backup_path () . "/$xst_name/";
+
+  &xst_file_backup_rotate_dirs ($backup_tool_dir);
+  
   # If the file hasn't already been backed up on this invocation, copy the
   # file to the backup directory.
 
   if (!stat ("$backup_tool_dir/1/$backup_file"))
   {
-    &xst_create_path_for_file ("$backup_tool_dir/1/$backup_file");
-    &xst_run ("cp $backup_file $backup_tool_dir/1/$backup_file");
+    &xst_file_create_path_for_file ("$backup_tool_dir/1/$backup_file");
+    &xst_file_run ("cp $backup_file $backup_tool_dir/1/$backup_file");
+    &xst_report ("file_backup_success", $backup_tool_dir);
   }
+  
+  &xst_report_leave ();
 }
 
 
-sub xst_open_read_from_names
+sub xst_file_open_read_from_names
 {
   local *FILE;
   my $fname = "";
-    
+
+  &xst_report_enter ();
+  
   foreach $name (@_)
   {
     if (open (FILE, "$xst_prefix/$name"))
     {
-      &xst_debug_print_line ("xst_open_read_from_names:$xst_prefix/$name");
+      &xst_debug_print_line ("xst_file_open_read_from_names:$xst_prefix/$name");
       $fname = $name;
       last;
     }
@@ -168,53 +194,59 @@ sub xst_open_read_from_names
 
   if ($fname eq "") 
   { 
-    &xst_report_warning (99, "Could not read \[@_\]");
+    &xst_report ("file_open_read_failed", "@_");
     return;
   }
 
-  &xst_report_info (99, "Reading options from \[$fullname\]");
+  &xst_report ("file_open_read_success", $fullname);
+  &xst_report_leave ();
+
   return *FILE;
 }
 
 
-sub xst_open_write_from_names
+sub xst_file_open_write_from_names
 {
   local *FILE;
   my $name;
   my $fullname;
+
+  &xst_report_enter ();
     
   # Find out where it lives.
     
-  for $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
+  foreach $elem (@_) { if (stat($elem) ne "") { $name = $elem; last; } }
     
   if ($name eq "")
   {
     $name = $_[0];
     (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
-    &xst_report_warning (97, "Could not find \[@_\]. Writing to \[$fullname\]");
+    &xst_report ("file_open_write_create", "@_", $fullname);
   }
   else
   {
     (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
-    &xst_report_info (98, "Found \[$name\]. Writing to \[$fullname\]");
+    &xst_report ("file_open_write_success", $fullname);
   }
     
   ($name = "$xst_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-  &xst_create_path_for_file ($name);
+  &xst_file_create_path_for_file ($name);
     
   # Make a backup if the file already exists - if the user specified a prefix,
   # it might not.
     
   if (stat ($name))
   {
-    &xst_backup_file ($name);
+    &xst_file_backup ($name);
   }
 
+  &xst_report_leave ();
+  
   # Truncate and return filehandle.
 
   if (!open (FILE, ">$name"))
   {
-    &xst_report_error (99, "Failed to write to \[$name\]");
+    &xst_report ("file_open_write_failed",  "Failed to write to \[$name\]");
     return;
   }
 
@@ -222,17 +254,22 @@ sub xst_open_write_from_names
 }
 
 
-sub xst_open_filter_write_from_names
+sub xst_file_open_filter_write_from_names
 {
   local *INFILE;
   local *OUTFILE;
   my ($filename, $name, $elem);
 
+  &xst_report_enter ();
+
   # Find out where it lives.
 
-  for $elem (@_) { if (stat ($elem) ne "") { $name = $elem; last; } }
+  foreach $name (@_)
+  {
+    last if (-e $name);
+  }
 
-  if ($name eq "")
+  if (! -e $name)
   {
     # If we couldn't locate the file, and have no prefix, give up.
 
@@ -241,32 +278,32 @@ sub xst_open_filter_write_from_names
 
     if ($prefix eq "")
     {
-      &xst_report_warning (98, "No file to patch: \[@_\]");
+      &xst_report ("file_open_filter_failed", "@_");
       return(0, 0);
     }
     else
     {
       $name = $_[0];
       (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
-      &xst_report_warning (97, "Could not find \[@_\]. Patching \[$fullname\]");
+      &xst_report ("file_open_filter_create", "@_", $fullname);
     }
   }
   else
   {
     (my $fullname = "$xst_prefix/$name") =~ tr/\//\//s;
-    &xst_report_info (98, "Found \[$name\]. Patching \[$fullname\]");
+    &xst_report ("file_open_filter_success", $name, $fullname);
   }
 
   ($filename) = $name =~ /.*\/(.+)$/;
   ($name = "$xst_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
-  &xst_create_path_for_file ($name);
+  &xst_file_create_path_for_file ($name);
 
   # Make a backup if the file already exists - if the user specified a prefix,
   # it might not.
 
-  if (stat ($name))
+  if (-e $name)
   {
-    &xst_backup_file ($name);
+    &xst_file_backup ($name);
   }
 
   # Return filehandles. Make a copy to use as filter input. It might be
@@ -275,18 +312,20 @@ sub xst_open_filter_write_from_names
 
   my $tmp_path = &xst_file_get_tmp_path ();
 
-  &xst_create_path ("$tmp_path");
+  &xst_file_create_path ("$tmp_path");
   unlink ("$tmp_path/$xst_name-$filename");
-  &xst_run ("cp $name $tmp_path/$xst_name-$filename");
+  &xst_file_run ("cp $name $tmp_path/$xst_name-$filename");
 
   open (INFILE, "$tmp_path/$xst_name-$filename");
 
   if (!open (OUTFILE, ">$name"))
   {
-    &xst_report_error (99, "Failed to write to \[$name\]");
+    &xst_report ("file_open_write_failed", $name);
     return;
   }
     
+  &xst_report_leave ();
+
   return (*INFILE, *OUTFILE);
 }
 
@@ -297,16 +336,21 @@ sub xst_open_filter_write_from_names
 # Open $file and put it into @buffer, for in-line editting.
 # \%buffer on success, undef on error.
 
-sub xst_buffer_load
+sub xst_file_buffer_load
 {
   my $file = $_[0];
   my @buffer;
   my $fd;
 
-  $fd = &xst_open_read_from_names ($file);
+  &xst_report_enter ();
+  &xst_report ("file_buffer_load", $file);
+
+  $fd = &xst_file_open_read_from_names ($file);
   return [] if !$fd;
 
   @buffer = (<$fd>);
+
+  &xst_report_leave ();
 
   return \@buffer;
 }
@@ -314,19 +358,20 @@ sub xst_buffer_load
 
 # Take a $buffer and save it in $file. -1 is error, 0 success.
 
-sub xst_buffer_save
+sub xst_file_buffer_save
 {
   my ($buffer, $file) = @_;
   my ($fd, $i);
 
-  &xst_debug_print_string ("\nfile:$file\n");
+  &xst_report_enter ();
+  &xst_report ("file_buffer_save", $file);
 
   foreach $i (@$buffer)
   {
     &xst_debug_print_string ("|" . $i);
   }
 
-  $fd = &xst_open_write_from_names ($file);
+  $fd = &xst_file_open_write_from_names ($file);
   return -1 if !$fd;
 
   if (@$buffer < 1)
@@ -347,13 +392,15 @@ sub xst_buffer_save
 
   close $fd;
 
+  &xst_report_leave ();
+  
   return 0;
 }
 
 
 # Erase all empty string elements from the $buffer.
 
-sub xst_buffer_clean
+sub xst_file_buffer_clean
 {
   my $buffer = $_[0];
   my $i;
@@ -365,7 +412,7 @@ sub xst_buffer_clean
 }
 
 
-sub xst_buffer_join_lines
+sub xst_file_buffer_join_lines
 {
   my $buffer = $_[0];
   my $i;
@@ -386,7 +433,7 @@ sub xst_buffer_join_lines
 # --- Command-line utilities --- #
 
 
-# &xst_run (<command line>)
+# &xst_file_run (<command line>)
 #
 # Assumes the first word on the command line is the command-line utility
 # to run, and tries to locate it, replacing it with its full path. The path
@@ -394,16 +441,18 @@ sub xst_buffer_join_lines
 # redirection is appended, to make the utility perfectly silent. The
 # preprocessed command line is run, and its exit value is returned.
 #
-# Example: "mkswap /dev/hda3" -> "/sbin/mkswap /dev/hda3 >/dev/null 2>/dev/null".
+# Example: "mkswap /dev/hda3" -> '/bin/sh -c "/sbin/mkswap /dev/hda3 >/dev/null 2>/dev/null"'.
 
-sub xst_run
+sub xst_file_run
 {
   my ($tool_name, $tool_path, @argline);
   my $command;
 
+  &xst_report_enter ();
+  
   ($tool_name, @argline) = split(/ /, $_[0]);
 
-  $tool_path = &xst_locate_tool ($tool_name);
+  $tool_path = &xst_file_locate_tool ($tool_name);
   if ($tool_path eq "")
   {
     # Not found at all.
@@ -412,27 +461,32 @@ sub xst_run
 
   $command = "$tool_path @argline >/dev/null 2>&1";
   $command =~ s/\"/\\\"/g;
+
+  &xst_report ("file_run", "/bin/sh -c \"$command\"");
+  &xst_report_leave ();
   
   return (system ("/bin/sh -c \"$command\""));
 }
 
 
-# &xst_locate_tool
+# &xst_file_locate_tool
 #
 # Tries to locate a command-line utility from a set of built-in paths
 # and a set of user paths (found in the environment). The path (or a negative
 # entry) is cached in a hash, to avoid searching for it repeatedly.
 
-@xst_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin", "/bin",
-                      "/usr/bin", "/usr/local/bin" );
+@xst_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin",
+                       "/bin", "/usr/bin", "/usr/local/bin" );
 
 %xst_tool_paths = {};
 
-sub xst_locate_tool
+sub xst_file_locate_tool
 {
   my $found = "";
   my @user_paths;
 
+  &xst_report_enter ();
+  
   $found = %xst_tool_paths->{$_[0]};
   if ($found eq "0")
   {
@@ -468,16 +522,18 @@ sub xst_locate_tool
     if ($found)
     {
       %xst_tool_paths->{$_[0]} = $found;
-      &xst_report_info (97, "Found $_[0] tool");
+      &xst_report ("file_locate_tool_success", $_[0]);
     }
     else
     {
       %xst_tool_paths->{$_[0]} = "0";
-      &xst_report_warning (96, "Couldn't find $_[0] tool");
+      &xst_report ("file_locate_tool_failed", $_[0]);
     }
   }
   
-  return($found);
+  &xst_report_leave ();
+  
+  return ($found);
 }
 
 1;

@@ -1,3 +1,13 @@
+2001-03-28  Arturo Espinosa  <arturo@ximian.com>
+
+	* report.pl.in: New report code, which dumps the use
+	  of mayor and minor numbers and uses keys instead. A
+	  hash, mapping keys to messages is at the end of this
+	  file. Fitted progress report with this scheme.
+
+	* *.in: use new reporting code. Some other naming and
+	  style corrections I found on the way.
+	
 2001-03-28  Ryan Boren <rboren@fuzzybelly.org>
 
 	* print.pl.in (xst_printcap_read): parse the ##PRINTTOOL##

@@ -35,7 +35,7 @@ sub xst_boot_parse_global_kw
   my ($file, $key) = @_;
   my $fd;
 
-  $fd = &xst_open_read_from_names ($file);
+  $fd = &xst_file_open_read_from_names ($file);
 
   while (<$fd>)
   {
@@ -62,7 +62,7 @@ sub xst_boot_parse_global
   my ($fd, @line, $re);
 
   $re = "[ \t]*=[ \t]*";
-  $fd = &xst_open_read_from_names ($file);
+  $fd = &xst_file_open_read_from_names ($file);
 
   while (<$fd>)
   {
@@ -91,7 +91,7 @@ sub xst_boot_parse_images
   my ($key, $val);
 
   $found = -1;
-  $fd = &xst_open_read_from_names ($file);
+  $fd = &xst_file_open_read_from_names ($file);
 
   while (<$fd>)
   {
@@ -126,7 +126,7 @@ sub xst_boot_set_global_kw
   my ($file, $key) = @_;
   my ($buff, $i, $found);
 
-  $buff = &xst_buffer_load ($file);
+  $buff = &xst_file_buffer_load ($file);
   $found = 0;
 
   foreach $i (@$buff)
@@ -153,8 +153,8 @@ sub xst_boot_set_global_kw
     last if $found;
   }
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 
@@ -163,7 +163,7 @@ sub xst_boot_set_global
   my ($file, $key, $val) = @_;
   my ($buff, $i, $found);
 
-  $buff = &xst_buffer_load ($file);
+  $buff = &xst_file_buffer_load ($file);
   $found = 0;
 
   foreach $i (@$buff)
@@ -194,8 +194,8 @@ sub xst_boot_set_global
     last if $found;
   }
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 
@@ -204,7 +204,7 @@ sub xst_boot_del_global
   my ($file, $key) = @_;
   my ($buff, $i);
 
-  $buff = &xst_buffer_load ($file);
+  $buff = &xst_file_buffer_load ($file);
 
   foreach $i (@$buff)
   {
@@ -217,8 +217,8 @@ sub xst_boot_del_global
     }
   }
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 
@@ -226,7 +226,7 @@ sub xst_boot_conf_del_images
 {
   my ($fn, $images) = @_;
   
-  $buf = &xst_buffer_load ($fn);
+  $buf = &xst_file_buffer_load ($fn);
 
   $found = 1;
   foreach $i (@$buf)
@@ -247,8 +247,8 @@ sub xst_boot_conf_del_images
     $i = "";
   }
 
-  &xst_buffer_clean ($buf);
-  return &xst_buffer_save ($buf, $fn);
+  &xst_file_buffer_clean ($buf);
+  return &xst_file_buffer_save ($buf, $fn);
 }
 
 
@@ -275,8 +275,8 @@ sub xst_boot_conf_replace_image
   my ($pre_space, $post_comment);
   my (@line, $key, $op, $txt);
 
-  $buff = &xst_buffer_load ($file);
-  &xst_buffer_join_lines ($buff);
+  $buff = &xst_file_buffer_load ($file);
+  &xst_file_buffer_join_lines ($buff);
   
   $found = 0;
 
@@ -389,8 +389,8 @@ sub xst_boot_conf_replace_image
     }
   }
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 

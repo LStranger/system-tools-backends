@@ -71,29 +71,26 @@ sub xst_service_sysv_get_runlevels
 sub xst_service_sysv_get_status
 {
   my ($service) = @_;
-  my ($rc_path, $initd_path);
+  my ($rc_path, $initd_path, $res);
+
+  &xst_report_enter ();
 
   ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+  $res = 0;
   
   if (-f "$initd_path/$service")
   {
-    if (!&xst_run ("$initd_path/$service status"))
-    {
-      &xst_report_info (2, "Service $service is running");
-      return 1;
-    }
-    else
-    {
-      &xst_report_info (3, "Service $service is not running");
-      return 0;
-    }
+    $res = !&xst_file_run ("$initd_path/$service status");
+    &xst_report ("service_status_running", $service) if $res;
+    &xst_report ("service_status_stopped", $service) if !$res;
   }
   else
   {
-    &xst_report_warning (1, "Could not find SystemV scripts for service $service");
+    &xst_report ("service_sysv_not_found", $service);
   }
 
-  return 0;
+  &xst_report_leave ();
+  return $res;
 }
 
 # Setup a link, at the designated runlevel, for the defined
@@ -106,6 +103,10 @@ sub xst_service_sysv_add_link
   ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
 
   symlink ("$initd_path/$service", "$rcd_path/rc$runlevel.d/$pre$service");
+  
+  &xst_report_enter ();
+  &xst_report ("service_sysv_add_link", "$rcd_path/rc$runlevel.d/$pre$service");
+  &xst_report_leave ();
 }
 
 # Remove any links matching re at the given runlevel.
@@ -117,19 +118,28 @@ sub xst_service_sysv_remove_link
   my $dir;
   my ($rcd_path, $initd_path);
 
+  &xst_report_enter ();
+
   ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
   $dir = "$xst_prefix/$rcd_path/rc$runlevel.d";
   
   if (!(opendir RC_DIR, $dir))
   {
-    &xst_report_warning (1, "Could not find SystemV runlevel $runlevel directory");
+    &xst_report ("service_sysv_no_runlevel", $runlevel, $dir);
+    &xst_report_leave ();
     return;
   }
 
   foreach $link (readdir (RC_DIR))
   {
-    unlink ("$dir/$link") if ($link =~ /$re/);
+    if ($link =~ /$re/)
+    {
+      &xst_report ("service_sysv_remove_link", "$dir/$link");
+      unlink ("$dir/$link");
+    }
   }
+  
+  &xst_report_leave ();
 }
 
 # Set start links and remove stop links at the usual runlevels.
@@ -182,12 +192,15 @@ sub xst_service_sysv_run_initd_script
   my $str;
   my %map =
       ("restart" => "restarted",
-       "stop" => "stoped",
+       "stop" => "stopped",
        "start" => "started");
+
+  &xst_report_enter ();
   
   if (!exists $map{$arg})
   {
-    &xst_report_warning (1, "Unknown initd operation $arg");
+    &xst_report ("service_sysv_op_unk", $arg);
+    &xst_report_leave ();
     return -1;
   }
 
@@ -197,14 +210,16 @@ sub xst_service_sysv_run_initd_script
 
   if (-f "$initd_path/$service")
   {
-    if (!&xst_run ("$init_path/$service $arg"))
+    if (!&xst_file_run ("$init_path/$service $arg"))
     {
-      &xst_report_info (2, "Service $service $str");
+      &xst_report ("service_sysv_op_success", $service, $str);
+      &xst_report_leave ();
       return 0;
     }
   }
   
-  &xst_report_warning (1, "Service $service could not be $str");
+  &xst_report ("service_sysv_op_failed", $service, $str);
+  &xst_report_leave ();
   return -1;
 }
 

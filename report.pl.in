@@ -36,30 +36,30 @@ sub xst_progress
 {
   my $prc = $_[0];
 
-  if ($prc < $xst_progress_last_percentage)
-  {
-    # Don't go backwards.
-    $prc = $xst_progress_last_percentage;
-  }
+  # Don't go backwards.
+  $prc = $xst_progress_last_percentage if ($prc < $xst_progress_last_percentage);
 
-  if ($prc >= 100)
-  {
-    # Don't go above 99%.
-    $prc = 99;
-  }
+  # Don't go above 99%.
+  $prc = 99 if ($prc >= 100);
 
   if ($xst_progress && (int $prc > int $xst_progress_last_percentage))
   {
-    printf "%03d percent done.\n", $prc;
+    &xst_report ("progress", $prc);
     $xst_progress_last_percentage = $prc;
   }
 }
 
 
-sub xst_progress_begin { &xst_progress (0); }
+sub xst_progress_begin
+{
+  &xst_progress (0);
+}
 
 
-sub xst_progress_end { &xst_progress (99); }
+sub xst_progress_end
+{
+  &xst_progress (99);
+}
 
 
 sub xst_print_progress  # Compat with old $progress_max use.
@@ -74,69 +74,150 @@ sub xst_print_progress  # Compat with old $progress_max use.
 # --- Report printing --- #
 
 
+sub xst_report_set_threshold
+{
+  $xst_report_threshold = $_[0];
+}
+
+
+sub xst_report_enter
+{
+  $xst_report_level ++;
+}
+
+
+sub xst_report_leave
+{
+  $xst_report_level --;
+}
+
+
+$xst_report_level = 0;
+$xst_report_started = 0;
+
 sub xst_report
 {
-  if ($xst_reporting)
+  my ($key, @args) = @_;
+  my ($mayor, $minor, $str, $format, $res);
+  
+  &xst_debug_print_line ("Non-existing report key $key") if !exists $xst_report_message{$key};
+  
+  ($mayor, $str) = @{$xst_report_message{$key}};
+
+  $xst_report_started = 1 if !$xst_report_started && $key eq "begin" && $mayor eq "sys";
+
+  if ($key ne "progress")
   {
-    printf "%1d%02d %s.\n", $_[0], $_[1], $_[2];
-  }
-}
-
-
-sub xst_report_begin
-{
-  &xst_report (1, 00, "Start of work report");
-}
-
-
-sub xst_report_end
-{
-  &xst_report (1, 01, "End of work report");
-  if ($xst_reporting) { print "\n"; }
-}
-
-
-sub xst_report_info
-{
-  if ($xst_verbose)
-  {
-    printf STDERR "%s.\n", $_[1];
+    return if ($xst_report_level >= $xst_report_threshold || !$xst_report_started);
   }
 
-  &xst_report (2, $_[0], $_[1]);
+  $format = sprintf ("%s %s\n", $key, $str);
+  $res = sprintf ($format, @args);
+  printf (STDOUT $res);
+  printf (STDERR $res) if $xst_verbose;
+
+  &xst_debug_print_indented_string ($xst_report_level, "report $key: $res");
 }
 
 
-sub xst_report_warning
-{
-  if ($xst_verbose)
-  {
-    printf STDERR "Warning: %s.\n", $_[1];
-  }
+# This disables reporting.
+&xst_report_set_threshold (0);
 
-  &xst_report (3, $_[0], $_[1]);
-}
+%xst_report_message =
+    ("begin"    => ["sys", "Start of work report"],
+     "end"      => ["sys", "End of work report\n"],
+     "progress" => ["sys", "%d"],
+     "compat"   => ["info", "%s."],
 
+     "platform_list"            => ["sys",   "Supported: [%s]"],
+     "platform_unsup"           => ["fatal", "Your platform is not supported."],
+     "platform_undet"           => ["fatal", "Unable to determine host platform."],
+     "platform_success"         => ["sys",   "Configuring for platform [%s]."],
 
-sub xst_report_error
-{
-  if ($xst_verbose)
-  {
-    printf STDERR "Error: %s.\n", $_[1];
-  }
+     "xml_unexp_tag"            => ["error", "Unexpected tag [%s]."],
+     "xml_unexp_arg"            => ["error", "Unexpected argument [%s] to tag [%s]."],
 
-  &xst_report (4, $_[0], $_[1]);
-}
+     "file_open_read_failed"    => ["warn",  "Could not open [%s] for reading."],
+     "file_open_read_success"   => ["info",  "Reading options from [%s]."],
+     "file_open_write_failed"   => ["error", "Failed to write to [%s]."],
+     "file_open_write_create"   => ["warn",  "Could not find [%s] for writing. Creating [%s]."],
+     "file_open_write_success"  => ["info",  "Writing to [%s]."],
+     "file_create_path"         => ["info",  "Directory [%s] created."],
+     "file_backup_rotate"       => ["info",  "Backup directory [%s] was rotated."],
+     "file_backup_success"      => ["info",  "Saved backup for [%s]."],
+     "file_open_filter_failed"  => ["warn",  "No file to patch: [%s]."],
+     "file_open_filter_create"  => ["warn",  "Could not find [%s] for patching. Creating [%s]."],
+     "file_open_filter_success" => ["info",  "Found [%s]. Patching [%s]."],
+     "file_buffer_load"         => ["info",  "Loading file [%s] to buffer."],
+     "file_buffer_save"         => ["info",  "Saving buffer to file [%s]."],
+     "file_run"                 => ["info",  "Running command [%s]."],
+     "file_locate_tool_success" => ["info",  "Found tool [%s]."],
+     "file_locate_tool_failed"  => ["warn",  "Couldn't find tool [%s]."],
+     
+     "network_dialing_get"      => ["info",  "Loading ISP configurations."],
+     "network_iface_active_get" => ["info",  "Finding active interfaces."],
+     "network_iface_is_active"  => ["info",  "Checking if interface [%s] is active."],
+     "network_hostname_set"     => ["info",  "Setting hostname."],
+     "network_dialing_set"      => ["info",  "Saving ISP configurations."],
+     "network_remove_pap"       => ["info",  "Removing entry [%s] from [%s]."],
+     "network_iface_set"        => ["info",  "Configuring interface [%s]."],
+     "network_iface_activate"   => ["info",  "Activating interface [%s]."],
+     "network_iface_deactivate" => ["info",  "Deactivating interface [%s]."],
+     "network_ifaces_set"       => ["info",  "Setting up interfaces."],
+     "network_get_pap_passwd"   => ["info",  "Getting PAP/CHAP password for [%s] from [%s]."],
+     "network_get_ppp_option"   => ["info",  "Getting option [%s] from [%s]."],
+     "network_set_ppp_option"   => ["info",  "Setting option [%s] in [%s]."],
+     "network_set_ppp_connect"  => ["info",  "Setting connect option in [%s]."],
+     "network_get_ppp_unsup"    => ["info",  "Getting additional options from [%s]."],
+     "network_set_ppp_unsup"    => ["info",  "Setting additional options in [%s]."],
+     "network_bootproto_unsup"  => ["warn",  "Boot method [%s] for interface [%s] not supported."],
+     "network_get_remote"       => ["info",  "Getting remote address for interface [%s]."],
+     "network_set_remote"       => ["info",  "Setting remote address for interface [%s]."],
+     "network_ensure_lo"        => ["info",  "Ensuring loopback interface configuration."],
+     
+     "parse_trivial"            => ["info",  "Trivialy passing [%s]."],
+     "parse_split"              => ["info",  "Getting option [%s] from [%s]."],
+     "parse_split_hash"         => ["info",  "Getting configurations from [%s]."],
+     "parse_sh"                 => ["info",  "Getting shell option [%s] from [%s]."],
+     "parse_kw"                 => ["info",  "Getting keyword [%s] from [%s]."],
+     "parse_line_first"         => ["info",  "Getting information from [%s]."],
+     "parse_chat"               => ["info",  "Getting chat information from [%s]."],
+     "parse_ini"                => ["info",  "Getting option [%s] from [%s], section [%s]."],
+     "parse_ifaces_kw"          => ["info",  "Getting keyword [%s] from interface [%s]."],
+     "parse_ifaces_str"         => ["info",  "Getting option [%s] from interface [%s]."],
+     "parse_ifaces_kw_strange"  => ["warn",  "Keyword for interface [%s] in [%s] had unexpected value."],
 
+     "boot_lilo_failed"         => ["warn",  "Failed to run lilo."],
+     "boot_lilo_success"        => ["info",  "Succesfully executed lilo."],
 
-sub xst_report_fatal
-{
-  if ($xst_verbose)
-  {
-    printf STDERR "Fatal error: %s.\n", $_[1];
-  }
+     "disks_fstab_add"          => ["info",  "Adding [%s] to fstab."],
+     "disks_partition_probe"    => ["info",  "Looking for partitions on [%s]."],
+     "disks_size_query"         => ["info",  "Querying size of [%s]."],
+     "disks_mount"              => ["info",  "Mounting [%s]."],
+     "disks_umount"             => ["info",  "Unmounting [%s]."],
+     "disks_mount_error"        => ["error", "Could not find mount tools. No mounting done."],
+     
+     "memory_swap_found"        => ["info",  "Found swap entry [%s]."],
+     "memory_swap_probe"        => ["info",  "Looking for swap entries."],
+     
+     "print_no_printtool"       => ["warn",  "No printtool setup in directory [%s]."],
 
-  &xst_report (5, $_[0], $_[1]);
-}
+     "service_status_running"   => ["info",  "Service [%s] is running."],
+     "service_status_stopped"   => ["info",  "Service [%s] is stopped."],
+     "service_sysv_not_found"   => ["warn",  "Could not find SystemV scripts for service [%s]."],
+     "service_sysv_no_runlevel" => ["warn",  "Could not find SystemV runlevel [%s] directory [%s]."],
+     "service_sysv_remove_link" => ["info",  "Removed SystemV link [%s]."],
+     "service_sysv_add_link"    => ["info",  "Created SystemV link [%s]."],
+     "service_sysv_op_unk"      => ["error", "Unknown initd operation [%s]."],
+     "service_sysv_op_success"  => ["info",  "Service [%s] %s."],
+     "service_sysv_op_failed"   => ["warn",  "Service [%s] cound not be %s."],
+
+     "time_timezone_scan"       => ["info",  "Scanning timezones."],
+     "time_timezone_cmp"        => ["info",  "Scanning timezones: [%s]."],
+     "time_timezone_set"        => ["info",  "Setting timezone as [%s]."],
+     "time_localtime_set"       => ["info",  "Setting local time as [%s]."],
+
+     "users_getting_db"         => ["info",  "Getting user database."]
+     );
 
 1;

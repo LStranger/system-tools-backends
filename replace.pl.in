@@ -61,7 +61,7 @@ sub xst_replace_from_table
 
 # Wacky function that tries to create a field separator from a regular expression.
 # Doesn't work with all possible regular expressions: just with the ones we are working with.
-sub regexp_to_separator
+sub xst_replace_regexp_to_separator
 {
   $_ = $_[0];
 
@@ -89,7 +89,7 @@ sub set_value
 {
   my ($key, $val, $re) = @_;
   
-  return $key . &regexp_to_separator ($re) . $val;
+  return $key . &xst_replace_regexp_to_separator ($re) . $val;
 }
 
 # Edit a $file, wich is assumed to have a column-based format, with $re matching field separators
@@ -103,7 +103,7 @@ sub xst_replace_split
   my ($pre_space, $post_comment);
   my ($line_key, $val);
 
-  $buff = &xst_buffer_load ($file);
+  $buff = &xst_file_buffer_load ($file);
   
   foreach $i (@$buff)
   {
@@ -139,8 +139,8 @@ sub xst_replace_split
     push (@$buff, &set_value ($key, $i, $re) . "\n");
   }
 
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 sub xst_replace_join_all
@@ -172,7 +172,7 @@ sub xst_replace_join_first_array
 {
   my ($file, $key, $re1, $re2, $value) = @_;
 
-  return &xst_replace_split ($file, $key, $re1, join (&regexp_to_separator ($re2), @$value));
+  return &xst_replace_split ($file, $key, $re1, join (&xst_replace_regexp_to_separator ($re2), @$value));
 }
 
 sub xst_replace_sh
@@ -206,7 +206,7 @@ sub xst_replace_line_first
   my ($file, $value) = @_;
   my $fd;
 
-  $fd = &xst_open_write_from_names ($file);
+  $fd = &xst_file_open_write_from_names ($file);
   return -1 if !$fd;
 
   print $fd $value;
@@ -224,7 +224,7 @@ sub xst_replace_join_hash
   
   foreach $i (keys (%$value))
   {
-    $val = join (&regexp_to_separator ($re2), @{$$value{$i}});
+    $val = join (&xst_replace_regexp_to_separator ($re2), @{$$value{$i}});
     $tmp = &xst_replace_split ($file, $i, $re1, $val);
     $res = $tmp if !$res;
   }
@@ -237,7 +237,7 @@ sub xst_replace_chat
   my ($file, $re, $value) = @_;
   my ($buff, $i, $bak, $found, $substr);
 
-  $buff = &xst_buffer_load ($file);
+  $buff = &xst_file_buffer_load ($file);
 
   SCAN: foreach $i (@$buff)
   {
@@ -276,7 +276,7 @@ sub xst_replace_chat
     $i = $bak . "\n";
   }
 
-  return &xst_buffer_save ($buff, $file);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 
@@ -288,9 +288,9 @@ sub xst_replace_ini
 
   &xst_debug_print_string ("\nreplace_ini: " . join (',', @_) . "\n");
 
-  $buff = &xst_buffer_load ($file);
+  $buff = &xst_file_buffer_load ($file);
 
-  &xst_buffer_join_lines ($buff);
+  &xst_file_buffer_join_lines ($buff);
   $found_flag = 0;
   
   foreach $i (@$buff)
@@ -339,8 +339,8 @@ sub xst_replace_ini
   push @$buff, "\n[$section]\n" if (!$found_flag);
   push @$buff, "$var = $value\n" if ($found_flag < 2);
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 sub xst_replace_ini_bool
@@ -444,8 +444,8 @@ sub xst_replace_interfaces_stanza_delete
   my ($file, $iface) = @_;
   my ($buff, $line_no, $stanza);
 
-  $buff = &xst_buffer_load ($file);
-  &xst_buffer_join_lines ($buff);
+  $buff = &xst_file_buffer_load ($file);
+  &xst_file_buffer_join_lines ($buff);
   $line_no = 0;
 
   return -1 if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface));
@@ -458,8 +458,8 @@ sub xst_replace_interfaces_stanza_delete
     $line_no ++;
   }
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
       
 sub xst_replace_interface_stanza_value
@@ -468,8 +468,8 @@ sub xst_replace_interface_stanza_value
   my ($buff, $line_no, $stanza);
   my ($pre_space, $line, $line_arr);
 
-  $buff = &xst_buffer_load ($file);
-  &xst_buffer_join_lines ($buff);
+  $buff = &xst_file_buffer_load ($file);
+  &xst_file_buffer_join_lines ($buff);
   $line_no = 0;
 
   if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface))
@@ -487,8 +487,8 @@ sub xst_replace_interface_stanza_value
   $line_arr[$pos] = $value;
   $$buff[$line_no] = $pre_space . "iface " . join (' ', @line_arr) . "\n";
 
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 sub xst_replace_interfaces_option_str
@@ -497,8 +497,8 @@ sub xst_replace_interfaces_option_str
   my ($buff, $line_no, $stanza);
   my ($pre_space, $line, $line_arr);
 
-  $buff = &xst_buffer_load ($file);
-  &xst_buffer_join_lines ($buff);
+  $buff = &xst_file_buffer_load ($file);
+  &xst_file_buffer_join_lines ($buff);
   $line_no = 0;
 
   if (!&xst_replace_interfaces_stanza_locate ($buff, \$line_no, $iface))
@@ -531,8 +531,8 @@ sub xst_replace_interfaces_option_str
 
   $$buff[$line_no] .= $value . "\n" if $value ne "";
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 sub xst_replace_interfaces_option_kw

@@ -59,7 +59,9 @@ sub xst_network_dialing_get
   my (%ret, @sections);
   my ($i, $j, $name, $val);
 
-  &xst_run ("wvdialconf $xst_prefix/$file") if (!-e "$xst_prefix/$file");
+  &xst_report_enter ();
+  &xst_file_run ("wvdialconf $xst_prefix/$file") if (!-e "$xst_prefix/$file");
+  &xst_report ("network_dialing_get");
   
   @sections = &xst_parse_ini_sections ($file);
   foreach $i (@sections)
@@ -85,6 +87,7 @@ sub xst_network_dialing_get
     }
   }
   
+  &xst_report_leave ();
   return \%ret;
 }
 
@@ -96,7 +99,9 @@ sub xst_network_active_interfaces_get
   my $tool_ifconfig;
   my @ret = ();
 
-  $tool_ifconfig = &xst_locate_tool ("ifconfig");
+  &xst_report_enter ();
+  &xst_report ("network_iface_active_get");
+  $tool_ifconfig = &xst_file_locate_tool ("ifconfig");
 
   open IFCONFIG, "/bin/sh -c \"$tool_ifconfig | sed 's/:\\? .*//;/^\$/D'\" |";
   
@@ -108,19 +113,25 @@ sub xst_network_active_interfaces_get
 
   close IFCONFIG;
 
+  &xst_report_leave ();
   return @ret;
 }
   
 sub xst_network_interface_active
 {
   my ($search_iface, $proc) = @_;
-  my @ifaces = &$proc ();
+  my @ifaces;
 
+  &xst_report_enter ();
+  &xst_report ("network_iface_is_active", $search_iface);
+  
+  @ifaces = &$proc ();
   while ($ifaces[0])
   {
     return 1 if (shift (@ifaces) eq $search_iface);
   }
 
+  &xst_report_leave ();
   return 0;
 }
 
@@ -257,7 +268,10 @@ sub xst_network_run_hostname
 {
   my $hostname = $_[0];
 
-  &xst_run ("hostname $hostname");
+  &xst_report_enter ();
+  &xst_report ("network_hostname_set");
+  &xst_file_run ("hostname $hostname");
+  &xst_report_leave ();
 }
 
 sub xst_network_dialing_set
@@ -287,6 +301,9 @@ sub xst_network_dialing_set
   my $ret;
   my ($i, $j);
 
+  &xst_report_enter ();
+  &xst_report ("network_dialing_set");
+
   foreach $i (keys %$values_hash)
   {
     %hash = %{$$values_hash{$i}};
@@ -302,6 +319,7 @@ sub xst_network_dialing_set
     }
   }
 
+  &xst_report_leave ();
   return $ret;
 }
 
@@ -312,12 +330,12 @@ sub xst_network_rh62_interface_activate_by_dev
   if ($enabled)
   {
     &xst_debug_print_string ("\n\nifup $dev\n\n");
-    return -1 if &xst_run ("ifup $dev &");
+    return -1 if &xst_file_run ("ifup $dev &");
   }
   else
   {
     &xst_debug_print_string ("\n\nifdown $dev\n\n");
-    return -1 if &xst_run ("ifdown $dev &");
+    return -1 if &xst_file_run ("ifdown $dev &");
   }
 
   return 0;
@@ -344,7 +362,14 @@ sub xst_network_rh62_interface_activate
     $dev = $$hash{"file"} if ($old_hash && $$old_hash{"enabled"});
   }
 
-  &xst_network_rh62_interface_activate_by_dev ($dev, $enabled) if $dev;
+  if ($dev)
+  {
+    &xst_report_enter ();
+    &xst_report ("network_iface_activate", $dev) if $enabled;
+    &xst_report ("network_iface_deactivate", $dev) if !$enabled;
+    &xst_network_rh62_interface_activate_by_dev ($dev, $enabled);
+    &xst_report_leave ();
+  }
 }
 
 sub xst_network_remove_pap_entry
@@ -352,15 +377,19 @@ sub xst_network_remove_pap_entry
   my ($file, $login) = @_;
   my ($i, $buff);
 
-  $buff = &xst_buffer_load ($file);
+  &xst_report_enter ();
+  &xst_report ("network_remove_pap", $file, $login);
+  
+  $buff = &xst_file_buffer_load ($file);
 
   foreach $i (@$buff)
   {
     $i = "" if ($i =~ /^[ \t]*$login[ \t]/);
   }
 
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  &xst_report_leave ();
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 sub xst_network_rh62_interface_delete
@@ -417,6 +446,8 @@ sub xst_network_interface_set
   my (%dist_attrib, %fn);
   my ($proc, $i, $res);
   
+  &xst_report_enter ();
+  &xst_report ("network_iface_set", $dev);
   %dist_attrib = &xst_network_get_interface_replace_table ();
   $proc = $dist_attrib{"iface_set"};
   %fn = %{$dist_attrib{"fn"}};
@@ -432,7 +463,9 @@ sub xst_network_interface_set
                                   $values_hash, $old_hash);
   
   # if success saving the settings for the interface, set up immediatly.
-  &$proc ($values_hash, $old_hash, $$values_hash{"enabled"}) if (!$res);
+  &$proc ($values_hash, $old_hash, $$values_hash{"enabled"}) if !$res;
+
+  &xst_report_leave ();
 
   return $res;
 }
@@ -445,6 +478,9 @@ sub xst_network_interfaces_set
   my ($i, $j);
   my ($tmp, $res);
 
+  &xst_report_enter ();
+  &xst_report ("network_ifaces_set");
+  
   %dist_attrib = &xst_network_get_interface_replace_table ();
   $old_hash = $$old_hash{"interface"};
 
@@ -464,6 +500,7 @@ sub xst_network_interfaces_set
     $res = $tmp if !$res;
   }
 
+  &xst_report_leave ();
   return $res;
 }
 
@@ -487,8 +524,11 @@ sub xst_network_get_pap_passwd
   my ($file, $login) = @_;
   my @arr;
 
+  &xst_report_enter ();
+  &xst_report ("network_get_pap_passwd", $login, $file);
   $arr = &xst_parse_split_first_array ($file, $login, "[ \t]+", "[ \t]+");
-
+  &xst_report_leave ();
+  
   return $$arr[1];
 }
 
@@ -497,7 +537,10 @@ sub xst_network_get_ppp_options_re
   my ($file, $re) = @_;
   my ($fd, @res);
 
-  $fd = &xst_open_read_from_names ("$file");
+  &xst_report_enter ();
+  &xst_report ("network_get_ppp_option", &xst_replace_regexp_to_separator ($re), $file);
+  $fd = &xst_file_open_read_from_names ("$file");
+  &xst_report_leave ();
   return undef if !$fd;
 
   while (($_ = &xst_parse_chomp_line_hash_comment ($fd)) != -1)
@@ -514,9 +557,12 @@ sub xst_network_get_ppp_options_re
 sub xst_network_set_ppp_options_re
 {
   my ($file, $re, $value) = @_;
-  my ($buff, $line, $replaced);
+  my ($buff, $line, $replaced, $ret);
 
-  $buff = &xst_buffer_load ($file);
+  &xst_report_enter ();
+  &xst_report ("network_set_ppp_option", &xst_replace_regexp_to_separator ($re), $file);
+  
+  $buff = &xst_file_buffer_load ($file);
 
   foreach $line (@$buff)
   {
@@ -529,15 +575,22 @@ sub xst_network_set_ppp_options_re
 
   push @$buff, "$value\n" if !$replaced;
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  &xst_report_leave ();
+  return $ret;
 }
 
 sub xst_network_set_ppp_options_connect
 {
   my ($file, $value) = @_;
+  my $ret;
 
-  return &xst_network_set_ppp_options_re ($file, "^connect", "connect \"/usr/bin/wvdial --chat $value\"");
+  &xst_report_enter ();
+  &xst_report ("network_set_ppp_connect", $file);
+  $ret = &xst_network_set_ppp_options_re ($file, "^connect", "connect \"/usr/bin/wvdial --chat $value\"");
+  &xst_report_leave ();
+  return $ret;
 }
 
 sub xst_network_get_ppp_options_unsup
@@ -549,7 +602,10 @@ sub xst_network_get_ppp_options_unsup
                        "remotename", "hide-password", "noauth", "noipdefault", "ipparam");
 
   $res = "";
-  $fd = &xst_open_read_from_names ("$file");
+  &xst_report_enter ();
+  &xst_report ("network_get_ppp_unsup", $file);
+  $fd = &xst_file_open_read_from_names ("$file");
+  &xst_report_leave ();
   return undef if !$fd;
 
   GET_LINE: while (($line = &xst_parse_chomp_line_hash_comment ($fd)) != -1)
@@ -573,14 +629,17 @@ sub xst_network_get_ppp_options_unsup
 sub xst_network_set_ppp_options_unsup
 {
   my ($file, $value) = @_;
-  my ($buff, $line, $re);
+  my ($buff, $line, $re, $ret);
   my @known_options = ("usepeerdns", "mtu", "mru", "user", "/dev/[^ \t]+", "[0-9]+",
                        "defaultroute", "debug", "persist", "escape", "crtscts", "connect",
                        "remotename", "hide-password", "noauth", "noipdefault", "ipparam");
+  
   # The options in the last row are those that are on by default in pppd and we don't handle,
   # so we ignore them, as they are set implicitly if not specified.
 
-  $buff = &xst_buffer_load ($file);
+  &xst_report_enter ();
+  &xst_report ("network_set_ppp_unsup", $file);
+  $buff = &xst_file_buffer_load ($file);
 
   GET_LINE: foreach $line (@$buff)
   {
@@ -593,8 +652,10 @@ sub xst_network_set_ppp_options_unsup
   
   push @$buff, $value . "\n";
   
-  &xst_buffer_clean ($buff);
-  return &xst_buffer_save ($buff, $file);
+  &xst_file_buffer_clean ($buff);
+  $ret = &xst_file_buffer_save ($buff, $file);
+  &xst_report_leave ();
+  return $ret;
 }
 
 sub xst_network_rh62_parse_bootproto
@@ -637,7 +698,8 @@ sub xst_network_deb22_parse_bootproto
        "ppp"      => "none",
        "static"   => "none"
        );
-  
+
+  &xst_report_enter ();
   @stanzas = &xst_parse_interfaces_stanzas ($file);
 
   foreach $stanza (@stanzas)
@@ -656,9 +718,10 @@ sub xst_network_deb22_parse_bootproto
   else
   {
     $bootproto = "none";
-    &xst_report_warning ("Boot method $method for $iface not supported");
+    &xst_report ("network_bootproto_unsup", $method, $iface);
   }
 
+  &xst_report_leave ();
   return $bootproto;
 }
 
@@ -693,9 +756,14 @@ sub xst_network_debian_parse_remote_address
 {
   my ($file, $iface) = @_;
   my ($str, @tuples, $tuple, @res);
+
+  &xst_report_enter ();
+  &xst_report ("network_get_remote", $iface);
   
   @tuples = &xst_parse_interfaces_option_tuple ($file, $iface, "up", 1);
 
+  &xst_report_leave ();
+  
   foreach $tuple (@tuples)
   {
     @res = $$tuple[1] =~ /[ \t]+pointopoint[ \t]+([^ \t]+)/;
@@ -708,11 +776,16 @@ sub xst_network_debian_parse_remote_address
 sub xst_network_debian_replace_remote_address
 {
   my ($file, $iface, $value) = @_;
-  my $ifconfig;
+  my ($ifconfig, $ret);
   
-  $ifconfig = &xst_locate_tool ("ifconfig");
+  &xst_report_enter ();
+  &xst_report ("network_set_remote", $iface);
+  
+  $ifconfig = &xst_file_locate_tool ("ifconfig");
 
-  return &xst_replace_interfaces_option_str ($file, $iface, "up", "$ifconfig $iface pointopoint $value");
+  $ret = &xst_replace_interfaces_option_str ($file, $iface, "up", "$ifconfig $iface pointopoint $value");
+  &xst_report_leave ();
+  return $ret;
 }
 
 sub xst_network_ensure_loopback_interface
@@ -794,8 +867,13 @@ sub xst_network_ensure_loopback
   my $hostname = $$values_hash{"hostname"};
   my $statichost = $$values_hash{"statichost"};
 
+  &xst_report_enter ();
+  &xst_report ("network_ensure_lo");
+
   &xst_network_ensure_loopback_statichost ($statichost, $hostname, $lo_ip);
   &xst_network_ensure_loopback_interface ($interface, $lo_ip);
+
+  &xst_report_leave ();
 }
 
 sub xst_network_get_parse_table

@@ -130,22 +130,19 @@ sub xst_print_version
 sub xst_begin
 {
   $| = 1;
-  &xst_report_begin ();
+  &xst_report ("begin");
+  &xst_report_enter ();
   &xst_progress_begin ();
 
-  if (!$xst_dist) { &xst_platform_guess (); }
-
-  if ($xst_dist)
-  {
-    &xst_report_info (95, "Configuring for platform [$xst_dist]");
-  }
+  &xst_platform_guess () if !$xst_dist;
 }
 
 
 sub xst_end
 {
   &xst_progress_end ();
-  &xst_report_end ();
+  &xst_report_leave ();
+  &xst_report ("end");
 }
 
 
@@ -166,6 +163,9 @@ sub xst_init
 {
   my @args = @_;
 
+  # Set the output autoflush.
+  $| = 1;
+  
   # Set backend descriptors.
 
   $xst_name = $args[0];
@@ -204,7 +204,7 @@ sub xst_init
     elsif ($args[0] eq "--disable-immediate")           { $xst_do_immediate = 0; }
     elsif ($args[0] eq "--verbose" || $args[0] eq "-v") { $xst_verbose = 1; }
     elsif ($args[0] eq "--progress")                    { $xst_progress = 1; }
-    elsif ($args[0] eq "--report")                      { $xst_reporting = 1; }
+    elsif ($args[0] eq "--report")                      { &xst_report_set_threshold (99); }
     elsif ($args[0] eq "--debug")                       { $xst_debug = 1; }
     else
     {
