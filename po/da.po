@@ -34,8 +34,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2005-02-04 20:12+0100\n"
-"PO-Revision-Date: 2005-02-06 15:20+0100\n"
+"POT-Creation-Date: 2005-02-06 16:13+0100\n"
+"PO-Revision-Date: 2005-02-06 16:13+0100\n"
 "Last-Translator: Ole Laursen <olau@hardworking.dk>\n"
 "Language-Team: Danish <dansk@klid.dk>\n"
 "MIME-Version: 1.0\n"
@@ -928,8 +928,8 @@ msgid "Access to floppy drives"
 msgstr "Adgang til diskettedrev"
 
 #: ../users-conf.in:186
-msgid "Mount removable devices automatically"
-msgstr "Montere flytbare enheder automatisk"
+msgid "Enable access to external storage devices automatically"
+msgstr "Aktivér adgang til eksterne ting med lager automatisk"
 
 #: ../users-conf.in:187
 msgid "Access to tape drives"
