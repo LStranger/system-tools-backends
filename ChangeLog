@@ -1,3 +1,7 @@
+2001-01-28  Arturo Espinosa  <arturo@ximian.com>
+
+	* *-conf.in, *.pl.in: added emacs style directives.
+
 2001-01-28  Hans Petter Jansson  <hpj@ximian.com>
 
 	* be.pl.in: Added disaster recovery, with 9 rotated backups.

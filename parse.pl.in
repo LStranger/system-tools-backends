@@ -1,5 +1,6 @@
 #!/usr/bin/env perl
 #-*-perl-*-
+#-*- Mode: perl; tab-width: 2; indent-tabs-mode: f; c-basic-offset: 2 -*-
 
 # Common stuff for the ximian-setup-tools backends.
 #
