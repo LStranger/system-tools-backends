@@ -99,7 +99,11 @@ sub xst_parse_from_table
 
 sub xst_parse_chomp_line_std
 {
-  my ($line) = @_;
+  my ($fd) = @_;
+  my $line;
+
+  $line = <$fd>;
+  return -1 if !$line;
 
   chomp $line;
   $line =~ s/^[ \t]+//;
@@ -110,9 +114,11 @@ sub xst_parse_chomp_line_std
 
 sub xst_parse_chomp_line_hash_comment
 {
-  my ($line) = @_;
+  my ($fd) = @_;
+  my $line;
 
-  $line = &xst_parse_chomp_line_std ($line);
+  $line = &xst_parse_chomp_line_std ($fd);
+  return -1 if $line == -1;
 
   # This will put escaped hashes out of danger.
   $line =~ s/([\"\'][^\#]*)\#([^\"\']*[\"\'])/\1__hash__\2/g;
@@ -143,9 +149,8 @@ sub xst_parse_split
   $fd = &xst_open_read_from_names ($file);
   $all = 0 if !$fd;
   
-  while ($line = <$fd>)
+  while (($line = &$proc ($fd)) != -1)
   {
-    $line = &$proc ($line);
     next if $line eq "";
     @line = split ($re, $line, 2);
 

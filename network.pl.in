@@ -520,6 +520,11 @@ sub xst_network_ensure_loopback_interface
     $$interface{$dev} = \%iface;
     &xst_network_interface_set ($dev, \%iface);
   }
+  elsif (! $ {$$interface{$dev}}{"enabled"})
+  {
+    $ {$$interface{$dev}}{"enabled"} = 1;
+    &xst_network_interface_set ($dev, $$interface{$dev});
+  }
 }
 
 sub xst_network_statichost_add_alias

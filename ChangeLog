@@ -1,3 +1,15 @@
+2001-03-08  Arturo Espinosa  <arturo@ximian.com>
+
+	* replace.pl.in (xst_replace_from_table): big oops here. A
+	  line of old code (51) wasn't deleted and this prevented any
+	  changes to take place.
+	* network.pl.in (xst_network_ensure_loopback_interface): Ensure
+	  the interface is activated if it already exists.
+	* parse.pl.in: line analyzers take care of reading the file, so
+	  we can have routines that read more than one line, etc.
+	* time-conf.in: replace table, but this isn't working yet.
+	
+	
 2001-03-06  Arturo Espinosa  <arturo@ximian.com>
 
 	* network-conf.in: moved xml_print stuff to xml.pl.in. Removed
