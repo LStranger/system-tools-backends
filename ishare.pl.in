@@ -64,8 +64,16 @@ sub xst_ishare_fwrules_get_ipchains
     $fd = &xst_file_open_read_from_names ($ipchains_conf);
     if ($fd ne undef)
     {
-      $val = <$fd>;
-      $hash{"configured"} = ($val =~ /^-A forward.*MASQ$/)? 1: 0;
+      $hash{"configured"} = 0;
+      while ($val = <$fd>)
+      {
+        if ($val =~ /^-A forward.*MASQ$/)
+        {
+          $hash{"configured"} = 1;
+          last;
+        }
+      }
+      
       close $fd;
     }
   }
