@@ -1051,4 +1051,17 @@ sub gst_boot_grub_replace_label
   return &gst_file_buffer_save ($buff, $grub_conf);
 }
 
+sub gst_boot_grub_check_device_map
+{
+  my ($file) = "$gst_prefix/boot/grub/device.map";
+  my ($fd);
+
+  if (! -f $file)
+  {
+    $fd = &gst_file_run_pipe_write ("grub --batch --device-map=$file");
+    print $fd "quit\n";
+    &gst_file_close ($fd);
+  }
+}
+
 1;

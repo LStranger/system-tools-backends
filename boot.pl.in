@@ -230,7 +230,9 @@ sub gst_boot_entries_get
   $proc = $dist_attrib{"entries_get"};
   @entries = &$proc (\%fn);
 
-  $ {$dist_attrib{"fn"}}{"PARTITION"} = $partition;
+  &gst_boot_grub_check_device_map ();
+
+  ${$dist_attrib{"fn"}}{"PARTITION"} = $partition;
 
   $key = 0;
   foreach $entry (@entries)

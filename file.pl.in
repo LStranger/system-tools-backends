@@ -473,7 +473,7 @@ sub gst_file_run_pipe
   }
 
   $command .= " |"        if $mode_mask & $GST_FILE_READ;
-  $command = "| $command" if $mode_mask & $GST_FILE_WRITE;
+  $command = "| $command > /dev/null" if $mode_mask & $GST_FILE_WRITE;
 
   open PIPE, $command;
   &gst_report ("file_run_pipe_success", $command);

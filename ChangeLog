@@ -1,3 +1,15 @@
+2004-08-30  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* boot-grub.pl.in (boot_grub_check_device_map): Added, it creates
+	the devices map with the grub shell if the file doesn't exist,
+	it's not perfect, but I can't think a better solution. Probably fixes
+	#150557
+	
+	* boot.pl.in: call boot_grub_check_device_map() in the grub case
+	
+	* file.pl.in (gst_file_run_pipe): silenced output in the
+	GST_FILE_WRITE case
+
 2004-08-29  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* network-conf.in, platform.pl.in, service.pl.in, services-conf.in,
