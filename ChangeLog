@@ -1,6 +1,11 @@
+2002-02-10  Chema Celorio  <chema@celorio.com>
+
+	* configure.in : portify AC_INIT and AM_INIT_AUTOMAKE
+
 2002-02-08  Chema Celorio  <chema@celorio.com>
 
 	* configure.in: 0.12.0 here we go
+	
 2002-01-07  Tambet Ingo  <tambet@ximian.com>
 
 	* dhcpd.pl.in (xst_dhcpd_conf_get_parse_table): Added RH 7.1 to platforms list.
