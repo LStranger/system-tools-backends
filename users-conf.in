@@ -530,7 +530,7 @@ sub add_user
 	$command = "$cmd_useradd -c \'" . $$data[$users_prop_map{"comment"}] . 
 	  "\' -d \'" . $$data[$users_prop_map{"home"}] .
 	  "\' -g \'" . $$data[$users_prop_map{"gid"}] .
-	  "\' -p \'" . $$data[$users_prop_map{"password"}] .
+	  "\' -m -p \'" . $$data[$users_prop_map{"password"}] .
 	  "\' -s \'" . $$data[$users_prop_map{"shell"}] .
 	  "\' -u \'" . $$data[$users_prop_map{"uid"}] .
 	  "\' \'" . $$data[$users_prop_map{"login"}] . "\'";
