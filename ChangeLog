@@ -1,3 +1,8 @@
+2001-02-22  Hans Petter Jansson  <hpj@ximian.com>
+
+	* xml.pl.in (xst_xml_scan_recurse) (xst_xml_scan_make_kid_array):
+	  Allow [0-9] in tag names.
+
 2001-02-22  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_conf_set): Added some more known tags.
