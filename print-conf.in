@@ -170,7 +170,11 @@ sub xml_print_printer
   &xst_xml_print_line ("<printer>\n");
   &xst_xml_enter ();
 
-  foreach $i (keys (%$h)) {
+  $val = &xst_xml_quote ($spool);
+  &xst_xml_print_line ("<name>$val</name>");
+
+  foreach $i (keys (%$h))
+  {
     $val = &xst_xml_quote ($$h{$i});
     &xst_xml_print_line ("<$i>$val</$i>\n");
   }
@@ -186,8 +190,9 @@ sub xml_print
 
   &xst_xml_print_begin ();
 
-  foreach $i (keys (%$h)) {
-      &xml_print_printer ($$h{$i}, $i);
+  foreach $i (keys (%$h))
+  {
+    &xml_print_printer ($$h{$i}, $i);
   }
 
   &xst_xml_print_end ();
@@ -201,7 +206,6 @@ sub get
 {
   my $hash;
 
-  # print printer stuff
   $hash = &xst_print_conf_get ();
   &xst_end();
   &xml_print ($hash);
@@ -213,10 +217,7 @@ sub set
   my $hash;
   
   $hash = &xml_parse ();
-
-  # check the success result of this.
   &xst_print_conf_set ($hash);
-
   &xst_end ();
 }
 

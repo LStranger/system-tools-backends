@@ -1,3 +1,8 @@
+2001-06-29  Hans Petter Jansson  <hpj@ximian.com>
+
+	* print-conf.in: Make XML parsing and options writing work.
+	  Both get and set now seem to work as expected.
+
 2001-06-29  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* users-conf.in (my_system): use xst_file_run, only send
