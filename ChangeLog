@@ -1,3 +1,8 @@
+2001-05-17  Hans Petter Jansson  <hpj@ximian.com>
+
+	* gettext.pl.in (_): This manner of gettexting disabled due to speed
+	  considerations.
+
 2001-05-17  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* service.pl.in (xst_service_sysv_get_paths): Added woody and

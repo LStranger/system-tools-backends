@@ -76,7 +76,7 @@ sub getlocale # locale
 sub _ # scalar (string)
 {
   my ($str) = @_;
-  return gettext($str);
+  return $str;  # gettext($str);
 }
 
 
