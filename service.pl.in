@@ -945,6 +945,14 @@ sub gst_service_sysv_get_default_runlevel
 	return $arr[1];
 }
 
+sub gst_service_get_default_runlevel
+{
+    my ($type) = &gst_get_init_type ();
+
+    return "default" if ($type eq "gentoo");
+    return &gst_service_sysv_get_default_runlevel ();
+}
+
 
 # THESE ARE THE FUNCTIONS WHICH APPLY THE CHANGES MADE TO THE CONFIGURATION OF THE COMPUTER
 
@@ -1137,31 +1145,50 @@ sub gst_service_bsd_set_services
   }
 }
 
+sub gst_service_gentoo_set_services
+{
+  my ($services, $runlevel) = @_;
+  my ($action);
+
+  foreach $service (@$services)
+  {
+    $script = $$service{"script"};
+    $arr = $$service{"runlevels"}[0]{"runlevel"};
+
+    foreach $i (@$arr)
+    {
+      $action = $$i{"action"};
+      $rl = $$i{"number"};
+
+      if ( $action eq "start")
+      {
+        &gst_file_run ("rc-update add $script $rl");
+      }
+      elsif ($action eq "stop")
+      {
+        &gst_file_run ("rc-update del $script $rl");
+      }
+    }
+  }
+}
+
 sub gst_service_set_services
 {
 	my ($services, $runlevel) = @_;
 
   $type = &gst_get_init_type ();
 
-  if ($type eq "sysv")
-  {
-    &gst_service_sysv_set_services ($services, $runlevel);
-  }
-  elsif ($type eq "file-rc")
-  {
-    &gst_service_filerc_set_services ($services, $runlevel);
-  }
-  elsif ($type eq "bsd")
-  {
-    &gst_service_bsd_set_services ($services, $runlevel);
-  }
+  &gst_service_sysv_set_services   ($services, $runlevel) if ($type eq "sysv");
+  &gst_service_filerc_set_services ($services, $runlevel) if ($type eq "file-rc");
+  &gst_service_bsd_set_services    ($services, $runlevel) if ($type eq "bsd");
+  &gst_service_gentoo_set_services ($services, $runlevel) if ($type eq "gentoo");
 }
 
 sub gst_service_set_conf
 {
   my ($hash) = @_;
   my ($services, $runlevel);
-  
+
   return unless $hash;
   $services = $$hash{"services"}[0]{"service"};
   return unless $services;

@@ -306,7 +306,7 @@ sub get
   $hash{"runlevels"} = &gst_service_get_verbose_runlevels ();
 
   $hash{"services"} = &gst_service_get_services ();
-  $hash{"runlevel"} = &gst_service_sysv_get_default_runlevel ();
+  $hash{"runlevel"} = &gst_service_get_default_runlevel ();
 
   &gst_report_end ();
   &xml_print (\%hash);
@@ -318,7 +318,7 @@ sub set
 	
   $hash = &xml_parse ();
   &gst_report_end ();
-	
+
   if ($hash)
   {
     &gst_service_set_conf ($hash);

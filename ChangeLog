@@ -1,5 +1,12 @@
 2004-04-02  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* service.pl.in, services-conf.in: added --set for gentoo init,
+	  all the gentoo modifications in the services tool has been 
+	  made with collaboration from Eduardo Garcia Cebollero 
+	  <kiwnix@yahoo.es>
+
+2004-04-02  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* service-list.pl.in: replaced the forbidden services hash with
 	  a forbidden services list. added regexp search capabilities to 
 	  such list. Added some gentoo forbidden services too
