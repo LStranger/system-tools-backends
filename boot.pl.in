@@ -120,30 +120,125 @@ sub xst_boot_parse_images
 }
 
 
+sub xst_boot_set_global_kw
+{
+  my ($file, $key) = @_;
+  my $buff, $i, $found;
+
+  $buff = &xst_buffer_load ($file);
+  $found = 0;
+
+  foreach $i (@$buff)
+  {
+    $pre_space = $post_comment = "";
+    
+    chomp $i;
+    $pre_space = $1 if $i =~ s/^([ \t]+)//;
+    $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
+
+    if ($i =~ /^(image|other)/)
+    {
+      $i = $key . "\n" . $pre_space . $i . $post_comment . "\n";
+      last;
+    }
+    
+    if ($i ne "")
+    {
+      $found = 1 if ($key eq $i);
+    }
+
+    $i = $pre_space . $i . $post_comment . "\n";
+
+    last if $found;
+  }
+  
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+
+
+sub xst_boot_set_global
+{
+  my ($file, $key, $val) = @_;
+  my $buff, $i, $found;
+
+  $buff = &xst_buffer_load ($file);
+  $found = 0;
+
+  foreach $i (@$buff)
+  {
+    $pre_space = $post_comment = "";
+    
+    chomp $i;
+    $pre_space = $1 if $i =~ s/^([ \t]+)//;
+    $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
+
+    if ($i =~ /^(image|other)/)
+    {
+      $i = "$key=$val\n" . $pre_space . $i . $post_comment . "\n";
+      last;
+    }
+    
+    if ($i ne "")
+    {
+      if ($i =~ /$key([ \t]*=[ \t]*)/)
+      {
+        $i = $key . $1 . $val;
+        $found = 1;
+      }
+    }
+
+    $i = $pre_space . $i . $post_comment . "\n";
+
+    last if $found;
+  }
+  
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+
+
+sub xst_boot_del_global
+{
+  my ($file, $key) = @_;
+  my $buff, $i;
+
+  $buff = &xst_buffer_load ($file);
+
+  foreach $i (@$buff)
+  {
+    last if ($i =~ /^[ \t]*(image|other)/);
+    
+    if ($i =~ /^[ \t]*$key/)
+    {
+      $i = "";
+      last;
+    }
+  }
+  
+  &xst_buffer_clean ($buff);
+  return &xst_buffer_save ($buff, $file);
+}
+  
+
 sub xst_boot_conf_set_images
 {
   my ($fn, $key, $images) = @_;
   my ($image_name, $image_val, $current);
   my ($i, $a);
 
-  foreach $i (keys (%$images))
+  foreach $i (@$images)
   {
-    $current = $$images{$i};
+    $image_name = 'image' if $$i{'image'};
+    $image_name = 'other' if $$i{'other'};
 
-    $image_name = 'image' if $$current{'image'};
-    $image_name = 'other' if $$current{'other'};
-    next if $image_name eq "";
-
-    $image_val = $$current{$image_name};
-
-    foreach $a (keys (%$current))
-    {
-      &xst_boot_conf_replace_image ($fn, $image_name, $image_val, $a,
-                                    $$current{$a}) if $a ne $image_name;
+    foreach $a (keys (%$i))
+    {      
+      &xst_boot_conf_replace_image ($fn, $image_name, $$i{$image_name}, $a, $$i{$a});
     }
   }
-
 }
+
 
 sub xst_boot_conf_replace_image
 {
@@ -213,6 +308,34 @@ sub xst_boot_conf_replace_image
 }
 
 
+sub xst_boot_replace_from_table
+{
+  my ($fn, $table, $values_hash) = @_;
+  my ($key, $proc, @param);
+  my ($i, @cp, $res, $res2);
+
+  foreach $i (@$table)
+  {
+    @cp = @$i;
+    $key = shift (@cp);
+    if (exists $$values_hash{$key})
+    {
+      $proc = shift (@cp);
+      $cp[0] = $$fn{$cp[0]} if $cp[0] ne undef;
+      push (@cp, $$values_hash{$key});
+      
+      $res = -1 if &$proc (@cp);
+    }
+    else
+    {
+      &xst_boot_del_global ("/home/tambeti/lilo.conf", $key);
+    }
+  }
+
+  return $res;
+}
+
+
 sub xst_boot_conf_set
 {
   my $values_hash = $_[0];
@@ -229,14 +352,14 @@ sub xst_boot_conf_set
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/etc/lilo.conf"},
+		 LILO_CONF => "/home/tambeti/lilo.conf"},
 	    table => [
-                [ prompt,  \&xst_replace_keyword, LILO_CONF, prompt ],
-                [ root,    \&xst_replace_sh, LILO_CONF, root ],
-                [ delay,   \&xst_replace_keyword, LILO_CONF, delay ],
-                [ timeout, \&xst_replace_sh, LILO_CONF, timeout ],
-                [ default, \&xst_replace_sh, LILO_CONF, default ],
-                [ image,   \&xst_boot_conf_set_images, LILO_CONF, image ],
+                [ prompt,  \&xst_boot_set_global_kw, LILO_CONF, prompt ],
+                [ root,    \&xst_boot_set_global, LILO_CONF, root ],
+                [ delay,   \&xst_boot_set_global, LILO_CONF, delay ],
+                [ timeout, \&xst_boot_set_global, LILO_CONF, timeout ],
+                [ default, \&xst_boot_set_global, LILO_CONF, default ],
+                [ images,  \&xst_boot_conf_set_images, LILO_CONF, image ],
 			    ] 
 				 }
 	  );
@@ -244,7 +367,7 @@ sub xst_boot_conf_set
   my $table = $dist_map{$xst_dist};
   return undef if !$table;
 
-  return &xst_replace_from_table ($ {$dist_tables{$table}}{"fn"},
+  return &xst_boot_replace_from_table ($ {$dist_tables{$table}}{"fn"},
 						  $ {$dist_tables{$table}}{"table"}, $values_hash);
 
 }
@@ -264,7 +387,7 @@ sub xst_boot_conf_get
 	 (
 	  "redhat-6.2" => {
 	    fn => {
-		 LILO_CONF => "/etc/lilo.conf" },
+		 LILO_CONF => "/home/tambeti/lilo.conf" },
 	    table => [
                 [ 'prompt',  \&xst_boot_parse_global_kw, LILO_CONF, 'prompt' ],
                 [ 'lba32',   \&xst_boot_parse_global_kw, LILO_CONF, 'lba32' ],

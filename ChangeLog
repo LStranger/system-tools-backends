@@ -1,3 +1,10 @@
+2001-02-21  Tambet Ingo  <tambet@ximian.com>
+
+	* boot.pl.in (xst_boot_set_global_kw): New fn to add or modify global keywords.
+	(xst_boot_set_global): New fn to add or modify globals (repsects all spaces).
+	(xst_boot_del_global): Nef fn to delete globals (keywords and vars).
+	(xst_boot_replace_from_table): My own version of xst_replace_from_table.
+
 2001-02-20  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_parse_images): New (and nice) function to get images.

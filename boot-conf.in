@@ -88,7 +88,7 @@ sub xml_parse_boot
 {
   my $tree = $_[0];
   my $hash = $_[1];
-  my %image;
+  my @images;
 
   shift @$tree;  # Skip attributes.
 
@@ -99,13 +99,13 @@ sub xml_parse_boot
     elsif ($$tree[0] eq "prompt") { $$hash{"prompt"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "delay") { $$hash{"delay"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "root") { $$hash{"root"} = &xst_xml_get_word ($$tree[1]); }
-    elsif ($$tree[0] eq "entry") { &xml_parse_image ($$tree[1], \%image); }
+    elsif ($$tree[0] eq "entry") { &xml_parse_image ($$tree[1], \@images); }
 
     shift @$tree;
     shift @$tree;
   }
 
-  $$hash{"image"} = \%image unless scalar keys %image == 0;
+  $$hash{"images"} = \@images; # unless scalar keys %image == 0;
 }
 
 
@@ -125,8 +125,9 @@ sub xml_parse_image
     shift @$tree;
   }
 
-  $dev = $hash{"label"};
-  $$image{$dev} = \%hash;
+  push @$image, \%hash;
+#  $dev = $hash{"label"};
+#  $$image{$dev} = \%hash;
 }
 		   
 
@@ -272,7 +273,7 @@ sub set
   
   &xst_begin ();
 
-#  $xst_input_file = "aaa";
+  $xst_input_file = "aaa";
   $hash = &xml_parse ();
 
   &xst_boot_conf_set ($hash);
