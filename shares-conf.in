@@ -531,10 +531,17 @@ sub set
 {
   my $config;
   my ($fs);
+  my $imports;
 
   $config = &xml_parse ();
 
   &xst_filesys_mount_sync_all (&distro_file ("mtab"), $$config{"imports"});
+
+  $imports = $$config{"imports"};
+  for $import (@$imports)
+  {
+    &xst_filesys_info_settings_to_options ($import);
+  }
 
   $fs = &xst_filesys_fstab_parse (&distro_file ("fstab"));
   &xst_filesys_table_set_permanent_true ($fs);

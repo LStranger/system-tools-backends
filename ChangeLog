@@ -1,5 +1,12 @@
 2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
 
+	* filesys.pl.in (xst_filesys_info_settings_to_options): Implement.
+	  (xst_filesys_info_remove_option): Implement.
+
+	* shares-conf.in (set): Add "noauto" to non-mount shares.
+
+2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
+
 	* shares-conf.in: Multiplatformize.
 	  (distro_file): Implement.
 	  (remove_local_from_filesys_table): Remove.
