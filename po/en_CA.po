@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-12-22 02:42-0500\n"
-"PO-Revision-Date: 2004-12-22 16:51-0400\n"
+"POT-Creation-Date: 2004-12-28 05:45-0500\n"
+"PO-Revision-Date: 2004-12-28 16:51-0400\n"
 "Last-Translator: Adam Weinberger <adamw@gnome.org>\n"
 "Language-Team: English/Canada <adamw@FreeBSD.org>\n"
 "MIME-Version: 1.0\n"
@@ -873,8 +873,8 @@ msgid "Networkless runlevel"
 msgstr "Networkless runlevel"
 
 #: users-conf.in:179
-msgid "Monitorize system logs"
-msgstr "Monitorize system logs"
+msgid "Monitor system logs"
+msgstr "Monitor system logs"
 
 #: users-conf.in:180
 msgid "Use audio devices"
@@ -889,8 +889,8 @@ msgid "Access to modem devices"
 msgstr "Access to modem devices"
 
 #: users-conf.in:183
-msgid "Connect to internet through modem devices"
-msgstr "Connect to internet through modem devices"
+msgid "Connect to Internet through modem devices"
+msgstr "Connect to Internet through modem devices"
 
 #: users-conf.in:184
 msgid "Send and receive faxes"
