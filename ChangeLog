@@ -1,3 +1,7 @@
+2001-09-21  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* util.pl.in (xst_process_result_collect): Exhaust buffer.
+
 2001-09-21  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_probe_collect): Use xst_process_result_collect.

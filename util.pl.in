@@ -305,20 +305,19 @@ sub xst_process_fork
   }
   else
   {
-    my $str;
+    my $ret;
     close PARENT_RDR;
     # Child
-    $str = &$proc (@args);
-    my $type = ref ($str);
+    $ret = &$proc (@args);
+    my $type = ref ($ret);
 
     if (!$type)
     {
-      print CHILD_WTR $str;
+      print CHILD_WTR $ret;
     }
-
     elsif ($type eq 'ARRAY')
     {
-      print CHILD_WTR "$_\n" foreach (@$str);
+      print CHILD_WTR "$_\n" foreach (@$ret);
     }
 
     close CHILD_WTR;
@@ -396,12 +395,13 @@ sub xst_process_list_check_ready
 sub xst_process_result_collect
 {
   my ($proc, $func, @args) = @_;
-  my $value;
+  my ($value, $tmp, $lines);
 
   if ($$proc{"ready"})
   {
     my @list;
-    my $bytes = sysread ($$proc{"fd"}, $lines, 4096);
+
+    $lines .= $tmp while (sysread ($$proc{"fd"}, $tmp, 4096));
     if ($lines =~ /\n/)
     {
       @list = split ("\n", $lines);
