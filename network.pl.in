@@ -2488,6 +2488,7 @@ sub gst_network_interfaces_set
   my ($i, $j);
   my ($tmp, $res);
   my ($delete_proc, $set_proc);
+  my ($was_active);
 
   &gst_report_enter ();
   &gst_report ("network_ifaces_set");
@@ -2511,10 +2512,16 @@ sub gst_network_interfaces_set
     {
       if (&gst_network_interface_changed ($$values_hash{$i}, $$old_hash{$i}))
       {
+        $was_active = $$values_hash{$i}{"enabled"};
+
         &$set_proc ($$values_hash{$i}, $$old_hash{$i}, 0, 1);
         $tmp = &gst_network_interface_set ($i, $$values_hash{$i}, $$old_hash{$i});
         $res = $tmp if !$res;
-        &$set_proc ($$values_hash{$i}, $$old_hash{$i}, 1, 1);
+
+        if ($was_active == 1)
+        {
+          &$set_proc ($$values_hash{$i}, $$old_hash{$i}, 1, 1);
+        }
       }
     }
   }

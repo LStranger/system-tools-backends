@@ -1,3 +1,8 @@
+2005-03-05  Carlos Garnacho Parro  <carlosg gnome org>
+
+	* network.pl.in: don't activate the interface after having changed
+	if it was left disabled
+
 2005-03-05  Abel Cheung  <maddog@linuxhall.org>
 
 	* configure.in: Added "vi" to ALL_LINGUAS.
