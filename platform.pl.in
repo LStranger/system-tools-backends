@@ -39,7 +39,7 @@ require "$SCRIPTSDIR/xml.pl$DOTIN";
 
 $PLATFORM_INFO = {
   "debian-2.2"      => "Debian GNU/Linux 2.2 Potato",
-  "debian-3.0"    => "Debian GNU/Linux 3.0 Woody",
+  "debian-3.0"      => "Debian GNU/Linux 3.0 Woody",
   "debian-sarge"    => "Debian GNU/Linux Sarge",
   "redhat-5.2"      => "Red Hat Linux 5.2 Apollo",
   "redhat-6.0"      => "Red Hat Linux 6.0 Hedwig",
@@ -107,7 +107,8 @@ sub check_debian
 {
   my ($ver, $i);
   my %vermap =
-      ("testing/unstable" => "sarge");
+      ("testing/unstable" => "sarge",
+       "3.1"              => "sarge");
 
   open DEBIAN, "$gst_prefix/etc/debian_version" or return -1;
   chomp ($ver = <DEBIAN>);
