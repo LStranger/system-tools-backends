@@ -1,3 +1,7 @@
+2001-02-27  Chema Celorio  <chema@celorio.com>
+
+	* boot.pl.in (xst_boot_conf_set): fix a small typo
+
 2001-02-27  Arturo Espinosa  <arturo@ximian.com>
 
 	* network-conf.in (xml_parse_network): support winsuse boolean.
