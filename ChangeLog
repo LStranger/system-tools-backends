@@ -1,5 +1,13 @@
 2001-02-23  Arturo Espinosa  <arturo@ximian.com>
 
+	* network-conf.in (xml_parse-dialing): minor naming change.
+	* network.pl.in (xst_network_dialing_set): "Stupid mode" corresponding tag
+	  is "stupid", not "mode". This was causing the "= 0" bug.
+	* replace.pl.in (xst_replace_ini): Forgot the case where you found the
+	  section, but not the var. Handle this.
+	
+2001-02-23  Arturo Espinosa  <arturo@ximian.com>
+
 	* file.pl.in (xst_open_read_from_names): debug reporting opened file,
 	  but with the xst_prefix also.
 	* network-conf.in: use xst_xml_get_pcdata instead of get_word.

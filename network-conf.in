@@ -49,7 +49,9 @@ require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/network.pl";
 
 
+# Debug stuff
 #$xst_prefix = "/tmp/y";
+#open STDERR, ">/tmp/err";
 
 # --- Tool information --- #
 
@@ -183,7 +185,7 @@ sub xml_parse_interface
 sub xml_parse_dialing
 {
   my $tree = $_[0];
-  my $interface = $_[1];
+  my $dialing = $_[1];
   my %hash;
   my $name;
 
@@ -198,7 +200,7 @@ sub xml_parse_dialing
   }
 
   $name = $hash{"name"};
-  $$interface{$name} = \%hash;
+  $$dialing{$name} = \%hash;
 }
 
 # --- XML printing --- #

@@ -210,7 +210,7 @@ sub xst_network_dialing_set
 	  "password" => "Password",
 	  "dialcmd" => "Dial Command",
 	  "setvol" => "SetVolume",
-	  "mode" => "Stupid mode",
+	  "stupid" => "Stupid mode",
 	  "inherits"=>"Inherits"
 	  );
   my %type2title =
@@ -232,8 +232,6 @@ sub xst_network_dialing_set
     $section =~ s/\#i\#/$i/;
     delete $hash{"type"};
     delete $hash{"name"};
-
-    
 
     foreach $j (keys %hash)
     {
