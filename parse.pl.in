@@ -1194,7 +1194,7 @@ sub xst_parse_interfaces_option_kw_not
 {
   my ($file, $iface, $kw) = @_;
   
-  return !&xst_parse_interfaces_option_kw ($file, $iface, $kw);
+  return &xst_parse_interfaces_option_kw ($file, $iface, $kw)? 0 : 1;
 }
 
 # Go get option $key for $iface in $file and return value.

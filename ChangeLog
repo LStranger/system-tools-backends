@@ -1,7 +1,19 @@
 Wed Jul 25 03:45:51 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network.pl.in (xst_network_pump_get_nodns): Only omit
+	updatedns tag if pump doesn't support it, or information will
+	be lost.
+
+	* parse.pl.in (xst_parse_interfaces_option_kw_not): Minor bug:
+	undef ne 0.
+
 	* network.pl.in (xst_network_interface_ensure_broadcast_and_network):
 	Oops: forgot to receive the arguments.
+	(xst_network_interface_changed): more intelligent network interface
+	info comparison.
+	(xst_network_rh62_interface_activate): Use this function here, getting
+	rid of weird criterion.
+	(xst_network_suse70_interface_activate): same.
 
 2001-07-24  Arturo Espinosa Aldama  <arturo@ximian.com>
 

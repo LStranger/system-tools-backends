@@ -1076,25 +1076,18 @@ sub xst_network_rh62_interface_activate
   my ($hash, $old_hash, $enabled, $force) = @_;
   my $dev;
 
-  if ($enabled)
+  if ($force || &xst_network_interface_changed ($hash, $old_hash))
   {
-    if (!exists $$hash{"file"})
-    {
-      $dev = $$hash{"dev"};
-    }
-    else
-    {
-      $dev = $$hash{"file"} if (!$old_hash || !$$old_hash{"enabled"} || $force);
-    }
-  }
-  else
-  {
-    $dev = $$hash{"file"} if ($old_hash && $$old_hash{"enabled"} || $force);
-  }
-
-  if ($dev)
-  {
-    &xst_network_rh62_interface_activate_by_dev ($dev, $enabled);
+      if (exists $$hash{"file"})
+      {
+          $dev = $$hash{"file"};
+      }
+      else
+      {
+          $dev = $$hash{"dev"};
+      }
+      
+      &xst_network_rh62_interface_activate_by_dev ($dev, $enabled);
   }
 }
 
@@ -1131,20 +1124,10 @@ sub xst_network_suse70_interface_activate_by_dev
 sub xst_network_suse70_interface_activate
 {
   my ($hash, $old_hash, $enabled, $force) = @_;
-  my $dev;
 
-  if ($old_hash)
+  if ($force || &xst_network_interface_changed ($hash, $old_hash))
   {
-    $dev = $$hash{"dev"} if ($enabled != $$old_hash{"enabled"} || $force);
-  }
-  else
-  {
-    $dev = $$hash{"dev"};
-  }
-  
-  if ($dev)
-  {
-    &xst_network_suse70_interface_activate_by_dev ($dev, $enabled);
+      &xst_network_rh62_interface_activate_by_dev ($$hash{"dev"}, $enabled);
   }
 }
 
@@ -1225,6 +1208,25 @@ sub xst_network_suse70_interface_delete
   &xst_replace_sh ($file, "IFCONFIG_$dev", "");
 }
 
+sub xst_network_interface_changed
+{
+    my ($iface, $iface_old) = @_;
+    my ($attr);
+    my @attrs = qw(bootproto dev address netmask broadcast network gateway update_dns
+                  dns1 dns2 mtu mru remote_address login serial_port serial_speed
+                  ppp_options set_default_gw persist serial_hwctl phone_number enabled);
+
+    return 1 if (!$iface_old);
+    foreach $attr (@attrs)
+    {
+        next if (!exists $$iface{$attr}) && (!exists $$iface_old{$attr});
+        return 1 if (exists $$iface{$attr}) != (exists $$iface_old{$attr});
+        return 1 if $$iface{$attr} ne $$iface_old{$attr};
+    }
+
+    return 0;
+}
+
 sub xst_network_interfaces_down_changed
 {
   my ($proc_iface_set, $old_hash, $values_hash) = @_;
@@ -1232,7 +1234,7 @@ sub xst_network_interfaces_down_changed
   @ifaces = &xst_network_active_interfaces_get ();
   foreach $i (@ifaces)
   {
-    if (!&xst_util_struct_eq ($$values_hash{$i}, $$old_hash{$i}))
+    if (&xst_network_interface_changed ($$values_hash{$i}, $$old_hash{$i}))
     {
       &$proc_iface_set ($$values_hash{$i}, $$old_hash{$i}, 0, 1);
     }
@@ -1621,7 +1623,6 @@ sub xst_network_pump_get_nodns
 {
   my ($file, $iface, $bootproto) = @_;
   
-  return undef if $bootproto ne "dhcp";
   return undef if (!&xst_network_pump_iface_supported ($iface));
 
   return &xst_parse_pump_get_iface_kw_not ($file, $iface, "nodns");
