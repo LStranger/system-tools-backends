@@ -1,5 +1,7 @@
 2001-12-16  Chema Celorio  <chema@celorio.com>
 
+	* network-conf.in: remove rh 7.2 from supported list
+
 	* configure.in (dnl): bump version to 0.11.0
 
 2001-12-14  Arturo Espinosa Aldama  <arturo@ximian.com>
