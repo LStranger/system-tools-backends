@@ -278,6 +278,7 @@ sub gst_network_get_broadcast_ping_cmd
        "conectiva-10" => "debian-2.2",
        "fedora-1"     => "redhat-6.2",
        "slackware-9.1.0" => "redhat-6.2",
+       "slackware-10.0.0" => "redhat-6.2",
        "gentoo"       => "debian-2.2",
        "freebsd-5"    => "debian-2.2"
        );
@@ -1436,6 +1437,7 @@ sub gst_network_get_file
     "pld-1.99"     => \&gst_network_pld10_get_file,
     "fedora-1"     => \&gst_network_rh72_get_file,
     "slackware-9.1.0" => \&gst_network_deb22_get_file,
+    "slackware-10.0.0" => \&gst_network_deb22_get_file,
     "gentoo"       => \&gst_network_deb22_get_file,
     "freebsd-5"    => \&gst_network_deb22_get_file,
 	  );
@@ -3380,6 +3382,7 @@ sub gst_network_ensure_loopback_interface
     "pld-1.99"     => "lo",
     "fedora-1"     => "",
     "slackware-9.1.0" => "",
+    "slackware-10.0.0" => "",
     "gentoo"       => "",
     "freebsd-5"    => "",
 	  );
@@ -3497,6 +3500,7 @@ sub gst_network_get_parse_table
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0",
+    "slackware-10.0.0" => "slackware-9.1.0",
     "gentoo"       => "gentoo",
     "freebsd-5"    => "freebsd-5"
 	  );
@@ -3902,6 +3906,7 @@ sub gst_network_get_interface_parse_table
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0",
+    "slackware-10.0.0" => "slackware-9.1.0",
     "gentoo"       => "gentoo",
     "freebsd-5"    => "freebsd-5",
 	  );
@@ -4577,6 +4582,7 @@ sub gst_network_get_replace_table
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0",
+    "slackware-10.0.0" => "slackware-9.1.0",
     "gentoo"       => "gentoo",
     "freebsd-5"    => "freebsd-5",
 	  );
@@ -4969,6 +4975,7 @@ sub gst_network_get_interface_replace_table
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
     "slackware-9.1.0" => "slackware-9.1.0",
+    "slackware-10.0.0" => "slackware-9.1.0",
     "gentoo"       => "gentoo",
     "freebsd-5"    => "freebsd-5"
 	  );

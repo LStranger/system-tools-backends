@@ -1,3 +1,9 @@
+2004-07-17  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network-conf.in, network.pl.in, platform.pl.in, service.pl.in, 
+	  services-conf.in, time-conf.in, users-conf.in: added support for
+	  Slackware 10, thanks to Evandro for testing it
+
 2004-07-14  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* general.pl.in, xml.pl.in: finally made all the output utf-8, this

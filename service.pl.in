@@ -187,6 +187,7 @@ sub gst_service_get_verbose_runlevels
      "fedora-1"       => "redhat-5.2",
 
      "slackware-9.1.0" => "slackware-9.1.0",
+     "slackware-10.0.0" => "slackware-9.1.0",
 
      "gentoo"         => "gentoo",
 

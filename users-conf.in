@@ -75,7 +75,7 @@ $version = "@VERSION@";
               "mandrake-10.0", "mandrake-10.1",
               "debian-2.2", "debian-3.0", "debian-sarge",
               "suse-7.0", "suse-9.0", "turbolinux-7.0",
-              "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0", "slackware-9.1.0",
+              "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0", "slackware-9.1.0", "slackware-10.0.0",
               "freebsd-4", "freebsd-5",
               "gentoo",
               "pld-1.0", "pld-1.1", "pld-1.99", "fedora-1");
@@ -343,6 +343,7 @@ my $logindefs_dist_map = {
   'debian-sarge'    => $rh_logindefs_defaults,
   'gentoo'	        => $gentoo_logindefs_defaults,
   'slackware-9.1.0' => $gentoo_logindefs_defaults,
+  'slackware-10.0.0' => $gentoo_logindefs_defaults,
   'freebsd-4'       => $freebsd_logindefs_defaults,
   'freebsd-5'       => $freebsd_logindefs_defaults,
   'suse-7.0'        => $gentoo_logindefs_defaults,
