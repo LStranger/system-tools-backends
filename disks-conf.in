@@ -835,7 +835,9 @@ sub scan_floppy
    #FIXME: I don't like it
    $floppy = `grep fd /proc/devices | wc -l`;
    chomp $floopy;
-   if ($floppy >= 1) {
+   if ($floppy == 0) {
+      return;
+   } elsif ($floppy >= 1) {
       $dev="/dev/fd0";
       &update_disk_data ($dev, "media", "floppy"); 
    } elsif (system ("fdisk /dev/fd1 > /dev/null 2>&1")) {

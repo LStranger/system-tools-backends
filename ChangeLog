@@ -1,3 +1,7 @@
+2004-11-01  Carlos Garcia Campos <carlosgc@gnome.org>
+
+	* disks-conf.in: fixed floppy drive detection
+
 2004-10-25  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* Makefile.am: delete the correct intltool-* files when making clean
