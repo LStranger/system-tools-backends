@@ -260,6 +260,7 @@ sub xst_ishare_conf_get_parse_table
   (
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
+   "redhat-7.2"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
    "debian-2.2"   => "mandrake-7.2",
    "debian-woody" => "mandrake-7.2"
@@ -292,6 +293,7 @@ sub xst_ishare_fwrules_get_parse_table
   (
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
+   "redhat-7.2"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
    "debian-2.2"   => "mandrake-7.2",
    "debian-woody" => "mandrake-7.2"
@@ -332,6 +334,7 @@ sub xst_ishare_dhcp_get_parse_table
   (
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
+   "redhat-7.2"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
    "debian-2.2"   => "debian-2.2",
    "debian-woody" => "debian-2.2"
@@ -385,6 +388,7 @@ sub xst_ishare_conf_get_replace_table
   (
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
+   "redhat-7.2"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
    "debian-2.2"   => "mandrake-7.2",
    "debian-woody" => "mandrake-7.2"
@@ -417,6 +421,7 @@ sub xst_ishare_fwrules_get_replace_table
   (
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
+   "redhat-7.2"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
    "debian-2.2"   => "debian-2.2",
    "debian-woody" => "debian-2.2"
@@ -474,6 +479,7 @@ sub xst_ishare_dhcp_get_replace_table
   (
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
+   "redhat-7.2"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
    "debian-2.2"   => "debian-2.2",
    "debian-woody" => "debian-2.2"

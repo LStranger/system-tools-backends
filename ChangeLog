@@ -1,3 +1,10 @@
+2001-12-13  Israel Escalante  <israel@ximian.com>
+
+	* ishare.pl.in: Added R.H. 7.2 to the list of supported plataforms.
+
+	* internetsharing-conf.in: Added R.H. 7.2 to the list
+	  of supported platforms.
+
 2001-12-13  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot-grub.pl.in (xst_boot_grub_replace_label): fix: wrong regexp.
