@@ -734,19 +734,23 @@ msgstr "OpenSSH palvelin"
 
 #: service-list.pl.in:125
 msgid "Linux system logging utilities"
-msgstr ""
+msgstr "Linuxin järjestelmälokien työkalut"
 
 #: service-list.pl.in:125
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr ""
+"Sysklogd tarjoaa kaksi työkalua, jotka tarjoavat tuen järjestelmän lokien "
+"keruuseen ja ytimen viestien talteenottoon."
 
 #: service-list.pl.in:126
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
+"Syslog on palvelu, jota monet palvelimet käyttävät viestien lokitukseen "
+"eri järjestelmän lokitiedostoihin. On hyvä ajatus pitää syslog aina päällä."
 
 #: service-list.pl.in:127
 msgid ""
@@ -755,6 +759,11 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"RFC 868 aikapalvelin. Tämä protokolla tarjoaa sijainnista riippumattoman, "
+"koneluettavan päiväyksen ja ajan. Aikapalvelu lähettää takaisin kysyjälle "
+"ajan sekunteina vuoden 1900 tammikuun ensimmäisen päivän keskiyöstä. Tämä "
+"on palvelun TCP-version. Xinetd:n täytyy olla käytössä jotta voit käyttää "
+"tätä palvelua."
 
 #: service-list.pl.in:128
 msgid ""
@@ -763,10 +772,15 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"RFC 868 aikapalvelin. Tämä protokolla tarjoaa sijainnista riippumattoman, "
+"koneluettavan päiväyksen ja ajan. Aikapalvelu lähettää takaisin kysyjälle "
+"ajan sekunteina vuoden 1900 tammikuun ensimmäisen päivän keskiyöstä. Tämä "
+"on palvelun UDP-version. Xinetd:n täytyy olla käytössä jotta voit käyttää "
+"tätä palvelua."
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
-msgstr ""
+msgstr "ytimen satunnaislukujen lähdelaitteet"
 
 #: service-list.pl.in:129
 msgid ""
@@ -774,52 +788,61 @@ msgid ""
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
+"Satunnaislukugeneraattori kerää ympäristön hälyä laiteajureista ja muista "
+"laitteista entropia-altaaseen. Satunnaisluvut luodaan tästä entropia-"
+"altaasta."
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
-msgstr ""
+msgstr "Intel(TM) x86(TM-pohjainen virtuaalikone"
 
 #: service-list.pl.in:131
 msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
+"Komento vmware käynnistää Intel X86-pohjaisen virtuaalikoneen. Tämä skripti "
+"hallitsee palveluita, jotka tarvitaan VMware-ohjelmiston käyttöön."
 
 #: service-list.pl.in:132
 msgid "Web-based administration toolkit"
-msgstr ""
+msgstr "WWW-pohjainen ylläpitojärjestelmä"
 
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
-msgstr ""
+msgstr "Nimipalvelun kytkinpalvelin nimien selvittämiseen NT-palvelimilta"
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
-msgstr ""
+msgstr "Käynnistää ja lopetaa Samban winbind-palvelun"
 
 #: service-list.pl.in:134
 msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
+"Mahdollistaa käyttäjille Windows(TM)-ohjelmien suorittamisen näpäyttämällä "
+"niitä tai kirjoittamalla ./file.exe)"
 
 #: service-list.pl.in:135
 msgid "X Display Manager"
-msgstr ""
+msgstr "X-kirjautumisohjelma"
 
 #: service-list.pl.in:135
 msgid "Provides the X equivalent of a \"login:\" prompt."
-msgstr ""
+msgstr "Tarjoaa X-ikkunoinin vastineen \"login:\"-kehotteelle"
 
 #: service-list.pl.in:136
 msgid "X font server"
-msgstr ""
+msgstr "X:n kirjasinpalvelin"
 
 #: service-list.pl.in:136
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
 msgstr ""
+"XFS in X Window Systemin kirjasinpalvelin. Se tarjoaa kirjasimin X Window "
+"Systemin näyttöpalvelimille."
 
 #: service-list.pl.in:137
 msgid ""
@@ -828,10 +851,14 @@ msgid ""
 "available based on time, and can place limits on the number of servers that "
 "can be started, among other things."
 msgstr ""
+"xinetd on tehokas korvaaja inetd:lle. xinetd sisältää pääsyoikeuksien "
+"valvontamekanismin, laajat lokitusmahdollisuudet, mahdollisuuden tehdä "
+"palvelu käytettäväksi tiettyinä aikoina ja voi rajata käynnistettävien "
+"palvelimien määrä, sekä muitakin edistysaskeleita."
 
 #: service.pl.in:223 service.pl.in:228
 msgid "Halting the system"
-msgstr ""
+msgstr "Järjestelmän pysäytys"
 
 #: service.pl.in:224 service.pl.in:230
 msgid "Text mode"
@@ -839,20 +866,20 @@ msgstr "Tekstitila"
 
 #: service.pl.in:225 service.pl.in:229 service.pl.in:238
 msgid "Graphical mode"
-msgstr ""
+msgstr "Graafinen tila"
 
 #: service.pl.in:226 service.pl.in:231
 msgid "Rebooting the system"
-msgstr ""
+msgstr "Järjestelmän uudellenkäynnistäminen"
 
 #: service.pl.in:233
 msgid "Starts all system neccesary services"
-msgstr ""
+msgstr "Käynnistää kaikki järjestelmän oleelliset palvelut"
 
 #: service.pl.in:234
 msgid "Default runlevel"
-msgstr ""
+msgstr "Suoritustilan oletus"
 
 #: service.pl.in:235
 msgid "Networkless runlevel"
-msgstr ""
+msgstr "Verkoton suoritustila"
