@@ -3,7 +3,7 @@
 echo Backends - report codes
 echo =======================
 
-for i in *-conf.in
+for i in be.pl *-conf.in
 do
   name=`echo $i | cut -d - -f 1`
   let j=`echo $name | wc -c`
