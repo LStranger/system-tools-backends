@@ -1,3 +1,9 @@
+2002-12-28  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* service.pl.in, runlevel-conf.in: added two new directives to
+	  runlevel-conf, they are for getting a service parameters and for
+	  throwing a service 
+
 2002-12-26  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* service-list.pl.in: added some descriptions to the list.

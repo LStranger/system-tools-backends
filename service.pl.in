@@ -465,36 +465,6 @@ sub xst_service_sysv_get_runlevels_status
 	push @ret, { "runlevel" => \@arr };
 	return (\@ret, int ($sum / $count));
 }
-		
-	
-# This function returns all the available actions for each service
-sub xst_service_sysv_get_service_actions
-{
-	my ($service) = @_;
-	my (@arr,@actions);
-	my ($size,$output);
-	my (@ret);
-	
-	$output = `$service 2>/dev/null`;
-	
-	# if the output doesn't have the 'usage' word in it, then isn't a valid output
-	return undef unless ($output =~ /usage/i);
-	
-	@arr = split / /, $output;
-	$size = scalar (@arr);
-	
-	# if the array has 0 rows, the service has no actions
-	return undef if ($size eq 0);
-	
-	$arr[$size-1] =~ s/[\{\}]//g;
-
-	@actions = split /\|/, $arr[size-1];
-	
-	push @ret, { "action" => \@actions };
-	
-	return \@ret;
-}
-
 
 # We are going to extract the information of the service
 sub xst_service_sysv_get_service_info
@@ -503,7 +473,7 @@ sub xst_service_sysv_get_service_info
 	my ($script, $name, $description, @actions, @runlevels);
 	my %hash;
 	
-	# We have to check out if the service is executable	
+	# We have to check if the service is executable	
 	return undef unless (-x $service);
 
 	$script = &xst_service_sysv_get_service_name ($service);
@@ -513,12 +483,10 @@ sub xst_service_sysv_get_service_info
 
 	($name, $description) = &xst_service_list_get_info ($script);
 	($runlevels, $priority) = &xst_service_sysv_get_runlevels_status($script);
-#	$actions = &xst_service_sysv_get_service_actions ($service);
 
 	$hash{"script"} = $script;
 	$hash{"name"} = $name unless ($name eq undef);
 	$hash{"description"} = $description unless ($description eq undef);
-#	$hash{"actions"} = $actions unless ($actions eq undef);
 	$hash{"runlevels"} = $runlevels unless ($runlevels eq undef);
 	$hash{"priority"} = $priority;
 
@@ -658,3 +626,31 @@ sub xst_service_sysv_set_conf
   &xst_service_sysv_set_services($services);
 }
 
+# gets the valid parameters for a service
+sub xst_service_get_service_parameters
+{
+  my ($service_name) = @_;
+  my ($rcd_path, $initd_path, $relative_path) = &xst_service_sysv_get_paths ();
+  my ($service) = "$initd_path/$service_name";
+  my (@arr, @actions, $output, $size);
+
+  # We have to check if the service is executable	
+	return undef unless (-x $service);
+
+ 	$output = `$service 2>/dev/null`;
+
+	# if the output doesn't have the 'usage' word in it, then isn't a valid output
+	return undef unless ($output =~ /usage/i);
+	
+	@arr = split / /, $output;
+	$size = scalar (@arr);
+	
+	# if the array has 0 rows, the service has no actions
+	return undef if ($size eq 0);
+	
+	$arr[$size-1] =~ s/[\{\}]//g;
+
+	@actions = split /\|/, $arr[size-1];
+
+  return \@actions;	
+}

@@ -238,15 +238,45 @@ sub filter
   &xml_print ($hash);
 }
 
+# --- service_parameters: gets the valid parameters for a service --- #
+sub service_parameters
+{
+  my ($tool, $service) = @_;
+  my ($parameters);
+
+  $parameters = &xst_service_get_service_parameters ($service);
+  &xst_report_end ();
+  
+  &xst_xml_print_begin ("service_description");
+  &xst_xml_print_structure ($parameters, "parameter");
+  &xst_xml_print_end ("service_description");  
+}
+
+# --- throw_service: throws a service with a parameter --- #
+sub throw_service
+{
+  my ($tool, $service, $parameter) = @_;
+  my ($rcd_path, $initd_path, $relative_path) = &xst_service_sysv_get_paths ();
+
+  xst_file_run ("$initd_path/$service $parameter >/dev/null 2>/dev/null");
+  &xst_report_end ();
+
+  #FIXME: we could return if the call has successed of failed
+  &xst_xml_print_begin ("throw_service");
+  &xst_xml_print_end ("throw_service");
+}
+
 # --- Main --- #
 
 # get, set and filter are special cases that don't need more parameters than a ref to their function.
 # Read general.pl.in:xst_run_directive to know about the format of this hash.
 
 $directives = {
-  "get"            => [ \&get,    [], "" ],
-  "set"            => [ \&set,    [], "" ],
-  "filter"         => [ \&filter, [], "" ]
+  "get"                => [ \&get,    [], "" ],
+  "set"                => [ \&set,    [], "" ],
+  "filter"             => [ \&filter, [], "" ],
+  "service_parameters" => [ \&service_parameters, ["service"], "Gets the valid parameters for a service" ],
+  "throw_service"      => [ \&throw_service, ["service", "parameter"], "Throws a service with a parameter (start, stop...)" ]
   };
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);
