@@ -101,6 +101,45 @@ sub xst_parse_replace_files
   return @ret;
 }
 
+# Additional abstraction: parse table entries can have
+# arrays inside. The parsing proc will be ran with every
+# combination that the arrays provide. Ex:
+# ["user", \&xst_parse_foo, [0, 1], [2, 3] ] will parse
+# using the combinatory of [0, 1]x[2, 3] until a result
+# ne undef is given. Check RedHat 7.2's parse table for
+# further enlightenment.
+sub xst_parse_run_entry
+{
+  my ($hash, $key, $proc, $cp) = @_;
+  my ($ncp, $i, $j, $res);
+
+  $ncp = [@$cp];
+  for ($i = 0; $i < scalar (@$cp); $i ++)
+  {
+    if (ref $$cp[$i] eq "ARRAY")
+    {
+      foreach $j (@{$$cp[$i]})
+      {
+        $$ncp[$i] = $j;
+        $res = &xst_parse_run_entry ($hash, $key, $proc, $ncp);
+        return $res if $res ne undef;
+      }
+      return undef;
+    }
+  }
+
+  # OK, the given entry didn't have any array refs in it...
+  
+  return undef if (!&xst_parse_replace_hash_values ($cp, $hash));
+
+  &xst_report_enter ();
+  &xst_report ("parse_table", "$key");
+  &xst_report_leave ();
+  
+  $$hash{$key} = &$proc (@$cp);
+  return $$hash{$key};
+}
+
 # xst_parse_from_table takes a file mapping and a parse table.
 #
 # The functions in the replace tables, most of which are coded in
@@ -125,15 +164,17 @@ sub xst_parse_from_table
   {
     @cp = @$i;
     $key = shift (@cp);
-    $proc = shift (@cp);
-    @files = &xst_parse_replace_files (shift (@cp), $fn);
-    unshift @cp, @files if $#files >= 0;
 
-    next if (!&xst_parse_replace_hash_values (\@cp, \%hash));
-    &xst_report_enter ();
-    &xst_report ("parse_table", "$key");
-    &xst_report_leave ();
-    $hash{$key} = &$proc (@cp) if ($hash{$key} eq undef);
+    if ($hash{$key} eq undef)
+    {
+      $proc = shift (@cp);
+      @files = &xst_parse_replace_files (shift (@cp), $fn);
+
+      # Don't unshift the resulting files if none were given.
+      unshift @cp, @files if $#files >= 0;
+
+      &xst_parse_run_entry (\%hash, $key, $proc, \@cp);
+    }
   }
 
   foreach $i (keys (%hash))

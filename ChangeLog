@@ -1,3 +1,35 @@
+2001-11-06  Arturo Espinosa Aldama  <arturo@ximian.com>
+	
+	* util.pl.in (xst_arr_merge): Merges scr array into dest array.
+
+	* network.pl.in (xst_network_sysconfig_rh72_ifaces_get_existing):
+	rh72 method to get all existing interfaces. Calls a redhat prog
+	to migrate from network-scripts to networking.
+	(xst_network_sysconfig_dir_ifaces_get_existing): Abstraction
+	of previous network-scripts specific code.
+	(xst_network_sysconfig_rh62_ifaces_get_existing): Use new
+	abstraction.
+
+	* network-conf.in: Added redhat-7.2 as a supported platform.
+
+	* network.pl.in (xst_network_interfaces_expand_iface): The
+	#ifaces# expansion hack, but for array also.
+	(xst_network_interfaces_get): Use this new function.
+
+2001-11-05  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_get_parse_table): Created
+	parse table for Red Hat 7.2.
+
+	* parse.pl.in (xst_parse_run_entry): This one is powerful.
+	["user", \&xst_parse_foo, [0, 1], [2, 3] ] will parse
+	using the combinatory of [0, 1]x[2, 3] until a result
+	ne undef is given. Check RedHat 7.2's parse table for
+	further enlightenment.
+	(xst_parse_from_table): xst_parse_run_entry called from
+	here to get this new behaviour. Useful for distros that
+	put their stuff in different places (RH72).
+
 2001-11-02  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_xml_parse_serverlayout_screen): Implement.

@@ -483,12 +483,13 @@ sub xst_network_interface_ensure_broadcast_and_network
   }
 }
 
-sub xst_network_sysconfig_ifaces_get_existing
+sub xst_network_sysconfig_dir_ifaces_get_existing
 {
-  local *IFACE_DIR;
+  my ($dir) = @_;
   my (@ret, $i, $name);
+  local *IFACE_DIR;
   
-  if (opendir IFACE_DIR, "$xst_prefix/etc/sysconfig/network-scripts")
+  if (opendir IFACE_DIR, "$xst_prefix/$dir")
   {
     foreach $i (readdir (IFACE_DIR))
     {
@@ -503,7 +504,29 @@ sub xst_network_sysconfig_ifaces_get_existing
     closedir (IFACE_DIR);
   }
 
-  return @ret;
+  return \@ret;
+}
+
+sub xst_network_sysconfig_rh62_ifaces_get_existing
+{
+  return @{&xst_network_sysconfig_dir_ifaces_get_existing ("/etc/sysconfig/network-scripts")};
+}
+
+sub xst_network_sysconfig_rh72_ifaces_get_existing
+{
+  my ($ret);
+  
+  # This syncs /etc/sysconfig/network-scripts and /etc/sysconfig/networking
+  &xst_file_run ("/usr/sbin/redhat-config-network-cmd");
+  
+  $ret = &xst_network_sysconfig_dir_ifaces_get_existing
+      ("/etc/sysconfig/networking/profiles/default");
+  
+  &xst_arr_merge ($ret, 
+                  &xst_network_sysconfig_dir_ifaces_get_existing
+                  ("/etc/sysconfig/networking/devices"));
+  
+  return @$ret;
 }
 
 sub xst_network_debian_ifaces_get_existing
@@ -856,6 +879,25 @@ sub xst_network_suse70_activate_ppp
   return 0;
 }
 
+sub xst_network_interfaces_expand_iface
+{
+  my ($value) = @_;
+  my ($i);
+
+  if (ref $value == "ARRAY")
+  {
+    foreach $i (@$value)
+    {
+      $i = &xst_network_interfaces_expand_iface ($i);
+    }
+
+    return $value;
+  }
+  
+  $value =~ s/\#iface\#/$i/;
+  return $value;
+}
+
 sub xst_network_interfaces_get
 {
   my (%dist_attrib, %hash, %fn, @ifaces, $iface);
@@ -872,9 +914,7 @@ sub xst_network_interfaces_get
   {
     foreach $j (keys (%fn))
     {
-      $value = $fn{$j};
-      $value =~ s/\#iface\#/$i/;
-      $ {$dist_attrib{"fn"}}{$j} = $value;
+      $ {$dist_attrib{"fn"}}{$j} = &xst_network_interfaces_expand_iface ($fn{$j});
     }
 
     $iface = &xst_parse_from_table ($dist_attrib{"fn"},
@@ -1923,6 +1963,7 @@ sub xst_network_get_parse_table
 	  "redhat-6.2"   => "redhat-6.2",
 	  "redhat-7.0"   => "redhat-7.0",
 	  "redhat-7.1"   => "redhat-7.0",
+	  "redhat-7.2"   => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
@@ -1979,6 +2020,46 @@ sub xst_network_get_parse_table
         HOSTS        => "/etc/hosts",
         SMB_CONF     => "/etc/samba/smb.conf",
         WVDIAL       => "/etc/wvdial.conf"
+      },
+	    table =>
+		   [
+		    [ "hostname",      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
+        [ "gateway",       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY ],
+        [ "gatewaydev",    \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV ],
+        [ "userifacectl",  \&xst_parse_trivial,           "1" ],
+		    [ "nameserver",    \&xst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
+		    [ "searchdomain",  \&xst_parse_split_first_array_unique, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+		    [ "domain",        \&xst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+		    [ "order",         \&xst_parse_split_first_array, HOST_CONF,    "order", "[ \t]+", ",[ \t]*" ],
+		    [ "hostmatch",     \&xst_parse_split_first_bool,  HOST_CONF,    "multi", "[ \t]+" ],
+		    [ "statichost",    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+		    [ "workgroup",     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+		    [ "description",   \&xst_network_rh_get_smb_desc, SMB_CONF,   "global", "server string", "%hostname%" ],
+		    [ "winsserver",    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+		    [ "winsuse",       \&xst_parse_ini_bool,          SMB_CONF,     "global", "wins support" ],
+        [ "smbuse",        \&xst_service_sysv_get_status_any, "smbd", "nmbd" ],
+        [ "smbinstalled",  \&xst_service_sysv_installed,  "smb" ],
+        [ "smartdhcpcd",   \&xst_file_tool_installed,     "pump" ],
+        [ "dialinstalled", \&xst_file_tool_installed,     "wvdial" ],
+ 		    [ "dialing",       \&xst_network_dialing_get,     WVDIAL ],
+		    [ "interface",     \&xst_network_interfaces_get ]
+		    ]
+			 },
+
+	  "redhat-7.2" =>
+	  {
+	    fn =>
+	    {
+        SYSCONFIG_NW => ["/etc/sysconfig/networking/profiles/default/network",
+                         "/etc/sysconfig/networking/network",
+                         "/etc/sysconfig/network"],
+        RESOLV_CONF  => ["/etc/sysconfig/networking/profiles/default/resolv.conf",
+                         "/etc/resolv.conf"],
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => ["/etc/sysconfig/networking/profiles/default/hosts",
+                         "/etc/hosts"],
+        SMB_CONF     => "/etc/samba/smb.conf",
+        WVDIAL       => "/etc/wvdial.conf",
       },
 	    table =>
 		   [
@@ -2103,6 +2184,7 @@ sub xst_network_get_interfaces_parse_table
 	  "redhat-6.2"   => "redhat-6.2",
 	  "redhat-7.0"   => "redhat-6.2",
 	  "redhat-7.1"   => "redhat-6.2",
+	  "redhat-7.2"   => "redhat-7.2",
 	  "mandrake-7.1" => "redhat-6.2",
     "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
@@ -2115,10 +2197,60 @@ sub xst_network_get_interfaces_parse_table
 	 (
 	  "redhat-6.2" =>
 	  {
-	    ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
+	    ifaces_get => \&xst_network_sysconfig_rh62_ifaces_get_existing,
 	    fn =>
 	    {
         IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT  => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE => "#iface#",
+        PAP   => "/etc/ppp/pap-secrets",
+        CHAP  => "/etc/ppp/chap-secrets",
+        PUMP  => "/etc/pump.conf"
+      },
+	    table =>
+          [
+           [ "bootproto",          \&xst_network_rh62_parse_bootproto, IFCFG, BOOTPROTO ],
+           [ "auto",               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
+           [ "user",               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+           [ "name",               \&xst_parse_sh,      IFCFG, NAME ],
+           [ "dev",                \&xst_parse_sh,      IFCFG, DEVICE ],
+           [ "address",            \&xst_parse_sh,      IFCFG, IPADDR ],
+           [ "netmask",            \&xst_parse_sh,      IFCFG, NETMASK ],
+           [ "broadcast",          \&xst_parse_sh,      IFCFG, BROADCAST ],
+           [ "network",            \&xst_parse_sh,      IFCFG, NETWORK ],
+           [ "gateway",            \&xst_parse_sh,      IFCFG, GATEWAY ],
+           [ "update_dns",         \&xst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
+           [ "update_dns",         \&xst_parse_sh_bool, IFCFG, PEERDNS ],
+           [ "dns1",               \&xst_parse_sh,      IFCFG, DNS1 ],
+           [ "dns2",               \&xst_parse_sh,      IFCFG, DNS2 ],
+           [ "mtu",                \&xst_parse_sh,      IFCFG, MTU ],
+           [ "mru",                \&xst_parse_sh,      IFCFG, MRU ],
+           [ "remote_address",     \&xst_parse_sh,      IFCFG, REMIP ],
+           [ "login",              \&xst_parse_sh,      IFCFG, PAPNAME ],
+           [ "password",           \&xst_network_get_pap_passwd, PAP,  "%login%" ],
+           [ "password",           \&xst_network_get_pap_passwd, CHAP, "%login%" ],
+           [ "serial_port",        \&xst_parse_sh,      IFCFG, MODEMPORT ],
+           [ "serial_speed",       \&xst_parse_sh,      IFCFG, LINESPEED ],
+           [ "ppp_options",        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
+           [ "wvsection",          \&xst_parse_sh,      IFCFG, WVDIALSECT ],
+           [ "set_default_gw",     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
+           [ "debug",              \&xst_parse_sh_bool, IFCFG, DEBUG ],
+           [ "persist",            \&xst_parse_sh_bool, IFCFG, PERSIST ],
+           [ "serial_escapechars", \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
+           [ "serial_hwctl",       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
+           [ "phone_number",       \&xst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
+           [ "enabled",            \&xst_network_interface_active, IFACE,
+                                                                   \&xst_network_active_interfaces_get ]
+           ]
+             },
+
+	  "redhat-7.2" =>
+	  {
+	    ifaces_get => \&xst_network_sysconfig_rh72_ifaces_get_existing,
+	    fn =>
+	    {
+        IFCFG => ["/etc/sysconfig/networking/profiles/default/ifcfg-#iface#",
+                  "/etc/sysconfig/networking/devices/ifcfg-#iface#"],
         CHAT  => "/etc/sysconfig/network-scripts/chat-#iface#",
         IFACE => "#iface#",
         PAP   => "/etc/ppp/pap-secrets",
@@ -2496,7 +2628,7 @@ sub xst_network_get_interface_replace_table
 	  {
       iface_set    => \&xst_network_rh62_interface_activate,
       iface_delete => \&xst_network_rh62_interface_delete,
-      ifaces_get   => \&xst_network_sysconfig_ifaces_get_existing,
+      ifaces_get   => \&xst_network_sysconfig_rh62_ifaces_get_existing,
       fn =>
 	    {
         IFCFG  => "/etc/sysconfig/network-scripts/ifcfg-#iface#",

@@ -97,6 +97,22 @@ sub xst_push_unique
 }
 
 
+# Merges scr array into dest array.
+sub xst_arr_merge
+{
+  my ($dest, $src) = @_;
+  my (%h, $i);
+
+  foreach $i (@$a, @$b)
+  {
+    $h{$i} = 1;
+  }
+
+  @$a = keys %h;
+  return $a;
+}
+
+
 sub xst_ignore_line
 {
   if (($_[0] =~ /^[ \t]*\#/) || ($_[0] =~ /^[ \t\n\r]*$/)) { return 1; }
