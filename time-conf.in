@@ -23,8 +23,9 @@
 
 # Best viewed with 100 columns of width.
 
-# Configuration files affected:
+# Configuration files affected/used:
 #
+# /usr/share/zoneinfo/zone.tab
 # /etc/ntp.conf
 # /etc/ntp/step-tickers
 # /etc/localtime
@@ -93,7 +94,7 @@ End_of_Usage;
 
 $version = "0.1.0";
 
-$progress_max = 3;
+$progress_max = 365;
 
 
 # --- System config file locations --- #
@@ -103,6 +104,7 @@ $progress_max = 3;
 
 @ntp_conf_names =         ( "/etc/ntp.conf" );
 @ntp_step_tickers_names = ( "/etc/ntp/step-tickers" );
+@zoneinfo_db_names =      ( "/usr/share/zoneinfo/zone.tab", "/usr/local/share/zoneinfo/zone.tab" );
 
 
 # --- Internal configuration variables --- #
@@ -239,23 +241,9 @@ sub write_ntp_step_tickers
 sub write_localtime
 {
   my ($tz, $name);
-  my $zonebase = "/usr/share/zoneinfo/Etc/";
+  my $zonebase = "/usr/share/zoneinfo/";
 
-  # Dirty tricks.
-
-  $tz = $cf_timezone;
-  $tz =~ tr/+-0//d;
-  $tz = $tz * 1;
-  
-  if (!$tz) { $tz = "${zonebase}GMT"; }
-	elsif ($tz == 33) { $tz = "${zonebase}Iran"; }
-	elsif ($tz == 43) { $tz = "${zonebase}Asia/Kabul"; }
-	elsif ($tz == 53) { $tz = "${zonebase}Asia/Calcutta"; }
-	elsif ($tz == 63) { $tz = "${zonebase}Asia/Bangkok"; }
-	elsif ($tz == 93) { $tz = "${zonebase}Australia/Darwin"; }
-	elsif ($tz == 345) { $tz = "${zonebase}America/Guyana"; }
-  elsif ($cf_timezone =~ /\+.*/) { $tz = "${zonebase}GMT+$tz"; }
-  else { $tz = "${zonebase}GMT-$tz"; }
+  $tz = "$zonebase$cf_timezone";
 
   if (stat($tz) ne "")
   {
@@ -265,7 +253,7 @@ sub write_localtime
 
     if ($be_verbose)
     {
-      (my $fullname = "$prefix/$name") =~ tr/\//\//s;
+      (my $fullname = "$prefix/$name") =~ tr/\//\//s;  # '//' -> '/'
       print STDERR "Writing timezone configuration to \"$fullname\".\n";
     }
 
@@ -285,12 +273,9 @@ sub write_localtime
 
     # Replace the timezone info file.
 
-    unlink $name;
+    unlink $name;  # Important, since it might be a symlink.
     system("cp $tz $name >/dev/null 2>/dev/null");
   }
-  
-  # TODO: We might not find a corresponding GMT[+|-] zone. If we don't,
-  # we'll have to make our own.
 }
 
 
@@ -342,8 +327,6 @@ sub xml_parse_time
     shift @$tree;
     shift @$tree;
   }
-
-  if ($cf_timezone =~ /^(\+|-)0+$/) { $cf_timezone = "0000"; }  # GMT, eh?
 }
 
 
@@ -356,7 +339,7 @@ sub xml_parse_synchronization
 
   while (@$tree)
   {
-    if ($$tree[0] eq "server")  { push_unique(\@cf_servers, be_xml_get_word($$tree[1])); }
+    if ($$tree[0] eq "server")  { be_push_unique(\@cf_servers, be_xml_get_word($$tree[1])); }
     
     shift @$tree;
     shift @$tree;
@@ -418,19 +401,49 @@ sub xml_print
 # --- Get (read) config --- #
 
 
+sub get_zone
+{
+  local *TZLIST;
+  my $zone;
+  my $diff_tool;
+
+  *TZLIST = be_open_read_from_names(@zoneinfo_db_names);
+  if (not *TZLIST) { return; }
+
+  $diff_tool = be_locate_tool("diff");
+
+  while (<TZLIST>)
+  {
+    if (/#/) { next; }                     # Skip comments.
+    ($d, $d, $zone) = split /[\t ]+/, $_;  # Get 3rd column.
+    chomp $zone;                           # Remove linefeeds.
+    
+    # See if this zone file matches the installed one.
+    
+    if (!system "$diff_tool /usr/share/zoneinfo/$zone /etc/localtime >/dev/null 2>/dev/null")
+    {
+      # Found a match.
+
+      last;
+    }
+    
+    $zone = "";
+    be_print_progress();
+  }
+  
+  $cf_timezone = $zone;
+  close (TZLIST);
+}
+
+
 sub get_time
 {
   my $datetext;
   
   $datetext = `date +%Y.%m.%d.%H:%M.%S.%z`;
   
-  ($cf_year, $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_second, $cf_timezone) =
-    ($datetext =~ /^([0-9]+).([0-9]+).([0-9]+).([0-9]+):([0-9]+).([0-9]+).([-+0-9]+)/);
-
-  if ($cf_timezone =~ /\+.*/) { $cf_timezone =~ tr/+/-/; }
-  else { $cf_timezone =~ tr/-/+/; }
-
-  if ($cf_timezone =~ /^(\+|-)0+$/) { $cf_timezone = "0000"; }  # GMT, eh?
+  ($cf_year, $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_second) =
+    ($datetext =~ /^([0-9]+).([0-9]+).([0-9]+).([0-9]+):([0-9]+).([0-9]+)/);
 
   # TODO: We should fall back to internal Perl functions here.
 }
@@ -465,6 +478,7 @@ sub get
   if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
   if ($be_verbose) { print STDERR "Getting time, date and timezone.\n"; }
 
+  get_zone ();
   read_ntp_conf (); be_print_progress ();
   get_time (); be_print_progress ();
   check_servers (); be_print_progress ();
