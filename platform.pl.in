@@ -76,6 +76,7 @@ $PLATFORM_INFO = {
   "freebsd-5"       => "FreeBSD 5",
   "freebsd-6"       => "FreeBSD 6",
   "gentoo"          => "Gentoo Linux",
+  "archlinux-0.7"   => "Arch Linux 0.7",
   "pld-1.0"         => "PLD 1.0 Ra",
   "pld-1.1"         => "PLD 1.1 Ra",
   "pld-1.99"        => "PLD 1.99 Ac-pre",
@@ -333,6 +334,23 @@ sub check_gentoo
   return -1;
 }
 
+sub check_archlinux
+{
+  # We do this because Arch puts g-s-t into /opt/gnome.
+  open RELEASE, "/etc/arch-release" or return -1;
+  while (<RELEASE>)
+  {
+    chomp;
+    if (/^Arch Linux (.*) \(.*\)/)
+    {
+      close RELEASE;
+      return "archlinux-$1";
+    }
+  }
+  close RELEASE;
+  return -1;
+}
+
 sub check_linuxppc
 {
   open RELEASE, "$gst_prefix/etc/redhat-release" or return -1;
@@ -440,7 +458,7 @@ sub gst_platform_guess
     # Red Hat check must run after Vine, Mandrake and Fedora, and Mandrake after BlackPanther
     "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, \&check_blackpanther, \&check_vine,
                  \&check_fedora, \&check_mandrake, \&check_conectiva, \&check_linuxppc, \&check_redhat,  \&check_openna,
-                 \&check_turbolinux, \&check_slackware, \&check_gentoo,  \&check_pld, \&check_specifix ],
+                 \&check_turbolinux, \&check_slackware, \&check_gentoo,  \&check_pld, \&check_specifix, \&check_archlinux ],
     "FreeBSD" => [ \&check_freebsd ],
     "SunOS"    => [ \&check_solaris ]
                );

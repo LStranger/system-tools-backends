@@ -78,6 +78,7 @@ $version = "@VERSION@";
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0", "slackware-9.1.0", "slackware-10.0.0",
               "freebsd-4", "freebsd-5", "freebsd-6",
               "gentoo",
+	      "archlinux-0.7",
               "pld-1.0", "pld-1.1", "pld-1.99", "fedora-1", "fedora-2", "specifix", "vine-3.0", "vine-3.1");
 
 $description =<<"end_of_description;";
@@ -360,6 +361,7 @@ my $logindefs_dist_map = {
   'vine-3.0'        => $rh_logindefs_defaults,
   'vine-3.1'        => $rh_logindefs_defaults,
   'gentoo'	        => $gentoo_logindefs_defaults,
+  'archlinux-0.7'   => $gentoo_logindefs_defaults,
   'slackware-9.1.0' => $gentoo_logindefs_defaults,
   'slackware-10.0.0' => $gentoo_logindefs_defaults,
   'freebsd-4'       => $freebsd_logindefs_defaults,
@@ -843,7 +845,7 @@ sub change_user_chfn
     $fname = "-f \'" . $fname . "\'";
     $home_phone = "-h \'" . $home_phone . "\'";
 
-    if ($gst_dist =~ /^debian/)
+    if ($gst_dist =~ /^debian/  || $gst_dist =~ /^archlinux/)
     {
       $office = "-r \'" . $office . "\'";
       $office_phone = "-w \'" . $office_phone . "\'";

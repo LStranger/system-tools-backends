@@ -1,3 +1,8 @@
+2004-11-05  Link Dupont  <link.dupont@gmail.com>
+
+	* platform.pl.in: Added archlinux to the list
+	* users-conf.in: added support for archlinux 0.7
+
 2004-11-04  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* file.pl.in (gst_file_buffer_load): return a void array instead of
