@@ -317,6 +317,7 @@ my $rh_logindefs_defaults = {
   'shell'       => '/bin/bash',
   'group'       => '$user',
   'skel_dir'    => '/etc/skel/',
+  'groups'      => ['dialout','cdrom','floppy','audio','video','plugdev','scanner'],
 };
 
 my $gentoo_logindefs_defaults = {
@@ -475,7 +476,7 @@ sub logindefs_add_defaults
   foreach my $key (keys %$dist_specific)
   {
     # Make sure there's no crappy entries
-    if (exists ($profiles_prop_map{$key}))
+    if (exists ($profiles_prop_map{$key}) || $key eq "groups")
     {
       $logindefs->{$key} = $dist_specific->{$key};
     }
@@ -1377,7 +1378,16 @@ sub xml_print_profiledb
     &gst_xml_container_enter ('profile');
     foreach $key (keys %$profile)
     {
-      &gst_xml_print_pcdata ($key, $profile->{$key});
+      if ($key eq "groups")
+      {
+        &gst_xml_container_enter ('groups');
+        &gst_xml_print_array ($profile->{$key}, "group");
+        &gst_xml_container_leave ('groups');
+      }
+      else
+      {
+        &gst_xml_print_pcdata ($key, $profile->{$key});
+      }
     }
     &gst_xml_container_leave ();
   }

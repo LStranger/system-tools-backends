@@ -1,3 +1,7 @@
+2005-01-12  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* users-conf.in: added default groups to profiles
+
 2005-01-11  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* shares-conf.in: made it to save general SMB config
