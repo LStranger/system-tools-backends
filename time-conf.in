@@ -41,6 +41,7 @@ require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
+require "___scriptsdir___/service.pl";
 
 
 # --- Tool information --- #
