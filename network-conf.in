@@ -40,6 +40,7 @@
 # nmbd
 # ifconfig: check current interfaces and activate/deactivate.
 
+#see this?
 
 require "___scriptsdir___/general.pl";
 require "___scriptsdir___/platform.pl";
