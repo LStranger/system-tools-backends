@@ -770,8 +770,6 @@ sub be_ensure_local_host_entry
     @line = split(/[ \n\r\t]+/, $_);
     if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
 
-    print "line: $line[0], ip: $local_ip\n";
-
     if ($line[0] ne "" && (not be_ignore_line($line[0])) &&
 #       ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) &&
         $line[0] eq $local_ip)
