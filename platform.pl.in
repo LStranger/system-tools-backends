@@ -290,18 +290,12 @@ sub xst_platform_ensure_supported
   {
     if ($platform eq $$tool{"platform"})
     {
-      &xst_report ("platform_success", $platform);
+      &xst_report ("platform_success", $platform, $$PLATFORM_INFO{$platform});
       return;
     }
   }
 
-  # Not supported. Now list the ones we do support.
-
-  foreach $platform (@supported)
-  {
-    &xst_report ("platform_list",  $platform);
-  }
-
+  # Not supported.
   if (exists $$tool{"platform"})
   {
     &xst_report ("platform_unsup", $$tool{"platform"});
@@ -324,7 +318,7 @@ sub xst_platform_set
     if ($p eq $platform)
     {
       $$tool{"platform"} = $xst_dist = $platform;
-      &xst_report ("platform_success", $platform);
+      &xst_report ("platform_success", $platform, $$PLATFORM_INFO{$platform});
       &xst_report_end ();
       return;
     }

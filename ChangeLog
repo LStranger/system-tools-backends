@@ -1,3 +1,13 @@
+2001-10-16  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* report.pl.in (xst_report): removed platform_list report.
+	Changed platform_success format.
+
+	* platform.pl.in (xst_platform_ensure_supported): no need
+	to list the supported platforms using reports. platform_success
+	report now requires the platform description too.
+	(xst_platform_set): same regarding report.
+
 2001-10-15  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* platform.pl.in: Typo in PLATFORM_INFO and the codename

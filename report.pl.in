@@ -226,10 +226,9 @@ sub xst_report
      "directive_badargs"        => ["error", _("Directive [%s] requires exactly [%s] args in [%s].")],
      "directive_lowargs"        => ["error", _("Directive [%s] requires at least [%s] args in [%s].")],
 
-     "platform_list"            => ["sys",   _("Supported: [%s]")],
      "platform_unsup"           => ["error", _("Your platform [%s] is not supported.")],
      "platform_undet"           => ["error", _("Unable to determine host platform.")],
-     "platform_success"         => ["sys",   _("Configuring for platform [%s].")],
+     "platform_success"         => ["sys",   _("Configuring for platform [%s] (%s).")],
      "platform_no_table"        => ["error", _("No parse/replace table for platform [%s].")],
 
      "xml_unexp_tag"            => ["error", _("Unexpected tag [%s].")],
