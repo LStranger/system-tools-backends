@@ -1,4 +1,5 @@
 # translation of el.po to 
+# translation of el.po to
 # This file is distributed under the same license as the PACKAGE package.
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER.
 # Kostas Papadimas <pkst@gnome.org>, 2004.
@@ -7,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: el\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-29 10:27+0300\n"
-"PO-Revision-Date: 2004-08-29 10:27+0300\n"
+"POT-Creation-Date: 2004-09-03 18:28+0300\n"
+"PO-Revision-Date: 2004-09-03 18:27+0300\n"
 "Last-Translator: Kostas Papadimas <pkst@gnome.org>\n"
 "Language-Team:  <nls@tux.hellug.gr>\n"
 "MIME-Version: 1.0\n"
@@ -436,6 +437,8 @@ msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
 msgstr ""
+"Δέσμη ενεργειών που θα δημιουργήσει τις συσκευές στο /dev που "
+"χρησιμοποιούνται στην διεαπφή με τους drivers στο πυρήνα"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -470,18 +473,24 @@ msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
+"named (BIND) είναι ένας Domain Name Server (DNS) που χρησιμοποιείται για την "
+"επίλυση ονομάτων συστήματος σε διευθύνσεις IP."
 
 #: service-list.pl.in:90
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
+"Προσαρτά και αποπροσαρτά όλα τα συστήματα αρχείων δικτύου (NFS) SMB (Lan "
+"Manager/Windows), και σημεία προσάρτησης NCP (NetWare)."
 
 #: service-list.pl.in:91
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
 msgstr ""
+"Ενεργοποιεί/Απενεργοποιεί όλες τις διεπαφές δικτύου που έχουν ρυθμιστεί να "
+"ξεκινούν στο  boot."
 
 #: service-list.pl.in:92
 msgid ""
@@ -508,6 +517,7 @@ msgstr "Name service cache daemon"
 #: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
 msgstr ""
+"Ένας Daemon που παρέχει μια cache για τις πιο κοινές αιτήσεις ονοματοδοσίας."
 
 #: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
@@ -526,6 +536,8 @@ msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
 msgstr ""
+"Ελέγχει την ώρα από έναν εξυπηρετητή Network Time Protocol (ntp) και "
+"προσαρμόζει ανάλογα την ώρα συστήματος."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -536,6 +548,8 @@ msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
 msgstr ""
+"Ένας Daemon που ορίζει και διατηρεί την ώρα συστήματος σε συγχρονισμό με "
+"τους Internet standard time servers"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
@@ -555,7 +569,7 @@ msgstr "IPsec tunnel implementation"
 
 #: service-list.pl.in:103
 msgid "DARPA port to RPC program number mapper"
-msgstr ""
+msgstr "DARPA port to RPC program number mapper"
 
 #: service-list.pl.in:103
 msgid ""
@@ -563,6 +577,10 @@ msgid ""
 "NFS and NIS. The portmap server must be running on machines which act as "
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
+"Ο portmapper διαχειρίζεται συνδέσεις RPC, που χρησιμοποιούνται από "
+"πρωτόκολλα όπως το NFS και το NIS. Ο εξυπηρετητής portmap πρέπει να τρέχει "
+"σε μηχανήματα που ενεργούν ως εξυπηρετητές για πρωτόκολλα που χρησιμοποιούν "
+"το μηχανισμό RPC. "
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
@@ -577,6 +595,8 @@ msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
 msgstr ""
+"Το Point-to-Point Protocol (PPP) παρέχει μια μέθοδογια την μετάδοση "
+"datagrams σε  δεσμούς serial point-to-point."
 
 #: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
@@ -587,6 +607,8 @@ msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
 msgstr ""
+"Αποθηκεύει και ανακτά την δεξαμενή εντροπίας συστήματος για δημιουργία "
+"τυχαίων αριθμών υψηλότερης ποιότητας."
 
 #: service-list.pl.in:109
 msgid ""
@@ -595,6 +617,10 @@ msgid ""
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
+"Αυτές οι δέσμες ενεργειών αναθέτουν σε raw devices να κάνουν φραγή συσκευών "
+"(όπως διαμερίσματα σκληρών δίσκων). Χρησιμεύουν σε εφαρμογές όπως η Oracle. "
+"Μπορείτε να ορίσετε μια raw device να κάνει φραγή με την επεξεργασία του "
+"αρχείου /etc/sysconfig/rawdevices."
 
 #: service-list.pl.in:110
 msgid ""
@@ -603,12 +629,19 @@ msgid ""
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
+"Αυτός είναι ένας daemon που χειρίζεται την περιοδική σύνδεση με τους "
+"εξυπηρετητές του Red Hat Network για να ελέγχει για ενημερώσεις, "
+"ειδοποιήσεις και ελέγχους παρακολούθησης συστήματος ανάλογα με το service "
+"level."
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
+"Ο εξυπηρετητής rsync είναι μια καλή προσθήκη σε έναν εξυπηρετητή ftp, μιας "
+"και επιτρέπει  crc checksumming κτλ. Θα πρέπει να ενεργοποιήσετε το xinetd "
+"για να χρησιμοποιήσετε αυτή την υπηρεσία."
 
 #: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
@@ -623,30 +656,42 @@ msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
+"Η σουΐτα λογισμικού Samba είναι μια στλλογή προγραμμάτων που παρέχει το "
+"πρωτόκολλο Server Message Block για συστήματα UNIX."
 
 #: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
+"Η saslauthd είναι μια διεργασία εξυπηρετητή που χειρίζεται αιτήσεις "
+"πιστοποίησης απλού κειμένου εκ μέρους της βιβλιοθήκης cyrus-sasl."
 
 #: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
+"Το Sendmail  είναι ένας Mail Transport Agent, που μεταφέρει αλληλογραφία από "
+"ένα μηχάνημα στο άλλο."
 
 #: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
+"Μια εσωτερική υπηρεσία xinetd, που καταγράφει σε λίστα τους ενεργούς "
+"εξυπηρετητές. Θα πρέπει να ενεργοποιήσετε το xinetd για να χρησιμοποιήσετε "
+"αυτή την υπηρεσία."
 
 #: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
 msgstr ""
+"Μια εσωτερική υπηρεσία xinetd, που καταγράφει σε λίστα τις ενεργές "
+"υπηρεσίες. Θα πρέπει να ενεργοποιήσετε το xinetd για να χρησιμοποιήσετε αυτή "
+"την υπηρεσία."
 
 #: service-list.pl.in:118
 msgid "get/set serial port information"
@@ -657,16 +702,21 @@ msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
 msgstr ""
+"Το setserial είναι ένα πρόγραμμα σχεδιασμένο για τον ορισμό ή/και την "
+"ρύθμιση πληροφοριών σχετικές με μια σειριακή θύρα."
 
 #: service-list.pl.in:119
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
+"Το FAM είναι ένας daemon παρακολούθησης αρχείων. Μπορεί να χρησιμοποιηθεί "
+"για την λήψη αναφορών όταν γίνει αλλαγή αρχείων.Θα πρέπει να ενεργοποιήσετε "
+"το xinetd για να χρησιμοποιήσετε αυτή την υπηρεσία."
 
 #: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
-msgstr ""
+msgstr "έλεγχος και παρακολούθηση συστημάτων αποθήκευσης με χρήση S.M.A.R.T."
 
 #: service-list.pl.in:121
 msgid "Perl-based spam filter using text analysis"
@@ -685,6 +735,8 @@ msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
 msgstr ""
+"Το ssh είναι ένα πρόγραμμα για είσοδο σε ένα απομακρυσμένο σύστημα και για "
+"την εκτέλεση εντολών σε ένα απομακρυσμένο σύστημα."
 
 #: service-list.pl.in:124
 msgid "OpenSSH server daemon"
@@ -699,12 +751,17 @@ msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr ""
+"Το Sysklogd παρέχει δύο εφαρμογές συστήματος που απέχει υποστήριξη για "
+"καταγραφή συστήματος και  kernel  message  trapping."
 
 #: service-list.pl.in:126
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
+"Το Syslog είναι μια ευκολία που χρησιμοποιείται από πολλούς daemons για την "
+"καταγραφή μηνυμάτων σε διάφορα αρχεία καταγραφής. Είναι καλό να τρέχει πάντα "
+"το syslog."
 
 #: service-list.pl.in:127
 msgid ""
@@ -713,6 +770,11 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"Ένας RFC 868 εξυπηρετητής ώρας. Αυτό το πρωτόκολλο παρέχει μια ανεξάρτητη, "
+"ώρα και ημερομηνία αναγνώσιμη από το μηχάνημα. Η υπηρεσία ώρας στέλνει τον "
+"χρόνο καταμετρημένο σε δευτερόλεπτα από τα μεσάνυχτα της  1ης Ιανουαρίου "
+"1900. Αυτή είναι η έκδοση tcp. Θα πρέπει να ενεργοποιήσετε το xinetd για να "
+"χρησιμοποιήσετε ατή την υπηρεσία."
 
 #: service-list.pl.in:128
 msgid ""
@@ -721,10 +783,15 @@ msgid ""
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"Ένας RFC 868 εξυπηρετητής ώρας. Αυτό το πρωτόκολλο παρέχει μια ανεξάρτητη, "
+"ώρα και ημερομηνία αναγνώσιμη από το μηχάνημα. Η υπηρεσία ώρας στέλνει τον "
+"χρόνο καταμετρημένο σε δευτερόλεπτα από τα μεσάνυχτα της  1ης Ιανουαρίου "
+"1900. Αυτή είναι η έκδοση udp. Θα πρέπει να ενεργοποιήσετε το xinetd για να "
+"χρησιμοποιήσετε ατή την υπηρεσία."
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
-msgstr ""
+msgstr "kernel random number source devices"
 
 #: service-list.pl.in:129
 msgid ""
@@ -732,6 +799,9 @@ msgid ""
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
+"Ο   random  number  generator  συλλέγει περιβαντολογικό θόρυβο από device "
+"drivers και άλλες πηγές σε μια δεξαμενή εντροπίας. Από αυτή την δεξαμενή "
+"εντροπίας δημιουργούνται τυχαίοι αριθμοί."
 
 #: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
@@ -742,6 +812,9 @@ msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
+"Η εντολή vmware ξεκινά μια εικονική Intel X86 μηχανή. Αυτή η δέσμη ενεργειών "
+"διαχειρίζεται τις υπηρεσίες που χρειάζονται για την εκτέλεση του λογισμικού "
+"VMware."
 
 #: service-list.pl.in:132
 msgid "Web-based administration toolkit"
@@ -750,6 +823,7 @@ msgstr "Web-based Εργαλειοθήκη διαχείρισης "
 #: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
 msgstr ""
+"Name Service Switch daemon για την επίλυση ονομάτων από εξυπηρετητές NT."
 
 #: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
@@ -769,7 +843,7 @@ msgstr "X Display Manager"
 
 #: service-list.pl.in:135
 msgid "Provides the X equivalent of a \"login:\" prompt."
-msgstr ""
+msgstr "Παρέχει την αντίστοιχη στο X προτροπή \"login:\"."
 
 #: service-list.pl.in:136
 msgid "X font server"
@@ -780,6 +854,8 @@ msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
 msgstr ""
+"Ο Xfs είναι ο εξυπηρετητής γραμματοσειρών X. Παρέχει γραμματοσειρές στο "
+"σύστημα X Window."
 
 #: service-list.pl.in:137
 msgid ""
@@ -793,30 +869,30 @@ msgstr ""
 "ικανότητα έγκαιρης διαθεσιμότητας υπηρεσιών, και οριοθέτησης στον αριθμό των "
 "εξυπηρετητών που μπορεί να εκκινήσουν, ανάμεσα σε άλλα πράγματα."
 
-#: service.pl.in:224 service.pl.in:229
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "Τερματισμός το συστήματος"
 
-#: service.pl.in:225 service.pl.in:231
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "Λειτουργία κειμένου"
 
-#: service.pl.in:226 service.pl.in:230 service.pl.in:239
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "Γραφική λειτουργία"
 
-#: service.pl.in:227 service.pl.in:232
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "Επανεκκίνηση του συστήματος"
 
-#: service.pl.in:234
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "Εκκινεί όλες τις απαραίτητες υπηρεσίες του συστήματος"
 
-#: service.pl.in:235
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "Προεπιλεγμένο runlevel"
 
-#: service.pl.in:236
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Runlevel χωρίς δίκτυο"
