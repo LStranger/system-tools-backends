@@ -134,7 +134,7 @@ $be_verbose = 0;
 $be_do_immediate = 1;
 
 # For debugging (perl -d) purposes. set to "" for normal operation:
-$be_input_file = "aaa";
+$be_input_file = "";
 
 
 # --- Progress printing --- #

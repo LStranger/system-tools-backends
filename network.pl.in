@@ -88,14 +88,14 @@ sub xst_network_sysconfig_ifaces_get_existing
 
 sub xst_network_interfaces_get
 {
-  my (%table, %hash, %fn, @ifaces);
+  my (%dist_attrib, %hash, %fn, @ifaces);
   my ($dist, $value, $file, $proc);
   my ($i, $j);
 
-  %table = &xst_network_get_interfaces_get_table ();
+  %dist_attrib = &xst_network_get_interfaces_parse_table ();
 
-  %fn = %{$ {%table}{"fn"}};
-  $proc = $ {%table}{"ifaces_get"};
+  %fn = %{$dist_attrib{"fn"}};
+  $proc = $ {$dist_attrib{"ifaces_get"}};
   @ifaces = &$proc ();
   foreach $i (@ifaces)
   {
@@ -103,11 +103,11 @@ sub xst_network_interfaces_get
     {
       $value = $fn{$j};
       $value =~ s/\#iface\#/$i/;
-      $ {$ {$dist_attrib{$dist}}{"fn"}}{$j} = $value;
+      $ {$dist_attrib{"fn"}}{$j} = $value;
     }
 
-    $hash{$i} = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
-                                       $ {$dist_attrib{$dist}}{"table"});
+    $hash{$i} = &xst_parse_from_table ($dist_attrib{"fn"},
+                                       $dist_attrib{"table"});
   }
 
   return \%hash;
@@ -115,20 +115,13 @@ sub xst_network_interfaces_get
 
 sub xst_network_conf_get
 {
-  # mapping from regular expression, which will be compared to the string
-  # "$be_dist,$be_dist_version,$be_system" to a string, which will be used as
-  # a the key of the dist_attrib field to use.
-  my %dist_cmp = (
-			   "^redhat.*" => "redhat62"
-			   );
+  my %dist_attrib;
+  my $hash;
 
-  my ($dist, $hash);
+  %dist_attrib = &xst_network_get_replace_table ();
 
-  $dist = &be_map_dist (%dist_cmp);
-  return undef if ($dist eq undef); # fixme: warn the user
-
-  $hash = &xst_parse_from_table ($ {$dist_attrib{$dist}}{"fn"},
-						   $ {$dist_attrib{$dist}}{"table"});
+  $hash = &xst_parse_from_table ($dist_attrib{$dist}{"fn"},
+						   $dist_attrib{$dist}{"table"});
   return $hash;
 }
 
@@ -192,6 +185,106 @@ sub xst_network_conf_set
   return;
 }
 
+sub xst_network_get_parse_table
+{
+  my %dist_map =
+  (
+    "redhat-6.0" => "redhat-6.2",
+    "redhat-6.1" => "redhat-6.2",
+    "redhat-6.2" => "redhat-6.2"
+  );
+
+  my %dist_tables =
+  (
+    "redhat-6.2" =>
+    {
+      fn =>
+      {
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/smb.conf"
+      },
+      table =>
+      [
+        [ auto,          \&xst_parse_sh_bool,           SYSCONFIG_NW, NETWORKING ],
+        [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
+        [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
+        [ gateway,       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY],
+        [ gateway_dev,   \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
+        [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
+        [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
+        [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
+        [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
+        [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
+        [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
+        [ statichost,    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+        [ workgroup,     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
+        [ description,   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
+        [ winsserver,    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
+        [ interface,     \&xst_network_interfaces_get ]
+      ]
+    }
+  );
+
+  my $table = $dist_map{$be_dist};
+  if ($table) { return $dist_tables{$table}; }
+
+  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
+}
+
+
+sub xst_network_get_replace_table
+{
+  my %dist_map =
+  (
+    "redhat-6.0" => "redhat-6.2",
+    "redhat-6.1" => "redhat-6.2",
+    "redhat-6.2" => "redhat-6.2"
+  );
+
+  my %dist_tables =
+  (
+    "redhat-6.2" =>
+    {
+      fn =>
+      {
+        SYSCONFIG_NW => "/etc/sysconfig/network",
+        RESOLV_CONF  => "/etc/resolv.conf",
+        HOST_CONF    => "/etc/host.conf",
+        HOSTS        => "/etc/hosts",
+        SMB_CONF     => "/etc/smb.conf"
+      },
+      table =>
+      [
+        [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+        [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
+        [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+        [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+        [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+        [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+        [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
+        [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
+        [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
+        [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
+        [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
+        [ statichost,    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+        [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
+        [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
+        [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+        [ interface,     \&xst_network_interfaces_set ]
+      ]
+    }
+  );
+
+  my $table = $dist_map{$be_dist};
+  if ($table) { return $dist_tables{$table}; }
+
+  # FIXME: This is a fatal error, and should make us bail.
+  return undef;
+}
 
 sub xst_network_get_interfaces_parse_table
 {
@@ -245,7 +338,7 @@ sub xst_network_get_interfaces_parse_table
   );
 
   my $table = $dist_map{$be_dist};
-  if ($table) { return $dist_tables{$table}; }
+  if ($table) { return %{$dist_tables{$table}}; }
 
   # FIXME: This is a fatal error, and should make us bail.
   return undef;
@@ -299,108 +392,6 @@ sub xst_network_get_interfaces_replace_table
         [ serial_hwctl,       \&xst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
         [ phone_number,       \&xst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
         [ enabled,            \&xst_network_interface_active_set, IFACE ]
-      ]
-    }
-  );
-
-  my $table = $dist_map{$be_dist};
-  if ($table) { return $dist_tables{$table}; }
-
-  # FIXME: This is a fatal error, and should make us bail.
-  return undef;
-}
-
-
-sub xst_network_get_conf_parse_table
-{
-  my %dist_map =
-  (
-    "redhat-6.0" => "redhat-6.2",
-    "redhat-6.1" => "redhat-6.2",
-    "redhat-6.2" => "redhat-6.2"
-  );
-
-  my %dist_tables =
-  (
-    "redhat-6.2" =>
-    {
-      fn =>
-      {
-        SYSCONFIG_NW => "/etc/sysconfig/network",
-        RESOLV_CONF  => "/etc/resolv.conf",
-        HOST_CONF    => "/etc/host.conf",
-        HOSTS        => "/etc/hosts",
-        SMB_CONF     => "/etc/smb.conf"
-      },
-      table =>
-      [
-        [ auto,          \&xst_parse_sh_bool,           SYSCONFIG_NW, NETWORKING ],
-        [ forward,       \&xst_parse_sh_bool,           SYSCONFIG_NW, FORWARD_IPV4 ],
-        [ hostname,      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
-        [ gateway,       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY],
-        [ gateway_dev,   \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV],
-        [ domain,        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN],
-        [ nameserver,    \&xst_parse_split_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-        [ searchdomain,  \&xst_parse_split_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-        [ domainname,    \&xst_parse_split_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-        [ order,         \&xst_parse_split_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-        [ hostmatch,     \&xst_parse_split_first_bool,  HOST_CONF,    multi, "[ \t]+" ],
-        [ statichost,    \&xst_parse_split_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-        [ workgroup,     \&xst_parse_ini,               SMB_CONF,     "global", "workgroup" ],     
-        [ description,   \&xst_parse_ini,               SMB_CONF,     "global", "server string" ],    
-        [ winsserver,    \&xst_parse_ini,               SMB_CONF,     "global", "wins server" ],
-        [ interface,     \&xst_network_interfaces_get ]
-      ]
-    }
-  );
-
-  my $table = $dist_map{$be_dist};
-  if ($table) { return $dist_tables{$table}; }
-
-  # FIXME: This is a fatal error, and should make us bail.
-  return undef;
-}
-
-
-sub xst_network_get_conf_replace_table
-{
-  my %dist_map =
-  (
-    "redhat-6.0" => "redhat-6.2",
-    "redhat-6.1" => "redhat-6.2",
-    "redhat-6.2" => "redhat-6.2"
-  );
-
-  my %dist_tables =
-  (
-    "redhat-6.2" =>
-    {
-      fn =>
-      {
-        SYSCONFIG_NW => "/etc/sysconfig/network",
-        RESOLV_CONF  => "/etc/resolv.conf",
-        HOST_CONF    => "/etc/host.conf",
-        HOSTS        => "/etc/hosts",
-        SMB_CONF     => "/etc/smb.conf"
-      },
-      table =>
-      [
-        [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
-        [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
-        [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
-        [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
-        [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
-        [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
-        [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-        [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-        [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-        [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-        [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
-        [ statichost,    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-        [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
-        [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
-        [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
-        [ interface,     \&xst_network_interfaces_set ]
       ]
     }
   );
