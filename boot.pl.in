@@ -173,13 +173,13 @@ sub gst_boot_bootloader_list
 
 sub gst_boot_bootloader_get
 {
-  my ($current_tool, $current_date, $tool, $date);
+  my ($current_tool, $current_date, $bootl, $date);
 
   $current_date = 0;
-  $tool = gst_file_locate_tool ("lilo");
-  if ($tool ne "")
+  $bootl = gst_file_locate_tool ("lilo");
+  if ($bootl ne "")
   {
-    $date = (stat ($tool)) [8];
+    $date = (stat ($bootl)) [8];
     if ($date > $current_date)
     {
       $current_date = $date;
@@ -187,10 +187,10 @@ sub gst_boot_bootloader_get
     }
   }
   
-  $tool = gst_file_locate_tool ("grub-install");
-  if ($tool ne "")
+  $bootl = gst_file_locate_tool ("grub-install");
+  if ($bootl ne "")
   {
-    $date = (stat ($tool)) [8];
+    $date = (stat ($bootl)) [8];
     if ($date > $current_date)
     {
       $current_date = $date;
@@ -198,10 +198,10 @@ sub gst_boot_bootloader_get
     }
   }
 
-  $tool = gst_file_locate_tool ("ybin");
-  if ($tool ne "")
+  $bootl = gst_file_locate_tool ("ybin");
+  if ($bootl ne "")
   {
-    $date = (stat ($tool)) [8];
+    $date = (stat ($bootl)) [8];
     if ($date > $current_date)
     {
       $current_date = $date;
@@ -259,7 +259,7 @@ sub gst_boot_entries_get
 
 sub gst_boot_conf_get
 {
-  my ($tool) = @_;
+  my ($bootl) = @_;
   my $config_file = &gst_boot_grub_get_config_file ();
   my %tool_tables =
   (
@@ -320,8 +320,8 @@ sub gst_boot_conf_get
        }
   );
        
-  return &gst_parse_from_table ($ {$tool_tables{$tool}}{"fn"},
-                                $ {$tool_tables{$tool}}{"table"});
+  return &gst_parse_from_table ($ {$tool_tables{$bootl}}{"fn"},
+                                $ {$tool_tables{$bootl}}{"table"});
 }
 
 sub gst_boot_get_entry_parse_table
@@ -414,7 +414,7 @@ sub gst_boot_conf_set
 {
   my $values_hash = $_[0];
   my $config_file = &gst_boot_grub_get_config_file ();
-  $tool = &gst_boot_bootloader_get ();
+  $bootl = &gst_boot_bootloader_get ();
 
   my %tool_tables =
       (
@@ -462,8 +462,8 @@ sub gst_boot_conf_set
          }
        );
 
-  return &gst_replace_from_table ($ {$tool_tables{$tool}}{"fn"},
-                                  $ {$tool_tables{$tool}}{"table"}, $values_hash);
+  return &gst_replace_from_table ($ {$tool_tables{$bootl}}{"fn"},
+                                  $ {$tool_tables{$bootl}}{"table"}, $values_hash);
 }
 
 sub gst_boot_get_entry_replace_table

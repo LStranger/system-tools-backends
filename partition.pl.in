@@ -28,11 +28,123 @@ if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
     $DOTIN = ".in";
 }
 
+use Errno;
+
 require "$SCRIPTSDIR/general.pl$DOTIN";
 require "$SCRIPTSDIR/report.pl$DOTIN";
 
+@DEVICE_NAMES = (
+    {
+      "name" => "da",
+      "max"  => 16,
+    },
+    {
+      "name" => "ad",
+      "max"  => 16,
+    },
+    {
+      "name" => "ar",
+      "max"  => 16,
+    },
+    {
+      "name" => "fla",
+      "max"  => 16,
+    },
+    {
+      "name" => "afd",
+      "max"  => 4,
+    },
+    {
+      "name" => "mlx",
+      "max"  => 4,
+    },
+    {
+      "name" => "amrd",
+      "max"  => 4,
+    },
+    {
+      "name" => "idad",
+      "max"  => 4,
+    },
+    {
+      "name" => "twed",
+      "max"  => 4,
+    },
+    {
+      "name" => "aacd",
+      "max"  => 4,
+    },
+    {
+      "name" => "ipsd",
+      "max"  => 4,
+    },
+    {
+      "name" => "wd",
+      "max"  => 16,
+    },
+);
 
-sub gst_partition_scan_info
+sub gst_partition_scan_freebsd_info
+{
+  my ($fd, $line);
+  my (%hash);
+  my (@table);
+  local (*DEV);
+
+  # Some of this code has been adapted from the way
+  # sysinstall learns about devices.
+  foreach my $device (@DEVICE_NAMES)
+  {
+    for (my $i = 0; $i < $device->{"max"}; $i++)
+    {
+      my $dev = "/dev/" . $device->{"name"} . $i;
+
+      if (open (DEV, $dev) || $! == EBUSY)
+      {
+        if ($! == 0)
+        {
+          close (DEV);
+        }
+
+        $fd = &gst_file_run_pipe ("fdisk -s " . $dev);
+
+        if ($fd eq undef)
+        {
+          &gst_report ("fdisk_failed");
+          return undef;
+        }
+
+        while ($line = <$fd>)
+        {
+          # Example output from fdisk -s:
+          # /dev/ad0: 26310 cyl 16 hd 63 sec
+          # Part        Start        Size Type Flags
+          #    1:          63    26520417 0xa5 0x80
+          #
+          if ($line =~ /^[ \t]+(\d+):[ \t]+(\d+)[ \t]+(\d+)[ \t]+0x([a-f0-9A-F][a-f0-9A-F])[ \t]+0x([a-f0-9A-F][a-f0-9A-F])$/)
+          {
+            $bootable = ($5 eq 80)? 0: 1;
+            push @table, {"dev" => $dev . "s" . $1,
+#                          "id"     => $1,
+#                          "start"  => $2,
+#                          "size"   => $3,
+#                          "boot"   => $bootable,
+                          "type" => $GST_FILESYS_TYPES{$4}
+                         };
+          }
+        }
+
+        &gst_file_close ($fd);
+      }
+    }
+  }
+
+  $hash{"partition"} = \@table;
+
+  return \%hash;
+}
+
+sub gst_partition_scan_linux_info
 {
   my ($fd, $line);
   my (%hash);
@@ -70,6 +182,14 @@ sub gst_partition_scan_info
   $hash{"partition"} = \@table;
 
   return \%hash;
+}
+
+sub gst_partition_scan_info
+{
+  my ($plat) = $$tool{"system"};
+
+  &gst_partition_scan_linux_info   if ($plat eq "Linux");
+  &gst_partition_scan_freebsd_info if ($plat eq "FreeBSD");
 }
 
 %GST_FILESYS_TYPES =

@@ -143,7 +143,7 @@ sub gst_boot_grub_add_entry
   {
     # It's a linux image
     $value = $entry->{"root"};
-    $value = &gst_boot_grub_linux2grub ($device_map, $value);
+    $value = &gst_boot_grub_system2grub ($device_map, $value);
 
     $image = &gst_boot_grub_set_file_path ($entry->{"image"}, $entry->{"root"});
     if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
@@ -171,7 +171,7 @@ sub gst_boot_grub_add_entry
   {
     # It's another boot
     $value = $entry->{"other"};
-    $value = &gst_boot_grub_linux2grub ($device_map, $value);
+    $value = &gst_boot_grub_system2grub ($device_map, $value);
 		
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\trootnoverify (" . $value . ")\n";
@@ -269,24 +269,33 @@ sub gst_boot_grub_entries_set
 }
 
 # Grub device notation converters.
-sub gst_boot_grub_linux2grub
+sub gst_boot_grub_system2grub
 {
   my ($device_map, $dev) = @_;
   my ($fd, $line, $res, $path, $drive, $part);
 
-  if ($dev =~ /(.*\/)?(fd[0-9]|hd|sd|scd)([a-z]*)([0-9]*)/)
+  if (($$tool{"system"} eq "Linux") &&
+      ($dev =~ /(.*\/)?(fd[0-9]|hd|sd|scd)([a-z]*)([0-9]*)/))
   {
-    $path = "/dev/";
-    $path = $1 if $1 ne undef;
+    $path  = "/dev/";
+    $path  = $1 if ($1 ne undef);
     $drive = $2 . $3;
-    $part = $4 - 1 if $4 ne undef;
+    $part  = $4 - 1 if ($4 ne undef);
+  }
+  elsif (($$tool{"system"} eq "FreeBSD") &&
+         ($dev =~ /(.*\/)?(fd|da|ad|ar|fla|afd|mlx|amrd|idad|twed|aacd|ipsd|wd)([0-9]+)s?([0-9]*)/))
+  {
+    $path  = "/dev/";
+    $path  = $1 if ($1 ne undef);
+    $drive = $2 . $3;
+    $part  = $4 - 1 if ($4 ne undef);
   }
   else
   {
     &gst_report ("boot_grub_convert_failed", $dev);
     return undef;
   }
-  
+
   $fd = &gst_file_open_read_from_names ($device_map);
   $res = undef;
   
@@ -308,11 +317,22 @@ sub gst_boot_grub_linux2grub
 
     if ($drive =~ /(fd.|hd.)/)
     {
-      $res = "hd0" if $drive eq "hda";
-      $res = "hd1" if $drive eq "hdb";
-      $res = "hd2" if $drive eq "hdc";
-      $res = "hd3" if $drive eq "hdd";
-      $res = $drive if $drive =~ /fd[0-9]/;
+      if ($$tool{"system"} eq "Linux")
+      {
+        $res = "hd0"  if $drive eq "hda";
+        $res = "hd1"  if $drive eq "hdb";
+        $res = "hd2"  if $drive eq "hdc";
+        $res = "hd3"  if $drive eq "hdd";
+        $res = $drive if $drive =~ /fd[0-9]/;
+      }
+      elsif ($$tool{"system"} eq "FreeBSD")
+      {
+        $res = "hd0"  if $drive eq "ad0";
+        $res = "hd1"  if $drive eq "ad1";
+        $res = "hd2"  if $drive eq "ad2";
+        $res = "hd3"  if $drive eq "ad3";
+        $res = $drive if $drive =~ /fd[0-9]/;
+      }
     }
     else
     {
@@ -326,11 +346,11 @@ sub gst_boot_grub_linux2grub
   return $res;
 }
 
-sub gst_boot_grub_grub2linux
+sub gst_boot_grub_grub2system
 {
   my ($device_map, $grubdev) = @_;
   ($drive, $part, @add) = split (',', $grubdev);
-  
+
   $dev = &gst_parse_split_first_str ($device_map, "\\($drive\\)", "[ \t]+");
 
   if ($dev eq undef)
@@ -342,14 +362,28 @@ sub gst_boot_grub_grub2linux
     }
     else
     {
-      $dev = "/dev/hda" if $drive eq "hd0";
-      $dev = "/dev/hdb" if $drive eq "hd1";
-      $dev = "/dev/hdc" if $drive eq "hd2";
-      $dev = "/dev/hdd" if $drive eq "hd3";
+      if ($$tool{"system"} eq "Linux")
+      {
+        $dev = "/dev/hda" if $drive eq "hd0";
+        $dev = "/dev/hdb" if $drive eq "hd1";
+        $dev = "/dev/hdc" if $drive eq "hd2";
+        $dev = "/dev/hdd" if $drive eq "hd3";
+      }
+      elsif ($$tool{"system"} eq "FreeBSD")
+      {
+        $dev = "/dev/ad0" if $drive eq "hd0";
+        $dev = "/dev/ad1" if $drive eq "hd1";
+        $dev = "/dev/ad2" if $drive eq "hd2";
+        $dev = "/dev/ad3" if $drive eq "hd3";
+      }
     }
   }
 
+  # FreeBSD insists in putting an "s" between the device and the partition number
+  $dev .= "s" if ($$tool{"system"} eq "FreeBSD");
+
   $dev .= $part + 1 if $part ne undef;
+
   return $dev;
 }
 
@@ -589,7 +623,7 @@ sub gst_boot_grub_parse_file_cmd
   }
 
   $file =~ s/[ \t].*//;
-  $dev = &gst_boot_grub_grub2linux ($device_map, $grubdev);
+  $dev = &gst_boot_grub_grub2system ($device_map, $grubdev);
   
   $mntopts = &gst_parse_split_first_array ($mtab, $dev, "[ \t]+", "[ \t]+");
 
@@ -634,7 +668,7 @@ sub gst_boot_grub_parse_other
     $grubdev = $1;
   }
 
-  $dev = &gst_boot_grub_grub2linux ($device_map, $grubdev);
+  $dev = &gst_boot_grub_grub2system ($device_map, $grubdev);
   return $dev;
 }
 
@@ -679,7 +713,7 @@ sub gst_boot_grub_parse_root
   if ($value ne undef)
   {
     $value =~ s/[()]//g;
-    return &gst_boot_grub_grub2linux ($device_map, $value);
+    return &gst_boot_grub_grub2system ($device_map, $value);
   }
   return undef;
 }
@@ -860,7 +894,7 @@ sub gst_boot_grub_replace_file_cmd
   $file =~ s/^$dir//;
   $file =~ s/\/+/\//g;
 
-  $grubdev = &gst_boot_grub_linux2grub ($device_map, $dev);
+  $grubdev = &gst_boot_grub_system2grub ($device_map, $dev);
 
   $res = "($grubdev)$file";
 
@@ -890,7 +924,7 @@ sub gst_boot_grub_replace_other
   my ($grub_conf, $device_map, $entry, $value) = @_;
   my ($grubdev);
 
-  $grubdev = &gst_boot_grub_linux2grub ($device_map, $value);
+  $grubdev = &gst_boot_grub_system2grub ($device_map, $value);
   &gst_boot_grub_replace_cmd ($grub_conf, "rootnoverify", "($grubdev)", $entry);
 #  &gst_boot_grub_replace_cmd ($grub_conf, "makeactive", " ", $entry);
   return &gst_boot_grub_replace_cmd ($grub_conf, "chainloader", "+1", $entry);
@@ -937,7 +971,7 @@ sub gst_boot_grub_replace_root
   my ($grub_conf, $device_map, $entry, $type, $value) = @_;
   my ($root, $buff, $line_no, $entry_line, $currval, $root_dev);
 
-  $root_dev = "(". &gst_boot_grub_linux2grub ($device_map, $value) . ")";
+  $root_dev = "(". &gst_boot_grub_system2grub ($device_map, $value) . ")";
   return &gst_boot_grub_replace_cmd ($grub_conf, "root", $root_dev, $entry);	  
 }
 
@@ -949,7 +983,7 @@ sub gst_boot_grub_replace_append
   $kernel = &gst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
   $currval = &gst_boot_grub_parse_cmd ($grub_conf, "root", $entry);
   $currval =~ s/[()]//g;
-  $root = &gst_boot_grub_grub2linux ($device_map, $currval);
+  $root = &gst_boot_grub_grub2system ($device_map, $currval);
 	
   $kernel .= " root=$root $value";
   return &gst_boot_grub_replace_cmd ($grub_conf, "kernel", $kernel, $entry);

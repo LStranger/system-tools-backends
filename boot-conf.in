@@ -234,7 +234,7 @@ sub verify_print
 
 sub verify
 {
-  my ($tool, $key, @values) = @_;
+  my ($hash, $key, @values) = @_;
   my ($i, $proc, $res, $loader);
 
   my %bootloader =
