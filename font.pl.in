@@ -5,7 +5,8 @@
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
-# Authors: Arturo Espinosa <arturo@ximian.com>
+# Authors: Arturo Espinosa <arturo@ximian.com>,
+#          Tambet Ingo <tambet@ximian.com>.
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -31,13 +32,31 @@ if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 
 require "$SCRIPTSDIR/file.pl$DOTIN";
 
+use File::Copy;
+use File::Basename;
+
+my $XST_FONT_DIR = "/usr/share/fonts/xst";
+
+
+BEGIN {
+  &xst_report_table ({
+    'font_install_success'    => ['info',  _('Font [%s] installed successfully.')],
+    'font_install_fail'       => ['warn',  _('File [%s] not installed.')],
+    'font_remove_success'     => ['info',  _('Font [%s] removed successfully.')],
+    'font_dir_update_success' => ['info',  _('Font dir [%s] updated successfully.')],
+    'font_dir_update_fail'    => ['warn',  _('Couldn\'t update font dir [%s].')],
+  }
+                     );
+}
+
+
 
 # This code is some experimental stuff that may be useful on the future.
 # Commented due to the dependency to the TTF perl module.i
 if (0)
 {
 
-use Font::TTF::Font;
+# use Font::TTF::Font;
 
 sub regexp_cmp_foreach
 {
@@ -319,6 +338,499 @@ sub xst_font_info_to_fontdir
 }
 
 } # if (0)
+
+
+use strict;
+
+
+# XFS Config
+
+my $xfs_boolean = {
+    'parse' => \&xfs_parse_boolean,
+  };
+
+my $xfs_cardinal = {
+    'parse' => \&xfs_parse_cardinal,
+  };
+
+my $xfs_string = {
+    'parse' => \&xfs_parse_string,
+  };
+
+my $xfs_string_list = {
+    'parse' => \&xfs_parse_string_list,
+  };
+
+my $xfs_resol_list = {
+    'parse' => \&xfs_parse_string_list,
+  };
+
+my $xfs_trans_type = {
+    'parse' => \&xfs_parse_string,
+  };
+
+my $xfs_table = {
+    'catalogue'           => $xfs_string_list,
+    'alternate-servers'   => $xfs_string_list,
+    'client-limit'        => $xfs_cardinal,
+    'clone-self'          => $xfs_boolean,
+    'default-point-size'  => $xfs_cardinal,
+    'default-resolutions' => $xfs_resol_list,
+    'error-file'          => $xfs_string,
+    'no-listen'           => $xfs_trans_type,
+    'port'                => $xfs_cardinal,
+    'use-syslog'          => $xfs_boolean,
+    'deferglyphs'         => $xfs_string,
+  };
+
+# XFS boolean
+
+sub xfs_parse_boolean
+{
+  my $val = shift;
+  my $buf = shift;
+
+  unless ($val eq 'on' || $val eq 'off')
+  {
+    # TODO: Give error;
+    return;
+  }
+
+  return $val;
+}
+
+
+# XFS cardinal (integer)
+
+sub xfs_parse_cardinal
+{
+  my $val = shift;
+  my $buf = shift;
+
+  unless ($val =~ /^\d+$/)
+  {
+    # TODO: Give error;
+    return;
+  }
+
+  return $val;
+}
+
+
+# XFS string
+
+sub xfs_parse_string
+{
+  my $val = shift;
+  my $buf = shift;
+
+  # TODO: Dunno what do check here
+#  unless ($val =~ /^\d+$/)
+#  {
+    # TODO: Give error;
+#    return;
+#  }
+
+  return $val;
+}
+
+# XFS string list
+
+sub xfs_parse_string_list
+{
+  my $val = shift;
+  my $buf = shift;
+  my $last;
+  my $list = [];
+
+  while (1)
+  {
+    $val =~ s/\s+$//;
+    $val =~ s/^\s+//;
+
+    $last++ unless $val =~ s/,$//;
+    if ($val)
+    {
+      my @tmp = split (/[ \t]*,[ \t]*/, $val);
+      push @$list, @tmp;
+    }
+    else
+    {
+      # TODO: Give error;
+      last;
+    }
+    shift @$buf;
+    last if $last;
+    $val = $$buf[0];
+  }
+
+  return $list;
+}
+
+
+sub xfs_parse
+{
+  my $fname = shift;
+  $fname = $fname || '/etc/X11/fs/config';
+  my $config = {};
+  return unless $fname;
+
+  my $buf = &xst_file_buffer_load ($fname);
+  return unless $buf;
+
+  while (@$buf)
+  {
+    my $line = shift @$buf;
+    next if &xst_ignore_line ($line);
+
+    chomp ($line);
+    my ($kw, $val) = split (/[ \t]*=[ \t]*/, $line, 2);
+    if (exists ($xfs_table->{$kw}))
+    {
+      my $func = $xfs_table->{$kw}{'parse'};
+      my $val = &$func ($val, $buf);
+      if ($val)
+      {
+        $config->{$kw} = $val;
+      }
+      else
+      {
+        # TODO: Give error;
+        1;
+      }
+    }
+    else
+    {
+      # TODO: report error;
+      1;
+    }
+  }
+
+  return $config;
+}
+
+
+
+
+sub get_x_fontpath
+{
+  my $cmd = &xst_file_locate_tool ('xset');
+  return unless $cmd;
+
+  my $output = &xst_file_run_backtick ("xset q");
+  return unless $output;
+
+  my $fonts = $1 if $output =~ /Font Path:\n\s+(.+)/;
+  unless ($fonts)
+  {
+    &xst_debug_print_line ("get_x_fontpath: Couldn't find 'Font Path' from 'xset q' output.");
+    return;
+  }
+
+  return split (/[ \t]*,[ \t]*/, $fonts);
+}
+
+
+# Check if valid ttf file.
+# TODO: Improve checking.
+sub font_check_ttf
+{
+  my $file = shift;
+
+  if ($file =~ /\.ttf$/i || $file =~ /\.ttc/i)
+  {
+    return { 'type' => 'ttf' };
+  }
+  return;
+}
+
+# Check if valid type1 file.
+# TODO: Improve checking.
+sub font_check_t1
+{
+  my $file = shift;
+
+  if ($file =~ /\.pfb$/i)
+  {
+    return { 'type' => 't1' };
+  }
+  return;
+}
+
+# Check that all files exist.
+sub font_check_install
+{
+  my $file = shift;
+
+  if (-f $file)
+  {
+    my $type;
+
+    $type = &font_check_ttf ($file);
+    $type = &font_check_t1 ($file) unless $type;
+
+    if ($type) {
+      $type->{'file'} = $file;
+      return $type;
+    }
+  }
+
+  # TODO: add reporting.
+  &xst_debug_print_line ("font_check_install: '$file' doesn't seem to be a known font file.");
+  return;
+}
+
+sub font_xml_parse_install
+{
+  my $config = shift;
+  my $xml = shift;
+  my $entry = {};
+
+  my $file = &xst_xml_get_attribute ($xml, 'file');
+  if ($file)
+  {
+    my $font;
+    $config->{'install'} = [] unless exists $config->{'install'};
+
+    push @{$config->{'install'}}, $font if $font = &font_check_install ($file);
+  }
+}
+
+sub font_check_remove
+{
+  my $file = shift;
+  my $fonttypes = {
+    'TrueType' => 'ttf',
+    'Type1'    => 't1',
+    };
+
+  foreach my $font (keys %$fonttypes)
+  {
+    my $path = "$XST_FONT_DIR/$font/$file";
+    return { 'type' => $fonttypes->{$font}, 'file' => $path } if (-f $path);
+  }
+}
+
+sub font_xml_parse_remove
+{
+  my $config = shift;
+  my $xml = shift;
+  my $entry = {};
+
+  my $file = &xst_xml_get_attribute ($xml, 'file');
+  if ($file)
+  {
+    my $font;
+    $config->{'remove'} = [] unless exists $config->{'remove'};
+
+    push @{$config->{'remove'}}, $font if $font = &font_check_remove ($file);
+  }
+}
+
+sub font_xml_parse
+{
+  my $tree = shift;
+  my $known_tags = {
+    'install' => \&font_xml_parse_install,
+    'remove'  => \&font_xml_parse_remove,
+  };
+
+  shift @$tree;  # Skip attributes.
+
+  my $config = {};
+
+  while (@$tree) {
+    my $tag = $$tree[0];
+
+    if (&xst_item_is_in_list ($tag, keys %$known_tags)) {
+      my $func = $known_tags->{$tag};
+      &$func ($config, $$tree[1]) if $func;
+    }
+
+    else {
+      my $msg = "received unknown xml tag $$tree[0]";
+      &xst_report ('xml_unexp_tag', $$tree[0]);
+      &xst_debug_print_line ("font_xml_parse: $msg");
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  return $config;
+}
+
+sub font_add
+{
+  my $config = shift;
+  my @install = @{$config->{'install'}};
+
+  foreach my $entry (@install)
+  {
+    my $new_file;
+    for ($entry->{'type'})
+    {
+      /ttf/ and do
+      {
+        $new_file = 'TrueType';
+        last;
+      };
+
+      /t1/ and do
+      {
+        $new_file = 'Type1';
+        last;
+      };
+
+      # default
+      &xst_report ('font_install_fail', $entry->{'file'});
+      &xst_debug_print_line ("font_add: unknown font type '$_'");
+      next;
+    }
+
+    $new_file = "$XST_FONT_DIR/$new_file/";
+    &xst_file_create_path ($new_file, 0777) unless (-d $new_file);
+    $new_file .= lc (basename ($entry->{'file'}));
+    copy ($entry->{'file'}, $new_file);
+    &xst_report ('font_install_success', $entry->{'file'});
+  }
+}
+
+sub font_remove
+{
+  my $config = shift;
+  my @remove = @{$config->{'remove'}};
+
+  foreach my $entry (@remove)
+  {
+    unlink ($entry->{'file'});
+    &xst_report ('font_remove_success', $entry->{'file'});
+  }
+}
+
+sub font_update_fontdir
+{
+  my $ttf_dir = "$XST_FONT_DIR/TrueType";
+  my $t1_dir = "$XST_FONT_DIR/Type1";
+
+  my $map = {
+    $ttf_dir => {
+      'ttmkfdir'  => "-d $ttf_dir -o $ttf_dir/fonts.scale",
+      'mkfontdir' => "$ttf_dir",
+    },
+    $t1_dir => {
+      'type1inst' => "-q -d $t1_dir",
+    }
+  };
+
+  foreach my $type (keys %$map)
+  {
+    if (-d $type)
+    {
+      my $commands = $map->{$type};
+
+      foreach my $key (keys %$commands)
+      {
+        my $cmd = &xst_file_locate_tool ($key);
+        if ($cmd)
+        {
+          &xst_file_run ("$cmd $commands->{$key}");
+          &xst_report ('font_dir_update_success', $type);
+        }
+        else
+        {
+          &xst_report ('font_dir_update_fail', $type);
+          &xst_debug_print_line ("font_update_fontdir: Couldn't find '$key'");
+        }
+      }
+    }
+  }
+}
+
+sub font_install_rh
+{
+  # TODO: make sure xfs is running, X really uses it.
+
+  my $cmd = &xst_file_locate_tool ('chkfontpath');
+  if ($cmd)
+  {
+    &xst_file_run ("$cmd -q -a $XST_FONT_DIR/TrueType/");
+    &xst_file_run ("$cmd -q -a $XST_FONT_DIR/Type1/");
+  }
+
+#  &xst_file_run ("/etc/rc.d/init.d/xfs restart");
+}
+
+sub font_remove_rh
+{
+  # TODO: make sure xfs is running, X really uses it.
+  &xst_file_run ("/etc/rc.d/init.d/xfs restart");
+}
+
+
+my $rh_map = {
+  'install' => \&font_install_rh,
+  'remove'  => \&font_remove_rh,
+};
+
+my $font_distro_map = {
+  'redhat-6.0' => $rh_map,
+  'redhat-6.1' => $rh_map,
+  'redhat-6.2' => $rh_map,
+  'redhat-7.0' => $rh_map,
+  'redhat-7.1' => $rh_map,
+};
+
+sub font_mungle
+{
+  my $config = shift;
+  my $distro = shift;
+  my $map;
+
+  return unless $config || $distro;
+
+  if (exists ($font_distro_map->{$distro}))
+  {
+    $map = $font_distro_map->{$distro};
+  }
+  return unless $map;
+
+  my @operations = qw (install remove);
+  foreach my $operation (@operations)
+  {
+    my $func = $map->{$operation};
+    unless ($func)
+    {
+      # TODO: add report.
+      &xst_debug_print_line ("font_mungle: ERROR!");
+      next;
+    }
+
+    for ($operation)
+    {
+      /install/ and do
+      {
+        &font_add ($config);
+        &font_update_fontdir ();
+        &$func ($config);
+        last;
+      };
+
+      /remove/ and do
+      {
+        &font_remove ($config);
+        &$func ($config);
+        &font_update_fontdir ();
+        last;
+      };
+
+      # default:
+      # TODO: Add report.
+      &xst_debug_print_line ("font_mungle: unknown operation '$operation'.");
+    }
+  }
+}
+
 
 1;
 

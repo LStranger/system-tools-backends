@@ -402,6 +402,7 @@ sub xst_process_result_collect
     my @list;
 
     $lines .= $tmp while (sysread ($$proc{"fd"}, $tmp, 4096));
+    goto PROC_KILL unless $lines;
     if ($lines =~ /\n/)
     {
       @list = split ("\n", $lines);
@@ -414,6 +415,7 @@ sub xst_process_result_collect
     $value = &$func (\@list, @args);
   }
 
+ PROC_KILL:
   &xst_process_kill ($proc);
 
   return $value;

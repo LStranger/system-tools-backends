@@ -1,3 +1,21 @@
+2001-09-28  Tambet Ingo  <tambet@ximian.com>
+
+	* font.pl.in: Implemented addition and removal of TrueType and
+	Type1 fonts for X. Currently works only with RH and derivates.
+
+	(xfs_parse): Implementet xfs parser.
+
+	* file.pl.in (xst_file_create_path): Added new parameter with nice
+	default to set permissions.
+	(xst_file_create_path_for_file): Ditto.
+
+2001-09-27  Tambet Ingo  <tambet@ximian.com>
+
+	* util.pl.in (xst_process_result_collect): Handle errors a bit better.
+
+	* x.pl.in (x_probe_scan): Oops! I had two functions with same name
+	and perl didin't even warn me about it! Removed one.
+
 2001-09-25  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_rh_get_smb_desc): This removes
@@ -5,6 +23,9 @@
 	distros.
 
 2001-09-24  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_xml_parse): Use standard report message for
+	unexpected xml tag.
 
 	* users-conf.in: Typos happen.
 

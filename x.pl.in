@@ -1330,7 +1330,7 @@ sub x_xml_parse
 
     else {
       my $msg = "received unknown xml tag $$tree[0]";
-      &xst_report ('x_general_warn', $msg);
+      &xst_report ('xml_unexp_tag', $$tree[0]);
       &xst_debug_print_line ("x_xml_parse: $msg");
     }
 
@@ -1973,13 +1973,14 @@ sub x_probe_scan
   my $depth = shift;
 
   my $command = &xst_file_locate_tool ("XFree86");
+  return unless $command;
+
   open (FD, "$command :9 -xf86config $cfg_file -probeonly -depth $depth -screen XstTestScreen 2>&1 |");
   if (FD) {
     my @content = (<FD>);
     close (FD);
     my @list = grep (/^\(\*\*\) \w+\(0\): Mode \"/, @content);
-#    return join ("\n", @list);
-    return \@list;
+    return \@list if scalar @list;
   }
 
   return;
@@ -1988,49 +1989,14 @@ sub x_probe_scan
 # Internal
 sub x_probe_collect
 {
-  my $proc = shift;
-  my $modes = shift;
-  my $depth = shift;
-  my $lines;
-  my $list = [];
-
-  if ($proc->{'ready'}) {
-    sysread ($$proc{"fd"}, $lines, 4096);
-    my @tmp = split ("\n", $lines);
-    foreach (@{$modes->{'ModeLine'}}) {
-      my $mode = $_;
-
-      foreach (@tmp) {
-        my $modename = $1 if /\"(.+)\"/;
-
-        if ($modename eq $mode->{'name'}) {
-          push @$list, $mode;
-          last;
-        }
-      }
-    }
-  }
-  else {
-    &xst_report ('x_probe_error', $depth);
-    &xst_debug_print_line ("x_probe_collect: error reading XFree's output at depthd $depth.");
-    undef $list;
-  }
-
-  &xst_process_kill ($proc);
-
-  return $list;
-}
-
-# Internal
-sub x_probe_collect
-{
   my $data = shift;
   my $modes = shift;
-  my $depth = shift;
-  my $list = [];
+  my $depth = shift;  
 
   if (scalar @$data) {
     my $mode;
+    my $list = [];
+
     foreach $mode (@{$modes->{'ModeLine'}}) {
       foreach (@$data) {
         my $modename = $1 if /\"(.+)\"/;
@@ -2040,14 +2006,12 @@ sub x_probe_collect
         }
       }
     }
-  }
-  else {
-    &xst_report ('x_probe_error', $depth);
-    &xst_debug_print_line ("x_probe_collect: error reading XFree's output at depth $depth.");
-    undef $list;
+    return $list;
   }
 
-  return $list;
+  &xst_report ('x_probe_error', $depth);
+  &xst_debug_print_line ("x_probe_collect: error reading XFree's output at depth $depth.");
+  return;
 }
 
 # Internal
@@ -2063,11 +2027,16 @@ sub x_probe_run
     my $proc = &xst_process_fork (\&x_probe_scan, $cfg_file, $depth);
     &xst_process_list_check_ready (15, $proc);
     my $list = &xst_process_result_collect ($proc, \&x_probe_collect, $modes, $depth);
-    if (scalar @$list) {
+    if ($list && scalar @$list) {
       $hash->{$depth} = $list;
     } else {
       last;
     }
+  }
+
+  unless ($hash) {
+    &xst_report ('x_probe_error', "Error running XFree server");
+    return;
   }
 
   return $hash;
@@ -2162,9 +2131,14 @@ sub x_probe
   my $list = &x_probe_run ($cfg_file, $modes);
   unlink ($cfg_file);
 
-  &x_probe_store ($config, $list);
+  if ($list) {
+    &x_probe_store ($config, $list);
+    &xst_report_end ();
+    &x_probe_print_xml ($list);
+    return;
+  }
+
   &xst_report_end ();
-  &x_probe_print_xml ($list);  
 }
 
 

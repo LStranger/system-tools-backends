@@ -100,7 +100,8 @@ sub xst_file_get_cmd_path
 
 sub xst_file_create_path
 {
-  my $path = $_[0];
+  my ($path, $perms) = @_;
+  $prems = $perms || 0770;
   my @pelem;
   
   $path =~ tr/\///s;
@@ -109,7 +110,7 @@ sub xst_file_create_path
   for ($path = ""; @pelem; shift @pelem)
   {
     $path = "$path$pelem[0]";
-    mkdir($path, 0770);
+    mkdir($path, $perms);
     $path = "$path/";
   }
 
@@ -121,7 +122,8 @@ sub xst_file_create_path
 
 sub xst_file_create_path_for_file
 {
-  my $path = $_[0];
+  my ($path, $perms) = @_;
+  $prems = $perms || 0770;
   my @pelem;
   
   $path =~ tr/\///s;
@@ -132,7 +134,7 @@ sub xst_file_create_path_for_file
     if ($pelem[1] ne "")
     {
       $path = "$path$pelem[0]";
-      mkdir($path, 0770);
+      mkdir($path, $perms);
       $path = "$path/";
     }
   }
