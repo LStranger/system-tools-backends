@@ -1,3 +1,7 @@
+2004-09-29  Abel Cheung  <maddog@linuxhall.org>
+
+	* configure.in: Added "tr" to ALL_LINGUAS.
+
 2004-09-28  Alexander Shopov  <ash@contact.bg>
 
 	* configure.in (ALL_LINGUAS): Added "bg" (Bulgarian)
