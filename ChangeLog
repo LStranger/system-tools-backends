@@ -1,5 +1,10 @@
 2001-12-14  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network.pl.in (xst_network_interfaces_set): simplified expression.
+	(xst_network_rh72_interface_delete): redhat-7.2's own version of this.
+
+	* network-conf.in (xml_parse): oops.
+
 	* parse.pl.in (xst_parse_expand): Copy the array before expanding
 	into it.
 

@@ -1258,6 +1258,30 @@ sub xst_network_rh62_interface_delete
   unlink ($file);
 }
 
+sub xst_network_rh72_interface_delete
+{
+  my ($old_hash) = @_;
+  my ($dev, $login);
+
+  $filedev = $$old_hash{"file"};
+  $dev     = $$old_hash{"dev"};
+  $login   = $$old_hash{"login"};
+  
+  &xst_network_rh62_interface_activate_by_dev ($filedev, 0);
+
+  if ($login ne "")
+  {
+    &xst_network_remove_pap_entry ("/etc/ppp/pap-secrets", $login);
+    &xst_network_remove_pap_entry ("/etc/ppp/chap-secrets", $login);
+  }
+
+  unlink ("$xst_prefix/etc/sysconfig/networking/devices/ifcfg-$filedev");
+  unlink ("$xst_prefix/etc/sysconfig/networking/profiles/default/ifcfg-$filedev");
+  unlink ("$xst_prefix/etc/sysconfig/network-scripts/ifcfg-$dev");
+ 
+  &xst_file_run ("redhat-config-network-cmd");
+}
+
 sub xst_network_deb22_interface_delete
 {
   my ($old_hash) = @_;
@@ -1378,7 +1402,7 @@ sub xst_network_interfaces_set
   $proc = $dist_attrib{"iface_delete"};
   foreach $i (keys %$old_hash)
   {
-    &$proc ($$old_hash{$i}) if !exists ($$values_hash{$i}) && exists ($$old_hash{$i});
+    &$proc ($$old_hash{$i}) if not exists $$values_hash{$i};
   }
 
   foreach $i (keys %$values_hash)
@@ -2713,7 +2737,7 @@ sub xst_network_get_interface_replace_table
     "redhat-7.2" =>
 	  {
       iface_set    => \&xst_network_rh62_interface_activate,
-      iface_delete => \&xst_network_rh62_interface_delete,
+      iface_delete => \&xst_network_rh72_interface_delete,
       ifaces_get   => \&xst_network_sysconfig_rh72_ifaces_get_existing,
       fn =>
 	    {
