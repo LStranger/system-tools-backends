@@ -152,7 +152,7 @@ sub xst_open_read_from_names
   {
     if (open (FILE, "$xst_prefix/$name"))
     {
-      &xst_debug_print_line ("xst_open_read_from_names:$xst_prefix/name");
+      &xst_debug_print_line ("xst_open_read_from_names:$xst_prefix/$name");
       $fname = $name;
       last;
     }

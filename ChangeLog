@@ -1,5 +1,10 @@
 2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
 
+	* file.pl.in (xst_open_read_from_names): Missing $ in var for
+	  debug output corrected.
+
+2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
+
 	* boot-conf.in disks-conf.in hardware-conf.in media.pl.in
           memory-conf.in nameresolution-conf.in network-conf.in
           networking-conf.in removable-media.pl.in time-conf.in
