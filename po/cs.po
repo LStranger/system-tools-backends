@@ -8,14 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-setup-tools VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-01-07 04:58+0100\n"
-"PO-Revision-Date: 2004-01-07 19:52+0100\n"
+"POT-Creation-Date: 2004-01-24 05:13+0100\n"
+"PO-Revision-Date: 2004-01-27 17:57+0100\n"
 "Last-Translator: Miloslav Trmac <mitr@volny.cz>\n"
 "Language-Team: Czech <cs@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. please, keep this list sorted
+#. service => [long_name, description]
 #: service-list.pl.in:36
 msgid "Advanced Linux Sound Architecture"
 msgstr "Advanced Linux Sound Architecture"
@@ -27,7 +29,7 @@ msgstr "WWW server"
 #: service-list.pl.in:37 service-list.pl.in:61
 msgid ""
 "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
-msgstr "Apache je WWW server. Používá se proposkytování souborů HTML a CGI."
+msgstr "Apache je WWW server. Používá se pro poskytování souborů HTML a CGI."
 
 #: service-list.pl.in:38
 msgid "Run missed scheduled jobs at startup"
@@ -63,7 +65,7 @@ msgstr ""
 
 #: service-list.pl.in:41
 msgid "BinFormat Support"
-msgstr "Podopora binárních formátů"
+msgstr "Podpora binárních formátů"
 
 #: service-list.pl.in:41
 msgid "Support for running non ELF binaries on Linux"
@@ -104,11 +106,7 @@ msgid ""
 "cron is a standard UNIX program that runs user-specified programs at "
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
-msgstr ""
-"cron je standardní program UNIXU, který spouští uživatelem určené programy "
-"periodicky v naplánovaných intervalech. vixie cron přidává k základímu "
-"UNIXovému cronu další vlastnosti včetně lepšího zabezpečení a mocnějších "
-"možností nastavení."
+msgstr "cron je standardní program UNIXU, který spouští uživatelem určené programy periodicky v naplánovaných intervalech. vixie cron přidává k základnímu UNIXovému cronu další vlastnosti včetně lepšího zabezpečení a mocnějších možností nastavení."
 
 #: service-list.pl.in:46
 msgid "Common Unix Printing System"
@@ -224,9 +222,7 @@ msgstr "internetový superserver"
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
-msgstr ""
-"inetd umožňuje běh jednoho démona pro vyvolání několika jiných, což snižuje "
-"zátěz systému."
+msgstr "inetd umožňuje běh jednoho démona pro vyvolání několika jiných, což snižuje zátěž systému."
 
 #: service-list.pl.in:63
 msgid "administration tool for IPv4 packet filtering and NAT"
@@ -281,7 +277,9 @@ msgstr "Toto spouští zkoumání hardware a popřípadě nastaví změněný ha
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
-msgstr "LIRC je balíček, který vám umožňuje dekódovat a odesílat infračervené signály mnoha hodně používaných dálkových ovládání"
+msgstr ""
+"LIRC je balíček, který vám umožňuje dekódovat a odesílat infračervené "
+"signály mnoha hodně používaných dálkových ovládání"
 
 #: service-list.pl.in:72
 msgid ""
@@ -371,7 +369,7 @@ msgstr "Implementace tunelu IPsec"
 
 #: service-list.pl.in:85
 msgid "DARPA port to RPC program number mapper"
-msgstr "Maprování portů DARPA na čísla programů RPC"
+msgstr "Mapování portů DARPA na čísla programů RPC"
 
 #: service-list.pl.in:85
 msgid ""
@@ -441,9 +439,7 @@ msgstr ""
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
-msgstr ""
-"Server rsync je dobrý přídavek k ftp serveru, protože umožňuje kontrolu crc "
-"atd. Pro používání této služby musít epovolit xinetd."
+msgstr "Server rsync je dobrý přídavek k ftp serveru, protože umožňuje kontrolu crc atd. Pro používání této služby musíte povolit xinetd."
 
 #: service-list.pl.in:94
 msgid ""
@@ -457,9 +453,7 @@ msgstr ""
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
-msgstr ""
-"Sendmail je program pro přepravu pošty, program který přesouvá poštu z "
-"jednoho pčítače na jiný."
+msgstr "Sendmail je program pro přepravu pošty, program který přesouvá poštu z jednoho počítače na jiný."
 
 #: service-list.pl.in:96
 msgid ""
@@ -607,9 +601,7 @@ msgstr "Spouští a ukončuje démon Samba winbind"
 msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
-msgstr ""
-"Umožnit uživatelům spouštět aplikace pro Windows(tm) jednoduše klinutím na "
-"ně (nebo napsáním ./soubor.exe)"
+msgstr "Umožnit uživatelům spouštět aplikace pro Windows(tm) jednoduše kliknutím na ně (nebo napsáním ./soubor.exe)"
 
 #: service-list.pl.in:114
 msgid "X font server"
@@ -634,18 +626,18 @@ msgstr ""
 "přístupu, široké možnosti zaznamenávání, schopnost zpřístupňovat služby "
 "podle času a může omezit počet serverů, které lze spustit."
 
-#: service.pl.in:169 service.pl.in:174
+#: service.pl.in:175 service.pl.in:180
 msgid "Halting the system"
 msgstr "Zastavování počítače"
 
-#: service.pl.in:170 service.pl.in:176
+#: service.pl.in:176 service.pl.in:182
 msgid "Text mode"
 msgstr "Textový režim"
 
-#: service.pl.in:171 service.pl.in:175 service.pl.in:179
+#: service.pl.in:177 service.pl.in:181 service.pl.in:185
 msgid "Graphical mode"
 msgstr "Grafický režim"
 
-#: service.pl.in:172 service.pl.in:177
+#: service.pl.in:178 service.pl.in:183
 msgid "Rebooting the system"
 msgstr "Restartování počítače"
