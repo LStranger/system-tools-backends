@@ -21,3 +21,4 @@ util.pl
 network.pl
 media.pl
 boot.pl
+debug.pl
