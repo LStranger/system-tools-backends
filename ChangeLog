@@ -1,5 +1,9 @@
 Sat Jul 14 11:54:50 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* file.pl.in (xst_file_run): Escape ($) in system call, heheh.
+
+	* network-conf.in (enable_iface): Cosmetic description change.
+
 	* file.pl.in (xst_file_run): Added PATH=$PATH:/sbin:/usr/sbin
 	to the running command, as these important routes may not be
 	set by the mortal user, and the executed scripts may fail (ie

@@ -476,11 +476,11 @@ sub xst_file_run
   $command = "$tool_path @argline";
   $command =~ s/\"/\\\"/g;
 
-  &xst_report ("file_run", "$command > /dev/null 2> /dev/null");
+  &xst_report ("file_run", "PATH=\$PATH:/sbin:/usr/sbin $command > /dev/null 2> /dev/null");
   &xst_report_leave ();
 
   # As documented in perlfunc, divide by 256.
-  return (system ("PATH=$PATH:/sbin:/usr/sbin $command > /dev/null 2> /dev/null") / 256);
+  return (system ("PATH=\$PATH:/sbin:/usr/sbin $command > /dev/null 2> /dev/null") / 256);
 }
 
 

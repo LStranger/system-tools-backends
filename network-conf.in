@@ -340,7 +340,7 @@ $directives = {
   "set"          => [ \&set,          [], "" ],
   "filter"       => [ \&filter,       [], "" ],
   "enable_iface" => [ \&enable_iface, [ "interface", "enabled" ],
-                     "Immediatly enable or disable a given interface.\n" .
+                     "Immediatly enable or disable a given interface. " .
                      "interface is the file tag value, enabled is 1 or 0." ]
     };
 
