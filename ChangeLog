@@ -1,3 +1,7 @@
+2003-02-07  Rodrigo Moya <rodrigo@gnome-db.org>
+
+	* configure.in: require autoconf 2.52 or bigger.
+
 2003-02-06  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network.pl.in: added more modem options for ppp connection, such
