@@ -1,5 +1,10 @@
 2002-01-02  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* general.pl.in (xst_directive_run): Wrong lowargs reporting. Better
+	use scalar than $#.
+
+	* file.pl.in (xst_file_run): was redirecting stderr to /dev/null twice.
+
 	* replace.pl.in (xst_replace_split): minor indentation.
 
 2002-01-02  Tambet Ingo  <tambet@ximian.com>

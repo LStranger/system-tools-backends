@@ -738,7 +738,7 @@ sub xst_file_buffer_join_lines
 # redirection is appended, to make the utility perfectly silent. The
 # preprocessed command line is run, and its exit value is returned.
 #
-# Example: "mkswap /dev/hda3" -> 'PATH=$PATH:/sbin:/usr/sbin /sbin/mkswap /dev/hda3 >/dev/null 2>/dev/null'.
+# Example: "mkswap /dev/hda3" -> 'PATH=$PATH:/sbin:/usr/sbin /sbin/mkswap /dev/hda3 2>/dev/null >/dev/null'.
 
 sub xst_file_run
 {
@@ -749,7 +749,7 @@ sub xst_file_run
 
   $command = &xst_file_get_cmd_path ($cmd);
   return -1 if $command == -1;
-  $command .= " > /dev/null 2> /dev/null";
+  $command .= " > /dev/null";
   $command .= " &" if $background;
 
   &xst_report ("file_run", $command);

@@ -556,7 +556,7 @@ sub xst_directive_run
   
   if (scalar @args < scalar @$reqargs)
   {
-    &xst_directive_fail ("directive_lowargs", $key, $#$reqargs, join (',', $key, @args));
+    &xst_directive_fail ("directive_lowargs", $key, scalar (@$reqargs), join (',', $key, @args));
     return;
   }
 
@@ -564,7 +564,7 @@ sub xst_directive_run
   if ((scalar @args != scalar @$reqargs) &&
       !($$reqargs[$#$reqargs] =~ /\*$/))
   {
-    &xst_directive_fail ("directive_badargs", $key, $#$reqargs + 1, join (',', $key, @args));
+    &xst_directive_fail ("directive_badargs", $key, scalar (@$reqargs), join (',', $key, @args));
     return;
   }
 
