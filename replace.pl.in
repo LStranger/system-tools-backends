@@ -78,7 +78,7 @@ sub is_array_ref
   return 1 if (ref ($val) eq "ARRAY");
   return 0 if (ref ($val) eq undef);
 
-  print STDERR "error: We shouldn't be here!\n";
+  &xst_debug_print_line ("Error: We shouldn't be here!");
 
   return 0;
 }
@@ -286,7 +286,7 @@ sub xst_replace_ini
   my $pre_space, $post_comment, $sec_save;
   my $line_key, $val;
 
-  print STDERR "\nreplace_ini: ". join (',', @_). "\n";
+  &xst_debug_print_string ("\nreplace_ini: " . join (',', @_) . "\n");
 
   $buff = &xst_buffer_load ($file);
 

@@ -1,3 +1,8 @@
+2001-03-08  Hans Petter Jansson  <hpj@ximian.com>
+
+	* replace.pl.in (xst_replace_ini): Use debug funcs.
+	  (is_array_ref): Use debug funcs.
+
 2001-03-08  Arturo Espinosa  <arturo@ximian.com>
 
 	* time-conf.in (time_set_local_time, time_set_rh62_zone,
