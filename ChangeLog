@@ -1,3 +1,8 @@
+2001-04-02  Kenneth Christiansen  <kenneth@gnu.org>
+
+        * perldoc.pl: A JavaDoc like system for Perl
+	* option.pl: A module required by the above program.
+
 2001-03-31  Hans Petter Jansson  <hpj@ximian.com>
 
 	* parse.pl.in (xst_parse_fstab): Went back underground, now rumored to
