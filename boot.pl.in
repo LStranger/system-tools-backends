@@ -39,7 +39,7 @@ require "$SCRIPTSDIR/boot-grub.pl$DOTIN";
 
 my @global_vars = qw (default prompt timeout append root);
 my @common_image_vars = qw (label type);
-my @image_vars = (@common_image_vars, qw (entry append root));
+my @image_vars = (@common_image_vars, qw (image append root));
 my @other_vars = (@common_image_vars, qw (other table));
 
 
@@ -152,7 +152,7 @@ sub xst_boot_lilo_parse_entries
     chomp $line;
     $line =~ s/^[ \t]+//;
 
-    if ($line =~ /^entry/i)
+    if ($line =~ /^image/i)
     {
       $found++;
       $known_vars = \@image_vars;

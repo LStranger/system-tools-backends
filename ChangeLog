@@ -1,5 +1,8 @@
 2001-11-29  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* boot.pl.in: s/image/entry/ bugs: some "image" strs were
+	not supposed to be changed. :)
+
 	* xml.pl.in (xst_xml_print_hash): minor comment update.
 
 	* partition.pl.in (xst_partition_scan_info): Moved to the
