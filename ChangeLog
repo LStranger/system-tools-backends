@@ -1,5 +1,9 @@
 2001-05-10  Hans Petter Jansson  <hpj@ximian.com>
 
+	* report.pl.in: Added new key to message table.
+
+2001-05-10  Hans Petter Jansson  <hpj@ximian.com>
+
 	* parse.pl.in (xst_parse_split_hash_with_continuation): Implement.
 
 2001-05-10  Hans Petter Jansson  <hpj@ximian.com>
