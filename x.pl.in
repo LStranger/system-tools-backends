@@ -1979,6 +1979,35 @@ sub x_probe_collect
 }
 
 # Internal
+sub x_probe_collect
+{
+  my $data = shift;
+  my $modes = shift;
+  my $depth = shift;
+  my $list = [];
+
+  if (scalar @$data) {
+    my $mode;
+    foreach $mode (@{$modes->{'ModeLine'}}) {
+      foreach (@$data) {
+        my $modename = $1 if /\"(.+)\"/;
+        if ($modename eq $mode->{'name'}) {
+          push @$list, $mode;
+          last;
+        }
+      }
+    }
+  }
+  else {
+    &xst_report ('x_probe_error', $depth);
+    &xst_debug_print_line ("x_probe_collect: error reading XFree's output at depth $depth.");
+    undef $list;
+  }
+
+  return $list;
+}
+
+# Internal
 sub x_probe_run
 {
   my $cfg_file = shift;
@@ -1990,7 +2019,7 @@ sub x_probe_run
   foreach my $depth (@x_colordepths) {
     my $proc = &xst_process_fork (\&x_probe_scan, $cfg_file, $depth);
     &xst_process_list_check_ready (15, $proc);
-    my $list = &x_probe_collect ($proc, $modes, $depth);
+    my $list = &xst_process_result_collect ($proc, \&x_probe_collect, $modes, $depth);
     if (scalar @$list) {
       $hash->{$depth} = $list;
     } else {

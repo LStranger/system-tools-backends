@@ -391,5 +391,33 @@ sub xst_process_list_check_ready
 
   return $timeleft;
 }
-  
+
+
+sub xst_process_result_collect
+{
+  my ($proc, $func, @args) = @_;
+  my $value;
+
+  if ($$proc{"ready"})
+  {
+    my @list;
+    my $bytes = sysread ($$proc{"fd"}, $lines, 4096);
+    if ($lines =~ /\n/)
+    {
+      @list = split ("\n", $lines);
+    }
+    else
+    {
+      push @list, $line;
+    }
+
+    $value = &$func (\@list, @args);
+  }
+
+  &xst_process_kill ($proc);
+
+  return $value;
+}
+
+
 1;
