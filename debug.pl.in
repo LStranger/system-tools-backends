@@ -162,6 +162,11 @@ sub xst_debug_rotate_try
   {
     my $i;
 
+    if (stat ("$debug_tool_dir/9"))
+    {
+      &xst_run ("rm -Rf $debug_tool_dir/9");
+    }
+
     for ($i = 8; $i; $i--)
     {
       if (stat ("$debug_tool_dir/$i"))

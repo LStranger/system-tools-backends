@@ -1,3 +1,7 @@
+2001-03-13  Hans Petter Jansson  <hpj@ximian.com>
+
+	* debug.pl.in: Fixed bug, debug 9 was not being rotated out.
+
 2001-03-12  Arturo Espinsoa  <arturo@ximian.com>
 
 	* network.pl.in: using debug functions for messages.
