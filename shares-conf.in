@@ -1532,9 +1532,8 @@ sub xml_print
         {
           if ($$clients[0] ne "")
           {
-            &xst_xml_print_line ("<allow><pattern>$$clients[0]</pattern><write state='");
-            print &xst_print_boolean_truefalse($$clients[1]);
-            print "'/></allow>\n";
+            &xst_xml_print_line ("<allow><pattern>$$clients[0]</pattern><write state='" . 
+                                 &xst_print_boolean_truefalse($$clients[1]) . "'/></allow>");
           }
           shift @$clients; shift @$clients;
         }

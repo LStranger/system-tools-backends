@@ -1,3 +1,7 @@
+2001-04-30  Hans Petter Jansson  <hpj@ximian.com>
+
+	* shares-conf.in (print_xml): Fixed an output problem in <allow> tags.
+
 2001-04-27  Hans Petter Jansson  <hpj@ximian.com>
 
 	Did a h4rD<0r3 patch of disks-conf.in, to allow it to operate on
