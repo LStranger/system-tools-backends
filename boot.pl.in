@@ -77,7 +77,7 @@ sub xst_boot_parse_global
     if (shift (@line) eq $key)
     {
       close $fd;
-      return &xst_shell_escape ($line[0]);
+      return &xst_parse_shell_escape ($line[0]);
     }
   }
 
@@ -115,7 +115,8 @@ sub xst_boot_parse_images
     
     @line = split ("[ \t]*=[ \t]*", $line, 2);    
     $key = $line[0];
-    $val = &xst_shell_escape ($line[1]);
+    $val = $line[1];
+    $val =~ s/\"//g;
     $val =~ s/^[ \t]+//;
     $val =~ s/[ \t]+$//;
 
@@ -233,171 +234,215 @@ sub xst_boot_del_global
 }
 
 
-sub xst_boot_conf_del_images
+# Scans @buff until finds first line which looks like image.
+# Returns line number or -1 if no image found.
+sub xst_boot_conf_find_image
 {
-  my ($fn, $images) = @_;
-  
-  $buf = &xst_file_buffer_load ($fn);
+  my ($buff, $lineno) = @_;
+  my $i;
 
-  $found = 1;
-  foreach $i (@$buf)
+  for (;$lineno <= $#$buff; $lineno++)
   {
-    if ($i =~ /^[ \t]*(image|other)[ \t]*=[ \t]*([\S]+)/)
-    {
-      $found = 0;
-      foreach $a (@$images)
-      {
-        %hash = %$a;
+    $i = $$buff[$lineno];
 
-        $found = 1 if (exists $hash{$1} && $hash{$1} eq $2);
-      }
-    }
-    
-    next if ($found);
-
-    $i = "";
+    return $lineno if ($i =~ /^[ \t]*(image)|(other)[ \t]*=[ \t]*\S+/);
   }
 
-  &xst_file_buffer_clean ($buf);
-  return &xst_file_buffer_save ($buf, $fn);
+  # Not found.
+  return -1;
+}
+
+
+# Returns 1 if $image is in the beginning of @buff. -1  if not.
+sub xst_boot_conf_is_image
+{
+  my ($image, @buff) = @_;
+  my ($name, $key, $i, $label);
+  
+  $name = 0;
+  $name = 'image' if exists $$image{'image'};
+  $name = 'other' if exists $$image{'other'};
+
+  return -1 if (!$name);
+
+  $key = $$image{$name};
+  $label = $$image{'label'};
+
+  $i = $buff[0];
+  # image line isn't the one we are looking for.
+  return -1 if (!($i =~ /^[ \t]*$name[ \t]*=[ \t]*$key\s+/));
+  
+  foreach $i (@buff)
+  {
+    # image line matched, now label matched too.
+    return 1 if ($i =~ /^[ \t]*label[ \t]*=[ \t]*$label\s+/);
+  }
+
+  # Couldn't find label line.
+  return -1;
+}
+
+
+# Deletes lines from $buff starting from $lineno till the next image
+# or till end of the file if no more images left.
+sub xst_boot_conf_delete_image
+{
+  my ($buff, $lineno) = @_;
+  my ($end, $i);
+
+  $end = &xst_boot_conf_find_image ($buff, $lineno + 1);
+  if ($end < 0)
+  {
+    $end = $#$buff;
+  }
+
+  for ($i = $lineno; $i < $end; $i++)
+  {
+    $$buff[$i] = "";
+  }
+
+  return $buff;
+}
+
+
+# Edit image in $buff which starts at $lineno. Get changes from $image.
+sub xst_boot_conf_edit_image
+{
+  my ($image, $buff, $lineno) = @_;
+  my ($end, $i, $found, $line, $key);
+  my ($pre_space, $post_comment, $value);
+
+  $end = &xst_boot_conf_find_image ($buff, $lineno + 1);
+  if ($end < 0)
+  {
+    $end = $#$buff + 1;
+  }
+
+  for ($lineno; $lineno < $end; $lineno++)
+  {
+    $found = 0;
+    $line = \$$buff[$lineno];
+
+    $pre_space = $post_comment = "";
+    chomp $$line;
+    $pre_space = $1 if $$line =~ s/^([ \t]+)//;
+    $post_comment = $1 if $$line =~ s/([ \t]*[\#].*)//;
+    
+    foreach $key (keys %$image)
+    {
+      # Something like 'label = linunx'
+      if ($$line =~ /^$key([ \t]*)=([ \t]*)(\S+)/)
+      {
+        $found++;
+        $value = $$image{$key};
+        $value = "\"$value\"" if ($value =~ /[ \t]/);
+
+        $$line = $pre_space . $key . $1 . "=" . $2 . $value . $post_comment . "\n";
+        $$line = "# " . $$line if $key eq "XstPartitionType";
+        delete $$image{$key};        
+      }
+      # Something like 'read-only' (ie keyword)
+      elsif ($$line =~ /^$key$/)
+      {
+        $found++;
+        $$line = $pre_space . $key . $post_comment . "\n";
+        delete $$image{$key};
+      }
+      last if $found;
+    }
+
+    $$line = "" if !$found;
+  }
+
+  # Add new fields.
+  foreach $key (keys %$image)
+  {
+    $value = $$image{$key};
+    $value = "\"$value\"" if ($value =~ /[ \t]/);
+    
+    $line = $pre_space . $key;
+    $line = "# " . $line if $key eq "XstPartitionType";
+    $line .= " = " . $value if $value;
+    $line .= "\n";
+
+    $$buff[$end -1] .= $line;
+  }
+    
+  return $buff;
+}
+
+
+# Add $image to the end of $buff.
+sub xst_boot_conf_add_image
+{
+  my ($image, $buff) = @_;
+  my ($line, $key, $value);
+
+  # Image line
+  $value = 0;
+  $value = 'image' if exists $$image{'image'};
+  $value = 'other' if exists $$image{'other'};
+
+  return if !$value;
+
+  $line = $value . " = " . $$image{$value} . "\n";
+  push @$buff, $line;
+  delete $$image{$value};
+
+  # Parameters for image
+  foreach $key (keys %$image)
+  {
+    $value = $$image{$key};
+    $value = "\"$value\"" if ($value =~ /[ \t]/);
+
+    $line = $key;
+    $line .= "# " if $key eq "XstPartitionType";
+    $line .= " = " . $value if $value;
+    $line .= "\n";
+
+    push @$buff, $line;
+  }
 }
 
 
 sub xst_boot_conf_set_images
 {
-  my ($fn, $key, $images) = @_;
-  my (%hash, $i, @tmp_images);
-
-  @tmp_images = @$images;
-  
-  foreach $i (@tmp_images)
-  {
-    %hash = %$i;
-    &xst_boot_conf_replace_image ($fn, %hash);
-  }
-  &xst_boot_conf_del_images ($fn, $images);
-}
-
-
-sub xst_boot_conf_replace_image
-{
-  my ($file, %image) = @_;
-  my ($buff, $i, $found);
-  my ($pre_space, $post_comment);
-  my (@line, $key, $op, $txt);
+  my ($file, $key, $images) = @_;
+  my ($buff, $lineno, $found, $image);
 
   $buff = &xst_file_buffer_load ($file);
   &xst_file_buffer_join_lines ($buff);
-  
-  $found = 0;
 
-  $name = 'image' if exists $image{'image'};
-  $name = 'other' if exists $image{'other'};
-
-  foreach $i (@$buff)
+  $lineno = &xst_boot_conf_find_image ($buff, 0);
+  while ($lineno > 0)
   {
-    if ($i =~ /^[ \t]*$name[ \t]*=[ \t]*$image{$name}\s+/)
+    $found = 0;
+    foreach $image (@$images)
     {
-      $found ++;
-      next;
-    }
-
-    if ($i =~ /(image|other)/ && $found == 1)
-    {
-      delete $image{$name};
-      $found++;
-      foreach $key (keys %image)
+      $found = &xst_boot_conf_is_image ($image, @$buff[$lineno .. $#$buff]);
+      if ($found > 0)
       {
-        $txt = "$key\n" unless $image{$key};
-        $txt = "$key = $image{$key}\n" if $image{$key};
-
-        if ($key eq "XstPartitionType") { $txt = "\t# " . $txt; }
-        else { $txt = "\t". $txt; }
-
-        $i = $txt . $i;
-      }
-      last;
-
-    }
-    
-    next if ($found != 1);
-
-    $pre_space = $post_comment = "";
-    
-    chomp $i;
-    $pre_space = $1 if $i =~ s/^([ \t]+)//;
-    $post_comment = $1 if $i =~ s/([ \t]*[\#;].*)//;
-
-    # Special case: #XstPartitionType
-    if ($i eq "" && $post_comment =~ /\#[ \t]*XstPartitionType/)
-    {
-      $i = $post_comment;
-      $i =~ s/\#[ \t]*//;
-      $pre_space .= "# ";
-      $post_comment = "";
-    }
-    
-    @line = split (/([ \t]*=[ \t]*)/, $i, 2);
-
-    $key = shift @line;
-    $op = shift @line;
-
-    if (exists $image{$key} && $image{$key})
-    {
-      my $value;
-          
-      $value = $image{$key};
-      $value = "\"$value\"" if ($value =~ /[ \t]/);
-      
-      $i = $pre_space . $key . $op . $value . $post_comment . "\n";
-      delete $image{$key};
-      next;
-    }
-    elsif (exists $image{$key} && !$image{$key})
-    {
-      $i = $pre_space . $key . $post_comment . "\n";
-      delete $image{$key};
-      next;
-    }   
-
-    elsif ($i ne "") # Delete unknown "junk"... yes, we are cruel!
-                     # We can do that cause on reading we include all lines, no matter what.
-    {
-      $i = "";
-      next;
-    }
-    
-    else
-    {
-      $i = $pre_space . $i . $post_comment . "\n";
-    }
-  }
-
-  # end of file or new section reached, let's add pending tags.
-  if (keys %image && $found) 
-  {
-    if (!$found) 
-    {
-      delete $image{$name};
-      foreach $key (keys %image)
-      {
-        $i = "$key\n" unless $image{$key};
-        $i = "$key = $image{$key}\n" if $image{$key};
-
-        if ($key eq "XstPartitionType") { $i = "\t# " . $i; }
-        else { $i = "\t". $i; }
-
-        push @$buff, $i;
+        # Found image, change it if neccecary,
+        # remove %image from @images and find new image.
+        $buff = &xst_boot_conf_edit_image ($image, $buff, $lineno);
+        $image = undef;
+        last;
       }
     }
 
-    elsif (!$found) # We didn't find image, lets add it to the end of file.
-    {
-      push @$buff, "\n$name=$image{$name}\n";
-      delete $image{$name};
-    }
+    # Found image wasn't in our @images list: delete.
+    $buff = &xst_boot_conf_delete_image ($buff, $lineno) if ($found < 0);
+
+    # Search new image line.
+    $lineno = &xst_boot_conf_find_image ($buff, $lineno + 1);
   }
-    
+
+  # At this point @images contains only new images, let's add them.
+  foreach $image (@$images)
+  {
+    &xst_boot_conf_add_image ($image, $buff);
+  }
+
   &xst_file_buffer_clean ($buff);
   return &xst_file_buffer_save ($buff, $file);
 }
