@@ -1,3 +1,9 @@
+2001-10-05  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* xml.pl.in (xst_xml_print_request_end): don't use print_comment:
+	this breaks the protocol. Not even using xst_xml_print_string, to
+	avoid the terminator getting into the debugs or the archiver.
+
 2001-10-05  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_version): Fixed hacky way to find X binary, save it

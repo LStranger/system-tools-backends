@@ -77,9 +77,10 @@ sub xst_xml_print_begin
 }
 
 
+# The frontend expects exactly this string. Don not alter.
 sub xst_xml_print_request_end
 {
-  &xst_xml_print_comment ('XST: end of request');
+  print "\n<!-- XST: end of request -->\n";
 }
 
 
