@@ -1067,6 +1067,9 @@ sub xst_network_dialing_set
   }
 
   &xst_report_leave ();
+
+  chmod (0600, $file) if !$ret;
+  
   return $ret;
 }
 

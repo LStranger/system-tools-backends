@@ -1,3 +1,35 @@
+2001-09-13  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* ishare.pl.in: Too many changes to ennumerate: a general
+	rearrangement for a more intensive parse/replace table
+	usage. This will make the porting process much simpler.
+
+	* service.pl.in (xst_service_sysv_set_status_do): missing
+	my declaration.
+
+	* general.pl.in (xst_end_directive): The end directive sends
+	all the standard directive reports before terminating backend.
+	(xst_directive_run): removed exceptions for "end" directive.
+	(xst_terminate): finishes the backend, no reports.
+	(xst_run): call xst_terminate instead of running the end directive.
+
+2001-09-12  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* service.pl.in (xst_service_sysv_force_status): New function
+	that forces start/stop.
+
+	* file.pl.in (xst_file_exists): Return 1/0 depending on file
+	existance.
+
+	* network.pl.in (xst_network_dialing_set): Set /etc/wvdial.conf
+	or equivalent to 600 permissions: isp info was visible!
+
+	* ishare.pl.in (xst_ishare_conf_set): random paste stopped
+	ipchains service!
+
+	* file.pl.in (xst_file_backup_rotate_dirs): Just unlink dir 9
+	if it's a symbolic link.
+
 2001-09-12  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_probe): Improved. Reports now if probe is required.

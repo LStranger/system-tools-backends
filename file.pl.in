@@ -158,7 +158,17 @@ sub xst_file_backup_rotate_dirs
     my $i;
 
     $xst_file_backup_dir_rotation_was_made = 1;
-    &xst_file_rmtree ("$backup_tool_dir/9");
+    if (-e "$backup_tool_dir/9")
+    {
+      if (-s "$backup_tool_dir/9")
+      {
+        unlink ("$backup_tool_dir/9");
+      }
+      else
+      {
+        &xst_file_rmtree ("$backup_tool_dir/9");
+      }
+    }
 
     for ($i = 8; $i; $i--)
     {
@@ -206,6 +216,14 @@ sub xst_file_backup
   }
   
   &xst_report_leave ();
+}
+
+# Return 1/0 depending on file existance.
+sub xst_file_exists
+{
+  my ($file) = @_;
+
+  return (-f $file)? 1: 0;
 }
 
 sub xst_file_open_read_from_names

@@ -307,15 +307,19 @@ sub xst_service_sysv_restart
 }
 
 # Start or stop the service, depending on $active. Set
-# links accordingly.
-sub xst_service_sysv_set_status
+# links accordingly.  $force makes this function use
+# start/stop only, without considerations for restart.
+# Not to be called from parse/replace tables, due to last $force
+# param: use the following two functions instead.
+sub xst_service_sysv_set_status_do
 {
-  my ($priority, $service, $active) = @_;
+  my ($priority, $service, $active, $force) = @_;
+  my ($arg, $status);
 
   &xst_service_sysv_set_links ($priority, $service, $active);
   
   $status = &xst_service_sysv_get_status ($service);
-  if ($status)
+  if ($status && !$force)
   {
     # if it's already active and you want it active, restart.
     $arg = $active? "restart" : "stop";
@@ -327,6 +331,20 @@ sub xst_service_sysv_set_status
   }
 
   return &xst_service_sysv_run_initd_script ($service, $arg);
+}
+
+sub xst_service_sysv_set_status
+{
+  my ($priority, $service, $active) = @_;
+
+  return &xst_service_sysv_set_status_do ($priority, $service, $active, 0);
+}
+
+sub xst_service_sysv_force_status
+{
+  my ($priority, $service, $active) = @_;
+
+  return &xst_service_sysv_set_status_do ($priority, $service, $active, 1);
 }
 
 1;
