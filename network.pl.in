@@ -27,8 +27,8 @@
 
 use Socket;
 
-$SCRIPTSDIR = "___scriptsdir___";
-if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+$SCRIPTSDIR = "@scriptsdir@";
+if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
 {
   $SCRIPTSDIR = ".";
   $DOTIN = ".in";

@@ -26,8 +26,8 @@
 
 
 BEGIN {
-  $SCRIPTSDIR = "___scriptsdir___";
-  if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+  $SCRIPTSDIR = "@scriptsdir@";
+  if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
   {
       $SCRIPTSDIR = ".";
       $DOTIN = ".in";
@@ -44,7 +44,7 @@ BEGIN {
 # --- Tool information --- #
 
 $name = "package";
-$version = "___version___";
+$version = "@VERSION@";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
               "mandrake-7.2", "suse-7.0", "turbolinux-7.0");
 

@@ -2,14 +2,8 @@ AC_PREREQ(2.52)
 dnl ==============================================================
 dnl Process this file with autoconf to produce a configure script.
 dnl ==============================================================
-AC_INIT(setup-tools-backends,0.27.0, http://bugzilla.gnome.org/enter_bug.cgi?product=GNOME%20System%20Tools)
+AC_INIT(system-tools-backends,0.27.0, http://bugzilla.gnome.org/enter_bug.cgi?product=GNOME%20System%20Tools)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
-
-AC_ISC_POSIX
-AC_PROG_CC
-AM_PROG_CC_STDC
-AM_PROG_LIBTOOL
-AC_HEADER_STDC
 
 dnl ==============================================================
 dnl Set SCRIPTS_DIR & FILES_DIR
@@ -31,7 +25,51 @@ AC_SUBST(filesdir)
 
 AC_OUTPUT([
 Makefile
+system-tools-backends.pc
 files/Makefile
+boot-conf
+dhcpd-conf
+disks-conf
+display-conf
+font-conf
+hardware-conf
+internetsharing-conf
+memory-conf
+mouse-conf
+network-conf
+package-conf
+print-conf
+services-conf
+shares-conf
+time-conf
+users-conf
+boot-grub.pl
+boot-lilo.pl
+boot.pl
+debug.pl
+dhcpd.pl
+file.pl
+filesys.pl
+font.pl
+general.pl
+gettext.pl
+ishare.pl
+media.pl
+network.pl
+parse.pl
+partition.pl
+platform.pl
+print.pl
+removable-media.pl
+replace.pl
+report.pl
+service-list.pl
+service.pl
+share.pl
+tokenizer.pl
+util.pl
+xml.pl
+x.pl
 ])
 
 

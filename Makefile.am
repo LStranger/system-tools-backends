@@ -1,72 +1,63 @@
 SUBDIRS = files
 
-BACKENDSBODY = \
-	dhcpd-conf.in \
-	disks-conf.in \
-	memory-conf.in \
-	network-conf.in \
-	services-conf.in \
-	shares-conf.in \
-	time-conf.in \
-	users-conf.in \
-	boot-conf.in \
-	print-conf.in \
-	mouse-conf.in \
-	internetsharing-conf.in \
-	package-conf.in \
-	display-conf.in \
-	font-conf.in
+backends = \
+	dhcpd-conf \
+	disks-conf \
+	memory-conf \
+	network-conf \
+	services-conf \
+	shares-conf \
+	time-conf \
+	users-conf \
+	boot-conf \
+	print-conf \
+	mouse-conf \
+	internetsharing-conf \
+	package-conf \
+	display-conf \
+	font-conf
 
-PERLBODY = \
-	boot.pl.in      \
-	boot-grub.pl.in \
-	boot-lilo.pl.in \
-	dhcpd.pl.in     \
-	debug.pl.in     \
-	file.pl.in      \
-	filesys.pl.in   \
-	font.pl.in      \
-	general.pl.in   \
-	gettext.pl.in   \
-	ishare.pl.in    \
-	media.pl.in     \
-	network.pl.in   \
-	parse.pl.in     \
-	partition.pl.in \
-	platform.pl.in  \
-	print.pl.in     \
-	replace.pl.in   \
-	report.pl.in    \
-	service.pl.in   \
-	service-list.pl.in	\
-	share.pl.in     \
-	tokenizer.pl.in \
-	util.pl.in      \
-	x.pl.in         \
-	xml.pl.in
-
-perl_libs = $(PERLBODY:.pl.in=.pl)
-
-backends = $(BACKENDSBODY:.in=)
+perl_libs = \
+	boot.pl      \
+	boot-grub.pl \
+	boot-lilo.pl \
+	dhcpd.pl     \
+	debug.pl     \
+	file.pl      \
+	filesys.pl   \
+	font.pl      \
+	general.pl   \
+	gettext.pl   \
+	ishare.pl    \
+	media.pl     \
+	network.pl   \
+	parse.pl     \
+	partition.pl \
+	platform.pl  \
+	print.pl     \
+	replace.pl   \
+	report.pl    \
+	service.pl   \
+	service-list.pl	\
+	share.pl     \
+	tokenizer.pl \
+	util.pl      \
+	x.pl         \
+	xml.pl
 
 scripts_SCRIPTS = $(backends) $(perl_libs) guess_system.sh type1inst
 
 EXTRA_DIST = \
-	$(PERLBODY) \
-	$(BACKENDSBODY) \
+	system-tools-backends.pc \
 	guess_system.sh \
-	type1inst		 \
+	type1inst       \
 	README \
 	AUTHORS \
 	NEWS
 
 CLEANFILES = $(backends) $(perl_libs)
 
-$(backends): %-conf: %-conf.in
-	sed 's#___scriptsdir___#$(scriptsdir)#;s#___version___#$(VERSION)#;s#___filesdir___#$(filesdir)#;s#___bindir___#$(bindir)#' < $< > $@
-	chmod +x $@
 
-$(perl_libs): %.pl: %.pl.in
-	sed 's#___scriptsdir___#$(scriptsdir)#;s#___version___#$(VERSION)#;s#___filesdir___#$(filesdir)#;s#___bindir___#$(bindir)#' < $< > $@
-
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = system-tools-backends.pc
 

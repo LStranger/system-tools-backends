@@ -31,8 +31,8 @@
 #
 
 BEGIN {
-  $SCRIPTSDIR = "___scriptsdir___";
-  if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+  $SCRIPTSDIR = "@scriptsdir@";
+  if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
   {
       $SCRIPTSDIR = ".";
       $DOTIN = ".in";
@@ -51,7 +51,7 @@ use POSIX qw(tmpnam);
 # --- Tool information --- #
 
 $name = "display";
-$version = "___version___";
+$version = "@VERSION@";
 @platforms = qw(redhat-6.2 redhat-7.0 redhat-7.1 redhat-7.2
                 
                 mandrake-7.2 mandrake-8.0

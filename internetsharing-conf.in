@@ -26,8 +26,8 @@
 
 
 BEGIN {
-  $SCRIPTSDIR = "___scriptsdir___";
-  if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+  $SCRIPTSDIR = "@scriptsdir@";
+  if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
   {
       $SCRIPTSDIR = ".";
       $DOTIN = ".in";
@@ -45,7 +45,7 @@ BEGIN {
 # --- Tool information --- #
 
 $name = "internetsharing";
-$version = "___version___";
+$version = "@VERSION@";
 @platforms = ("redhat-7.0", "redhat-7.1", "redhat-7.2",
               
               "mandrake-7.2",

@@ -28,8 +28,8 @@
 # --- Utilities for strings, arrays and other data structures --- #
 
 
-$SCRIPTSDIR = "___scriptsdir___";
-if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+$SCRIPTSDIR = "@scriptsdir@";
+if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
 {
     $SCRIPTSDIR = ".";
     $DOTIN = ".in";

@@ -24,8 +24,8 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-$SCRIPTSDIR = "___scriptsdir___";
-if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+$SCRIPTSDIR = "@scriptsdir@";
+if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
 {
     $SCRIPTSDIR = ".";
     $DOTIN = ".in";

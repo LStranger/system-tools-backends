@@ -36,8 +36,8 @@
 # /sbin/lilo
 
 BEGIN {
-  $SCRIPTSDIR = "___scriptsdir___";
-  if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+  $SCRIPTSDIR = "@scriptsdir@";
+  if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
   {
       $SCRIPTSDIR = ".";
       $DOTIN = ".in";
@@ -58,7 +58,7 @@ BEGIN {
 # --- Tool information --- #
 
 $name = "boot";
-$version = "___version___";
+$version = "@VERSION@";
 
 $description =<<"end_of_description;";
        Configures Boot manager (LILO and GRUB at the moment).

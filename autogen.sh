@@ -1,6 +1,13 @@
 #!/bin/sh
 # Run this to generate all the initial makefiles, etc.
 
+if [[ x$srcdir -eq x ]]
+then
+       srcdir=.
+else
+       srcdir=$srcdir
+fi
+
 DIE=0
 
 if [ -n "$GNOME2_PATH" ]; then

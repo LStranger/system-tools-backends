@@ -26,8 +26,8 @@ use File::Path;
 use File::Copy;
 use Carp;
 
-$SCRIPTSDIR = "___scriptsdir___";
-if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+$SCRIPTSDIR = "@scriptsdir@";
+if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
 {
     $SCRIPTSDIR = ".";
     $DOTIN = ".in";

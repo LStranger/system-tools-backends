@@ -1,3 +1,13 @@
+2003-09-13  Eduardo Garcia Cebollero <kiwnix@yahoo.es>
+
+	* *.pl.in, *-conf.in, configure.in, Makefile.am, Makefile.in:
+	  [build_system_switch] Update the sustitution system used in the
+	  Makefiles for using Autoconf.
+	* system-tools-backends.pc.in : Added file (independant info for
+	  use if you want to know data about the backends)
+	* autogen.sh: made it able to compile the backends independently of
+	  the frontends
+
 2003-09-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* users-conf.in (del_user): made it not to delete the deleted user's

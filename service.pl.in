@@ -27,9 +27,9 @@ $rcd_path;
 $initd_path;
 $relative_path;
 
-$SCRIPTSDIR = "___scriptsdir___";
-$FILESDIR = "___filesdir___";
-if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+$SCRIPTSDIR = "@scriptsdir@";
+$FILESDIR = "@filesdir@";
+if ($SCRIPTSDIR =~ /^@scriptsdir[@]/)
 {
     $FILESDIR = "files";
     $SCRIPTSDIR = ".";
