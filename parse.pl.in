@@ -1302,7 +1302,7 @@ sub xst_parse_xml
   my ($file, $varpath, $property) = @_;
   my ($tree, $branch, @path);
 
-  $branch = $tree = &xst_xml_scan ($file);
+  $branch = $tree = &xst_xml_model_scan ($file);
   @path = split /\//, $varpath;
 
   for $elem (@path)

@@ -272,6 +272,79 @@ sub xst_xml_print_container # (name, @strings)
   }
 } 
 
+# --- XML printing from in-memory model --- #
+
+sub xst_xml_model_print_attributes
+{
+  my ($tree) = @_;
+  my ($attrs, $string);
+
+  $attrs = @$tree [0];
+
+  for $attr (keys %$attrs)
+  {
+    $string .= " " . $attr . "=\"" . $$attrs{$attr} . "\"";
+  }
+
+  return $string;
+}
+
+sub xst_xml_model_print_recurse
+{
+  my ($tree, $indent) = @_;
+  my ($string);
+
+  my @children = @$tree;
+  shift @children;  # Attributes
+
+  while (@children)
+  {
+    my $branch = @children [1];
+
+    if (@children [0] eq "__unparsed__")
+    {
+      $string .= "<" . @children [1] . ">";
+    }
+    elsif (@children [0] eq "0")
+    {
+      $string .= @children [1];
+    }
+    elsif (@$branch == 1)  # Empty tag.
+    {
+      $string .= "<" . @children [0] . &xst_xml_model_print_attributes ($branch) . "/>";
+    }
+    else
+    {
+      $string .= "<" . @children [0] . &xst_xml_model_print_attributes ($branch) . ">";
+      $string .= &xst_xml_model_print_recurse ($branch);
+      $string .= "</" . @children [0] . ">";
+    }
+
+    shift @children;
+    shift @children;
+  }
+
+#  if ($branch)
+#  {
+#    return &xst_xml_get_attribute ($branch, $property) if $property ne "";
+#    return &xst_xml_get_pcdata ($branch);
+#  }
+
+  return $string;
+}
+
+sub xst_xml_model_print
+{
+  my ($tree) = @_;
+  my ($string);
+
+  $string = &xst_xml_model_print_recurse ($tree);
+  chomp $string;
+  $string .= "\n";
+
+  return $string;
+}
+
 # --- XML scanning --- #
 
 
@@ -282,7 +355,7 @@ sub xst_xml_scan_make_kid_array
   my %hash = {};
   my @sublist;
 
-  @attr = $_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z0-9_-]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z0-9_-]+)/g;
+  @attr = $_[0] =~ /[^\t\n\r ]+[\t\n\r ]*([a-zA-Z0-9_-]+)[ \t\n\r]*\=[ \t\n\r\"\']*([a-zA-Z0-9_\\\/-]+)/g;
   %hash = @attr;
 
   push (@sublist, \%hash);
@@ -377,10 +450,83 @@ sub xst_xml_scan  # (file) If no file specified, reads stdin.
 
   @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
   $tree = &xst_xml_scan_recurse;
-    
+
   return $tree;
 }
 
+# XML scanning that preserves more exact attributes of the scanned XML.
+
+sub xst_xml_model_scan_recurse
+{
+  my @list;
+  if (@_) { @list = $_[0]->[0]; }
+  
+  while (@xst_xml_scan_list)
+  {
+    $el = $xst_xml_scan_list[0]; shift @xst_xml_scan_list;
+
+    if ($el eq "")  # Empty strings.
+    {
+      next;
+    }
+    elsif ($el =~ /^\<[!?].*\>$/s)  # PI and DTD.
+    {
+      $el =~ /^\<([^\>]+)\>$/s;
+      push (@list, "__unparsed__");
+      push (@list, $1);
+    }
+    elsif ($el =~ /^\<.*\/\>$/s)  # Empty.
+    {
+      $el =~ /^\<([a-zA-Z0-9_-]+).*\/\>$/s;
+      push (@list, $1);
+      push (@list, &xst_xml_scan_make_kid_array ($el));
+    }
+    elsif ($el =~ /^\<\/.*\>$/s)  # End.
+    {
+      last;
+    }
+    elsif ($el =~ /^\<.*\>$/s)  # Start.
+    {
+      $el =~ /^\<([a-zA-Z0-9_-]+).*\>$/s;
+      push (@list, $1);
+      $sublist = &xst_xml_scan_make_kid_array ($el);
+      push (@list, &xst_xml_model_scan_recurse ($sublist));
+      next;
+    }
+    elsif ($el ne "")  # PCDATA.
+    {
+      push (@list, 0);
+      push (@list, "$el");
+    }
+  }
+
+  return \@list;
+}
+
+
+sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
+{
+  my ($file) = @_;
+  my ($doc, @tree);
+
+  $file = $xst_input_file if $file eq undef;
+
+  if ($file)
+  {
+    $doc = &xst_xml_read_file ($file);
+  }
+  else
+  {
+    $doc = &xst_xml_read_stdin ();
+  }
+
+  @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)/mg); # pcdata, tag, pcdata, tag, ...
+  $tree = &xst_xml_model_scan_recurse;
+
+  return $tree;
+}
+
+# Quote/unquote.
 
 @xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"', "&amp;", '&' );
 

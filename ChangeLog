@@ -1,3 +1,17 @@
+2001-07-11  Hans Petter Jansson  <hpj@ximian.com>
+
+	This implements an exact internal representation of XML, which can
+	be scanned to and printed out from.
+
+	* xml.pl.in (xst_xml_model_print_attributes): Implement.
+	  (xst_xml_model_print_recurse): Implement.
+	  (xst_xml_model_print): Implement.
+	  (xst_xml_scan_make_kid_array): Accept more characters in attributes.
+	  (xst_xml_model_scan_recurse): Implement.
+	  (xst_xml_model_scan): Implement in full.
+
+	* parse.pl.in (xst_parse_xml): Use xst_xml_model_scan().
+
 2001-07-11  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_get_replace_table): Typos.
