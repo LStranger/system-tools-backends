@@ -36,8 +36,8 @@
 
 my $Usage =<<"End_of_Usage;";
 Usage: memory-conf <--get | --set | --filter | --help>
-                 [--prefix <location>] [--disable-immediate]
-                 [--verbose] [progress]
+                   [--prefix <location>] [--disable-immediate]
+                   [--verbose] [--progress]
 
        Major operations (specify one of these):
 
@@ -81,7 +81,6 @@ Usage: memory-conf <--get | --set | --filter | --help>
                      progresses, followed by a newline after the last dot.
                      The dots generated can be more or less than the
                      number indicated on the first line.
-
 
 End_of_Usage;
 
