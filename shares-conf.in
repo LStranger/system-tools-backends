@@ -55,6 +55,8 @@ $version = "0.1.0";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
               "mandrake-7.2", "debian-2.2", "debian-woody", "suse-7.0");
 
+#              "freebsd-4", "freebsd-5");
+
 $description =<<"end_of_description;";
        Configures network shares for import or export.
 end_of_description;
@@ -72,7 +74,9 @@ $platmap =
   "debian-2.2"   => "redhat-7.0",
   "debian-woody" => "redhat-7.0",
   "mandrake-7.2" => "redhat-7.0",
-  "suse-7.0"     => "redhat-6.2"
+  "suse-7.0"     => "redhat-6.2",
+  "freebsd-4"    => "freebsd-4",
+  "freebsd-5"    => "freebsd-4"
 };
 
 $filemap =
@@ -91,6 +95,13 @@ $filemap =
     "mtab"     => "/etc/mtab",
     "exports"  => "/etc/exports",
     "smb.conf" => "/etc/samba/smb.conf"
+  },
+
+  "freebsd-4" =>
+  {
+    "fstab"    => "/etc/fstab",
+    "exports"  => "/etc/exports",
+    "smb.conf" => "/usr/local/etc/smb.conf"
   }
 };
 

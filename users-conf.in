@@ -61,6 +61,8 @@ $version = "0.1.0";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
               "mandrake-7.2", "debian-2.2", "debian-woody", "suse-7.0");
 
+#, "freebsd-4", "freebsd-5");
+
 $description =<<"end_of_description;";
        Manages system users.
 end_of_description;
@@ -71,11 +73,11 @@ end_of_description;
 # They are tried in array order. First found = used.
 
 @passwd_names =     ( "/etc/passwd" );
-@shadow_names =     ( "/etc/shadow" );
+@shadow_names =     ( "/etc/shadow", "/etc/master.passwd" );
 @group_names =      ( "/etc/group" );
-@login_defs_names = ( "/etc/login.defs" );
+@login_defs_names = ( "/etc/login.defs", "/etc/adduser.conf" );
 @shell_names =      ( "/etc/shells" );
-@skel_dir =         ( "/etc/skel" );
+@skel_dir =         ( "/usr/share/skel", "/etc/skel" );
 
 # Where are the tools?
 
@@ -286,7 +288,10 @@ sub read_passwd_shadow
   while (<FILE>)
   {
     chomp;
+    # FreeBSD allows comments in the passwd file. */
+    next if ($_ =~ /\#.*/);
     $_ = &xst_xml_unquote ($_);
+    
     @line = split ':', $_, -1;
     unshift @line, sprintf ("%06d", $i);
     $copy = [@line];
@@ -308,6 +313,8 @@ sub read_passwd_shadow
     while (<FILE>)
     {
       chomp;
+      # FreeBSD allows comments in the shadow passwd file. */
+      next if ($_ =~ /\#.*/);
       @line = split ':', $_, -1;
       push @line, 1;
       $login = shift @line;

@@ -655,6 +655,58 @@ sub xst_filesys_fstab_parse  # filename
   return $table;
 }
 
+# Get all instances from 'mount -p' output. Returns a filesys_table.
+sub xst_filesys_freebsd_mount_cmd_parse
+{
+  my ($table, $mount_cmd);
+  my (@output, $l);
+
+  $table = &xst_filesys_table_new ();
+  $mount_cmd = &xst_file_locate_tool ("mount");
+  @output = (readpipe ("$mount_cmd -p"));
+
+  foreach $l (@output)
+  {
+    # Columns are separated by any number of spaces/tabs.
+    chomp $l;
+    my @line = split (/[ \t]+/, $l);
+
+    # Each line is in the following format:
+    # <device> <mount point> <filesystem> <options> <dump flag> <fsck priority>
+    next if ($#line < 5);
+    my ($device, $point, $fs, $options, $dump, $fsck) = @line;
+
+    my $fsi = &xst_filesys_info_new ();
+    &xst_filesys_entry_identify_info ($fsi, $device, $fs);
+
+    # <device> expands to "<device node>" (unlike fstab, which has dev|label|uuid).
+    # <mount point>, <fs>, <dump flag> and <fsck priority> are verbatim.
+    &xst_filesys_info_set_device   ($fsi, $device);
+    &xst_filesys_info_set_point    ($fsi, $point);
+    &xst_filesys_info_set_fs       ($fsi, $fs);
+    &xst_filesys_info_set_dump     ($fsi, $dump);
+    &xst_filesys_info_set_priority ($fsi, $fsck);
+
+    # <options> expands to "<option>[,<option>[,...]]".
+    my @optlist = split (/,/, $options);
+
+    foreach $option (@optlist)
+    {
+      # <option> expands to "<key>[=<value>]". <key> == "defaults" is ignored.
+      my ($key, $value) = split /[=]/, $option;
+      next if ($key eq "" || $key eq "defaults");
+
+      $value = " " if ($value eq "" && $option =~ /=/);
+      &xst_filesys_info_set_option ($fsi, $key, $value);
+    }
+
+    # Link it in.
+    &xst_filesys_table_add ($table, $fsi);
+  }
+
+  return $table;
+}
+
 # Get all instances from mtab-style file. Returns a filesys_table.
 
 sub xst_filesys_mtab_parse  # filename

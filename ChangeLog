@@ -1,3 +1,19 @@
+2001-05-20  Theo van Klaveren <t.vanklaveren@student.utwente.nl>
+
+	* filesys.pl.in (xst_filesys_mount_cmd_parse): New function,
+	parses output from 'mount -p' on FreeBSD.
+
+	* platform.pl.in (check_freebsd): New function, double-checks
+	FreeBSD version by querying the sysctl kern.version.
+	(xst_platform_guess): Also check for FreeBSD.
+
+	* shares-conf.in: Add FreeBSD to supported platforms.
+
+	* users-conf.in: Add FreeBSD to supported platforms. Add paths
+	for shadow_names, login_defs_names and skel_dir on FreeBSD.
+	(read_passwd_shadow): Munge shell comments from passwd and
+	shadow_passwd.
+
 2001-05-21  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* xml.pl.in (xst_xml_scan): Use new debug_print_log func.

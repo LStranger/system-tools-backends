@@ -153,6 +153,22 @@ sub check_linuxppc
   return -1;
 }
 
+sub check_freebsd
+{
+  my ($sysctl_cmd, @output);
+
+  $sysctl_cmd = &xst_file_locate_tool ("sysctl");
+  @output = (readpipe("$sysctl_cmd -n kern.version"));
+  foreach (@output)
+  {
+    chomp;
+    if (/^FreeBSD\s(\S+)\.\S+.*/)
+    {
+      return "freebsd-$1";
+    }
+  }
+  return -1;
+}
 
 sub xst_platform_guess
 {
@@ -184,7 +200,8 @@ sub xst_platform_guess
   chomp ($xst_system = <FILE>);
   close FILE;
 
-  # if the system is linux, &set $xst_dist and $xst_dist_version
+  # set $xst_dist and $xst_dist_version
+  
   if ($xst_system =~ /linux/)
   {
     # Red Hat check must run after Mandrake
@@ -200,6 +217,19 @@ sub xst_platform_guess
         $xst_dist = $dist;
         return;
       }
+    }
+
+    $xst_dist = "unknown";
+  }
+
+  if ($xst_system =~ /freebsdelf/)
+  {
+    my $dist;
+
+    $dist = &check_freebsd ();
+    if ($dist != -1) {
+      $xst_dist = $dist;
+      return;
     }
 
     $xst_dist = "unknown";
