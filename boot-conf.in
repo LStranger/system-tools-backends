@@ -158,7 +158,7 @@ sub xml_print_arrays
 sub xml_print_globals
 {
   my $h = $_[0];
-  my @scalar_keys = (timeout, default);
+  my @scalar_keys = (prompt, timeout, default, delay, root);
 
   &xml_print_scalars ($h, @scalar_keys);
 }
@@ -274,6 +274,9 @@ sub boot_conf_get
 	    fn => {
 		 LILO_CONF => "/etc/lilo.conf" },
 	    table => [
+			    [ prompt,  \&xst_parse_sh, LILO_CONF, prompt ],
+			    [ root,    \&xst_parse_sh, LILO_CONF, root ],
+			    [ delay,   \&xst_parse_sh, LILO_CONF, delay ],
 			    [ timeout, \&xst_parse_sh, LILO_CONF, timeout ],
 			    [ default, \&xst_parse_sh, LILO_CONF, default ],
 			    [ image,   \&boot_conf_get_images, LILO_CONF, image ],
