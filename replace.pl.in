@@ -1277,20 +1277,78 @@ sub xst_replace_xml_attribute_with_type
   return &xst_xml_model_save ($model, $file, $compressed);
 }
 
+sub xst_replace_alchemist_ensure_list_types
+{
+  my ($model, $varpath, $setpath) = @_;
+  my ($branch, @path);
+
+  $branch = &xst_xml_model_find ($model, $varpath);
+  @path   = split /\//, $setpath;
+
+  # NOTE: The following could be done with a depth-iterator callback from a func
+  # similar to xst_xml_model_find ().
+
+  for $elem (@path)
+  {
+    next if ($elem eq "");
+    my @children = @$branch;
+    shift @children;  # Attributes
+    $branch = undef;
+
+    while (@children)
+    {
+      if (@children [0] eq $elem)
+      {
+        shift @children;
+        $branch = shift @children;
+        &xst_xml_model_set_attribute ($branch, "TYPE", "LIST");
+        last;
+      }
+
+      shift @children;
+      shift @children;
+    }
+
+    last if ($branch == undef);
+  }
+}
+
 sub xst_replace_alchemist
 {
   my ($file, $varpath, $type, $value) = @_;
+  my ($fullpath, $model, $branch, $fd, $compressed);
 
-  $varpath = "/adm_context/datatree/" . $varpath;
-  return &xst_replace_xml_attribute_with_type ($file, $varpath, "VALUE", $type, $value);
+  $fullpath = "/adm_context/datatree/" . $varpath;
+  ($model, $compressed) = &xst_xml_model_scan ($file);
+  $branch = &xst_xml_model_ensure ($model, $fullpath);
+  &xst_replace_alchemist_ensure_list_types ($model, "/adm_context/datatree/", $varpath);
+
+  &xst_xml_model_set_attribute ($branch, "VALUE", $value);
+  &xst_xml_model_set_attribute ($branch, "TYPE",  $type);
+
+  return &xst_xml_model_save ($model, $file, $compressed);
 }
 
 sub xst_replace_alchemist_print
 {
   my ($file, $printer, $varpath, $type, $value) = @_;
+  my ($fullpath, $model, $branch, $fd, $compressed);
 
-  $varpath = "printconf/print_queues/" . $printer . "/" . $varpath;
-  return &xst_replace_alchemist ($file, $varpath, $type, $value);
+  $fullpath = "/adm_context/datatree/printconf/print_queues/" . $printer . "/" . $varpath;
+  ($model, $compressed) = &xst_xml_model_scan ($file);
+
+  $branch = &xst_xml_model_ensure ($model, $fullpath);
+
+  &xst_replace_alchemist_ensure_list_types ($model, "/adm_context/datatree/",
+                                            "printconf/print_queues/" . $printer . "/" . $varpath);
+
+  &xst_xml_model_set_attribute ($branch, "VALUE", $value);
+  &xst_xml_model_set_attribute ($branch, "TYPE",  $type);
+
+  $branch = &xst_xml_model_find ($model, "/adm_context/datatree/printconf/print_queues/" . $printer);
+  &xst_xml_model_set_attribute ($branch, "ATOMIC", "TRUE");
+
+  return &xst_xml_model_save ($model, $file, $compressed);
 }
 
 # This could be split up.
@@ -1302,6 +1360,9 @@ sub xst_replace_alchemist_print_option
   ($model, $compressed) = &xst_xml_model_scan ($file);
   $branch = &xst_xml_model_ensure ($model, "/adm_context/datatree/printconf/print_queues/" . $printer .
                                    "/filter_data/foomatic_defaults");
+  &xst_replace_alchemist_ensure_list_types ($model, "/adm_context/datatree/", "printconf/print_queues/" .
+                                            $printer . "/filter_data/foomatic_defaults");
+  &xst_xml_model_set_attribute ($branch, "ANONYMOUS", "TRUE");
 
   # See if option is already defined.
 

@@ -1,5 +1,13 @@
 2001-07-20  Hans Petter Jansson  <hpj@ximian.com>
 
+	* replace.pl.in (xst_replace_alchemist_ensure_list_types): Implement.
+	  (xst_replace_alchemist): Set required alchemist branch attributes.
+	  (xst_replace_alchemist_print): Set required alchemist branch attributes.
+	  (xst_replace_alchemist_print_option): Set required alchemist branch
+	  attributes.
+
+2001-07-20  Hans Petter Jansson  <hpj@ximian.com>
+
 	* xml.pl.in (xst_xml_model_save): Implement.
 
 	* replace.pl.in (xst_replace_xml_pcdata): Use xst_xml_model_save ().
