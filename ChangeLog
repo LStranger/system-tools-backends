@@ -1,3 +1,10 @@
+2001-05-30  Tambet Ingo  <tambet@ximian.com>
+
+	* boot.pl.in (xst_boot_set_global_kw): Made it sane.
+	(xst_boot_set_global): ditto.
+
+	* file.pl.in (xst_file_buffer_save): Treat $buffer as scalar only if it is scalar.
+
 2001-05-29  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_set_ppp_options_re): Respect

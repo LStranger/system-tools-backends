@@ -390,7 +390,8 @@ sub xst_file_buffer_save
   if (@$buffer < 1)
   {
     # We want to write single line.
-    print $fd $buffer;
+    # Print only if $buffer is NOT a reference (it'll print ARRAY(0x412493) for example).
+    print $fd $buffer if (!ref ($buffer));
   }
 
   else

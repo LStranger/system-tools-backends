@@ -132,33 +132,44 @@ sub xst_boot_set_global_kw
 {
   my ($file, $key) = @_;
   my ($buff, $i, $found);
-
+  my $lineno = 0;
+  
   $buff = &xst_file_buffer_load ($file);
   $found = 0;
 
   foreach $i (@$buff)
   {
-    $pre_space = $post_comment = "";
-    
-    chomp $i;
-    $pre_space = $1 if $i =~ s/^([ \t]+)//;
-    $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
-
-    if ($i =~ /^(image|other)/)
+    if (&xst_ignore_line ($i))
     {
-      $i = $key . "\n" . $pre_space . $i . $post_comment . "\n";
+      $lineno++;
+      next;
+    }
+
+    if ($i =~ /^[ \t]*$key/)
+    {
+      $found++;
       last;
     }
-    
-    if ($i ne "")
+
+    if ($i =~ /^[ \t]*(image|other)/)
     {
-      $found = 1 if ($key eq $i);
+      $lineno--; # "pop" it back
+      last;
     }
-
-    $i = $pre_space . $i . $post_comment . "\n";
-
-    last if $found;
+    $lineno++;
   }
+
+  # Not found, let's add
+  if (!$found)
+  {
+    # pop back empty lines
+    while ($lineno > 0 && $$buff[$lineno] =~ /^\s*$/)
+    {
+      $lineno--;
+    }
+    
+    $$buff[$lineno] .= $key . "\n";
+  } 
   
   &xst_file_buffer_clean ($buff);
   return &xst_file_buffer_save ($buff, $file);
@@ -169,6 +180,7 @@ sub xst_boot_set_global
 {
   my ($file, $key, $val) = @_;
   my ($buff, $i, $found);
+  my $lineno = 0;
 
   # quote globals with spaces if neccecary (append=mem=128 param2=122)
   if ($val =~ /^\S+\s+\S+/ && !($val =~ /^\".+\"/)) {
@@ -180,30 +192,44 @@ sub xst_boot_set_global
 
   foreach $i (@$buff)
   {
-    $pre_space = $post_comment = "";
-    
-    chomp $i;
-    $pre_space = $1 if $i =~ s/^([ \t]+)//;
-    $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
-
-    if ($i =~ /^(image|other)/)
+    if (&xst_ignore_line ($i))
     {
-      $i = "$key=$val\n" . $pre_space . $i . $post_comment . "\n";
+      $lineno++;
+      next;
+    }
+
+    if ($i =~ /^[ \t]*(image|other)/)
+    {
+      $lineno--;
       last;
     }
     
-    if ($i ne "")
+    if ($i =~ /^[ \t]*$key([ \t]*=[ \t]*)/)
     {
-      if ($i =~ /$key([ \t]*=[ \t]*)/)
-      {
-        $i = $key . $1 . $val;
-        $found = 1;
-      }
+      $found++;
+      $op = $1;
+
+      chomp $i;
+      
+      $pre_space = $1 if $i =~ s/^([ \t]+)//;
+      $post_comment = $1 if $i =~ s/([ \t]*\#.*)//;
+
+      $i = $pre_space . $key . $op . $val . $post_comment . "\n";
+      last;
     }
+    
+    $lineno++;
+  }
 
-    $i = $pre_space . $i . $post_comment . "\n";
-
-    last if $found;
+  if (!$found)
+  {
+    # pop back empty lines
+    while ($lineno > 0 && $$buff[$lineno] =~ /^\s*$/)
+    {
+      $lineno--;
+    }
+    
+    $$buff[$lineno] .= $key . " = " . $val . "\n";
   }
   
   &xst_file_buffer_clean ($buff);
@@ -414,6 +440,8 @@ sub xst_boot_conf_set_images
   my ($file, $key, $images) = @_;
   my ($buff, $lineno, $found, $image);
 
+  return if ($#$images <= 0);
+  
   $buff = &xst_file_buffer_load ($file);
   &xst_file_buffer_join_lines ($buff);
 
@@ -522,8 +550,8 @@ sub xst_boot_conf_set
 	  );
 
   my $table = $dist_map{$xst_dist};
-  return undef if !$table;
-
+  return undef if !$table
+;
   return &xst_boot_replace_from_table ($ {$dist_tables{$table}}{"fn"},
 						  $ {$dist_tables{$table}}{"table"}, $values_hash);
 
