@@ -6,9 +6,7 @@ nameresolution-conf \
 networking-conf \
 shares-conf \
 time-conf \
-users2-conf
-##users-conf
-
+users-conf
 
 scripts_SCRIPTS = $(backends) be.pl
 
