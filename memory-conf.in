@@ -131,7 +131,10 @@ sub xml_parse
     
     return($tree);
   }
-	
+
+
+# <memory>...</memory>
+
 sub xml_parse_memory
   {
     my $tree = $_[0];

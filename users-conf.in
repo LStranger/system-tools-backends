@@ -579,7 +579,7 @@ sub xml_parse_login_defs
 	{
 		if ($login_defs_prop_map{$$tree[0]} ne undef)
 		{
-		  $login_defs{$$tree[0]} = $$tree->[1][2];
+		  $login_defs{$$tree[0]} = $$tree[1][2];
 		}
 		elsif ($be_verbose)
 		{
@@ -641,7 +641,7 @@ sub xml_parse_user
 	{
 		if ($users_prop_map{$$tree[0]} ne undef)
 		{
-		  $line[$users_prop_map{$$tree[0]}] = $$tree->[1][2];
+		  $line[$users_prop_map{$$tree[0]}] = $$tree[1][2];
 		}
 		elsif ($be_verbose)
 		{
@@ -686,8 +686,8 @@ sub xml_parse_group
 	{
 		if ($groups_prop_map{$$tree[0]} ne undef)
 		{
-		  if ($$tree[0] eq "users") { $line[$groups_prop_map{$$tree[0]}] = $$tree->[1]; }
-			else { $line[$groups_prop_map{$$tree[0]}] = $$tree->[1][2]; }
+		  if ($$tree[0] eq "users") { $line[$groups_prop_map{$$tree[0]}] = $$tree[1]; }
+			else { $line[$groups_prop_map{$$tree[0]}] = $$tree[1][2]; }
 		}
 		elsif ($be_verbose)
 		{
@@ -703,7 +703,7 @@ sub xml_parse_group
 	shift @$a;
 	while (@$a) {
 	  if ($$a[0] eq "user") {
-		  push @u, $$a->[1][2];
+		  push @u, $$a[1][2];
 		}
 		elsif ($be_verbose)
 		{
@@ -760,7 +760,7 @@ sub xml_print
 	  &be_xml_print ("<user>\n");
 		&be_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  if ($i->[$j] ne "") { &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $i->[$j] . "</" . $users_prop_map {$j} . ">\n"); }
+		  if ($$i[$j] ne "") { &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $$i[$j] . "</" . $users_prop_map {$j} . ">\n"); }
 		}
 		&be_xml_leave ();
 		&be_xml_print ("</user>\n");
@@ -785,11 +785,11 @@ sub xml_print
 	  &be_xml_print ("<group>\n");
 		&be_xml_enter ();
 		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
-			&be_xml_print ("<" . $groups_prop_map{$j} . ">" . $i->[$j] . "</" . $groups_prop_map {$j} . ">\n");
+			&be_xml_print ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
 		}
 		&be_xml_print ("<users>\n");
 		&be_xml_enter ();
-		$k = $i->[$groups_prop_map{"users"}];
+		$k = $$i[$groups_prop_map{"users"}];
 		foreach $j (@$k)
 		{
 			&be_xml_print ("<user>$j</user>\n");
