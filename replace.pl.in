@@ -389,6 +389,28 @@ sub gst_replace_sh_join
                           join (&gst_replace_regexp_to_separator ($re), @$value));
 }
 
+# replace a regexp with $value
+sub gst_replace_sh_re
+{
+  my ($file, $key, $re, $value) = @_;
+  my ($val);
+
+  $val = &gst_parse_sh ($file, $key);
+
+  if ($val =~ /$re/)
+  {
+    $val =~ s/$re/$value/;
+  }
+  else
+  {
+    $val .= $value;
+  }
+
+  $val = '"' . $val . '"' if ($val !~ /^\".*\"$/);
+
+  return &gst_replace_split ($file, $key, "[ \t]*=[ \t]*", $val)
+}
+
 # Quick trick to set a keyword $key in $file. (think /etc/lilo.conf keywords).
 sub gst_replace_kw
 {

@@ -625,6 +625,18 @@ sub gst_parse_sh_export_bool
   return (&gst_util_read_boolean ($ret)? 1: 0);
 }
 
+# Same, but accepting a regexp and returning the value between the paren operator
+sub gst_parse_sh_re
+{
+  my ($file, $key, $re) = @_;
+  my $ret;
+
+  $ret = &gst_parse_sh ($file, $key);
+  $ret =~ /$re/i;
+  return $1;
+}
+
+
 # Search for $keyword in $file, delimited by $re (default " ") or EOL.
 # If keyword exists, return 1, else 0.
 sub gst_parse_kw

@@ -1,5 +1,11 @@
 2004-03-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* network.pl.in, network-conf.in: added initial support for gentoo
+	* parse.pl.in (gst_parse_sh_re): added
+	* replace.pl.in (gst_replace_sh_re): added
+
+2004-03-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* network.pl.in (gst_network_slackware91_ifaces_get_existing): little
 	  improvement when parsing unknown interfaces
 

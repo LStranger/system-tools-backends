@@ -196,7 +196,8 @@ sub gst_network_get_broadcast_ping_cmd
        "pld-1.1"      => "redhat-6.2",
        "pld-1.99"     => "redhat-6.2",
        "fedora-1"     => "redhat-6.2",
-       "slackware-9.1.0" => "redhat-6.2"
+       "slackware-9.1.0" => "redhat-6.2",
+       "gentoo"       => "debian-2.2"
        );
 
   return $cmd_map{$dist_map{$gst_dist}};
@@ -663,6 +664,25 @@ sub gst_network_slackware91_ifaces_get_existing
   if (&gst_file_exists ($pppscript))
   {
     push @ret, "ppp0";
+  }
+
+  return @ret;
+}
+
+sub gst_network_gentoo_ifaces_get_existing
+{
+  my $file = "/etc/conf.d/net";
+  my ($fd, $i, @ret);
+
+  $fd = &gst_file_open_read_from_names ($file);
+  return @ret if !$fd;
+
+  while ($i = <$fd>)
+  {
+    if ($i =~ /^iface_(.*)[ \t]*=/)
+    {
+      push @ret, $1;
+    }
   }
 
   return @ret;
@@ -1218,6 +1238,7 @@ sub gst_network_get_file
     "pld-1.99"     => \&gst_network_pld10_get_file,
     "fedora-1"     => \&gst_network_rh72_get_file,
     "slackware-9.1.0" => \&gst_network_deb22_get_file,
+    "gentoo"       => \&gst_network_deb22_get_file
 	  );
 
   $proc = $dist_map{$gst_dist};
@@ -1504,6 +1525,26 @@ sub gst_network_slackware91_interface_activate
   }
 }
 
+sub gst_network_gentoo_interface_activate_by_dev
+{
+  my ($dev, $enabled) = @_;
+  my $file = "/etc/init.d/net.$dev";
+  my $action = ($enabled == 1)? "start" : "stop";
+
+  return &gst_file_run ("$file $action");
+}
+
+sub gst_network_gentoo_interface_activate
+{
+  my ($hash, $old_hash, $enabled, $force) = @_;
+  my $dev = $$hash{"file"};
+
+  if ($force || &gst_network_interface_changed ($hash, $old_hash))
+  {
+    &gst_network_gentoo_interface_activate_by_dev ($dev, $enabled);
+  }
+}
+
 sub gst_network_remove_pap_entry
 {
   my ($file, $login) = @_;
@@ -1649,6 +1690,17 @@ sub gst_network_slackware91_interface_delete
   }
 }
 
+sub gst_network_gentoo_interface_delete
+{
+  my ($old_hash) = @_;
+  my ($netconf) = "$gst_prefix/etc/conf.d/net";
+  my ($dev) = $$old_hash {"dev"};
+  my ($gateway) = $$old_hash {"gateway"};
+
+  &gst_replace_sh ($netconf, "gateway", "") if ($gateway ne undef);
+  &gst_replace_sh ($netconf, "iface_$dev", "");
+}
+
 sub gst_network_interface_changed
 {
     my ($iface, $iface_old) = @_;
@@ -1660,9 +1712,9 @@ sub gst_network_interface_changed
     return 1 if (!$iface_old);
     foreach $attr (@attrs)
     {
-        next if (!exists $$iface{$attr}) && (!exists $$iface_old{$attr});
-        return 1 if (exists $$iface{$attr}) != (exists $$iface_old{$attr});
-        return 1 if $$iface{$attr} ne $$iface_old{$attr};
+      next if (!exists $$iface{$attr}) && (!exists $$iface_old{$attr});
+      return 1 if (exists $$iface{$attr}) != (exists $$iface_old{$attr});
+      return 1 if $$iface{$attr} ne $$iface_old{$attr};
     }
 
     return 0;
@@ -2133,6 +2185,24 @@ sub gst_network_pld10_replace_bootproto
   return &gst_replace_sh ($file, $key, $proto_name_to_pld10{$value});
 }
 
+sub gst_network_gentoo_parse_bootproto
+{
+  my ($file, $dev) = @_;
+
+  return "dhcp" if (&gst_parse_sh ($file, "iface_$dev") eq "dhcp");
+  return "none";
+}
+
+sub gst_network_gentoo_replace_bootproto
+{
+  my ($file, $dev, $value) = @_;
+
+  return &gst_replace_split ($file, "iface_$dev", "[ \t]*=[ \t]*", "\"dhcp\"") if ($value ne "none");
+
+  # replace with a fake IP address, I know it's a hack
+  return &gst_replace_split ($file, "iface_$dev", "[ \t]*=[ \t]*", "\"0.0.0.0\"");
+}
+
 sub gst_network_pump_iface_supported
 {
   my ($iface) = @_;
@@ -2528,7 +2598,8 @@ sub gst_network_ensure_loopback_interface
     "pld-1.1"      => "lo",
     "pld-1.99"     => "lo",
     "fedora-1"     => "",
-    "slackware-9.1.0" => ""
+    "slackware-9.1.0" => "",
+    "gentoo"       => ""
 	  );
 
   $dev = $dist_map {$gst_dist};
@@ -2637,7 +2708,8 @@ sub gst_network_get_parse_table
     "pld-1.1"      =>  "pld-1.0",
     "pld-1.99"     =>  "pld-1.0",
     "fedora-1"     =>  "redhat-7.2",
-    "slackware-9.1.0" => "slackware-9.1.0"
+    "slackware-9.1.0" => "slackware-9.1.0",
+    "gentoo"       =>  "gentoo"
 	  );
 
   my %dist_tables =
@@ -2901,7 +2973,36 @@ sub gst_network_get_parse_table
        [ "gateway",       \&gst_parse_sh,                RC_INET_CONF, GATEWAY ],
        [ "gatewaydev",    \&gst_network_slackware91_get_gateway_dev, RC_INET_CONF, "%interface%" ],
       ]
-    }
+    },
+
+    "gentoo" =>
+    {
+      fn =>
+      {
+        HOSTNAME    => "/etc/hostname",
+        DOMAINNAME  => "/etc/dnsdomainname",
+        NET         => "/etc/conf.d/net",
+        RESOLV_CONF => "/etc/resolv.conf",
+        HOSTS       => "/etc/hosts",
+        SMB_CONF    => "/etc/samba/smb.conf"
+      },
+      table =>
+      [
+       [ "hostname",      \&gst_parse_line_first,                    HOSTNAME ],
+       [ "domain",        \&gst_parse_line_first,                    DOMAINNAME ],
+       [ "domain",        \&gst_parse_split_first_str,               RESOLV_CONF,  "domain", "[ \t]+" ],
+       [ "nameserver",    \&gst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
+       [ "searchdomain",  \&gst_parse_split_first_array_unique,      RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+       [ "statichost",    \&gst_parse_split_hash,                    HOSTS,        "[ \t]+", "[ \t]+" ],
+       [ "workgroup",     \&gst_parse_ini,                           SMB_CONF,     "global", "workgroup" ],
+       [ "smbdesc",       \&gst_network_rh_get_smb_desc,             SMB_CONF,     "global", "server string", "%hostname%" ],
+       [ "winsserver",    \&gst_parse_ini,                           SMB_CONF,     "global", "wins server" ],
+       [ "winsuse",       \&gst_parse_ini_bool,                      SMB_CONF,     "global", "wins support" ],
+       [ "gatewaydev",    \&gst_parse_sh_re,                         NET, gateway, "^(.*)\/" ],
+       [ "gateway",       \&gst_parse_sh_re,                         NET, gateway, "^.*\/([0-9\.]*)\$" ],
+       [ "interface",     \&gst_network_interfaces_get ],
+       ]
+     }
    );
   
   my $dist = $dist_map{$gst_dist};
@@ -2939,7 +3040,8 @@ sub gst_network_get_interface_parse_table
     "pld-1.1"      => "pld-1.0",
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
-    "slackware-9.1.0" => "slackware-9.1.0"
+    "slackware-9.1.0" => "slackware-9.1.0",
+    "gentoo"       => "gentoo"
 	  );
   
   my %dist_tables =
@@ -3386,7 +3488,30 @@ sub gst_network_get_interface_parse_table
        [ "dial_command",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
        [ "volume",             \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_modem_volume, CHAT ]],
        ]
-      }
+      },
+
+    "gentoo" =>
+    {
+      ifaces_get => \&gst_network_gentoo_ifaces_get_existing,
+      fn =>
+      {
+        NET          => "/etc/conf.d/net",
+        INIT         => "/etc/init.d/net.#iface#",
+        IFACE        => "#iface#",
+      },
+      table =>
+      [
+       [ "auto",               \&gst_file_exists,                    INIT ],
+       [ "user",               \&gst_parse_trivial,                  0 ], # not supported.
+       [ "dev",                \&gst_parse_trivial,                  IFACE ],
+       [ "address",            \&gst_parse_sh_re,                    NET, "iface_%dev%", "^[ \t]*([0-9\.]+)" ],
+       [ "netmask",            \&gst_parse_sh_re,                    NET, "iface_%dev%", "netmask[ \t]+([0-9\.]*)" ],
+       [ "remote_address",     \&gst_parse_sh_re,                    NET, "iface_%dev%", "dest_address[ \t]+([0-9\.]*)" ],
+       [ "gateway",            \&gst_parse_sh_re,                    NET, "gateway", "%dev%/([0-9\.\:]*)" ],
+       [ "enabled",            \&gst_network_interface_active,       IFACE, \&gst_network_active_interfaces_get ],
+       [ "bootproto",          \&gst_network_gentoo_parse_bootproto, [ NET, IFACE ]]
+      ]
+    }
 	  );
   
   my $dist = $dist_map{$gst_dist};
@@ -3423,7 +3548,8 @@ sub gst_network_get_replace_table
     "pld-1.1"      => "pld-1.0",
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
-    "slackware-9.1.0" => "slackware-9.1.0"
+    "slackware-9.1.0" => "slackware-9.1.0",
+    "gentoo"       => "gentoo"
 	  );
 
   my %dist_tables =
@@ -3679,8 +3805,39 @@ sub gst_network_get_replace_table
        [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ],
        [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
       ]
-    }
+    },
 
+    "gentoo" =>
+    {
+      fn =>
+      {
+        HOSTNAME    => "/etc/hostname",
+        DOMAINNAME  => "/etc/dnsdomainname",
+        NET         => "/etc/conf.d/net",
+        RESOLV_CONF => "/etc/resolv.conf",
+        HOSTS       => "/etc/hosts",
+        SMB_CONF    => "/etc/samba/smb.conf"
+      },
+      table =>
+      [
+       [ "hostname",      \&gst_replace_line_first,       HOSTNAME ],
+       [ "hostname",      \&gst_network_run_hostname ],
+       [ "domain",        \&gst_replace_line_first,       DOMAINNAME ],
+       [ "domain",        \&gst_replace_join_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
+       [ "nameserver",    \&gst_replace_join_all,         RESOLV_CONF,  "nameserver", "[ \t]+" ],
+       [ "searchdomain",  \&gst_replace_join_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
+       [ "statichost",    \&gst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+       [ "workgroup",     \&gst_replace_ini,              SMB_CONF,     "global", "workgroup" ],
+       [ "smbdesc",       \&gst_replace_ini,              SMB_CONF,     "global", "server string", "%hostname%" ],
+       [ "winsserver",    \&gst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+       [ "winsuse",       \&gst_replace_ini_bool,         SMB_CONF,     "global", "wins support" ],
+       # first set the gateway to something like "eth0", then add the IP address like "eth0/1.1.1.1"
+       [ "gatewaydev",    \&gst_replace_sh,               NET, gateway ],
+       [ "gateway",       \&gst_replace_sh_re,            NET, gateway, "\/[0-9\.]*\$", "/%gateway%" ],
+       [ "interface",     \&gst_network_interfaces_set,   OLD_HASH ],
+       [ "gateway",       \&gst_network_route_set_default_gw, "%gatewaydev%" ]
+      ]
+    }
 	  );
   
   my $dist = $dist_map{$gst_dist};
@@ -3717,7 +3874,8 @@ sub gst_network_get_interface_replace_table
     "pld-1.1"      => "pld-1.0",
     "pld-1.99"     => "pld-1.0",
     "fedora-1"     => "redhat-7.2",
-    "slackware-9.1.0" => "slackware-9.1.0"
+    "slackware-9.1.0" => "slackware-9.1.0",
+    "gentoo"       => "gentoo"
 	  );
 
   my %dist_tables =
@@ -4136,7 +4294,29 @@ sub gst_network_get_interface_replace_table
       [ "external_line",      \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "atd[tp]([0-9w, -]+)", "%external_line%W%phone_number%" ]],
       [ "volume",             \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_modem_volume, CHAT ]],
      ]
-   }
+   },
+
+   "gentoo" =>
+   {
+     iface_set    => \&gst_network_gentoo_interface_activate,
+     iface_delete => \&gst_network_gentoo_interface_delete,
+     ifaces_get   => \&gst_network_gentoo_ifaces_get_existing,
+     fn =>
+     {
+       NET          => "/etc/conf.d/net",
+       INIT         => "/etc/init.d/net.#iface#",
+       IFACE        => "#iface#",
+     },
+     table =>
+     [
+      [ "auto",               \&gst_file_exists,                      INIT ],
+      [ "bootproto",          \&gst_network_gentoo_replace_bootproto, [ NET, IFACE ]],
+      [ "address",            \&gst_replace_sh_re,                    NET, "iface_%dev%", "^[ \t]*([0-9\.]+)" ],
+      [ "netmask",            \&gst_replace_sh_re,                    NET, "iface_%dev%", "[ \t]+netmask[ \t]+[0-9\.]*", " netmask %netmask%"],
+      [ "broadcast",          \&gst_replace_sh_re,                    NET, "iface_%dev%", "[ \t]+broadcast[ \t]+[0-9\.]*", " broadcast %broadcast%" ],
+      [ "remote_address",     \&gst_replace_sh_re,                    NET, "iface_%dev%", "[ \t]+dest_address[ \t]+[0-9\.]*", " dest_address %remote_address%" ],
+     ]
+    }
   );
   
   my $dist = $dist_map{$gst_dist};

@@ -73,7 +73,7 @@ $version = "@VERSION@";
               "debian-2.2", "debian-3.0", "debian-sarge",              
               "suse-7.0", "turbolinux-7.0", "fedora-1",
               "pld-1.0", "pld-1.1", "pld-1.99",
-              "slackware-9.1.0");
+              "slackware-9.1.0", "gentoo");
 
 $description =<<"end_of_description;";
        Configures all network parameters and interfaces.
