@@ -5,7 +5,7 @@
 #
 # Copyright (C) 2000 Helix Code, Inc.
 #
-# Authors: Bradford Hovinen <hovinen@helixcode.com>
+# Authors: Bradford Hovinen <hovinen@helixcode.com>, Tambet Ingo <tambeti@ut.ee>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -29,7 +29,7 @@
 
 # Running programs affected/used:
 #
-# /sbin/swapon /sbin/swapoff /sbin/mkswap
+# /sbin/swapon /sbin/swapoff /sbin/mkswap /sbin/fdisk
 
 
 # --- Usage text --- #
@@ -861,12 +861,12 @@ sub get_swap_size
     elsif ($is_file == 0)
       {
         # Is partition, get size.
-        open(FD, "/bin/df $device |");
+        open(FD, "/sbin/fdisk -s $device |");
         while (<FD>)
           {
-            if (/\/dev\/sda4(\s+)(\d+)(\s+)(\d+)/)
+            if (/^\w+/)
               {
-                 $size = sprintf("%d Mb", $4 / 1024);		#size from Kb to Mb
+                 $size = sprintf("%d Mb", $_ / 1024);		#size from Kb to Mb
               }
           }
       }
