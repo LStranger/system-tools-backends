@@ -66,8 +66,11 @@ sub xst_service_sysv_get_paths
 
        "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"]
        );
+  my $res;
 
-  return @{$dist_map{$xst_dist}};
+  $res = $dist_map{$xst_dist};
+  &xst_report ("service_sysv_unsupported", $xst_dist) if ($res eq undef);
+  return @$res;
 }
 
 # Those runlevels that are usually used. Maybe we should add
@@ -95,7 +98,7 @@ sub xst_service_sysv_get_runlevels
 sub xst_service_sysv_installed
 {
   my ($service) = @_;
-  my $res;
+  my ($res, $rcd_path, $initd_path);
 
   &xst_report_enter ();
   
@@ -110,6 +113,76 @@ sub xst_service_sysv_installed
 
   &xst_report_leave ();
   return $res;
+}
+
+
+sub xst_service_sysv_list_dir
+{
+    my ($path) = @_;
+    my ($service, @services);
+
+    foreach $service (<$path/*>)
+    {
+        if (-x $service)
+        {
+            $service =~ s/.*\///;
+            push @services, $service;
+        }
+    }
+
+    return \@services;
+}
+
+
+sub xst_service_sysv_list_available
+{
+    my ($rcd_path, $initd_path);
+    
+    ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+
+    return &xst_service_sysv_list_dir ($initd_path);
+}
+
+
+sub xst_service_sysv_get_level_info
+{
+    my ($path, $level) = @_;
+    my (%hash, @arr, $list, $entry);
+    my ($action, $priority, $service);
+
+    $hash{"level"}   = $level;
+    $hash{"service"} = \@arr;
+
+    $list = &xst_service_sysv_list_dir ($path);
+
+    foreach $entry (@$list)
+    {
+        $entry =~ /([SK])([0-9]+)(.*)/;
+        ($action, $priority, $service) = ($1, $2, $3);
+        push @arr, {"action"   => ($action eq "S")? "start": "kill",
+                    "priority" => $priority,
+                    "name"     => $service};
+    }
+
+    return \%hash;
+}
+
+
+sub xst_service_sysv_get_tree
+{
+    my ($rcd_path, $initd_path);
+    my ($dir, $level, @arr);
+    
+    ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+
+    foreach $dir (<$rcd_path/rc*.d>)
+    {
+        $level = $dir;
+        $level =~ s/.*\/rc(.*)\.d/\1/;
+        push @arr,  &xst_service_sysv_get_level_info ($dir, $level);
+    }
+
+    return \@arr;
 }
 
 

@@ -1,5 +1,23 @@
 Tue Sep 11 20:48:25 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* report.pl.in (xst_report): Added report for unsupported
+	platforms for sysv init scripts.
+
+	* sysv-conf.in: A new backend for SystemV init script control
+	and service activation. Only get operation ready.
+
+	* service.pl.in (xst_service_sysv_installed): missing my
+	declarations.
+	(xst_service_sysv_get_paths): report unsupported distros.
+	(xst_service_sysv_list_dir): return a list ref of the services
+	in a sysv directory.
+	(xst_service_sysv_list_available): list those services in
+	the init.d directory.
+	(xst_service_sysv_get_level_info): return structure with service
+	info on a sysv directory.
+	(xst_service_sysv_get_tree): return array of structures for
+	all the runlevel directories.
+
 	* *.pl.in: changed SCRIPTSDIR that was broken in principle,
 	although in practice didn't matter.
 
