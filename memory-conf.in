@@ -423,7 +423,11 @@ sub setup_swap_files
 	  {
 	    if ($entry->{is_file})
 	      {
-		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$entry->{size}");
+	        my ($size) = $entry->{size};
+		$size =~ tr/MB$//d;	# Remove Mb from the end
+		$size *= 1024;		# Make it to Kb
+		print "$size\n";
+		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
 	      }
 
 	    system ("/sbin/mkswap $entry->{device} >/dev/null 2>/dev/null");
@@ -431,12 +435,12 @@ sub setup_swap_files
 
 	elsif ($entry->{is_file})
 	  {
-	    my ($size) = get_swap_size($entry->{device}, $entry->{is_file});
+	    my ($size) = $entry->{size};
 	    $size =~ tr/MB$//d;	# Remove Mb from the end
 	    $size *= 1024;		# Make it to Kb
 	    if ($size != $entry->{size})
 	      {
-		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$entry->{size}");
+		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
 		system ("/sbin/mkswap $entry->{device} >/dev/null 2>/dev/null");
 	      }
 	  }
