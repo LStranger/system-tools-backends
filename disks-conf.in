@@ -1501,21 +1501,22 @@ sub get_dev_speed
 
    if ($total > 1.0) { # more than 1MiB/s 
       $total =~ s/^([0-9]+\.[0-9][0-9]).+/$1/;
-      &gst_xml_print_line ("<speed>" . "$total MiB/sec"  . "</speed>\n");
+      return "$total MiB/sec";
    } else {
       $total *= 1024;
       $total =~ s/^([0-9]+\.[0-9][0-9]).+/$1/;
-      &gst_xml_print_line ("<speed>" . "$total KiB/sec"  . "</speed>\n");
+      return "$total KiB/sec";
    }
 }
 
 sub dev_speed
 {
    my ($tool, $device) = @_;
+   my ($speed) = &get_dev_speed ($device);
 
    &gst_report_end ();
    &gst_xml_print_begin ("dev_speed");
-   &get_dev_speed ($device);
+   &gst_xml_print_pcdata ("speed", $speed) if ($speed ne undef);
    &gst_xml_print_end ("dev_speed");
 }
 

@@ -1,3 +1,8 @@
+2004-04-14  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* disks-conf.in (get_dev_speed) (dev_speed): made it not to block
+	  UI when getting the device speed
+
 2004-04-11  Carlos García Campos <elkalmail@yahoo.es>
 
 	* disks-conf.in: fixed minor bug in mount directive
