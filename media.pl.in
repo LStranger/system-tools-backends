@@ -22,8 +22,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-require "___scriptsdir___/xml.pl";
-require "___scriptsdir___/parse.pl";
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
+require "$SCRIPTSDIR/xml.pl";
+require "$SCRIPTSDIR/parse.pl";
 
 
 # xst_media_get_ide_device_from_proc

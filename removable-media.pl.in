@@ -22,8 +22,11 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-require "___scriptsdir___/be.pl";
-require "___scriptsdir___/media.pl";
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
+require "$SCRIPTSDIR/be.pl";
+require "$SCRIPTSDIR/media.pl";
 
 
 # xst_removable_media_get_list

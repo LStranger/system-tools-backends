@@ -27,13 +27,16 @@
 use Socket;
 
 
-require "___scriptsdir___/general.pl";
-require "___scriptsdir___/file.pl";
-require "___scriptsdir___/parse.pl";
-require "___scriptsdir___/replace.pl";
-require "___scriptsdir___/service.pl";
-require "___scriptsdir___/util.pl";
-require "___scriptsdir___/xml.pl";
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
+require "$SCRIPTSDIR/general.pl";
+require "$SCRIPTSDIR/file.pl";
+require "$SCRIPTSDIR/parse.pl";
+require "$SCRIPTSDIR/replace.pl";
+require "$SCRIPTSDIR/service.pl";
+require "$SCRIPTSDIR/util.pl";
+require "$SCRIPTSDIR/xml.pl";
 
 # Parse <interface>...</interface>. Put here so it can be shared with internetsharing.
 sub xst_network_xml_parse_interface

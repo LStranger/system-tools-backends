@@ -28,6 +28,9 @@
 # --- Utilities for strings, arrays and other data structures --- #
 
 
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
 # Boolean <-> strings conversion.
 
 sub xst_read_boolean

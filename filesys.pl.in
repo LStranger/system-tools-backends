@@ -22,9 +22,12 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-require "___scriptsdir___/file.pl";
-require "___scriptsdir___/parse.pl";
-require "___scriptsdir___/xml.pl";
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
+require "$SCRIPTSDIR/file.pl";
+require "$SCRIPTSDIR/parse.pl";
+require "$SCRIPTSDIR/xml.pl";
 
 
 # --- Utilities --- #

@@ -26,7 +26,10 @@
 # --- System guessing --- #
 
 
-require "___scriptsdir___/parse.pl";
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
+require "$SCRIPTSDIR/parse.pl";
 
 
 sub check_lsb
@@ -198,7 +201,7 @@ sub check_solaris
 sub xst_platform_guess
 {
   my ($tool) = @_;
-  my $dir = "___scriptsdir___";
+  my $dir = "$SCRIPTSDIR";
   
   if (! -f "$dir/system.guess")
   {

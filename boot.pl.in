@@ -22,12 +22,15 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-require "___scriptsdir___/general.pl";
-require "___scriptsdir___/util.pl";
-require "___scriptsdir___/file.pl";
-require "___scriptsdir___/xml.pl";
-require "___scriptsdir___/parse.pl";
-require "___scriptsdir___/replace.pl";
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
+require "$SCRIPTSDIR/general.pl";
+require "$SCRIPTSDIR/util.pl";
+require "$SCRIPTSDIR/file.pl";
+require "$SCRIPTSDIR/xml.pl";
+require "$SCRIPTSDIR/parse.pl";
+require "$SCRIPTSDIR/replace.pl";
 
 my @global_vars = qw (default prompt timeout append root);
 my @common_image_vars = qw (label);

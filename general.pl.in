@@ -22,10 +22,13 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-require "___scriptsdir___/report.pl";
-require "___scriptsdir___/platform.pl";
-require "___scriptsdir___/gettext.pl";
-require "___scriptsdir___/xml.pl";
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
+require "$SCRIPTSDIR/report.pl";
+require "$SCRIPTSDIR/platform.pl";
+require "$SCRIPTSDIR/gettext.pl";
+require "$SCRIPTSDIR/xml.pl";
 
 
 # --- Operation modifying variables --- #

@@ -23,9 +23,12 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 
-require "___scriptsdir___/util.pl";
-require "___scriptsdir___/file.pl";
-require "___scriptsdir___/debug.pl";
+$SCRIPTSDIR = "$SCRIPTSDIR";
+$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+
+require "$SCRIPTSDIR/util.pl";
+require "$SCRIPTSDIR/file.pl";
+require "$SCRIPTSDIR/debug.pl";
 
 
 # The concept of keyword (kw) here is a key, normaly in its own line, whose
