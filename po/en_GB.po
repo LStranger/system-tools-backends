@@ -1,0 +1,658 @@
+# English (British) translation.
+# Copyright (C) 2004 THE setup-tools-backend's COPYRIGHT HOLDER
+# This file is distributed under the same license as the setup-tool-backend package.
+# Gareth Owen <gowen72@yahoo.com>, 2004.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: setup-tools-backend\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2004-03-25 21:40-0500\n"
+"PO-Revision-Date: 2004-03-25 21:43-0500\n"
+"Last-Translator: Gareth Owen <gowen72@yahoo.comg>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: service-list.pl.in:36
+msgid "Advanced Linux Sound Architecture"
+msgstr "Advanced Linux Sound Architecture"
+
+#: service-list.pl.in:37 service-list.pl.in:61
+msgid "web server"
+msgstr "web server"
+
+#: service-list.pl.in:37 service-list.pl.in:61
+msgid ""
+"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+msgstr ""
+"Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
+
+#: service-list.pl.in:38
+msgid "Run missed scheduled jobs at startup"
+msgstr "Run missed scheduled jobs at startup"
+
+#: service-list.pl.in:38
+msgid "Run cron jobs that were left out due to downtime"
+msgstr "Run cron jobs that were left out due to downtime"
+
+#: service-list.pl.in:39
+msgid "Automatic power management daemon"
+msgstr "Automatic power management daemon"
+
+#: service-list.pl.in:39
+msgid ""
+"apmd is used for monitoring battery status and logging it via syslog(8). It "
+"can also be used for shutting down the machine when the battery is low."
+msgstr ""
+"apmd is used for monitoring battery status and logging it via syslog(8). It "
+"can also be used for shutting down the machine when the battery is low."
+
+#: service-list.pl.in:40
+msgid "Runs a command at a given time"
+msgstr "Runs a command at a given time"
+
+#: service-list.pl.in:40
+msgid ""
+"Runs commands scheduled by the at command at the time specified when at was "
+"run, and runs batch commands when the load average is low enough."
+msgstr ""
+"Runs commands scheduled by the at command at the time specified when at was "
+"run, and runs batch commands when the load average is low enough."
+
+#: service-list.pl.in:41
+msgid "BinFormat Support"
+msgstr "BinFormat Support"
+
+#: service-list.pl.in:41
+msgid "Support for running non ELF binaries on Linux"
+msgstr "Support for running non ELF binaries on Linux"
+
+#: service-list.pl.in:42
+msgid ""
+"An xinetd internal service which generate characters. The xinetd internal "
+"service which continuously generates characters until the connection is "
+"dropped.  This is the tcp version. You must enable xinetd to use this "
+"service."
+msgstr ""
+"An xinetd internal service which generate characters. The xinetd internal "
+"service which continuously generates characters until the connection is "
+"dropped.  This is the tcp version. You must enable xinetd to use this "
+"service."
+
+#: service-list.pl.in:43
+msgid ""
+"An xinetd internal service which generate characters. The xinetd internal "
+"service which continuously generates characters until the connection is "
+"dropped.  This is the udp version. You must enable xinetd to use this "
+"service."
+msgstr ""
+"An xinetd internal service which generate characters. The xinetd internal "
+"service which continuously generates characters until the connection is "
+"dropped.  This is the udp version. You must enable xinetd to use this "
+"service."
+
+#: service-list.pl.in:44
+msgid "daemon to execute scheduled commands"
+msgstr "daemon to execute scheduled commands"
+
+#: service-list.pl.in:45
+msgid "Run scheduled jobs"
+msgstr "Run scheduled jobs"
+
+#: service-list.pl.in:45
+msgid ""
+"cron is a standard UNIX program that runs user-specified programs at "
+"periodic scheduled times. vixie cron adds a number of features to the basic "
+"UNIX cron, including better security and more powerful configuration options."
+msgstr ""
+"cron is a standard UNIX program that runs user-specified programs at "
+"periodic scheduled times. vixie cron adds a number of features to the basic "
+"UNIX cron, including better security and more powerful configuration options."
+
+#: service-list.pl.in:46
+msgid "Common Unix Printing System"
+msgstr "Common Unix Printing System"
+
+#: service-list.pl.in:47
+msgid ""
+"An internal xinetd service which gets the current system time then prints it "
+"out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
+"version. You must enable xinetd to use this service."
+msgstr ""
+"An internal xinetd service which gets the current system time then prints it "
+"out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
+"version. You must enable xinetd to use this service."
+
+#: service-list.pl.in:48
+msgid ""
+"An internal xinetd service which gets the current system time then prints it "
+"out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
+"version. You must enable xinetd to use this service."
+msgstr ""
+"An internal xinetd service which gets the current system time then prints it "
+"out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
+"version. You must enable xinetd to use this service."
+
+#: service-list.pl.in:49 service-list.pl.in:50
+msgid "Dynamic DNS Client"
+msgstr "Dynamic DNS Client"
+
+#: service-list.pl.in:49
+msgid "A Dynamic DNS Name service from www.dyndns.org"
+msgstr "A Dynamic DNS Name service from www.dyndns.org"
+
+#: service-list.pl.in:50
+msgid "A Dynamic DNS Name service from www.dhis.org"
+msgstr "A Dynamic DNS Name service from www.dhis.org"
+
+#: service-list.pl.in:51
+msgid "Dict Dictionary Server"
+msgstr "Dict Dictionary Server"
+
+#: service-list.pl.in:52
+msgid ""
+"An xinetd internal service which echo's characters back to clients.  This is "
+"the tcp version. You must enable xinetd to use this service."
+msgstr ""
+"An xinetd internal service which echo's characters back to clients.  This is "
+"the tcp version. You must enable xinetd to use this service."
+
+#: service-list.pl.in:53
+msgid ""
+"An xinetd internal service which echo's characters back to clients.  This is "
+"the udp version. You must enable xinetd to use this service."
+msgstr ""
+"An xinetd internal service which echo's characters back to clients.  This is "
+"the udp version. You must enable xinetd to use this service."
+
+#: service-list.pl.in:54
+msgid "Exim SMTP Server"
+msgstr "Exim SMTP Server"
+
+#: service-list.pl.in:55
+msgid "file alteration monitor"
+msgstr "file alteration monitor"
+
+#: service-list.pl.in:56
+msgid "Firstboot is a druid style program that runs on the first time"
+msgstr "Firstboot is a druid style program that runs on the first time"
+
+#: service-list.pl.in:57
+msgid "Mail Fetcher"
+msgstr "Mail Fetcher"
+
+#: service-list.pl.in:57
+msgid "A Mail Fetcher from external Servers"
+msgstr "A Mail Fetcher from external Servers"
+
+#: service-list.pl.in:58
+msgid "IPv6 Tunnel Broker"
+msgstr "IPv6 Tunnel Broker"
+
+#: service-list.pl.in:58
+msgid "A IPv6 Dynamic Tunnel Broker"
+msgstr "A IPv6 Dynamic Tunnel Broker"
+
+#: service-list.pl.in:59
+msgid "GNOME Display Manager"
+msgstr "GNOME Display Manager"
+
+#: service-list.pl.in:59
+msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
+msgstr "gdm provides the GNOME equivalent of a \"login:\" prompt."
+
+#: service-list.pl.in:60
+msgid "console mouse support"
+msgstr "console mouse support"
+
+#: service-list.pl.in:60
+msgid ""
+"GPM adds mouse support to text-based Linux applications such the Midnight "
+"Commander. It also allows mouse-based console cut-and-paste operations, and "
+"includes support for pop-up menus on the console."
+msgstr ""
+"GPM adds mouse support to text-based Linux applications such the Midnight "
+"Commander. It also allows mouse-based console cut-and-paste operations, and "
+"includes support for pop-up menus on the console."
+
+#: service-list.pl.in:62
+msgid "internet superserver"
+msgstr "internet superserver"
+
+#: service-list.pl.in:62
+msgid ""
+"inetd allows running one daemon to invoke several others, reducing load on "
+"the system."
+msgstr ""
+"inetd allows running one daemon to invoke several others, reducing load on "
+"the system."
+
+#: service-list.pl.in:63
+msgid "administration tool for IPv4 packet filtering and NAT"
+msgstr "administration tool for IPv4 packet filtering and NAT"
+
+#: service-list.pl.in:63
+msgid ""
+"Iptables is used to set up, maintain, and inspect the tables of IP packet "
+"filter rules in the Linux kernel."
+msgstr ""
+"Iptables is used to set up, maintain, and inspect the tables of IP packet "
+"filter rules in the Linux kernel."
+
+#: service-list.pl.in:64
+msgid "IrDA stack for Linux"
+msgstr "IrDA stack for Linux"
+
+#: service-list.pl.in:65
+msgid "The Internet Key Exchange protocol"
+msgstr "The Internet Key Exchange protocol"
+
+#: service-list.pl.in:65
+msgid "The Internet Key Exchange protocol openbsd implementation"
+msgstr "The Internet Key Exchange protocol openbsd implementation"
+
+#: service-list.pl.in:66
+msgid "start and stop ISDN services"
+msgstr "start and stop ISDN services"
+
+#: service-list.pl.in:67
+msgid ""
+"This package loads the selected keyboard map as set in /etc/sysconfig/"
+"keyboard.  This can be selected using the kbdconfig utility.  You should "
+"leave this enabled for most machines."
+msgstr ""
+"This package loads the selected keyboard map as set in /etc/sysconfig/"
+"keyboard.  This can be selected using the kbdconfig utility.  You should "
+"leave this enabled for most machines."
+
+#: service-list.pl.in:68
+msgid ""
+"klogd is a system daemon which intercepts and logs Linux kernel messages."
+msgstr ""
+"klogd is a system daemon which intercepts and logs Linux kernel messages."
+
+#: service-list.pl.in:69
+msgid ""
+"This runs the hardware probe, and optionally configures changed hardware."
+msgstr ""
+"This runs the hardware probe, and optionally configures changed hardware."
+
+#: service-list.pl.in:70 service-list.pl.in:71
+msgid ""
+"LIRC is a package that allows you to decode and send infra-red signals of "
+"many commonly used remote controls"
+msgstr ""
+"LIRC is a package that allows you to decode and send infra-red signals of "
+"many commonly used remote controls"
+
+#: service-list.pl.in:72
+msgid ""
+"lpd is the print daemon required for lpr to work properly. It is basically a "
+"server that arbitrates print jobs to printer(s)."
+msgstr ""
+"lpd is the print daemon required for lpr to work properly. It is basically a "
+"server that arbitrates print jobs to printer(s)."
+
+#: service-list.pl.in:73
+msgid "Syslog Replacement"
+msgstr "Syslog Replacement"
+
+#: service-list.pl.in:73
+msgid "Modern logging daemon"
+msgstr "Modern logging daemon"
+
+#: service-list.pl.in:74
+msgid "tools for managing Linux kernel modules"
+msgstr "tools for managing Linux kernel modules"
+
+#: service-list.pl.in:75
+msgid "dns server"
+msgstr "dns server"
+
+#: service-list.pl.in:75
+msgid ""
+"named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
+"names to IP addresses."
+msgstr ""
+"named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
+"names to IP addresses."
+
+#: service-list.pl.in:76
+msgid ""
+"Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
+"Windows), and NCP (NetWare) mount points."
+msgstr ""
+"Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
+"Windows), and NCP (NetWare) mount points."
+
+#: service-list.pl.in:77
+msgid ""
+"Activates/Deactivates all network interfaces configured to start at boot "
+"time."
+msgstr ""
+"Activates/Deactivates all network interfaces configured to start at boot "
+"time."
+
+#: service-list.pl.in:78
+msgid ""
+"NFS is a popular protocol for file sharing across TCP/IP networks. This "
+"service provides NFS server functionality, which is configured via the /etc/"
+"exports file."
+msgstr ""
+"NFS is a popular protocol for file sharing across TCP/IP networks. This "
+"service provides NFS server functionality, which is configured via the /etc/"
+"exports file."
+
+#: service-list.pl.in:79
+msgid ""
+"NFS is a popular protocol for file sharing across TCP/IP networks. This "
+"service provides NFS file locking functionality."
+msgstr ""
+"NFS is a popular protocol for file sharing across TCP/IP networks. This "
+"service provides NFS file locking functionality."
+
+#: service-list.pl.in:80
+msgid "ntpd is the NTPv4 daemon."
+msgstr "ntpd is the NTPv4 daemon."
+
+#: service-list.pl.in:81
+msgid "HTTP caching proxy"
+msgstr "HTTP caching proxy"
+
+#: service-list.pl.in:82
+msgid "PCMCIA Services"
+msgstr "PCMCIA Services"
+
+#: service-list.pl.in:83
+msgid "Caching-Only DNS Server"
+msgstr "Caching-Only DNS Server"
+
+#: service-list.pl.in:84
+msgid "IPsec tunnel implementation"
+msgstr "IPsec tunnel implementation"
+
+#: service-list.pl.in:85
+msgid "DARPA port to RPC program number mapper"
+msgstr "DARPA port to RPC program number mapper"
+
+#: service-list.pl.in:85
+msgid ""
+"The portmapper manages RPC connections, which are used by protocols such as "
+"NFS and NIS. The portmap server must be running on machines which act as "
+"servers for protocols which make use of the RPC mechanism."
+msgstr ""
+"The portmapper manages RPC connections, which are used by protocols such as "
+"NFS and NIS. The portmap server must be running on machines which act as "
+"servers for protocols which make use of the RPC mechanism."
+
+#: service-list.pl.in:86
+msgid "Mail Transport Agent"
+msgstr "Mail Transport Agent"
+
+#: service-list.pl.in:87
+msgid "database server"
+msgstr "database server"
+
+#: service-list.pl.in:88
+msgid "Point to Point Protocol daemon"
+msgstr "Point to Point Protocol daemon"
+
+#: service-list.pl.in:88
+msgid ""
+"The  Point-to-Point Protocol (PPP) provides a method for transmitting "
+"datagrams over serial point-to-point links."
+msgstr ""
+"The  Point-to-Point Protocol (PPP) provides a method for transmitting "
+"datagrams over serial point-to-point links."
+
+#: service-list.pl.in:89
+msgid "Privacy enhancing HTTP Proxy"
+msgstr "Privacy enhancing HTTP Proxy"
+
+#: service-list.pl.in:90
+msgid ""
+"Saves and restores system entropy pool for higher quality random number "
+"generation."
+msgstr ""
+"Saves and restores system entropy pool for higher quality random number "
+"generation."
+
+#: service-list.pl.in:91
+msgid ""
+"This scripts assignes raw devices to block devices (such as hard drive "
+"partitions). This is for the use of applications such as Oracle. You can set "
+"up the raw device to block device mapping by editing the file /etc/sysconfig/"
+"rawdevices."
+msgstr ""
+"This scripts assignes raw devices to block devices (such as hard drive "
+"partitions). This is for the use of applications such as Oracle. You can set "
+"up the raw device to block device mapping by editing the file /etc/sysconfig/"
+"rawdevices."
+
+#: service-list.pl.in:92
+msgid ""
+"This is a daemon which handles the task of connecting periodically to the "
+"Red Hat Network servers to check for updates, notifications and perform "
+"system monitoring tasks according to the service level that this server is "
+"subscribed for."
+msgstr ""
+"This is a daemon which handles the task of connecting periodically to the "
+"Red Hat Network servers to check for updates, notifications and perform "
+"system monitoring tasks according to the service level that this server is "
+"subscribed for."
+
+#: service-list.pl.in:93
+msgid ""
+"The rsync server is a good addition to am ftp server, as it allows crc "
+"checksumming etc. You must enable xinetd to use this service."
+msgstr ""
+"The rsync server is a good addition to am ftp server, as it allows crc "
+"checksumming etc. You must enable xinetd to use this service."
+
+#: service-list.pl.in:94
+msgid ""
+"saslauthd is a server process which handles plaintext authentication "
+"requests on behalf of the cyrus-sasl library."
+msgstr ""
+"saslauthd is a server process which handles plaintext authentication "
+"requests on behalf of the cyrus-sasl library."
+
+#: service-list.pl.in:95
+msgid ""
+"Sendmail is a Mail Transport Agent, which is the program that moves mail "
+"from one machine to another."
+msgstr ""
+"Sendmail is a Mail Transport Agent, which is the program that moves mail "
+"from one machine to another."
+
+#: service-list.pl.in:96
+msgid ""
+"An internal xinetd service, listing active servers. You must enable xinetd "
+"to use this service."
+msgstr ""
+"An internal xinetd service, listing active servers. You must enable xinetd "
+"to use this service."
+
+#: service-list.pl.in:97
+msgid ""
+"An internal xinetd service, listing active services. You must enable xinetd "
+"to use this service."
+msgstr ""
+"An internal xinetd service, listing active services. You must enable xinetd "
+"to use this service."
+
+#: service-list.pl.in:98
+msgid "get/set serial port information"
+msgstr "get/set serial port information"
+
+#: service-list.pl.in:98
+msgid ""
+"setserial is a program designed to set and/or report the configuration "
+"information associated with a serial port."
+msgstr ""
+"setserial is a program designed to set and/or report the configuration "
+"information associated with a serial port."
+
+#: service-list.pl.in:99
+msgid ""
+"FAM is a file monitoring daemon. It can be used to get reports when files "
+"change. You must enable xinetd to use this service."
+msgstr ""
+"FAM is a file monitoring daemon. It can be used to get reports when files "
+"change. You must enable xinetd to use this service."
+
+#: service-list.pl.in:100
+msgid "control and monitor storage systems using S.M.A.R.T."
+msgstr "control and monitor storage systems using S.M.A.R.T."
+
+#: service-list.pl.in:101
+msgid "Perl-based spam filter using text analysis"
+msgstr "Perl-based spam filter using text analysis"
+
+#: service-list.pl.in:102
+msgid "Simple Network Management Protocol (SNMP) Daemon"
+msgstr "Simple Network Management Protocol (SNMP) Daemon"
+
+#: service-list.pl.in:103 service-list.pl.in:104
+msgid "OpenSSH SSH server"
+msgstr "OpenSSH SSH server"
+
+#: service-list.pl.in:103
+msgid ""
+"ssh is a program for logging into a remote machine and for executing "
+"commands on a remote machine."
+msgstr ""
+"ssh is a program for logging into a remote machine and for executing "
+"commands on a remote machine."
+
+#: service-list.pl.in:104
+msgid "OpenSSH server daemon"
+msgstr "OpenSSH server daemon"
+
+#: service-list.pl.in:105
+msgid "Linux system logging utilities"
+msgstr "Linux system logging utilities"
+
+#: service-list.pl.in:105
+msgid ""
+"Sysklogd provides two system utilities which provide support for system  "
+"logging  and  kernel  message  trapping."
+msgstr ""
+"Sysklogd provides two system utilities which provide support for system  "
+"logging  and  kernel  message  trapping."
+
+#: service-list.pl.in:106
+msgid ""
+"Syslog is the facility by which many daemons use to log messages to various "
+"system log files.  It is a good idea to always run syslog."
+msgstr ""
+"Syslog is the facility by which many daemons use to log messages to various "
+"system log files.  It is a good idea to always run syslog."
+
+#: service-list.pl.in:107
+msgid ""
+"An RFC 868 time server. This protocol provides a site-independent, machine "
+"readable date and time. The Time service sends back to the originating "
+"source the time in seconds since midnight on January first 1900.  This is "
+"the tcp version. You must enable xinetd to use this service."
+msgstr ""
+"An RFC 868 time server. This protocol provides a site-independent, machine "
+"readable date and time. The Time service sends back to the originating "
+"source the time in seconds since midnight on January first 1900.  This is "
+"the tcp version. You must enable xinetd to use this service."
+
+#: service-list.pl.in:108
+msgid ""
+"An RFC 868 time server. This protocol provides a site-independent, machine "
+"readable date and time. The Time service sends back to the originating "
+"source the time in seconds since midnight on January first 1900.  This is "
+"the udp version. You must enable xinetd to use this service."
+msgstr ""
+"An RFC 868 time server. This protocol provides a site-independent, machine "
+"readable date and time. The Time service sends back to the originating "
+"source the time in seconds since midnight on January first 1900.  This is "
+"the udp version. You must enable xinetd to use this service."
+
+#: service-list.pl.in:109
+msgid "kernel random number source devices"
+msgstr "kernel random number source devices"
+
+#: service-list.pl.in:109
+msgid ""
+"The  random  number  generator  gathers environmental noise from device "
+"drivers and other sources into an entropy pool. From this entropy pool "
+"random numbers are created."
+msgstr ""
+"The  random  number  generator  gathers environmental noise from device "
+"drivers and other sources into an entropy pool. From this entropy pool "
+"random numbers are created."
+
+#: service-list.pl.in:110
+msgid "Intel(TM) x86(TM)-based virtual machine"
+msgstr "Intel(TM) x86(TM)-based virtual machine"
+
+#: service-list.pl.in:110
+msgid ""
+"The vmware command starts an Intel X86-based virtual machine. This script "
+"manages the services needed to run VMware software."
+msgstr ""
+"The vmware command starts an Intel X86-based virtual machine. This script "
+"manages the services needed to run VMware software."
+
+#: service-list.pl.in:111
+msgid "Web-based administration toolkit"
+msgstr "Web-based administration toolkit"
+
+#: service-list.pl.in:112
+msgid "Starts and stops the Samba winbind daemon"
+msgstr "Starts and stops the Samba winbind daemon"
+
+#: service-list.pl.in:113
+msgid ""
+"Allow users to run Windows(tm) applications by just clicking on them (or "
+"typing ./file.exe)"
+msgstr ""
+"Allow users to run Windows(tm) applications by just clicking on them (or "
+"typing ./file.exe)"
+
+#: service-list.pl.in:114
+msgid "X font server"
+msgstr "X font server"
+
+#: service-list.pl.in:114
+msgid ""
+"Xfs is the X Window System font server. It supplies fonts to X Window System "
+"display servers."
+msgstr ""
+"Xfs is the X Window System font server. It supplies fonts to X Window System "
+"display servers."
+
+#: service-list.pl.in:115
+msgid ""
+"xinetd is a powerful replacement for inetd. xinetd has access control "
+"machanisms, extensive logging capabilities, the ability to make services "
+"available based on time, and can place limits on the number of servers that "
+"can be started, among other things."
+msgstr ""
+"xinetd is a powerful replacement for inetd. xinetd has access control "
+"machanisms, extensive logging capabilities, the ability to make services "
+"available based on time, and can place limits on the number of servers that "
+"can be started, among other things."
+
+#: service.pl.in:178 service.pl.in:183
+msgid "Halting the system"
+msgstr "Halting the system"
+
+#: service.pl.in:179 service.pl.in:185
+msgid "Text mode"
+msgstr "Text mode"
+
+#: service.pl.in:180 service.pl.in:184 service.pl.in:188
+msgid "Graphical mode"
+msgstr "Graphical mode"
+
+#: service.pl.in:181 service.pl.in:186
+msgid "Rebooting the system"
+msgstr "Rebooting the system"
