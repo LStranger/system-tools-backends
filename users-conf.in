@@ -122,6 +122,23 @@ $parse_tree = 0;
 
 # --- Mapping constants --- #
 
+%users_map = ();
+@users_array = (
+  "login", 0,
+	"password", 1,
+	"uid", 2,
+	"gid", 3,
+	"comment", 4,
+	"home", 5,
+	"shell", 6,
+	"", "");
+
+for ($i = 0; $users_array[$i] ne ""; $i += 2)
+{
+  $users_map {$users_array[$i]} = $users_array[$i + 1];
+  $users_map {$users_array[$i + 1]} = $users_array[$i];
+}
+
 %login_defs_map = ();
 @login_defs_array = (
   "QMAIL_DIR" , "qmail_dir",
@@ -183,7 +200,7 @@ sub read_passwd
   {
     chomp;      
     @line = split ':';
-		$users_hash{$line[0]} = $i;
+		$users_hash{$line[0]} = [@line];
     push (@users, [@line]);
 		$i ++;
   }
@@ -193,6 +210,29 @@ sub read_passwd
 
 sub write_passwd
 {
+  my ($i, $j, $k);
+	my %all;
+	
+  %parse_hash = %users_hash;
+	@parse_users = @users;
+	
+	@users = ();
+	%users_hash = ();
+	&read_passwd;
+
+  foreach $i (keys (%users_hash)) {
+		$all{$i} |= 1;
+	}	
+	
+	foreach $i (keys (%parse_hash)) {
+	  $all{$i} |= 2;
+	}
+	
+	foreach $i (keys (%all)) {
+	  print STDERR "del $i\n" if ($all{$i} == 1);
+		print STDERR "add $i\n" if ($all{$i} == 2);
+		print STDERR "change $i\n" if ($all{$i} == 3);
+	}
 }
 
 
@@ -232,10 +272,10 @@ sub xml_parse_users
   while (@$tree)
 	{
 	  if (@$tree[0] eq "logindefs") { &xml_parse_login_defs (@$tree[1]); }
-#		elsif (@$tree[0] eq "userdb") { &xml_parse_userdb (@$tree[1]); }
+		elsif (@$tree[0] eq "userdb") { &xml_parse_userdb (@$tree[1]); }
 		elsif ($be_verbose)
 		{
-		  print STDERR "Unexpected tag " . @$tree[0] . " while reading logindefs.\n"
+		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing users.\n"
 		}
 
     shift @$tree;
@@ -251,19 +291,71 @@ sub xml_parse_login_defs
 	
 	while (@$tree)
 	{
-		if (@$tree[0] eq "var") 
+		if ($login_defs_map{@$tree[0]} ne undef)
 		{
-		  print;
+		  $login_defs{@$tree[0]} = @$tree->[1][2];
 		}
+		elsif ($be_verbose)
+		{
+		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing logindefs.\n"
+		}
+		
+		shift @$tree;
+		shift @$tree;
 	}
 }	
 
+sub xml_parse_userdb
+{
+  my $tree = $_[0];
+	
+  shift @$tree;  # Skip attributes.
 
+  while (@$tree)
+	{
+	  if (@$tree[0] eq "user") { &xml_parse_user (@$tree[1]); }
+		elsif ($be_verbose)
+		{
+		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing userdb.\n"
+		}
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+sub xml_parse_user
+{
+  my $tree = $_[0];
+	my @line = ();
+	
+  shift @$tree;  # Skip attributes.
+
+	while (@$tree)
+	{
+		if ($users_map{@$tree[0]} ne undef)
+		{
+		  $line[$users_map{@$tree[0]}] = @$tree->[1][2];
+		}
+		elsif ($be_verbose)
+		{
+		  print STDERR "Unexpected tag " . @$tree[0] . " while parsing user.\n"
+		}
+		
+		shift @$tree;
+		shift @$tree;
+	}
+	
+	$users_hash{$line[0]} = [@line];
+	push (@users, [@line]);
+}	
+	
+  
 # --- XML printing --- #
 
 sub xml_print
 {
-  my ($key, $i);
+  my ($key, $i, $j);
 
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE users []>\n\n";
@@ -293,12 +385,9 @@ sub xml_print
     &be_xml_vspace ();
 	  &be_xml_print ("<user>\n");
 		&be_xml_enter ();
-		&be_xml_print ("<login>" . $i->[0] . "</login>\n");
-		&be_xml_print ("<uid>" . $i->[2] . "</uid>\n");
-		&be_xml_print ("<gid>" . $i->[3] . "</gid>\n");
-		&be_xml_print ("<comment>" . $i->[4] . "</comment>\n");
-		&be_xml_print ("<home>" . $i->[5] . "</home>\n");
-		&be_xml_print ("<shell>" . $i->[6] . "</shell>\n");
+		for ($j = 0; $j < 7; $j++) {
+			&be_xml_print ("<" . $users_map{$j} . ">" . $i->[$j] . "</" . $users_map {$j} . ">\n");
+		}
 		&be_xml_leave ();
 		&be_xml_print ("</user>\n");
 	}
@@ -336,12 +425,10 @@ sub set
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
   &xml_parse ();
 
-  &write_passwd ();
-
   if ($be_do_immediate)
   {
     if ($be_verbose) { print STDERR "Changing running configuration via local utilities.\n"; }
-		# dunno if do_immediate is relevant in this type of backend
+		&write_passwd ();
   }
 }
 
