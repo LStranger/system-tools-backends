@@ -1213,6 +1213,24 @@ sub write_fstab
             print OUTFILE " smbfs username=@cf_shares_list[$i + 6],",
                           "password=@cf_shares_list[$i + 7],fmask=0777";
             if (!(@cf_shares_list[$i + 3])) { print OUTFILE ",noauto"; }
+
+            # Options merging and printing. Note that we always write some
+            # options, above.
+
+            my @options = ($options =~ /([a-zA-Z0-9=]+),?/mg);
+            for $option (@options)
+            {
+              # Strip options we handle, keep the rest.
+
+              if ($option eq "auto" || $option eq "noauto" ||
+                  $option eq "defaults" || $option =~ /^username/ ||
+                  $option =~ "^password" || $option =~ /^fmask/) { next; }
+
+              print $OUTFILE "," . $option;
+            }
+
+            # Dump and fsck priority.
+
             print OUTFILE " 0 0\n";
           }
           elsif ($type eq "nfs")
@@ -1224,8 +1242,31 @@ sub write_fstab
             
             print OUTFILE " nfs ";
 
-            if (!(@cf_shares_list[$i + 3])) { print OUTFILE "noauto"; }
-            else { print OUTFILE "defaults"; }
+            # Options merging and printing.
+
+            my $prev = 0;
+
+            if (!(@cf_shares_list[$i + 3]))
+            {
+              print OUTFILE "noauto"; $prev = 1;
+            }
+
+            my @options = ($options =~ /([a-zA-Z0-9=]+),?/mg);
+            for $option (@options)
+            {
+              # Strip options we handle, keep the rest.
+
+              if ($option eq "auto" || $option eq "noauto" ||
+                  $option eq "defaults") { next; }
+              if ($prev) { print OUTFILE ","; }
+              print OUTFILE $option;
+              $prev = 1;
+            }
+
+            if (!$prev) { print OUTFILE "defaults"; }
+
+            # Dump and fsck priority.
+
             print OUTFILE " 0 0\n";
           }
           else
@@ -1244,6 +1285,8 @@ sub write_fstab
       if (!$found) { print OUTFILE; }
     }
   }
+
+  # Print leftover shares.
 
   for ($i = 0; @cf_shares_list[$i] ne ""; )
   {
