@@ -145,7 +145,7 @@ sub xml_parse_memory
       {
 	if ($$tree[0] eq "swapdev") 
 	  { 
-	    push @cf_swapinfo, be_xml_parse_swapinfo ($$tree[1]); 
+	    push @cf_swapinfo, &xml_parse_swapinfo ($$tree[1]); 
 	  }
 	
 	shift @$tree;
