@@ -1640,8 +1640,7 @@ sub set_immediate
 
   if (-f "/etc/rc.d/init.d/smb")
   {
-    if ($be_verbose) { print STDERR "Warning: SMB configuration reload failed.\n"; }
-    if (system "/etc/rc.d/init.d/smb reload >/dev/null 2>/dev/null")
+    if (system "/etc/rc.d/init.d/smb restart >/dev/null 2>/dev/null")
     {
       if ($be_verbose) { print STDERR "Warning: SMB restart failed.\n"; }
     }
