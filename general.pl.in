@@ -355,7 +355,7 @@ sub xst_init
   
   # See if debug requested in env.
   
-  $tool{"debug"} = $xst_debug = 1 if ($ENV{"XST_DEBUG"});
+  $tool{"debug"} = $xst_debug = 1 if ($ENV{"SET_ME_UP_HARDER"});
   
   # Set up subsystems.
 
