@@ -110,7 +110,8 @@ sub xst_xml_print_vspace
 sub xst_xml_print_line
 {
   my $line;
-  ($line = $_[0]) =~ tr/\n//d;
+  $line = join ("", @_);
+  $line =~ tr/\n//d;
 
   &xst_xml_print_indent ();
   &xst_xml_print_string ($line . "\n");

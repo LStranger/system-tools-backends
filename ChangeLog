@@ -1,3 +1,12 @@
+2001-03-20  Michael Meeks  <michael@ximian.com>
+
+	* xml.pl.in (xst_xml_print_line): print @_ not $_[0] -
+	fixes bug in memory conf.
+
+2001-03-19  Michael Meeks  <michael@ximian.com>
+
+	* Makefile.am: Clean.
+
 2001-03-19  Arturo Espinosa  <arturo@ximian.com>
 
 	* file.pl.in (xst_buffer_load): return a ref to an empty
@@ -9,7 +18,6 @@
 	* parse.pl.in: minor code simplification.
 	* replace.pl.in: all the debian interfaces file replacers.
 
-	
 2001-03-17  Hans Petter Jansson  <hpj@ximian.com>
 
 	* Added gettext.pl.in by Kenneth Christiansen.
