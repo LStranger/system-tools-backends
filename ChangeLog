@@ -1,3 +1,26 @@
+2001-06-01  Hans Petter Jansson  <hpj@ximian.com>
+
+	Implement inline replacing of NFS entries and options.
+
+	* share.pl.in (xst_share_nfs_info_dup): Implement.
+	  (xst_share_nfs_info_match_data): Implement.
+	  (xst_share_nfs_table_dup): Implement.
+	  (xst_share_nfs_table_find): Implement.
+	  (xst_share_nfs_table_find_info_equivalent): Implement.
+	  (xst_share_nfs_client_info_dup): Implement.
+	  (xst_share_nfs_client_table_dup): Implement.
+	  (xst_share_nfs_exports_get_next_entry_line): Implement.
+	  (xst_share_nfs_exports_get_entry_line_fields): Implement.
+	  (xst_share_nfs_info_print_clients): Implement.
+	  (xst_share_nfs_info_print_entry): Implement.
+	  (xst_share_nfs_client_print_option_hash): Implement.
+	  (xst_share_nfs_info_print_synthesized_entry): Implement.
+	  (xst_share_nfs_exports_add_entry): Implement.
+	  (xst_share_nfs_exports_update_entry): Implement.
+	  (xst_share_nfs_exports_remove_entry): Implement.
+	  (xst_share_nfs_exports_get_entry_line_point): Implement.
+	  (xst_share_replace_nfs_exports): Re-implement.
+
 2001-05-31  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* replace.pl.in (xst_replace_remove_ini_section): remove lines

@@ -156,6 +156,29 @@ sub xst_share_nfs_info_new
   return $info;
 }
 
+sub xst_share_nfs_info_dup
+{
+  my ($orig) = @_;
+  my $dup;
+
+  $dup = { %$orig };
+  &xst_share_nfs_info_set_client_table ($dup, &xst_share_nfs_client_table_dup (&xst_share_nfs_info_get_client_table ($orig)));
+  return $dup;
+}
+
+sub xst_share_nfs_info_match_data
+{
+  my ($info_a, $info_b) = @_;
+
+  if (&xst_share_nfs_info_get_point ($info_a) eq &xst_share_nfs_info_get_point ($info_b) &&
+      &xst_share_nfs_info_print_clients ($info_a) eq &xst_share_nfs_info_print_clients ($info_b))
+  {
+    return 1;
+  }
+
+  return 0;
+}
+
 sub xst_share_nfs_info_set
 {
   my ($info, $key, $value) = @_;
@@ -204,12 +227,58 @@ sub xst_share_nfs_table_add
   push @$table, $info;
 }
 
+sub xst_share_nfs_table_dup
+{
+  my ($orig) = @_;
+  my $dup = &xst_share_nfs_table_new ();
+  my $i;
+
+  foreach $i (@$orig)
+  {
+    &xst_share_nfs_table_add ($dup, &xst_share_nfs_info_dup ($i));
+  }
+
+  return $dup;
+}
+
+sub xst_share_nfs_table_find
+{
+  my ($table, $point) = @_;
+  my $i;
+
+  for $i (@$table)
+  {
+    if (&xst_share_nfs_info_get_point ($i) eq $point)
+    {
+      return $i;
+    }
+  }
+
+  return undef;
+}
+
+sub xst_share_nfs_table_find_info_equivalent
+{
+  my ($table, $info) = @_;
+
+  return &xst_share_nfs_table_find ($table, &xst_share_nfs_info_get_point ($info));
+}
+
 # --- share_export_nfs_client_info; information on a particular NFS export's client --- #
 
 sub xst_share_nfs_client_info_new
 {
   my $info = {};
   return $info;
+}
+
+sub xst_share_nfs_client_info_dup
+{
+  my ($orig) = @_;
+  my $dup;
+
+  $dup = { %$orig };
+  return $dup;
 }
 
 sub xst_share_nfs_client_info_set
@@ -252,6 +321,20 @@ sub xst_share_nfs_client_table_new
 {
   my @array;
   return \@array;
+}
+
+sub xst_share_nfs_client_table_dup
+{
+  my ($orig) = @_;
+  my $dup = &xst_share_nfs_client_table_new ();
+  my $i;
+
+  foreach $i (@$orig)
+  {
+    &xst_share_nfs_client_table_add ($dup, &xst_share_nfs_client_info_dup ($i));
+  }
+
+  return $dup;
 }
 
 sub xst_share_nfs_client_table_add
@@ -395,37 +478,284 @@ sub xst_share_replace_smb_conf
   }
 }
 
-sub xst_share_replace_nfs_exports
+sub xst_share_nfs_exports_get_next_entry_line  # $infd, $outfd
 {
-  my ($file, $table) = @_;
-  my $outfd;
+  my ($infd, $outfd) = @_;
 
-  # Find the file.
-
-  $outfd = &xst_file_open_write_from_names ($file);
-  if (not $outfd) { return; }
-
-  # We rewrite everything. This is not really a good solution, since we lose unhandled options.
-
-  for $export (@$table)
+  while (<$infd>)
   {
-    print $outfd &xst_share_nfs_info_get_point ($export);
+    # Each line is in the following format:
+    # <point> <clients>
+    my @line = split /[ \t]+/, $_;
+    if ($line[0] eq "") { shift @line; }
+    if (@line < 1 || &xst_ignore_line (@line)) { print $outfd $_; next; }
 
-    my $client_table = &xst_share_nfs_info_get_client_table ($export);
-    for $client (@$client_table)
+    return $_;
+  }
+
+  return undef;
+}
+
+sub xst_share_nfs_exports_get_entry_line_fields  # line
+{
+  my ($line) = @_;
+
+  # Remove leading spaces.
+  $line =~ s/^[ \t]*//;
+
+  # Remove trailing spaces and comments.
+  $line =~ s/[ \t]*\#.*//;
+
+  return split /[ \t]+/, $line;
+}
+
+sub xst_share_nfs_info_print_clients
+{
+  my ($info) = @_;
+  my $line = "";
+  my $clients, $client;
+
+  $clients = &xst_share_nfs_info_get_client_table ($info);
+
+  for $client (@$clients)
+  {
+    $line .= &xst_share_nfs_client_info_get_pattern ($client);
+    $line .= "(rw)" if (&xst_share_nfs_client_info_get_write ($client));
+    $line .= " ";
+  }
+
+  return $line;
+}
+
+sub xst_share_nfs_info_print_entry
+{
+  my ($info) = @_;
+  my $line;
+
+  # <point>
+
+  $line = sprintf ("%-15s ", &xst_share_nfs_info_get_point ($info));
+
+  # <clients>
+
+  $line .= &xst_share_nfs_info_print_clients ($info);
+
+  return $line;
+}
+
+sub xst_share_nfs_client_print_option_hash
+{
+  my ($opthash) = @_;
+  my $string = "";
+
+  for $key (keys %$opthash)
+  {
+    my $value = $$opthash{$key};
+
+    $string .= "," if $string ne "";
+    $string .= $key;
+
+    if ($value eq " ")
     {
-      print $outfd " " . &xst_share_nfs_client_info_get_pattern ($client);
+      $string .= "=";
+    }
+    elsif ($value ne "")
+    {
+      $string .= "=" . $value;
+    }
+  }
 
-      if (&xst_share_nfs_client_info_get_write ($client))
-      {
-        print $outfd "(rw)";
-      }
+  return $string;
+}
+
+sub xst_share_nfs_info_print_synthesized_entry
+{
+  my ($info, $line) = @_;
+  my $outline;
+  my $ctable = &xst_share_nfs_info_get_client_table ($info);
+
+  # <point>
+
+  $outline = sprintf ("%-15s", &xst_share_nfs_info_get_point ($info));
+
+  # <clients>
+
+  chomp $line;
+  my @clients = split /[ \t]+/, $line;
+  shift @clients;
+
+  # Make client hash based on line.
+
+  my $chash = { };
+
+  for $client (@clients)
+  {
+    my $opthash = { };
+
+    $client =~ /^([a-zA-Z0-9.-_*?@\/]+)/;
+    my $pattern = $1;
+    $$chash{$pattern} = $opthash;
+
+    my $option_str = "";
+    if ($client =~ /\((.+)\)/) { $option_str = $1; }
+    @options = ($option_str =~ /([a-zA-Z0-9_=-]+),?/mg);
+
+    for $option (@options)
+    {
+      my ($key, $value) = split /[=]/, $option;
+      next if ($key eq "");
+
+      if ($value eq "" && $option =~ /=/) { $value = " "; }
+      $$opthash{$key} = $value;
+    }
+  }
+
+  # @clients contains client(options) entries.
+
+  for $cinfo (@$ctable)
+  {
+    my $pattern = &xst_share_nfs_client_info_get_pattern ($cinfo);
+    my $opthash = $$chash{$pattern};
+
+    if (&xst_share_nfs_client_info_get_write ($cinfo))
+    {
+      $$opthash{'rw'} = "";
+    }
+    else
+    {
+      delete $$opthash{'rw'};
     }
 
-    print $outfd "\n";
+    $outline .= " " . &xst_share_nfs_client_info_get_pattern ($cinfo);
+    my $client_string = &xst_share_nfs_client_print_option_hash ($opthash);
+    if ($client_string ne "")
+    {
+      $outline .= "(" . $client_string . ")";
+    }
   }
-  
+
+  return $outline;
+}
+
+sub xst_share_nfs_exports_add_entry
+{
+  my ($file, $info) = @_;
+  my ($infd, $outfd);
+  my ($line);
+
+  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  return undef if !$outfd;
+
+  while (<$infd>) { print $outfd $_; }
+  close $infd;
+
+  print $outfd &xst_share_nfs_info_print_entry ($info) . "\n";
   close $outfd;
+}
+
+sub xst_share_nfs_exports_update_entry  # filename, filesys_info
+{
+  my ($file, $info) = @_;
+  my ($infd, $outfd);
+  my ($line);
+  my $replaced = 0;
+
+  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  return undef if !$outfd;
+
+  while ($line = &xst_share_nfs_exports_get_next_entry_line ($infd, $outfd))
+  {
+    my $point = &xst_share_nfs_exports_get_entry_line_point ($line);
+
+    if (!$replaced && $point eq &xst_share_nfs_info_get_point ($info))
+    {
+      print $outfd &xst_share_nfs_info_print_synthesized_entry ($info, $line) . "\n";
+      $replaced = 1;
+    }
+    else
+    {
+      print $outfd $line;
+    }
+  }
+
+  close $infd;
+  close $outfd;
+}
+
+sub xst_share_nfs_exports_remove_entry
+{
+  my ($file, $info) = @_;
+  my ($infd, $outfd);
+  my ($line);
+
+  ($infd, $outfd) = &xst_file_open_filter_write_from_names ($file);
+  return undef if !$outfd;
+
+  while ($line = &xst_share_nfs_exports_get_next_entry_line ($infd, $outfd))
+  {
+    my $point = &xst_share_nfs_exports_get_entry_line_point ($line);
+
+    if ($point ne &xst_share_nfs_info_get_point ($info))
+    {
+      print $outfd $line;
+    }
+  }
+
+  close $infd;
+  close $outfd;
+}
+
+sub xst_share_nfs_exports_get_entry_line_point
+{
+  my ($line) = @_;
+  my $point;
+
+  ($point) = split /[ \t]+/, $line;
+  return $point;
+}
+
+sub xst_share_replace_nfs_exports  # filename, table
+{
+  my ($file, $table) = @_;
+  my ($new_table, $old_table);
+
+  $old_table = &xst_share_parse_nfs_exports ($file);
+  $new_table = &xst_share_nfs_table_dup ($table);
+
+  for $info (@$new_table)
+  {
+    my $old_info = &xst_share_nfs_table_find_info_equivalent ($old_table, $info);
+
+#    print "Looking for entry - ";
+    if (!$old_info)
+    {
+#      print "adding.\n";
+      &xst_share_nfs_exports_add_entry ($file, $info);
+    }
+    elsif ($old_info && !&xst_share_nfs_info_match_data ($old_info, $info))
+    {
+#      print "updating.\n";
+      &xst_share_nfs_exports_update_entry ($file, $info);
+    }
+    else
+    {
+#      print "found.\n";
+    }
+  }
+
+  for $old_info (@$old_table)
+  {
+#    print "Looking for entry - ";
+    if (!&xst_share_nfs_table_find_info_equivalent ($new_table, $old_info))
+    {
+#      print "removing.\n";
+      &xst_share_nfs_exports_remove_entry ($file, $old_info);
+    }
+    else
+    {
+#      print "found.\n";
+    }
+  } 
 }
 
 1;
