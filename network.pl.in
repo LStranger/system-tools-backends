@@ -35,52 +35,53 @@ require "___scriptsdir___/replace.pl";
 # depend on wvdial.
 sub xst_network_dialing_get
 {
-  my %vars = (
-		    "Modem" => "device",
-		    "Baud" => "speed",
-		    "Init1" => "init1",
-		    "Init2" => "init2",
-		    "Phone" => "phone",
-		    "Username" => "login",
-		    "Password" => "passwd",
-		    "Dial Command" => "dialcmd",
-		    "SetVolume" => "setvol",
-		    "Stupid mode" => "stupid",
-		    "Inherits" => "inherits"
-		    );
+  my %vars =
+	 (
+	  "Modem" => "device",
+	  "Baud" => "speed",
+	  "Init1" => "init1",
+	  "Init2" => "init2",
+	  "Phone" => "phone",
+	  "Username" => "login",
+	  "Password" => "passwd",
+	  "Dial Command" => "dialcmd",
+	  "SetVolume" => "setvol",
+	  "Stupid mode" => "stupid",
+	  "Inherits" => "inherits"
+	  );
+  my %title2type =
+	 (
+	  "Dialer (.*)" => "dialer",
+	  "Modem(.*)" => "modem"
+	  );
+  
   my ($file) = @_;
   my %ret, @sections;
   my $i, $j, $name, $val;
 
-  &xst_run ("wvdialconf $file") if (!-e $file);
+  &xst_run ("wvdialconf $xst_prefix/$file") if (!-e "$xst_prefix/$file");
   
   @sections = &xst_parse_ini_sections ($file);
   foreach $i (@sections)
   {
     my %hash;
-    
-    if ($i =~ /^Dialer (.*)$/)
-    {
-	 $name = $1;
-	 $hash{"type"} = "dialer";
-    }
-    elsif ($i =~ /^Modem(.*)$/)
-    {
-	 $name = $1;
-	 $hash{"type"} = "modem";
-    }
-    else
-    {
-	 $name = $i;
-	 $hash{"type"} = "unknown";
-    }
 
-    $ret{$name} = \%hash;
+    $hash{"type"} = "unknown";
+    foreach $j (keys %title2type)
+    {
+	 if ($i =~ /$j/)
+	 {
+	   $hash{"name"} = $1;
+	   $hash{"type"} = $title2type{$j};
+	 }
+    }
+    
+    $ret{$hash{"name"}} = \%hash;
 
     foreach $j (keys %vars)
     {
 	 $val = &xst_parse_ini ($file, $i, $j);
-	 $hash{$j} = $val if ($val ne undef);
+	 $hash{$vars{$j}} = $val if ($val ne undef);
     }
   }
 
@@ -184,6 +185,51 @@ sub xst_network_conf_get
   $hash = &xst_parse_from_table ($dist_attrib{"fn"},
 						   $dist_attrib{"table"});
   return $hash;
+}
+
+sub xst_network_dialing_set
+{
+  my %vars =
+	 (
+	  "device" => "Modem",
+	  "speed" => "Baud",
+	  "init1" => "Init1",
+	  "init2" => "Init2",
+	  "phone" => "Phone",
+	  "login" => "Username",
+	  "passwd" => "Password",
+	  "dialcmd" => "Dial Command",
+	  "setvol" => "SetVolume",
+	  "mode" => "Stupid mode",
+	  "inherits"=>"Inherits"
+	  );
+  my %type2title =
+	 (
+	  "dialer" => "Dialer #i#",
+	  "modem" => "Modem #i#",
+	  "unknown" => "#i#"
+	  );
+  my ($file, $values_hash) = @_;
+  my %hash, $section;
+  my $ret;
+  my $i, $j;
+
+  foreach $i (keys %$values_hash)
+  {
+    %hash = %{$$values_hash{$i}};
+
+    $section = $type2title{$hash{"type"}};
+    $section =~ s/\#i\#/$i/;
+    delete $hash{"type"};
+    delete $hash{"name"};
+
+    foreach $j (keys %hash)
+    {
+	 $ret = -1 if &xst_replace_ini ($file, $section, $vars{$j}, $hash{$j});
+    }
+  }
+
+  return $ret;
 }
 
 sub xst_network_rh62_interface_set
@@ -290,7 +336,7 @@ sub xst_network_rh62_replace_bootproto
 # a computer with no reverse name or DNS. The name is added as the first alias,
 # which usually means it'll be returned by a lookup on the loopback IP.
 
-sub xst_ensure_local_host_entry
+sub xst_network_ensure_local_host_entry
 {
   my $local_ip = "127.0.0.1";
   my $local_hostname = @_[0];
@@ -431,6 +477,7 @@ sub xst_network_get_interfaces_parse_table
 		    [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
 		    [ serial_init,        \&xst_parse_sh,      IFCFG, INITSTRING ],
 		    [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
+		    [ wvsection,          \&xst_parse_sh,      IFCFG, WVDIALSECT ],
 		    [ auto,               \&xst_parse_sh_bool, IFCFG, ONBOOT ],
 		    [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
 		    [ set_default_gw,     \&xst_parse_sh_bool, IFCFG, DEFROUTE ],
@@ -463,39 +510,40 @@ sub xst_network_get_replace_table
 	  );
 
   my %dist_tables =
-  (
-    "redhat-6.2" =>
-    {
-      fn =>
-      {
-        SYSCONFIG_NW => "/etc/sysconfig/network",
-        RESOLV_CONF  => "/etc/resolv.conf",
-        HOST_CONF    => "/etc/host.conf",
-        HOSTS        => "/etc/hosts",
-        SMB_CONF     => "/etc/smb.conf"
-      },
-      table =>
-      [
-        [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
-        [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
-        [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
-        [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
-        [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
-        [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
-        [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
-        [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
-        [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
-        [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
-        [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
-        [ statichost,    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
-        [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
-        [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
-        [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
-        [ interface,     \&xst_network_interfaces_set ]
-      ]
-    }
-  );
-
+	 (
+	  "redhat-6.2" =>
+	  {
+	    fn =>
+	    {
+		 SYSCONFIG_NW => "/etc/sysconfig/network",
+		 RESOLV_CONF  => "/etc/resolv.conf",
+		 HOST_CONF    => "/etc/host.conf",
+		 HOSTS        => "/etc/hosts",
+		 SMB_CONF     => "/etc/smb.conf",
+		 WVDIAL       => "/etc/wvdial.conf" },
+	    table =>
+		   [
+		    [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
+		    [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
+		    [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+		    [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
+		    [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
+		    [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
+		    [ nameserver,    \&xst_replace_join_all,         RESOLV_CONF,  nameserver, "[ \t]+" ],
+		    [ searchdomain,  \&xst_replace_join_first_array, RESOLV_CONF,  search, "[ \t]+", "[ \t]+" ],
+		    [ domainname,    \&xst_replace_join_first_str,   RESOLV_CONF,  domain, "[ \t]+" ],
+		    [ order,         \&xst_replace_join_first_array, HOST_CONF,    order, "[ \t]+", "," ],
+		    [ hostmatch,     \&xst_replace_join_first_bool,  HOST_CONF,    multi, "[ \t]+", "on", "off" ],
+		    [ statichost,    \&xst_replace_join_hash,        HOSTS,        "[ \t]+", "[ \t]+" ],
+		    [ workgroup,     \&xst_replace_ini,              SMB_CONF,     "global", "workgroup" ],     
+		    [ description,   \&xst_replace_ini,              SMB_CONF,     "global", "server string" ],
+		    [ winsserver,    \&xst_replace_ini,              SMB_CONF,     "global", "wins server" ],
+		    [ dialing,       \&xst_network_dialing_set,      WVDIAL ],
+		    [ interface,     \&xst_network_interfaces_set ]
+		    ]
+			 }
+	  );
+  
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
@@ -543,6 +591,7 @@ sub xst_network_get_interface_replace_table
         [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
         [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
         [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
+	   [ wvsection,          \&xst_replace_sh,      IFCFG, WVDIALSECT ],
         [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
         [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
         [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],

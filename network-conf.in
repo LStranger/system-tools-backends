@@ -62,70 +62,6 @@ end_of_description;
 $progress_max = 10;
 
 
-# --- Configuration file manipulation --- #
-
-# --- Name resolution utilities --- #
-
-
-# &xst_ensure_local_host_entry (<hostname>)
-#
-# Given a hostname, add the hostname as an alias for the loopback IP, in the
-# /etc/hosts database. This is required for tools like nmblookup to work on
-# a computer with no reverse name or DNS. The name is added as the first alias,
-# which usually means it'll be returned by a lookup on the loopback IP.
-
-sub xst_ensure_local_host_entry
-{
-  my $local_ip = "127.0.0.1";
-  my $local_hostname = @_[0];
-  my ($ifh, $ofh);
-  local (*INFILE, *OUTFILE);
-  my $written = 0;
-
-  if ($local_hostname eq "") { return; }
-
-  # Find the file.
-
-  ($ifh, $ofh) = &xst_open_filter_write_from_names(@hosts_names);
-  if (!$ofh) { return; }  # We didn't find it.
-  *INFILE = $ifh; *OUTFILE = $ofh;
-
-  # Write the file, preserving as much as possible from INFILE.
-
-  while (<INFILE>)
-  {
-    @line = split(/[ \n\r\t]+/, $_);
-    if ($line[0] eq "") { shift @line; }  # Leading whitespace. He.
-
-    if ($line[0] ne "" && (not &xst_ignore_line($line[0])) &&
-#       ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) &&
-        $line[0] eq $local_ip)
-    {
-      # Found $local_ip. Add $local_hostname to beginning of list,
-      # and remove any other occurrences.
-
-      shift @line;
-
-      printf OUTFILE ("%-16s %s", $local_ip, $local_hostname);
-      for $alias (@line)
-      {
-        if ($alias ne $local_hostname) { print OUTFILE " $alias"; }
-      }
-      print OUTFILE "\n";
-
-      $written = 1;
-    }
-    else { print OUTFILE; }
-  }
-
-  # If the IP wasn't present, add the entry at the end.
-
-  if (!$written) { printf OUTFILE ("%-16s %s\n", $local_ip, $local_hostname); }
-  close INFILE;
-  close OUTFILE;
-}
-
-
 # --- XML parsing ---
 
 # Scan XML from standard input to an internal tree.
@@ -157,7 +93,7 @@ sub xml_parse_network
 {
   my $tree = $_[0];
   my $hash = $_[1];
-  my (@searchdomain, @nameserver, @order, %statichost, %interface);
+  my (@searchdomain, @nameserver, @order, %statichost, %interface, %dialing);
 
   shift @$tree;  # Skip attributes.
 
@@ -179,6 +115,7 @@ sub xml_parse_network
     elsif ($$tree[0] eq "description")     { $$hash{"description"} = &xst_xml_get_text ($$tree[1]); }
     elsif ($$tree[0] eq "winsserver")      { $$hash{"winsserver"} = &xst_xml_get_word ($$tree[1]); }
     elsif ($$tree[0] eq "interface")       { &xml_parse_interface ($$tree[1], \%interface); }
+    elsif ($$tree[0] eq "dialing")         { &xml_parse_dialing ($$tree[1], \%dialing); }
 
     shift @$tree;
     shift @$tree;
@@ -189,6 +126,7 @@ sub xml_parse_network
   $$hash{"nameserver"} = \@nameserver unless $#nameserver < 0;
   $$hash{"statichost"} = \%statichost unless scalar keys %statichost == 0;
   $$hash{"interface"} = \%interface unless scalar keys %interface == 0;
+  $$hash{"dialing"} = \%dialing unless scalar keys %dialing == 0;
 }
 
 # <network><statichost>...</statichost></network>
@@ -240,6 +178,26 @@ sub xml_parse_interface
   $$interface{$dev} = \%hash;
 }
 
+sub xml_parse_dialing
+{
+  my $tree = $_[0];
+  my $interface = $_[1];
+  my %hash;
+  my $name;
+
+  shift @$tree;
+  
+  while (@$tree)
+  {
+    $hash{$$tree[0]} = &xst_xml_get_word ($$tree[1]);
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  $name = $hash{"name"};
+  $$interface{$name} = \%hash;
+}
 
 # --- XML printing --- #
 
@@ -315,34 +273,34 @@ sub xml_print_statichost
     &xst_xml_print ("<ip>$val</ip>\n");
     foreach $j (@$statichost)
     {
-	 $val = &quote ($j);
-	 &xst_xml_print ("<alias>$val</alias>\n");
+      $val = &quote ($j);
+      &xst_xml_print ("<alias>$val</alias>\n");
     }
     &xst_xml_leave ();
     &xst_xml_print ("</statichost>\n");
   }
 }
 
-sub xml_print_interfaces
+sub xml_print_hash
 {
-  my ($h) = $_[0];
-  my $interface, $i, $j, $val;
+  my ($h, $tag) = @_;
+  my $hash, $i, $j, $val;
   
-  foreach $i (keys %{$$h{"interface"}})
+  foreach $i (keys %$h)
   { 
-    $interface = $ {$$h{"interface"}}{$i};
+    $hash = $$h{$i};
     &xst_xml_vspace ();
-    &xst_xml_print ("<interface>\n");
+    &xst_xml_print ("<$tag>\n");
     &xst_xml_enter ();
     
-    foreach $j (keys (%$interface))
+    foreach $j (keys (%$hash))
     {
-	 $val = &quote ($$interface{$j});
+      $val = &quote ($$hash{$j});
       &xst_xml_print ("<$j>$val</$j>\n");
     }
     
     &xst_xml_leave ();
-    &xst_xml_print ("</interface>\n");
+    &xst_xml_print ("</$tag>\n");
   } 
 }
 
@@ -372,7 +330,8 @@ sub xml_print
   &xml_print_scalars ($h, @scalar_keys);
   &xml_print_arrays ($h, @array_keys);
   &xml_print_statichost ($h);
-  &xml_print_interfaces ($h);
+  &xml_print_hash ($$h{"interface"}, "interface");
+  &xml_print_hash ($$h{"dialing"}, "dialing");
   
   &xst_xml_vspace ();
   &xst_xml_print ("<!-- End of configuration -->\n");

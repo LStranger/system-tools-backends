@@ -277,6 +277,7 @@ sub xst_replace_ini
   $buff = &xst_buffer_load ($file);
 
   &xst_buffer_join_lines ($buff);
+  $found_flag = 0;
   
   foreach $i (@$buff)
   {
