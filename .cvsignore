@@ -22,3 +22,6 @@ network.pl
 media.pl
 boot.pl
 debug.pl
+print.pl
+gettext.pl
+print-conf
