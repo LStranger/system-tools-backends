@@ -49,6 +49,8 @@ $description =<<"end_of_description;";
        Configures main and swap memory.
 end_of_description;
 
+$progress_max = 3;
+
 
 # --- System config file locations --- #
 
@@ -173,8 +175,10 @@ sub xml_print
 
     foreach $entry (@cf_memory) {
       be_xml_print ("<memsize>$entry->{MemTotal}</memsize>\n");
-      be_xml_print ("<swapsize>$entry->{SwapTotal}</swapsize>\n\n");
+      be_xml_print ("<swapsize>$entry->{SwapTotal}</swapsize>\n");
     }
+
+    be_xml_vspace ();
 
     foreach $entry (@cf_partition) {
       be_xml_print ("<partition>\n");
@@ -182,7 +186,7 @@ sub xml_print
       be_xml_print ("<device>$entry->{device}</device>\n");
       be_xml_print ("<size>$entry->{size}</size>\n");
 			&be_xml_leave;
-      be_xml_print ("</partition>\n\n");
+      be_xml_print ("</partition>\n");
     }
 
     be_xml_vspace ();
@@ -404,9 +408,9 @@ sub get
 {
     be_report_info(04, "Getting swap entries");
 
-    get_memory; be_print_progress;
-    get_fdisk;  be_print_progress;
-    get_swap_entries; be_print_progress;
+    get_memory; be_print_progress();
+    get_fdisk;  be_print_progress();
+    get_swap_entries; be_print_progress();
     
     be_end();
     xml_print ();
@@ -417,7 +421,10 @@ sub get
 
 sub setup_swap_files
   {
-    system ("/sbin/swapoff -a");	# To make sure removed swap spaces get removed
+    be_run ("swapoff -a");  # To make sure removed swap spaces get removed
+    
+    my $num_done = 0;
+    
     foreach $entry (@cf_swapinfo)
       {
 	if ($entry->{is_new})
@@ -427,10 +434,10 @@ sub setup_swap_files
 	        my ($size) = $entry->{size};
 		$size =~ tr/MB$//d;	# Remove Mb from the end
 		$size *= 1024;		# Make it to Kb
-		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
+		be_run ("dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
 	      }
 
-	    system ("/sbin/mkswap $entry->{device} >/dev/null 2>/dev/null");
+	    be_run ("mkswap $entry->{device}");
 	  }
 
 	elsif ($entry->{is_file})
@@ -440,8 +447,8 @@ sub setup_swap_files
 	    $size *= 1024;		# Make it to Kb
 	    if ($size != $entry->{size})
 	      {
-		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
-		system ("/sbin/mkswap $entry->{device} >/dev/null 2>/dev/null");
+		be_run ("dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
+		be_run ("mkswap $entry->{device}");
 	      }
 	  }
 
@@ -456,8 +463,11 @@ sub setup_swap_files
 
 	if ($entry->{enabled}) 
 	  {
-	    system ("/sbin/swapon $entry->{device} $priority >/dev/null 2>/dev/null");
+	    be_run ("swapon $entry->{device} $priority");
 	  }
+	
+	$num_done++;
+	be_progress(90 / ($#cf_swapinfo - $num_done + 2));
       }
   }
 
@@ -510,9 +520,9 @@ sub set
     if ($be_do_immediate)
       {
 	setup_swap_files;
-	set_swap_entries;
       }
 
+    set_swap_entries;
     be_end();
   }
 

@@ -1127,29 +1127,20 @@ sub set_immediate
 {
   # Set hostname via utility, in case the config files aren't enough.
 
-  if (!system "which hostname >/dev/null 2>/dev/null")
+  if ($cf_hostname ne "")
   {
-    # Found hostname command.
-
-    if ($cf_hostname ne "")
+    if (be_run("hostname $cf_hostname >/dev/null 2>/dev/null"))
     {
-      if (system "hostname $cf_hostname >/dev/null 2>/dev/null")
-      {
-	be_report_warning(3, "Failed to set runtime hostname");
-      }
-      else
-      {
-        be_report_info(1, "Runtime hostname set");
-      }
+      be_report_warning(3, "Failed to set runtime hostname");
     }
     else
     {
-      be_report_warning(4, "No hostname specified; runtime hostname not set");
+      be_report_info(1, "Runtime hostname set");
     }
   }
   else
   {
-    be_report_warning(5, "No hostname command found; runtime hostname not set");
+    be_report_warning(4, "No hostname specified; runtime hostname not set");
   }
 
   # Reload SMB configuration.
@@ -1183,15 +1174,15 @@ sub set
 {
   xml_parse ();
 
-  write_smb_conf ();
-  write_rc_config ();
-  write_sysconfig_network ();
-  write_defaultdomain ();
-  write_hostname ();
-  write_resolv_conf ();
-  write_hosts ();
-  write_host_conf ();
-  be_ensure_local_host_entry ($cf_hostname);
+  write_smb_conf (); be_progress(10);
+  write_rc_config (); be_progress(20);
+  write_sysconfig_network (); be_progress(30);
+  write_defaultdomain (); be_progress(40);
+  write_hostname (); be_progress(50);
+  write_resolv_conf (); be_progress(60);
+  write_hosts (); be_progress(70);
+  write_host_conf (); be_progress(80);
+  be_ensure_local_host_entry ($cf_hostname); be_progress(90);
 
   if ($be_do_immediate)
   {

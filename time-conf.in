@@ -233,13 +233,13 @@ sub write_localtime
       # NOTE: Might not work everywhere. Might be unsafe if the user is allowed
       # to specify a $name list somehow, in the future.
 
-      system("cp $name $name.confsave >/dev/null 2>/dev/null");
+      be_run("cp $name $name.confsave");
     }
 
     # Replace the timezone info file.
 
     unlink $name;  # Important, since it might be a symlink.
-    system("cp $tz $name >/dev/null 2>/dev/null");
+    be_run("cp $tz $name");
   }
 }
 
@@ -461,8 +461,8 @@ sub set_time
 {
   be_report_info(6, "Setting system clock");
 
-  system sprintf("date %02d%02d%02d%02d%04d.%02d >/dev/null 2>/dev/null",
-                 $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_year, $cf_second);
+  be_run(sprintf("date %02d%02d%02d%02d%04d.%02d >/dev/null 2>/dev/null",
+                 $cf_month, $cf_mday, $cf_hour, $cf_minute, $cf_year, $cf_second));
 }
 
 
@@ -485,14 +485,14 @@ sub set
 {
   xml_parse ();
 
-  write_ntp_conf ();
-  write_ntp_step_tickers ();
-  write_localtime ();
+  write_ntp_conf (); be_progress (10);
+  write_ntp_step_tickers (); be_progress (20);
+  write_localtime (); be_progress (30);
 
   if ($be_do_immediate)
   {
-    set_time;
-    restart_servers;
+    set_time; be_progress (50);
+    restart_servers; be_progress (80);
   }
   
   be_end();
