@@ -39,7 +39,7 @@ require "___scriptsdir___/replace.pl";
 
 $name = "internetsharing";
 $version = "0.1.0";
-@platforms = ("redhat-7.0",
+@platforms = ("redhat-7.0", "redhat-7.1",
               "mandrake-7.2");
 
 $description =<<"end_of_description;";
@@ -236,6 +236,7 @@ sub conf_get_parse_table
   my %dist_map =
   (
    "redhat-7.0"   => "redhat-7.0",
+   "redhat-7.1"   => "redhat-7.0",
    "mandrake-7.2" => "redhat-7.0",
    );
 
@@ -267,6 +268,7 @@ sub conf_get_replace_table
   my %dist_map =
   (
    "redhat-7.0"   => "redhat-7.0",
+   "redhat-7.1"   => "redhat-7.0",
    "mandrake-7.2" => "redhat-7.0",
    );
 
