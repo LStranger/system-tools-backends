@@ -760,7 +760,7 @@ sub xml_print
 	  &be_xml_print ("<user>\n");
 		&be_xml_enter ();
 		for ($j = 0; $j < ($#users_prop_array - 1) / 2; $j++) {
-		  &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $i->[$j] . "</" . $users_prop_map {$j} . ">\n");
+		  if ($i->[$j]) { &be_xml_print ("<" . $users_prop_map{"$j"} . ">" . $i->[$j] . "</" . $users_prop_map {$j} . ">\n"); }
 		}
 		&be_xml_leave ();
 		&be_xml_print ("</user>\n");
