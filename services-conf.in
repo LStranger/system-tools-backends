@@ -53,7 +53,7 @@ $version = "@VERSION@";
 
               "suse-7.0", "turbolinux-7.0", "fedora-1",
               "pld-1.0", "pld-1.1", "pld-1.99",
-              "slackware-9.1.0", "gentoo", "freebsd-5");
+              "slackware-9.1.0", "gentoo", "freebsd-5", "suse-9.0");
 
 $description =<<"end_of_description;";
        Configures which services are to be started or stopped at which runlevels

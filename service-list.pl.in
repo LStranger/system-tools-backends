@@ -261,6 +261,10 @@ sub gst_service_list_service_is_forbidden
      "sysctl",
      "ttys",
      "virecover",
+     # These are the services found in SuSE
+     "rc[sS0-9]\.d",
+     "boot",
+     "boot\..*",
     ];
 
   foreach $i (@$service_forbidden_list)

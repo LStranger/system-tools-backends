@@ -507,6 +507,9 @@ sub gst_service_sysv_get_service_info
 	my ($service) = @_;
 	my ($script, $name, $description, @actions, @runlevels);
 	my %hash;
+
+	# Return if it's a directory
+	return undef if (-d $service);
 	
 	# We have to check if the service is executable	
 	return undef unless (-x $service);
@@ -989,6 +992,68 @@ sub gst_service_rcng_get_services
   return \%ret;
 }
 
+# SuSE functions, quite similar to SysV, but not equal...
+sub gst_service_suse_get_service_info ($service)
+{
+  my ($service) = @_;
+  my ($name, $description);
+  my (%hash, @arr, @ret);
+                                                                                                                                                             
+  # We have to check if the service is in the "forbidden" list
+  return undef if (&gst_service_list_service_is_forbidden ($service));
+                                                                                                                                                             
+  ($name, $description) = &gst_service_list_get_info ($service);
+                                                                                                                                                             
+  $hash{"script"} = $service;
+  $hash{"name"} = $name unless ($name eq undef);
+  $hash{"description"} = $description unless ($description eq undef);
+
+  foreach $link (<$rcd_path/rc[0-9S].d/S[0-9][0-9]$service>)
+  {
+    $link =~ s/$rcd_path\///;
+    $link =~ /rc([0-6])\.d\/S[0-9][0-9].*/;
+    $runlevel = $1;
+
+    push @arr, { "number" => $runlevel,
+                 "action" => "start" };
+  }
+
+  foreach $link (<$rcd_path/boot.d/S[0-9][0-9]$service>)
+  {
+    push @arr, {"number" => "B",
+                "action" => "start" };
+  }
+
+  if (scalar @arr > 0)
+  {
+    push @ret, { "runlevel" => \@arr };
+    $hash{"runlevels"} = \@ret;
+  }
+
+  return \%hash;
+}
+
+sub gst_service_suse_get_services
+{
+  my ($service, %ret);
+
+  ($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
+
+  foreach $service (<$gst_prefix/etc/init.d/*>)
+  {
+    my (%hash);
+
+    next if (-d $service || ! -x $service);
+
+    $service =~ s/.*\///;
+    $hash = &gst_service_suse_get_service_info ($service);
+
+    $ret{$service} = $hash if ($hash ne undef);
+  }
+
+  return \%ret;
+}
+
 # generic functions to get the available services
 sub gst_get_init_type
 {
@@ -1008,6 +1073,10 @@ sub gst_get_init_type
   {
     return "gentoo";
   }
+  elsif ($gst_dist =~ /suse/)
+  {
+    return "suse";
+  }
   else
   {
     return "sysv";
@@ -1023,6 +1092,7 @@ sub gst_service_get_services
   return &gst_service_bsd_get_services ()    if ($type eq "bsd");
   return &gst_service_gentoo_get_services () if ($type eq "gentoo");
   return &gst_service_rcng_get_services ()   if ($type eq "rcng");
+  return &gst_service_suse_get_services ()   if ($type eq "suse");
 
   return undef;
 }
@@ -1329,6 +1399,36 @@ sub gst_service_rcng_set_services
   }
 }
 
+sub gst_service_suse_set_services
+{
+  my ($services, $runlevel) = @_;
+  my ($action, $runlevels, $script, $rllist);
+
+  foreach $service (@$services)
+  {
+    $script = $$service{"script"};
+    $runlevels = $$service{"runlevels"}[0]{"runlevel"};
+    $rllist = "";
+
+    &gst_file_run ("insserv -r $script");
+
+    foreach $rl (@$runlevels)
+    {
+      if ($$rl{"action"} eq "start")
+      {
+        $rllist .= $$rl{"number"} . ",";
+      }
+    }
+
+    if ($rllist ne "")
+    {
+      $rllist =~ s/,$//;
+
+      &gst_file_run ("insserv $script,start=$rllist");
+    }
+  }
+}
+
 sub gst_service_set_services
 {
 	my ($services, $runlevel) = @_;
@@ -1340,6 +1440,7 @@ sub gst_service_set_services
   &gst_service_bsd_set_services    ($services, $runlevel) if ($type eq "bsd");
   &gst_service_gentoo_set_services ($services, $runlevel) if ($type eq "gentoo");
   &gst_service_rcng_set_services   ($services, $runlevel) if ($type eq "rcng");
+  &gst_service_suse_set_services   ($services, $runlevel) if ($type eq "suse");
 }
 
 sub gst_service_set_conf
@@ -1425,6 +1526,15 @@ sub gst_service_rcng_get_status
   return 0;
 }
 
+sub gst_service_suse_get_status
+{
+  my ($service) = @_;
+
+  $line = gst_file_run_backtick ("/etc/init.d/$service status");
+  return 1 if ($line =~ /running/);
+  return 0;
+}
+
 # returns true if the service is already running
 sub gst_service_get_status
 {
@@ -1446,6 +1556,8 @@ sub gst_service_get_status
        "redhat-8.0"   => \&gst_service_redhat_get_status,
        "redhat-9"     => \&gst_service_redhat_get_status,
        "fedora-1"     => \&gst_service_redhat_get_status,
+
+       "suse-9.0"     => \&gst_service_suse_get_status,
 
        "gentoo"       => \&gst_service_gentoo_get_status,
 
@@ -1599,6 +1711,7 @@ sub gst_service_run_script
        "bsd"    => \&gst_service_bsd_run_script,
        "gentoo" => \&gst_service_gentoo_run_script,
        "rcng"   => \&gst_service_rcng_run_script,
+       "suse"   => \&gst_service_sysv_run_initd_script,
       );
 
   $type = &gst_get_init_type ();
