@@ -21,6 +21,7 @@ filesys.pl
 general.pl
 gettext.pl
 internetsharing-conf
+ishare.pl
 media.pl
 memory-conf
 mouse-conf
