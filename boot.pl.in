@@ -589,6 +589,7 @@ sub xst_boot_replace_from_table
 
 sub xst_boot_entries_get
 {
+  my ($partition) = @_;
   my (%dist_attrib, @res, %fn, @entries, $entry);
   my ($dist, $value, $file, $proc);
   my ($i, $j);
@@ -597,6 +598,8 @@ sub xst_boot_entries_get
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"entries_get"};
   @entries = &$proc ($fn{"GRUB_CONF"});
+
+  $ {$dist_attrib{"fn"}}{"PARTITION"} = $partition;
 
   foreach $i (@entries)
   {
@@ -626,7 +629,7 @@ sub xst_boot_conf_get
    "redhat-7.2" => "redhat-7.2",
    
    "mandrake-7.1" => "redhat-6.2",
-   "mandrake-7.2" => "redhat-7.2",
+   "mandrake-7.2" => "mandrake-7.2",
    
    "debian-2.2"   => "redhat-6.2",
    "debian-woody" => "redhat-6.2",
@@ -646,10 +649,12 @@ sub xst_boot_conf_get
          },
          table =>
              [
-              [ "timeout",  \&xst_boot_lilo_parse_global,    LILO_CONF, "timeout" ],
-              [ "prompt",   \&xst_boot_lilo_parse_global_kw, LILO_CONF, "prompt"  ],
-              [ "default",  \&xst_boot_lilo_parse_global,    LILO_CONF, "default" ],
-              [ "entry",    \&xst_boot_lilo_parse_entries,   LILO_CONF ],
+              [ "partition", \&xst_partition_scan_info ],
+              [ "pixmapsup", \&xst_parse_trivial,             0 ],
+              [ "timeout",   \&xst_boot_lilo_parse_global,    LILO_CONF, "timeout" ],
+              [ "prompt",    \&xst_boot_lilo_parse_global_kw, LILO_CONF, "prompt"  ],
+              [ "default",   \&xst_boot_lilo_parse_global,    LILO_CONF, "default" ],
+              [ "entry",     \&xst_boot_lilo_parse_entries,   LILO_CONF ],
               ] 
        },
 
@@ -658,14 +663,36 @@ sub xst_boot_conf_get
          fn =>
          {
            GRUB_CONF => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
+           GRUB_DEV  => "/boot/grub/device.map",
+           MTAB      => "/etc/mtab"
+         },
+         table =>
+             [
+              [ "partition", \&xst_partition_scan_info ],
+              [ "pixmapsup", \&xst_parse_trivial,           1 ],
+              [ "pixmap",    \&xst_boot_grub_parse_pixmap,  [GRUB_CONF, GRUB_DEV, MTAB] ],
+              [ "timeout",   \&xst_boot_grub_parse_timeout, GRUB_CONF ],
+              [ "prompt",    \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
+              [ "default",   \&xst_boot_grub_parse_default, GRUB_CONF ],
+              [ "entry",     \&xst_boot_entries_get,        "%partition%" ],
+              ] 
+       },
+
+       "mandrake-7.2" =>
+       {
+         fn =>
+         {
+           GRUB_CONF => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
            GRUB_DEV  => "/boot/grub/device.map"
          },
          table =>
              [
-              [ "timeout",  \&xst_boot_grub_parse_timeout, GRUB_CONF ],
-              [ "prompt",   \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
-              [ "default",  \&xst_boot_grub_parse_default, GRUB_CONF ],
-              [ "entry",    \&xst_boot_entries_get,                  ],
+              [ "partition", \&xst_partition_scan_info ],
+              [ "pixmapsup", \&xst_parse_trivial,           0 ],
+              [ "timeout",   \&xst_boot_grub_parse_timeout, GRUB_CONF ],
+              [ "prompt",    \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
+              [ "default",   \&xst_boot_grub_parse_default, GRUB_CONF ],
+              [ "entry",     \&xst_boot_entries_get,        "%partition%" ],
               ] 
        }
        );
@@ -704,7 +731,7 @@ sub xst_boot_get_entries_parse_table
              [
               ["label",  \&xst_parse_trivial,          ENTRY],
               ["root",   \&xst_boot_grub_parse_root,   [GRUB_CONF, ENTRY, DEVICE_MAP]],
-              ["type",   \&xst_boot_grub_parse_type,   [GRUB_CONF, ENTRY], "%root%"],
+              ["type",   \&xst_boot_grub_parse_type,   [GRUB_CONF, ENTRY, PARTITION], "%root%"],
               ["image",  \&xst_boot_grub_parse_image,  [GRUB_CONF, ENTRY]],
               ["other",  \&xst_boot_grub_parse_other,  [GRUB_CONF, ENTRY]],
               ["append", \&xst_boot_grub_parse_append, [GRUB_CONF, ENTRY]]

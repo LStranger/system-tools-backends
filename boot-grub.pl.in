@@ -198,6 +198,36 @@ sub xst_boot_grub_parse_cmd
   return undef;
 }
 
+sub xst_boot_grub_parse_pixmap
+{
+  my ($grub_conf, $device_map, $mtab) = @_;
+  my ($pixmap, $grubdev, $file, $dev, $root);
+  my ($mntopts, $res);
+
+  $pixmap = &xst_boot_grub_parse_cmd ($grub_conf, "splashimage");
+
+  $pixmap =~ /^\(([^\)]+)\)(.*)/;
+  $grubdev = $1;
+  $file = $2;
+  
+  if ($grubdev eq undef)
+  {
+    $file = $pixmap;
+    $root = &xst_boot_grub_parse_cmd ($grub_conf, "root");
+    $root =~ /^\(([^\)]+)\)/;
+    $grubdev = $1;
+  }
+    
+  $dev = &xst_boot_grub_grub2linux ($device_map, $grubdev);
+  
+  $mntopts = &xst_parse_split_first_array ($mtab, $dev, "[ \t]+", "[ \t]+");
+
+  $res = $$mntopts[0] . "/$file";
+  $res =~ s/\/+/\//g;
+
+  return $res;
+}
+
 sub xst_boot_grub_parse_timeout
 {
   my ($grub_conf) = @_;
@@ -304,8 +334,8 @@ sub xst_boot_grub_parse_append
 
 sub xst_boot_grub_parse_type
 {
-  my ($grub_conf, $entry, $rootdev) = @_;
-  my ($line, $res, $partinfo);
+  my ($grub_conf, $entry, $partition, $rootdev) = @_;
+  my ($line, $res);
 
   $fd = &xst_file_open_read_from_names ("$grub_conf");
   return undef if not &xst_boot_grub_search_entry ($fd, $entry);
@@ -323,9 +353,8 @@ sub xst_boot_grub_parse_type
 
   if ($res eq undef)
   {
-    $partinfo = &xst_partition_scan_info ();
     $rootdev =~ s/.*\///;
-    $res = $ {$$partinfo{$rootdev}}{"typestr"};
+    $res = $ {$$partition{$rootdev}}{"typestr"};
   }
   
   return $res;

@@ -1,3 +1,27 @@
+2001-11-29  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* xml.pl.in (xst_xml_print_hash): minor comment update.
+
+	* partition.pl.in (xst_partition_scan_info): Moved to the
+	top (scrolling past the id table is annoying).
+
+	* network.pl.in (xst_network_get_parse_table): Use the bare
+	numbers for parse_trivial entries: no need for quotes.
+
+	* boot-conf.in (xml_print): Removed unused scalars. Print
+	partition info.
+
+	* boot.pl.in (xst_boot_conf_get): Parse pixmap support
+	and pixmap file. mandrake-7.2's own table.
+
+	* boot-grub.pl.in (xst_boot_grub_parse_type): Part of
+	the hack below.
+	(xst_boot_grub_parse_pixmap): splashimage support.
+
+	* boot.pl.in (xst_boot_entries_get): Hack to pass
+	partition info into the entries parse table.
+	(xst_boot_get_entries_parse_table): Part of the hack.
+
 2001-11-28  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot.pl.in (xst_boot_entries_get): pass param of where

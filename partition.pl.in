@@ -31,6 +31,39 @@ if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 require "$SCRIPTSDIR/general.pl$DOTIN";
 require "$SCRIPTSDIR/report.pl$DOTIN";
 
+
+sub xst_partition_scan_info
+{
+  my ($fd, $line);
+  my (%table);
+  
+  $fd = &xst_file_run_pipe ("sfdisk -d");
+  if ($fd eq undef)
+  {
+    &xst_report ("sfdisk_failed");
+    return undef;
+  }
+  
+  while ($line = <$fd>)
+  {
+    # Woohoo! sfdisk -d scanner in one line! Gotta love perl! OK, I'm a pig.
+    if ($line =~ /^\/dev\/([^ \t]+)[ \t]*: start=[ \t]*([0-9]+), size=[ \t]*([0-9]+), Id=[ \t]*([0-9a-fA-F][0-9a-fA-F]?)(, bootable)?/)
+    {
+      $bootable = ($5 eq undef)? 0: 1;
+      $table{$1} = {"dev"     => $1,
+                    "start"   => $2,
+                    "size"    => $3,
+                    "id"      => $4,
+                    "boot"    => $bootable,
+                    "typestr" => $XST_FILESYS_TYPES{$4}
+                  };
+    }
+  }
+  close $fd;
+
+  return \%table;
+}
+
 %XST_FILESYS_TYPES =
     ("0" => "Empty",
 	"1" => "DOS 12-bit FAT",
@@ -215,36 +248,5 @@ require "$SCRIPTSDIR/report.pl$DOTIN";
 	"fe" => "Windows NT Disk Administrator hidden",
 	"ff" => "Xenix Bad Block Table");
 
-sub xst_partition_scan_info
-{
-  my ($fd, $line);
-  my (%table);
-  
-  $fd = &xst_file_run_pipe ("sfdisk -d");
-  if ($fd eq undef)
-  {
-    &xst_report ("sfdisk_failed");
-    return undef;
-  }
-  
-  while ($line = <$fd>)
-  {
-    # Woohoo! sfdisk -d scanner in one line! Gotta love perl! OK, I'm a pig.
-    if ($line =~ /^\/dev\/([^ \t]+)[ \t]*: start=[ \t]*([0-9]+), size=[ \t]*([0-9]+), Id=[ \t]*([0-9a-fA-F][0-9a-fA-F]?)(, bootable)?/)
-    {
-	 $bootable = ($5 eq undef)? 0: 1;
-	 $table{$1} = {"dev"     => $1,
-				"start"   => $2,
-				"size"    => $3,
-				"id"      => $4,
-				"boot"    => $bootable,
-				"typestr" => $XST_FILESYS_TYPES{$4}
-			   };
-    }
-  }
-  close $fd;
-
-  return \%table;
-}
 
 1;

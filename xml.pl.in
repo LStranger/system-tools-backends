@@ -221,9 +221,8 @@ sub xst_xml_print_arrays
 }
 
 # Pass a hash, create a parent tag $tag and print <key>val</key> for every
-# value pair in the hash. If hash refs are found, these are recursively
-# printed with this same function. Array refs are printed with print_array.
-# This now done through xst_xml_print_structure.
+# value pair in the hash. If structure refs are found, these are recursively
+# printed with print_structure.
 sub xst_xml_print_hash
 {
   my ($hash, $tag) = @_;
