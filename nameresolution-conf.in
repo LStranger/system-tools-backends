@@ -863,23 +863,23 @@ sub xml_print
   be_xml_enter ();
 
   be_xml_vspace ();
-  be_xml_indent (); print "<!-- Configuration starts here -->\n";
+  be_xml_print "<!-- Configuration starts here -->\n";
   be_xml_vspace ();
 
   # Hostname, domain, search domains, nameservers.
 
-  if ($cfl_hostname ne "") { be_xml_indent (); print "<hostname>$cfl_hostname</hostname>\n"; }
-  if ($cfl_domain ne "") { be_xml_indent (); print "<domain>$cfl_domain</domain>\n"; }
-  if ($cfl_workgroup ne "") { be_xml_indent (); print "<workgroup>$cfl_workgroup</workgroup>\n"; }
-  if ($cfl_description ne "") { be_xml_indent (); print "<description>$cfl_description</description>\n"; }
+  if ($cfl_hostname ne "") { be_xml_print "<hostname>$cfl_hostname</hostname>\n"; }
+  if ($cfl_domain ne "") { be_xml_print "<domain>$cfl_domain</domain>\n"; }
+  if ($cfl_workgroup ne "") { be_xml_print "<workgroup>$cfl_workgroup</workgroup>\n"; }
+  if ($cfl_description ne "") { be_xml_print "<description>$cfl_description</description>\n"; }
   be_xml_vspace ();
-  if ($cfl_winsserver ne "") { be_xml_indent (); print "<winsserver>$cfl_winsserver</winsserver>\n"; }
+  if ($cfl_winsserver ne "") { be_xml_print "<winsserver>$cfl_winsserver</winsserver>\n"; }
   be_xml_vspace ();
 
   for $elem (@cf_searchdomains)
   {
     $elem = be_xml_plain_to_entities(\$elem);
-    be_xml_indent (); print "<searchdomain>$elem</searchdomain>\n";
+    be_xml_print "<searchdomain>$elem</searchdomain>\n";
   }
 
   be_xml_vspace ();
@@ -887,7 +887,7 @@ sub xml_print
   for $elem (@cf_nameservers)
   {
     $elem = be_xml_plain_to_entities(\$elem);
-    be_xml_indent (); print "<nameserver>$elem</nameserver>\n";
+    be_xml_print "<nameserver>$elem</nameserver>\n";
   }
 
   # Static hosts.
@@ -898,22 +898,22 @@ sub xml_print
     if ($iplist[0] ne "")
     {
       be_xml_vspace ();
-      be_xml_indent (); print "<statichost>\n";
+      be_xml_print "<statichost>\n";
       be_xml_enter ();
 
       $iplist[0] = be_xml_plain_to_entities(\$iplist[0]);
 
-      be_xml_indent (); print "<ip>$iplist[0]</ip>\n";
+      be_xml_print "<ip>$iplist[0]</ip>\n";
 
       my $aliaslist = $iplist[1];
       for $alias (@$aliaslist)
       {
         $alias = be_xml_plain_to_entities(\$alias);
-        be_xml_indent (); print "<alias>$alias</alias>\n";
+        be_xml_print "<alias>$alias</alias>\n";
       }
 
       be_xml_leave ();
-      be_xml_indent (); print "</statichost>\n";
+      be_xml_print "</statichost>\n";
     }
 
     shift @iplist;
@@ -921,12 +921,12 @@ sub xml_print
   }
 
   be_xml_vspace ();
-  be_xml_indent (); print "<!-- You shouldn't have to modify anything below this line -->\n";
+  be_xml_print "<!-- You shouldn't have to modify anything below this line -->\n";
   be_xml_vspace ();
 
   # Search order and host matches (multi).
 
-  be_xml_indent (); print "<order>";
+  be_xml_print "<order>";
   for $elem (@cf_order) { print "<$elem/>"; }
   print "</order>\n";
 
@@ -935,21 +935,21 @@ sub xml_print
   else               { print "<hostmatch return='all'/>\n"; }
 
   be_xml_vspace ();
-  be_xml_indent (); print "<!-- You cannot modify anything below this line -->\n";
+  be_xml_print "<!-- You cannot modify anything below this line -->\n";
   be_xml_vspace ();
 
   if ($cfl_hostname_reverse ne "")
   {
-    be_xml_indent (); print "<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n";
+    be_xml_print "<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n";
   }
 
   if ($cfl_domain_reverse ne "")
   {
-    be_xml_indent (); print "<domainreverse>$cfl_domain_reverse</domainreverse>\n";
+    be_xml_print "<domainreverse>$cfl_domain_reverse</domainreverse>\n";
   }
 
   be_xml_vspace ();
-  be_xml_indent (); print "<!-- End of configuration -->\n";
+  be_xml_print "<!-- End of configuration -->\n";
   be_xml_vspace ();
 
   be_xml_leave ();

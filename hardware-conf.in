@@ -287,12 +287,12 @@ sub xml_print
     be_xml_enter ();
 
     be_xml_vspace ();
-    be_xml_indent (); print "<!-- Configuration starts here -->\n";
+    be_xml_print "<!-- Configuration starts here -->\n";
     be_xml_vspace ();
 
     foreach $entry (@cf_hardware)
       {
-	be_xml_indent (); print "<device id='$entry->{id}'>\n";
+	be_xml_print "<device id='$entry->{id}'>\n";
 
       LOOP: while (($key, $value) = each %$entry)
 	  {
@@ -304,9 +304,10 @@ sub xml_print
 	      $_ = $key;
 	      /^ports/ && do 
 		{
+		  &be_xml_enter;
 		  foreach $range (@$value)
-		    {
-		      be_xml_indent (); be_xml_indent (); print "<io low='$range->{low}' high='$range->{high}'/>\n";
+		    {p
+		      be_xml_print "<io low='$range->{low}' high='$range->{high}'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -314,7 +315,7 @@ sub xml_print
 		{
 		  foreach $number (@$value)
 		    {
-		      be_xml_indent (); be_xml_indent (); print "<interrupt number='$number'/>\n";
+		      be_xml_print "<interrupt number='$number'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -322,7 +323,7 @@ sub xml_print
 		{
 		  foreach $channel (@$value)
 		    {
-		      be_xml_indent (); be_xml_indent (); print "<dma channel='$channel'/>\n";
+		      be_xml_print "<dma channel='$channel'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -330,21 +331,22 @@ sub xml_print
 		{
 		  foreach $mode (@$value)
 		    {
-		      be_xml_indent (); be_xml_indent (); print "<mode>$mode</mode>\n";
+		      be_xml_print "<mode>$mode</mode>\n";
 		    }
 		  last SWITCH;
 		};
 	      (/^id/ || /^io/ || /^irq/) && next LOOP;
 
-	      be_xml_indent (); be_xml_indent (); print "<$key>$value</$key>\n";
+	      be_xml_print "<$key>$value</$key>\n";
+				&be_xml_leave;
 	    }
 	  }
 
-	be_xml_indent (); print "</device>\n";
+	be_xml_print "</device>\n";
 	be_xml_vspace ();
       }
 
-    be_xml_indent (); print "<!-- End of configuration -->\n";
+    be_xml_print "<!-- End of configuration -->\n";
     be_xml_vspace ();
 
     be_xml_leave ();

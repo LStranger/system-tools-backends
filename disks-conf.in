@@ -698,9 +698,9 @@ sub xml_print
   be_xml_enter ();
 
   be_xml_vspace ();
-  be_xml_indent (); print "<!-- Configuration starts here -->\n";
+  be_xml_print "<!-- Configuration starts here -->\n";
   be_xml_vspace ();
-  be_xml_indent (); print "<!-- Local fixed media and partitions -->\n";
+  be_xml_print "<!-- Local fixed media and partitions -->\n";
   be_xml_vspace ();
 
   my @disks = @cf_disks;
@@ -712,11 +712,11 @@ sub xml_print
       my $disk = $disks[0];
       
       be_xml_vspace ();
-      be_xml_indent (); print "<disk>\n";
+      be_xml_print "<disk>\n";
       be_xml_enter ();
 
-      be_xml_indent (); print "<device>" . %$disk->{device} . "</device>\n";
-      if (%$disk->{size}) { be_xml_indent (); print "<size>" . %$disk->{size} . "</size>\n"; }
+      be_xml_print "<device>" . %$disk->{device} . "</device>\n";
+      if (%$disk->{size}) { be_xml_print "<size>" . %$disk->{size} . "</size>\n"; }
       
       my $partitions = %$disk->{partitions};
       
@@ -725,18 +725,18 @@ sub xml_print
         my $partition = @$partitions[0];
 
         be_xml_vspace ();
-        be_xml_indent (); print "<partition>\n";
+        be_xml_print "<partition>\n";
         be_xml_enter ();
 
-        be_xml_indent (); print "<device>" . %$partition->{device} . "</device>\n";
-        if (%$partition->{type}) { be_xml_indent (); print "<type>" . %$partition->{type} . "</type>\n"; }
-        if (%$partition->{point}) { be_xml_indent (); print "<point>" . %$partition->{point} . "</point>\n"; }
+        be_xml_print "<device>" . %$partition->{device} . "</device>\n";
+        if (%$partition->{type}) { be_xml_print "<type>" . %$partition->{type} . "</type>\n"; }
+        if (%$partition->{point}) { be_xml_print "<point>" . %$partition->{point} . "</point>\n"; }
         if (%$partition->{size})
         {
-          be_xml_indent (); print "<size>" . %$partition->{size} . "</size>\n";
+          be_xml_print "<size>" . %$partition->{size} . "</size>\n";
         }
         
-        be_xml_indent (); print "<bootable state='" . be_print_boolean_truefalse(%$partition->{bootable}) . "'/>";
+        be_xml_print "<bootable state='" . be_print_boolean_truefalse(%$partition->{bootable}) . "'/>";
                 print "<integritycheck state='" . be_print_boolean_truefalse(%$partition->{check}) . "'/>\n";
 
         be_xml_indent ();
@@ -745,13 +745,13 @@ sub xml_print
         print "<detected state='" . be_print_boolean_truefalse(%$partition->{detected}) . "'/>\n";
 
         be_xml_leave ();
-        be_xml_indent (); print "</partition>\n";
+        be_xml_print "</partition>\n";
         
         shift @$partitions;
       }
 
       be_xml_leave ();
-      be_xml_indent (); print "</disk>\n";
+      be_xml_print "</disk>\n";
       be_xml_vspace ();
     }
   
@@ -759,7 +759,7 @@ sub xml_print
   }
 
   be_xml_vspace ();
-  be_xml_indent (); print "<!-- End of configuration -->\n";
+  be_xml_print "<!-- End of configuration -->\n";
   be_xml_vspace ();
 
   be_xml_leave ();

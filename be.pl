@@ -56,6 +56,7 @@ sub be_xml_enter  { $be_indent_level += 2; }
 sub be_xml_leave  { $be_indent_level -= 2; }
 sub be_xml_indent { for ($i = 0; $i < $be_indent_level; $i++) { print " "; } $be_have_vspace = 0; }
 sub be_xml_vspace { if (not $be_have_vspace) { print "\n"; $be_have_vspace = 1; } }
+sub be_xml_print { &be_xml_indent; print @_; }
 
 
 # --- XML scanning --- #

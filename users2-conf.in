@@ -181,40 +181,40 @@ sub xml_print
   &be_xml_enter ();
 
   &be_xml_vspace ();
-  &be_xml_indent (); print "<!-- login.defs configuration starts here -->\n";
+  &be_xml_print "<!-- login.defs configuration starts here -->\n";
   &be_xml_vspace ();
 
-  &be_xml_indent (); print "<login_defs>\n";
+  &be_xml_print "<login_defs>\n";
 	&be_xml_enter ();
 	foreach $key (keys %login_defs)
 	{
-	  &be_xml_indent (); print "<var name=\"" . $key . "\" value=\"" . $login_defs{$key} . "\"/>\n";
+	  &be_xml_print "<var name=\"" . $key . "\" value=\"" . $login_defs{$key} . "\"/>\n";
 	}
 	&be_xml_leave ();
-	&be_xml_indent (); print "</login_defs>\n";
+	&be_xml_print "</login_defs>\n";
 	&be_xml_vspace ();
-  &be_xml_indent (); print "<!-- Now the users -->\n";
+  &be_xml_print "<!-- Now the users -->\n";
   &be_xml_vspace ();
 	
-	&be_xml_indent (); print "<userdb>\n";
+	&be_xml_print "<userdb>\n";
 	&be_xml_enter ();
 	foreach $i (@users)
 	{
     &be_xml_vspace ();
-	  &be_xml_indent (); print "<user>\n";
+	  &be_xml_print "<user>\n";
 		&be_xml_enter ();
-		&be_xml_indent (); print "<login>" . $i->[0] . "</login>\n";
-		&be_xml_indent (); print "<uid>" . $i->[2] . "</uid>\n";
-		&be_xml_indent (); print "<gid>" . $i->[3] . "</gid>\n";
-		&be_xml_indent (); print "<comment>" . $i->[4] . "</comment>\n";
-		&be_xml_indent (); print "<home>" . $i->[5] . "</home>\n";
-		&be_xml_indent (); print "<shell>" . $i->[6] . "</shell>\n";
+		&be_xml_print "<login>" . $i->[0] . "</login>\n";
+		&be_xml_print "<uid>" . $i->[2] . "</uid>\n";
+		&be_xml_print "<gid>" . $i->[3] . "</gid>\n";
+		&be_xml_print "<comment>" . $i->[4] . "</comment>\n";
+		&be_xml_print "<home>" . $i->[5] . "</home>\n";
+		&be_xml_print "<shell>" . $i->[6] . "</shell>\n";
 		&be_xml_leave ();
-		&be_xml_indent (); print "</user>\n";
+		&be_xml_print "</user>\n";
 	}
 	&be_xml_leave ();
   &be_xml_vspace ();
-  &be_xml_indent (); print "</userdb>\n";
+  &be_xml_print "</userdb>\n";
 	
   &be_xml_vspace ();
 	&be_xml_leave ();
