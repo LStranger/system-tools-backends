@@ -99,12 +99,10 @@ sub xst_network_get_broadcast_ping_cmd
   my ($bcast) = @_;
   my ($tool_ping);
 
-  $tool_ping = &xst_file_locate_tool ("ping");
-
   my %cmd_map =
       (
-       "debian-2.2" => "$tool_ping -c 2 -i 1 -n $bcast",
-       "redhat-6.2" => "$tool_ping -c 2 -i 1 -n -b $bcast"
+       "debian-2.2" => "ping -c 2 -i 1 -n $bcast",
+       "redhat-6.2" => "ping -c 2 -i 1 -n -b $bcast"
        );
   my %dist_map =
       (
@@ -129,12 +127,12 @@ sub xst_network_get_broadcast_ping_cmd
 sub xst_network_ping_broadcast_call
 {
   my ($bcast) = @_;
-  my ($cmd, %hosts);
-  local *PING;
+  my ($cmd, %hosts, $fd);
 
   $cmd = &xst_network_get_broadcast_ping_cmd ($bcast);
-  open (PING, "/bin/sh -c \"$cmd\" 2> /dev/null |");
-  while (<PING>)
+  $fd = &xst_file_run_pipe_read ($cmd);
+  return undef if $fd eq undef;
+  while (<$fd>)
   {
     if (/([0-9.]+):?[ \t]+icmp_seq/)
     {
@@ -143,7 +141,7 @@ sub xst_network_ping_broadcast_call
       $hosts{$1} = 1 ;
     }
   }
-  close PING;
+  close $fd;
 
   return join (':', keys (%hosts));
 }
@@ -334,17 +332,15 @@ sub xst_network_dialing_get
 # FIXME: this depends a lot on ifconfig's output.
 sub xst_network_active_interfaces_get_info
 {
-  local *IFCONFIG;
-  my $tool_ifconfig;
-  my ($dev, %ifaces);
+  my ($dev, %ifaces, $fd);
 
   &xst_report_enter ();
   &xst_report ("network_iface_active_get");
 
-  $tool_ifconfig = &xst_file_locate_tool ("ifconfig");
-  open IFCONFIG, "/bin/sh -c \"$tool_ifconfig\" |";
+  $fd = &xst_file_run_pipe_read ("ifconfig");
+  return \%ifaces if $fd eq undef;
   
-  while (<IFCONFIG>)
+  while (<$fd>)
   {
     chomp;
     $dev = $1 if /^([^ \t:]+)/;
@@ -355,7 +351,7 @@ sub xst_network_active_interfaces_get_info
       $ {$ifaces{$dev}}{"bcast"} = $1 if /bcast:([^ \t]+)/i;
     }
   }
-  close IFCONFIG;
+  close $fd;
 
   &xst_report_leave ();
   return \%ifaces;
@@ -364,17 +360,16 @@ sub xst_network_active_interfaces_get_info
 
 sub xst_network_active_interfaces_get
 {
-  local *IFCONFIG;
-  my $tool_ifconfig;
+  my $fd;
   my @ret = ();
 
   &xst_report_enter ();
   &xst_report ("network_iface_active_get");
 
-  $tool_ifconfig = &xst_file_locate_tool ("ifconfig");
-  open IFCONFIG, "/bin/sh -c \"$tool_ifconfig\" |";
+  $fd = &xst_file_run_pipe_read ("ifconfig");
+  return undef if $fd eq undef;
   
-  while (<IFCONFIG>)
+  while (<$fd>)
   {
     chomp;
     s/:? .*//;
@@ -382,7 +377,7 @@ sub xst_network_active_interfaces_get
     push @ret, $_;
   }
 
-  close IFCONFIG;
+  close $fd;
 
   &xst_report_leave ();
   return @ret;
@@ -928,15 +923,13 @@ sub xst_network_get_file
 sub xst_network_route_set_default_gw
 {
   my ($gatewaydev, $gateway) = @_;
-  my ($tool_route, $curr_gateway, $curr_gatewaydev);
-  local *ROUTE;
+  my ($tool_route, $curr_gateway, $curr_gatewaydev, $fd);
 
   # Just in case. This means that no static gateway is needed.
   return if $gateway eq "";
 
-  $tool_route = &xst_file_locate_tool ("route");
-  open (ROUTE, "/bin/sh -c \"$tool_route -n\" 2> /dev/null |");
-  while (<ROUTE>)
+  $fd = &xst_file_run_pipe_read ("route -n");
+  while (<$fd>)
   {
     if (/^0\.0\.0\.0[ \t]+([0-9.]+) /)
     {
@@ -950,9 +943,9 @@ sub xst_network_route_set_default_gw
       last;
     }
   }
-  close ROUTE;
+  close $fd;
 
-  if (($curr_gateway ne $gateway) ||
+  if (($curr_gateway    ne $gateway) ||
       ($curr_gatewaydev ne $gatewaydev))
   {
     &xst_file_run ("route del default gw $curr_gateway");

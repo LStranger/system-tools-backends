@@ -529,12 +529,12 @@ sub get_fdisk
 
   for $dev (@check_devs)
   {
-    my ($disk, $device, $point, $fs, $options, $check, $size, $bootable);
+    my ($disk, $device, $point, $fs, $options, $check, $size, $bootable, $fd);
     
     &xst_report ("disks_partition_probe", $dev);
 
-    open(FDISK_HD, "$fdisk_tool -l $dev 2>/dev/null |");
-    while (<FDISK_HD>)
+    $fd = &xst_file_run_pipe_read ("fdisk -l $dev");
+    while (<$fd>)
     {
       if (/^\/dev/)
       {
@@ -572,14 +572,14 @@ sub get_fdisk
                           $bootable, 1);
       }
     }
-    close(FDISK_HD);
+    close($fd);
 
     &xst_report ("disks_size_query", $dev);
 
-    open(FDISK_HD, "$fdisk_tool -s $dev 2>/dev/null |");
-    ($size) = (<FDISK_HD> =~ /([0-9]+)/);
+    $fd = &xst_file_run_pipe_read ("fdisk -s $de");
+    ($size) = (<$fd> =~ /([0-9]+)/);
     if ($size ne "") { &update_disk_size($dev, $size); }
-    close(FDISK_HD);
+    close ($fd);
     
     &xst_print_progress();
   }

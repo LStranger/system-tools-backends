@@ -74,7 +74,6 @@ $progress_max = 3;
 $cmd_swapon = &xst_file_locate_tool ("swapon");
 $cmd_swapoff = &xst_file_locate_tool ("swapoff");
 $cmd_mkswap = &xst_file_locate_tool ("mkswap");
-$cmd_fdisk = &xst_file_locate_tool ("fdisk");
 $cmd_dd = &xst_file_locate_tool ("dd");
 
 
@@ -277,12 +276,12 @@ sub get_fdisk
 
   for $dev (@check_devs)
   {
-    my ($disk, $device, $point, $fs, $options, $check, $size, $bootable);
+    my ($disk, $device, $point, $fs, $options, $check, $size, $bootable, $fd);
     
     &xst_report ("disks_partition_probe", $dev);
 
-    open(FDISK_HD, "$cmd_fdisk -l $dev 2>/dev/null |");
-    while (<FDISK_HD>)
+    $fd = &xst_file_run_pipe_read ("fdisk -l $dev");
+    while (<$fd>)
     {
       if (/^\/dev/)
       {
@@ -309,7 +308,7 @@ sub get_fdisk
 
       }
     }
-    close(FDISK_HD);
+    close($fd);
 
     &xst_report ("disks_size_query", $dev);
 
@@ -339,15 +338,18 @@ sub get_swap_size
   }
   elsif ($is_file == 0)
   {
+    my $fd;
+    
     # Is partition, &get size.
-    open(FD, "$cmd_fdisk -s $device 2>/dev/null |");
-    while (<FD>)
+    $fd = &xst_file_run_pipe_read ("fdisk -s $device");
+    while (<$fd>)
     {
       if (/^\w+/)
       {
         $size = sprintf("%.1fMB", $_ / 1024);		#size from Kb to Mb
       }
     }
+    close $fd;
   }
 
   return $size;

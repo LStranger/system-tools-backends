@@ -199,12 +199,11 @@ sub xst_font_info_get_from_ttf2pt1
 {
   my ($file) = @_;
   my ($key, $value, @buff, $info);
-  my $ttf2pt1_cmd = &xst_file_locate_tool ("ttf2pt1");
-  local *CMD;
+  my $fd;
   
-  open CMD, "$ttf2pt1_cmd -A $file - 2>/dev/null |";
-  @buff = <CMD>;
-  close CMD;
+  $fd = &xst_file_run_pipe_read ("ttf2pt1 -A $file -");
+  @buff = <$fd>;
+  close $fd;
 
   $info = &xst_font_info_get_from_afm_buff (\@buff);
   $$info{"file"} = $file;

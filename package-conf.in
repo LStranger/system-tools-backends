@@ -120,6 +120,7 @@ sub get_package
   my $name;
   my $pid;
   my $vers;
+  my $fd;
 
   my %cmd_map =
   (
@@ -138,9 +139,10 @@ sub get_package
 
   ($distributor) = split /-/, $xst_dist;
 
-  $pid = open (CMDPACK, "$dist_map{$distributor} |") or die "Could not execute the package query command";
+  $fd = &xst_file_run_pipe_read ("$dist_map{$distributor}");
+  die "Could not execute the package query command" if $fd eq undef;
 
-  while (<CMDPACK>)
+  while (<$fd>)
   {
     chomp $_;
     ($name, $vers, $dist) = split /,/, $_;
@@ -151,7 +153,7 @@ sub get_package
       "dist"     => $dist,
     };
   }
-  close (CMDPACK);
+  close ($fd);
 }
 
 sub get

@@ -1,3 +1,11 @@
+2001-08-03  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* file.pl.in (xst_file_run_pipe_read): New utility to run commands
+	that will be piped for reading.
+	(xst_file_run): use xst_file_get_cmd_path now.
+	(xst_file_get_cmd_path): Taken from xst_file_run to generate command.
+	* *.in: Replaced a bunch of open "blah|" calls with xst_file_run_pipe_read.
+
 2001-07-30  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_known_var): Deal only with selected list of keywords.

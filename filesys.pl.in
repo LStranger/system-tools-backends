@@ -45,16 +45,13 @@ sub xst_filesys_ext2_device_to_label  # device
 {
   my ($device) = @_;
   my $label;
-  my $e2label_tool;
-  local *E2LABEL_FD;
+  my $fd;
 
-  $e2label_tool = &xst_file_locate_tool ("e2label");
-  if ($e2label_tool eq "") { return undef; }
-
-  open (E2LABEL_FD, "/bin/sh -c \"$e2label_tool $device\" 2>/dev/null |");
-  $label = <E2LABEL_FD>;
+  $fd = &xst_file_run_pipe_read ("e2label $device");
+  return undef if $fd eq undef;
+  $label = <$fd>;
   chomp $label;
-  close (E2LABEL_FD);
+  close ($fd);
 
   return $label;
 }

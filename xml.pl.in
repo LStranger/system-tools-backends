@@ -420,15 +420,12 @@ sub xst_xml_read_file
 sub xst_xml_read_compressed_file
 {
   my ($file) = @_;
-  my ($doc, $i, $gunzip);
-  local *INPUT_FILE;
+  my ($doc, $i, $fd);
 
-  $gunzip = &xst_file_locate_tool ("gunzip");
-  if (!$gunzip) { return undef; }
-
-  open INPUT_FILE, "$gunzip -c $file 2>/dev/null |";
-  $doc .= $i while ($i = <INPUT_FILE>);
-  close INPUT_FILE;
+  $fd = &xst_file_run_pipe_read ("gunzip -c $file");
+  return undef if $fd eq undef;
+  $doc .= $i while ($i = <$fd>);
+  close $fd;
 
   if (length ($doc) < 4)  # Allow for one blank line from gzip, '\n\r'.
   {

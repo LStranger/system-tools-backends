@@ -60,6 +60,30 @@ sub xst_file_get_data_path
 }
 
 
+# Give a command, and it will put in some sane PATH values and find
+# the program to run in the path. Redirects stderr to null.
+sub xst_file_get_cmd_path
+{
+  my ($cmd) = @_;
+  my ($tool_name, @argline, $command, $tool_path);
+  
+  ($tool_name, @argline) = split("[ \t]+", $cmd);
+
+  $tool_path = &xst_file_locate_tool ($tool_name);
+  if ($tool_path eq "")
+  {
+    # Not found at all.
+    return -1;
+  }
+
+  $command = "$tool_path @argline";
+  $command =~ s/\"/\\\"/g;
+  $command = "PATH=\$PATH:/sbin:/usr/sbin $command 2> /dev/null";
+
+  return $command;
+}
+
+
 sub xst_file_create_path
 {
   my $path = $_[0];
@@ -170,7 +194,6 @@ sub xst_file_backup
   &xst_report_leave ();
 }
 
-
 sub xst_file_open_read_from_names
 {
   local *FILE;
@@ -199,6 +222,29 @@ sub xst_file_open_read_from_names
   &xst_report_leave ();
 
   return *FILE;
+}
+
+
+sub xst_file_run_pipe_read
+{
+  my ($cmd) = @_;
+  my ($command);
+  
+  local *PIPE;
+
+  &xst_report_enter ();
+  $command = &xst_file_get_cmd_path ($cmd);
+  if ($command == -1)
+  {
+    &xst_report ("file_run_pipe_read_failed", $command);
+    &xst_report_leave ();
+    return undef;
+  }
+  
+  open PIPE, "$command|";
+  &xst_report ("file_run_pipe_read_success", $command);
+  &xst_report_leave ();
+  return *PIPE;
 }
 
 
@@ -514,19 +560,10 @@ sub xst_file_run
   my ($command, $tool_name, $tool_path, @argline);
 
   &xst_report_enter ();
-  
-  ($tool_name, @argline) = split("[ \t]+", $cmd);
 
-  $tool_path = &xst_file_locate_tool ($tool_name);
-  if ($tool_path eq "")
-  {
-    # Not found at all.
-    return -1;
-  }
-
-  $command = "$tool_path @argline";
-  $command =~ s/\"/\\\"/g;
-  $command = "PATH=\$PATH:/sbin:/usr/sbin $command > /dev/null 2> /dev/null";
+  $command = &xst_file_get_cmd_path ($cmd);
+  return -1 if $command == -1;
+  $command .= " > /dev/null 2> /dev/null";
   $command .= " &" if $background;
 
   &xst_report ("file_run", $command);

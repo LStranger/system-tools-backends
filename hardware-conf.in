@@ -568,14 +568,14 @@ sub get_serial_ports
 # Find all network interfaces by running /sbin/ifconfig
 
 sub get_network_interfaces
+{
+  my ($fd);
+
+  $fd = &xst_file_run_pipe_read ("ifconfig -a");
+  
+  while (<$fd>)
   {
-    local (*IFCONFIG_OUTPUT);
-
-    open IFCONFIG_OUTPUT, "/sbin/ifconfig -a|";
-
-    while (<IFCONFIG_OUTPUT>)
-      {
-	if (/^([\w\d]+)/)
+    if (/^([\w\d]+)/)
 	  {
 	    next if $1 eq 'lo';
 	    $entry = { 'id' => $1 };
@@ -583,8 +583,10 @@ sub get_network_interfaces
 	    /Link encap:(\w+|(\w+\s)+\w+)/ && do { $entry->{type} = $1; };
 	    push @cf_nic, $entry;
 	  }
-      }
   }
+
+  close $fd;
+}
 
 # Find the record in the io ports list that contains a given I/O
 # port. Check to make sure it actually matches the given device.
