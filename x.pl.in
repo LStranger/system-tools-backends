@@ -50,8 +50,6 @@ $sections = {
       ModelName  => [ \&parse_kw_unique, \&xml_parse_kw_unique ],
       HorizSync  => [ \&parse_range_hz,  \&xml_parse_kw_unique ],
       VertRefresh =>[ \&parse_range_hz,  \&xml_parse_kw_unique ],
-      Mode       => [ \&parse_modeline,  \&xml_parse_kw_unique ],
-      ModeLine   => [ \&parse_modeline,  \&xml_parse_kw_unique ],
     },
     options => {},
   },
