@@ -1,5 +1,16 @@
 2001-03-13  Hans Petter Jansson  <hpj@ximian.com>
 
+	* boot-conf.in: Modernize XML printing - do all output through
+	  xst_xml_print_* calls.
+
+	* network-conf.in: Ditto.
+
+	* time-conf.in: Ditto.
+
+	* users-conf.in: Ditto.
+
+2001-03-13  Hans Petter Jansson  <hpj@ximian.com>
+
 	* boot-conf.in: Remove calls to xst_begin() - it's invoked by
 	  xst_init(). Unfortunately this makes the code asymmetric, but if
 	  we were to invoke it ourselves, we'd also have to call

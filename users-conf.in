@@ -769,10 +769,7 @@ sub xml_print
 {
   my ($key, $i, $j, $k);
 
-  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
-  print "<!DOCTYPE users []>\n\n";
-  print "<users>\n";
-  &xst_xml_enter ();
+  &xst_xml_print_begin ();
 
   &xst_xml_print_vspace ();
   &xst_xml_print_line ("<!-- login.defs configuration starts here -->\n");
@@ -852,9 +849,7 @@ sub xml_print
   # This for test purposes only
   &xml_print_nis () if $TEST_NIS;
 
-  &xst_xml_print_vspace ();
-	&xst_xml_leave ();
-  print "</users>\n";
+  &xst_xml_print_end ();
 }
 
 
