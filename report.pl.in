@@ -83,13 +83,20 @@ sub xst_report_set_threshold
 
 sub xst_report_enter
 {
-  $xst_report_level ++;
+  # This has been trivialized because it is not working
+  # correctly at the moment and is causing some trouble.
+  # We'll probably replace this with something smarter
+  # (like a detail-level value in the report hash)
+  # when the report strings are used at the gui-level again.
+#  $xst_report_level ++;
+  $xst_report_level = 0;
 }
 
 
 sub xst_report_leave
 {
-  $xst_report_level --;
+#  $xst_report_level --;
+  $xst_report_level = 0;
 }
 
 

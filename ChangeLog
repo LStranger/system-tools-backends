@@ -1,3 +1,8 @@
+2001-05-07  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* report.pl.in (xst_report_enter, xst_report_leave): trivialized
+	  until a new solution comes. Read comments for comments.
+
 2001-05-04  Hans Petter Jansson  <hpj@ximian.com>
 
 	* shares-conf.in (read_exports): Parse NFS exports without options correctly.
