@@ -118,11 +118,11 @@ sub gst_xml_print_string
 {
   if ($has_encode)
   {
-    if (decode_utf8 ($_[0]) eq undef)
+    if (&decode_utf8 ($_[0]) eq undef)
     {
       # we first decode the string, if it's not
       # utf-8 (returns undef), then encode it
-      print "" . encode_utf8 ($_[0]);
+      print "" . &encode_utf8 ($_[0]);
       return;
     }
   }

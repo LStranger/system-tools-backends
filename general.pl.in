@@ -47,6 +47,7 @@ if ($has_i18n)
   # set up i18n stuff
   &setlocale (LC_MESSAGES, "");
   &bindtextdomain ("@GETTEXT_PACKAGE@", "@localedir@");
+  &bind_textdomain_codeset ("@GETTEXT_PACKAGE@", "UTF-8");
   &textdomain ("@GETTEXT_PACKAGE@");
 
   eval "sub _ { return gettext (shift); }";
