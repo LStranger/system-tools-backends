@@ -1,5 +1,11 @@
 2001-02-06  Hans Petter Jansson  <hpj@ximian.com>
 
+	* shares-conf.in: Disabled scanning so that UI testing becomes
+	  less of a pain. Will have to work out a switch to enable it
+	  later.
+
+2001-02-06  Hans Petter Jansson  <hpj@ximian.com>
+
 	* Makefile.in: Added media.pl to the list of targets.
 
 2001-02-06  Arturo Espinosa  <arturo@ximian.com>
