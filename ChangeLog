@@ -1,3 +1,7 @@
+2001-02-28  Hans Petter Jansson  <hpj@ximian.com>
+
+	* disks-conf.in (read_fstab, write_fstab): Don't touch UUID= either.
+
 2001-02-28  Arturo Espinosa  <arturo@ximian.com>
 
 	* file.pl.in (xst_open_write_from_names): old criterion was preventing

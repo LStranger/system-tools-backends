@@ -284,7 +284,7 @@ sub read_fstab
     @line = split(/[ \n\r\t]+/, $_);
 
     if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "" || $line[0] =~ /$LABEL=.*/) { next; }
+    if ($line[0] eq "" || $line[0] =~ /$LABEL=.*/ || $line[0] =~ /$UUID=.*/) { next; }
     if (&xst_ignore_line($line[0])) { next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
@@ -331,7 +331,7 @@ sub write_fstab
     @line = split(/[ \n\r\t]+/, $_);
 
     if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "" || $line[0] =~ /$LABEL=.*/) { print OUTFILE; next; }
+    if ($line[0] eq "" || $line[0] =~ /$LABEL=.*/ || $line[0] =~ /$UUID=.*/) { print OUTFILE; next; }
     if (&xst_ignore_line($line[0])) { print OUTFILE; next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
