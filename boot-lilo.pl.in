@@ -37,8 +37,8 @@ require "$SCRIPTSDIR/parse.pl$DOTIN";
 require "$SCRIPTSDIR/replace.pl$DOTIN";
 require "$SCRIPTSDIR/partition.pl$DOTIN";
 
-my @lilo_global_vars = qw (default prompt timeout append root);
-my @lilo_common_image_vars = qw (label type);
+my @lilo_global_vars = qw (default prompt delay append boot root);
+my @lilo_common_image_vars = qw (label);
 my @lilo_image_vars = (@lilo_common_image_vars, qw (image append root));
 my @lilo_other_vars = (@lilo_common_image_vars, qw (other));
 
@@ -79,9 +79,10 @@ sub xst_boot_lilo_known_var
 
   $key = lc ($key);
   
-  # Hard coded know variables which are not standard lilo.conf variables.
+  # Hard coded known variables which are not standard lilo.conf variables.
   return 0 if ($key eq "key" && $from_xml); # "key" is valid in xml only.
-  
+  return 0 if ($key eq "type" && $from_xml); # "key" is valid in xml only.
+
   return &xst_item_is_in_list ($key, @$list);
 }
 
@@ -91,7 +92,6 @@ sub xst_boot_lilo_parse_global_kw
   my $fd;
 
   return undef unless &xst_boot_lilo_known_var ($key, \@lilo_global_vars, 0);
-  
   $fd = &xst_file_open_read_from_names ($file);
   if (! $fd)
   {
@@ -205,8 +205,6 @@ sub xst_boot_lilo_parse_entries
     
     next if $found < 0;
     
-    $line =~ s/^\#[ \t]*XstEntryType/type/;
-
     next if $line =~ /^\#/;
 
     $line = &xst_parse_process_sh_line ($line);
@@ -230,10 +228,7 @@ sub xst_boot_lilo_parse_entries
 
   foreach $entry (@entries)
   {
-    if ($$entry{"type"} eq undef)
-    {
-      &xst_boot_lilo_set_default_type ($entry, $partition);
-    }
+    &xst_boot_lilo_set_default_type ($entry, $partition);
   }
   
   return \@entries;
@@ -428,12 +423,9 @@ sub xst_boot_lilo_edit_entry
 
   for ($lineno; $lineno < $end; $lineno++)
   {
-    # Special case:
-    $$buff[$lineno] =~ s/^\#[ \t]*XstEntryType/type/;
-    
     # Get the variable.
     my $key = $1 if ($$buff[$lineno] =~ /^[ \t]*([\w\-]+)/);
-    next if ($key && (!&xst_boot_lilo_known_var ($key, $known_vars, 0)));    
+    next if ($key && (!&xst_boot_lilo_known_var ($key, $known_vars, 0)));
     next unless $key;
 
     unless (exists ($entry->{$key}))
@@ -446,14 +438,7 @@ sub xst_boot_lilo_edit_entry
     # Read old value
     my $old_val = $$buff[$lineno];
 
-    if ($key eq "type")
-    {
-      $old_val =~ s/^\#[ \t]*XstEntryType[ \t]*=[ \t]*//;
-    }
-    else
-    {
-      $old_val =~ s/^[ \t]*$key[ \t]*=[ \t]*//; #everything till value
-    }
+    $old_val =~ s/^[ \t]*$key[ \t]*=[ \t]*//; #everything till value
     
     $old_val =~ s/[ \t]*\#.*$//;              #post comment;
     chomp $old_val;
@@ -466,7 +451,6 @@ sub xst_boot_lilo_edit_entry
       $val = "\"$val\"" if ($val =~ /\=/ && (!($val =~ /^\".+\"$/)));
 
       $$buff[$lineno] =~ s/$old_val/$val/;
-      $$buff[$lineno] = "#" . $$buff[$lineno] if ($key eq "type");
     }
     
     delete $entry->{$key};
@@ -481,17 +465,8 @@ sub xst_boot_lilo_edit_entry
     $val = "\"$val\"" if ($val =~ /[ \t]/ && (! ($val =~ /^\".+\"$/)));
     $val = "\"$val\"" if ($val =~ /\=/ && (!($val =~ /^\".+\"$/)));
 
-    my $line;
+    my $line = "\t$key";;
 
-    if ($key eq "type")
-    {
-      $line = "#\tXstEntryType";
-    }
-    else
-    {
-      $line = "\t$key";
-    }
-    
     $line .= " = $val" if $val;
     $line .= "\n";
     
@@ -535,17 +510,8 @@ sub xst_boot_lilo_add_entry
     $value = "\"$value\"" if ($value =~ /[ \t]/ && (!($value =~ /^\".+\"$/)));
     $value = "\"$value\"" if ($value =~ /\=/&& (!($value =~ /^\".+\"$/)));
 
-    $line = "";
+    $line = "\t$key";
 
-    if ($key eq "type")
-    {
-      $line = "#\tXstEntryType";
-    }
-    else
-    {
-      $line .= "\t$key";
-    }
-    
     $line .= " = " . $value if $value;
     $line .= "\n";
 

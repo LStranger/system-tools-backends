@@ -1,3 +1,22 @@
+2002-11-08  Carlos Garnacho Parro <garnacho@tuxerver.net>
+
+	* boot-conf.in: removed partitions from xml,
+	  (xst_platform_ensure_supported) removed, it's no longer neccesary in
+	  boot-conf (autodetection now is based on the bootloaders it finds,
+	  not in the distro)
+	  
+	* boot.pl.in: (xst_boot_bootloader_get) added to guess the bootloader
+	  the system has in use. removed all distro based stuff.
+
+	* boot-lilo.pl.in: removed all stuff related to the partition type
+	  comments
+
+	* boot-grub.pl.in: (xst_boot_grub_get_config_file),
+	  (xst_boot_grub_find_entry), (xst_boot_grub_delete_entry),
+	  (xst_boot_grub_edit_entry), (xst_boot_grub_add_entry),
+	  (xst_boot_grub_entries_set): added to improve the entries management
+	  in grub. aditional code improvements.
+	  
 2002-09-18  Tambet Ingo  <tambet@ximian.com>
 
 	* users-conf.in: Added RedHat 7.3.

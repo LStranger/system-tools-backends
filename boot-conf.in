@@ -24,22 +24,16 @@
 
 # Best viewed with 100 columns of width.
 
-# Configuration files affected:
+# Configuration files that may be affected:
 #
 # /etc/lilo.conf
+# /boot/grub/menu.lst
+# /etc/grub.conf
+# /boot/grub/grub.conf
 
 # Running programs affected:
 #
 # /sbin/lilo
-
-# Distros 
-#
-# RedHat 7.1   - LILO version 21.4-4
-# Mandrake 7.1 - LILO version 21.4-3
-# Turbolinux 7.0 - LILO version 21.7.4-4
-#
-#
-#
 
 BEGIN {
   $SCRIPTSDIR = "___scriptsdir___";
@@ -75,7 +69,7 @@ $version = "___version___";
               "suse-7.0", "turbolinux-7.0");
 
 $description =<<"end_of_description;";
-       Configures Boot manager (Only LILO at the moment).
+       Configures Boot manager (LILO and GRUB at the moment).
 end_of_description;
 
 
@@ -121,6 +115,7 @@ sub xml_parse_boot
   while ($elem = shift @$tree)
   {
     if    ($elem eq "prompt")    { $$hash{"prompt"}    = &xst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "boot")      { $$hash{"boot"}      = &xst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "root")      { $$hash{"root"}      = &xst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "timeout")   { $$hash{"timeout"}   = &xst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "default")   { $$hash{"default"}   = &xst_xml_get_pcdata (shift @$tree); }
@@ -157,12 +152,12 @@ sub xml_parse_entry
 sub xml_print
 {
   my ($h) = @_;
-  my @scalars = qw(default timeout pixmap pixmapsup prompt);
+  my @scalars = qw(default timeout pixmap pixmapsup prompt boot root);
 
   &xst_xml_print_begin ();
 
-  &xst_xml_print_hash_hash ($$h{"partition"}, "partition");
-  &xst_xml_print_vspace ();
+#  &xst_xml_print_hash_hash ($$h{"partition"}, "partition");
+#  &xst_xml_print_vspace ();
   &xst_xml_print_scalars ($h, @scalars);
   &xst_xml_print_structure ($$h{"entry"}, "entry");
 
@@ -194,7 +189,12 @@ sub set
   {
     &xst_boot_fix ($hash);
     &xst_boot_conf_set ($hash);
-    &xst_file_run ($tool_lilo);
+
+    # It runs LILO if it's the default bootloader
+    if (&xst_boot_bootloader_get () eq "lilo")
+    {
+      &xst_file_run ($tool_lilo);
+    }
   }
   else
   {
@@ -275,5 +275,5 @@ $directives = {
     };
 
 $tool = &xst_init ($name, $version, $description, $directives, @ARGV);
-&xst_platform_ensure_supported ($tool, @platforms);
+#&xst_platform_ensure_supported ($tool, @platforms);
 &xst_run ($tool);

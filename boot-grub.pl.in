@@ -37,9 +37,206 @@ require "$SCRIPTSDIR/parse.pl$DOTIN";
 require "$SCRIPTSDIR/replace.pl$DOTIN";
 require "$SCRIPTSDIR/partition.pl$DOTIN";
 
+my @grub_common_image_vars = qw (title);
+my @grub_image_vars = (@grub_common_image_vars, qw (root kernel ));
+my @grub_other_vars = (@grub_common_image_vars, qw (rootnoverify makeactive chainloader));
+
 sub xst_boot_grub_verify
 {
   return "success";
+}
+
+sub xst_boot_grub_get_config_file
+{
+  return "/etc/grub.conf" if -f "/etc/grub.conf";
+  return "/boot/grub/menu.lst" if -f "/boot/grub/menu.lst";
+  return "/boot/grub/grub.conf" if -f "/boot/grub/grub.conf";
+  return undef;
+}
+
+sub xst_boot_grub_known_var
+{
+  my $key = shift;
+  my $list = shift;
+  my $from_xml = shift;
+
+  if (ref ($list) ne "ARRAY")
+  {
+    # TODO: Give warning;
+    return 0;
+  }
+
+  $key = lc ($key);
+  
+  # Hard coded known variables which are not standard variables.
+  return 0 if ($key eq "key" && $from_xml); # "key" is valid in xml only.
+  return 0 if ($key eq "type" && $from_xml); # "key" is valid in xml only.
+
+  return &xst_item_is_in_list ($key, @$list);
+}
+
+# Scans @buff until finds first line which looks like entry.
+# Returns line number or -1 if no entry found.
+sub xst_boot_grub_find_entry
+{
+  my ($buff, $lineno) = @_;
+  my $i;
+
+  for (; $lineno <= $#$buff; $lineno++)
+  {
+    $i = $$buff[$lineno];
+
+    return $lineno if ($i =~ /^[ \t]*(title)[ \t]+\S+/);
+  }
+
+  # Not found.
+  return -1;
+}
+
+sub xst_boot_grub_delete_entry
+{
+	my ($buff, $lineno) = @_;
+	my ($end);
+	
+	$end = &xst_boot_grub_find_entry ($buff, $lineno + 1);
+	$end = scalar @$buff if ($end < 0);
+	
+	# We delete all entry lines
+	for ($lineno; $lineno < $end; $lineno++)
+	{
+#		delete $$buff[$lineno];
+		$$buff[$lineno] = "";
+	}
+	
+	return $buff;
+}
+
+sub xst_boot_grub_edit_entry
+{
+  my ($entry, $buff, $lineno, $device_map) = @_;
+  my ($end, $val, $value);
+	
+  $end = &xst_boot_grub_find_entry ($buff, $lineno + 1);
+  $end = scalar @$buff if ($end < 0);
+
+  if (exists ($entry->{"image"}))
+  {
+    # It's a linux image
+    $value = $entry->{"root"};
+    $value = &xst_boot_grub_linux2grub ($device_map, $value);
+		
+    $val = "title " . $entry->{"label"} . "\n";
+    $val .= "\troot (". $value. ")\n";
+    $val .= "\tkernel " . $entry->{"image"} . " " . $entry->{"append"} . "\n\n";
+  }
+  else
+  {
+    # It's another boot
+    $value = $entry->{"other"};
+    $value = &xst_boot_grub_linux2grub ($device_map, $value);
+		
+    $val = "title " . $entry->{"label"} . "\n";
+    $val .= "\trootnoverify (" . $value . ")\n";
+    $val .= "\tmakeactive\n";
+    $val .= "\tchainloader +1\n\n";
+  }
+  $$buff[$lineno] = $val;
+
+  # We delete the rest of the entry lines
+  $lineno++;
+  for ($lineno; $lineno < $end; $lineno++)
+  {
+    # FIXME: do anything less destructive
+    delete $$buff[$lineno];
+  }
+}
+
+sub xst_boot_grub_add_entry
+{
+  my ($entry, $buff, $device_map) = @_;
+  my ($end, $val, $value);
+	
+  if (exists ($entry->{"image"}))
+  {
+    # It's a linux image
+    $value = $entry->{"root"};
+    $value = &xst_boot_grub_linux2grub ($device_map, $value);
+		
+    $val = "title " . $entry->{"label"} . "\n";
+    $val .= "\troot (". $value. ")\n";
+    $val .= "\tkernel " . $entry->{"image"} . " " . $entry->{"append"} . "\n\n";
+    push @$buff, $val;
+  }
+  elsif (exists ($entry->{"other"}))
+  {
+    # It's another boot
+    $value = $entry->{"other"};
+    $value = &xst_boot_grub_linux2grub ($device_map, $value);
+		
+    $val = "title " . $entry->{"label"} . "\n";
+    $val .= "\trootnoverify (" . $value . ")\n";
+    $val .= "\tmakeactive\n";
+    $val .= "\tchainloader +1\n\n";
+    push @$buff, $val;
+  }
+  else
+  {
+    return;
+  }
+}
+
+sub xst_boot_grub_entries_set
+{
+  my ($file, $device_map, $mtab, $entries) = @_;
+  my ($buff, $lineno, $entry, $entry_nr, $found);
+
+  return if (scalar @$entries <=0);
+
+  $buff = &xst_file_buffer_load ($file);
+  &xst_file_buffer_join_lines ($buff);
+	
+  $lineno = &xst_boot_grub_find_entry ($buff, 0);
+  $entry_nr = -1;
+
+  while ($lineno > 0)
+  {
+    $entry_nr++;
+    $found = 0;
+
+    foreach $entry (@$entries)
+    {
+      next unless $entry;
+      
+      if (exists $entry->{"key"})
+      {
+        $found++ if $entry->{"key"} == $entry_nr;
+
+        if ($found > 0)
+        {
+          # Found entry, change it if necessary,
+          # remove %entry from @entries and find new entry.
+          &xst_boot_grub_edit_entry ($entry, $buff, $lineno, $device_map);
+          $entry = undef;
+          last;					
+        }
+      }
+    }
+		
+    # Found entry wasn't in our @entries list: delete.
+    $buff = &xst_boot_grub_delete_entry ($buff, $lineno) if ($found <= 0);
+
+    # Search new entry line.
+    $lineno = &xst_boot_grub_find_entry ($buff, $lineno + 1);
+  }
+	
+  # At this point @$entries contains only new entries, let's add them.
+  foreach $entry (@$entries)
+  {
+    &xst_boot_grub_add_entry ($entry, $buff, $device_map);
+  }
+
+  &xst_file_buffer_clean ($buff);
+  return &xst_file_buffer_save ($buff, $file);
 }
 
 # Grub device notation converters.
@@ -88,7 +285,6 @@ sub xst_boot_grub_linux2grub
 sub xst_boot_grub_grub2linux
 {
   my ($device_map, $grubdev) = @_;
-  
   ($drive, $part, @add) = split (',', $grubdev);
   
   $dev = &xst_parse_split_first_str ($device_map, "\\($drive\\)", "[ \t]+");
@@ -357,7 +553,7 @@ sub xst_boot_grub_parse_other
   my ($grub_conf, $device_map, $mtab, $entry) = @_;
   my ($value, $grubdev, $dev, $root);
 
-  $value = &xst_boot_grub_parse_cmd ($grub_conf, "chainloader", $entry);
+  $value = &xst_boot_grub_parse_cmd ($grub_conf, "rootnoverify", $entry);
   return undef if $value eq undef;
 
   $value =~ /^\(([^\)]+)\)/;
@@ -407,11 +603,16 @@ sub xst_boot_grub_parse_default
 
 sub xst_boot_grub_parse_root
 {
-  my ($grub_conf, $entry) = @_;
-  my ($value);
+  my ($grub_conf, $device_map, $entry) = @_;
+  my ($value, $dev);
 
-  $value = &xst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
-  return $1 if ($value =~ /[ \t]root=([^ \t]+)/);
+  # we check if there is the 'root' label, then extract root device from it
+  $value = &xst_boot_grub_parse_cmd ($grub_conf, "root", $entry);
+  if ($value ne undef)
+  {
+    $value =~ s/[()]//g;
+    return &xst_boot_grub_grub2linux ($device_map, $value);
+  }
   return undef;
 }
 
@@ -460,7 +661,6 @@ sub xst_boot_grub_parse_type
     $rootdev =~ s/.*\///;
     $res = $ {$$partition{$rootdev}}{"typestr"} if exists $$partition{$rootdev};
   }
-  
   return $res;
 }
 
@@ -470,7 +670,6 @@ sub xst_boot_grub_replace_cmd_in_buff
   my ($buff, $cmd, $value, $entry) = @_;
   my ($line, $line_no);
   my ($pre, $post);
-
   $line_no = 0;
   
   if ($entry ne undef)
@@ -510,7 +709,6 @@ sub xst_boot_grub_replace_cmd_in_buff
 sub xst_boot_grub_replace_cmd
 {
   my ($grub_conf, $cmd, $value, $entry) = @_;
-  
   $buff = &xst_file_buffer_load ($grub_conf);
   $buff = [] if $buff eq undef;
 
@@ -590,17 +788,18 @@ sub xst_boot_grub_replace_image
 {
   my ($grub_conf, $device_map, $mtab, $entry, $value) = @_;
 
-  return &xst_boot_grub_replace_file_cmd ($grub_conf, "kernel", $device_map, $mtab, $value, $entry);
+  return &xst_boot_grub_replace_cmd ($grub_conf, "kernel", $value, $entry);
 }
 
 sub xst_boot_grub_replace_other
 {
-  my ($grub_conf, $device_map, $mtab, $entry, $value) = @_;
+  my ($grub_conf, $device_map, $entry, $value) = @_;
   my ($grubdev);
 
   $grubdev = &xst_boot_grub_linux2grub ($device_map, $value);
-  &xst_boot_grub_replace_cmd ($grub_conf, "root", "($grubdev)", $entry);
-  return &xst_boot_grub_replace_cmd ($grub_conf, "chainloader", "($grubdev)+1", $entry);
+  &xst_boot_grub_replace_cmd ($grub_conf, "rootnoverify", "($grubdev)", $entry);
+#  &xst_boot_grub_replace_cmd ($grub_conf, "makeactive", " ", $entry);
+  return &xst_boot_grub_replace_cmd ($grub_conf, "chainloader", "+1", $entry);
 }
 
 sub xst_boot_grub_replace_timeout
@@ -627,68 +826,46 @@ sub xst_boot_grub_replace_prompt
 
 sub xst_boot_grub_replace_default
 {
-  my ($grub_conf, $value) = @_;
-  my ($default, @entries);
+  my ($grub_conf, $entries, $value) = @_;
+  my ($default);
 
-  @entries = &xst_boot_grub_get_entries ($grub_conf);
-  return -1 if (scalar @entries) == 0;
-
-  for ($default = 0; $default < scalar (@entries); $default++)
+  return -1 if (scalar @$entries) == 0;
+  for ($default = 0; $default < scalar (@$entries); $default++)
   {
-    last if $value eq $entries[$default];
+    last if $value eq $$entries[$default]{"label"};
   }
-
-  return -1 if $default == scalar (@entries); # didn't find it.
+  return -1 if $default == scalar (@$entries); # didn't find it.
   return &xst_boot_grub_replace_cmd ($grub_conf, "default", $default);
 }
 
 sub xst_boot_grub_replace_root
 {
-  my ($grub_conf, $entry, $value) = @_;
-  my ($root, $buff, $line_no, $entry_line, $currval);
+  my ($grub_conf, $device_map, $entry, $type, $value) = @_;
+  my ($root, $buff, $line_no, $entry_line, $currval, $root_dev);
 
-  $currval = &xst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
-  return -1 if $currval eq undef;
-
-  if ($value eq undef)
-  {
-    $currval =~ s/[ \t]root=[^ \t]*//;
-  }
-  else
-  {
-    if ($currval =~ /[ \t]root=/)
-    {
-      $currval =~ s/([ \t]root=)[^ \t]*/\1$value/;
-    }
-    else
-    {
-      $currval .= " root=$value";
-    }
-  }
-  
-  return &xst_boot_grub_replace_cmd ($grub_conf, "kernel", $currval, $entry);
+  $root_dev = "(". &xst_boot_grub_linux2grub ($device_map, $value) . ")";
+  return &xst_boot_grub_replace_cmd ($grub_conf, "root", $root_dev, $entry);	  
 }
 
 sub xst_boot_grub_replace_append
 {
-  my ($grub_conf, $entry, $value) = @_;
-  my ($currval, $root);
-  
-  $currval = &xst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
-  $currval =~ /root=([^ \t]+)/;
-  $root = $1;
-  $currval =~ s/([ \t]+).*/\1/;
+  my ($grub_conf, $device_map, $entry, $value) = @_;
+  my ($kernel, $append, $currval, $root);
 
-  $currval .= "root=$root $value";
-
-  return &xst_boot_grub_replace_cmd ($grub_conf, "kernel", $currval, $entry);
+  $kernel = &xst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
+  $currval = &xst_boot_grub_parse_cmd ($grub_conf, "root", $entry);
+  $currval =~ s/[()]//g;
+  $root = &xst_boot_grub_grub2linux ($device_map, $currval);
+	
+  $kernel .= " root=$root $value";
+  return &xst_boot_grub_replace_cmd ($grub_conf, "kernel", $kernel, $entry);
 }
 
 sub xst_boot_grub_replace_type
 {
   my ($grub_conf, $entry, $value) = @_;
   my ($buff, $line_no, $line, $res);
-  
+	
   $buff = &xst_file_buffer_load ($grub_conf);
   $buff = [] if $buff eq undef;
   $line_no = 0;
@@ -712,7 +889,7 @@ sub xst_boot_grub_replace_type
 
   if ($res eq undef)
   {
-    &xst_boot_grub_insert_cmd ($buff, $line_no, "#XstEntryType",  $value);
+    &xst_boot_grub_insert_cmd ($buff, $line_no, "#\tXstEntryType",  $value);
   }
   else
   {
@@ -726,7 +903,7 @@ sub xst_boot_grub_replace_label
 {
   my ($grub_conf, $entry, $value) = @_;
   my ($buff, $line_no, $title);
-  
+	
   $buff = &xst_file_buffer_load ($grub_conf);
   $buff = [] if $buff eq undef;
   $line_no = 0;

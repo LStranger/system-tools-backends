@@ -145,6 +145,40 @@ sub xst_boot_fix
 
 # --------------------------------------------------------
 
+sub xst_boot_bootloader_get
+{
+  my ($current_tool, $current_date, $tool, $date);
+
+  $current_date = 0;
+  $tool = xst_file_locate_tool ("lilo");
+  if ($tool ne "")
+  {
+    $date = (stat ($tool))[8];
+    if ($date > $current_date) {
+      $current_date = $date;
+      $current_tool = "lilo";
+    }
+  }
+  
+  $tool = xst_file_locate_tool ("grub-install");
+  if ($tool ne "")
+  {
+    $date = (stat ($tool))[8];
+    if ($date > $current_date) {
+      $current_date = $date;
+      $current_tool = "grub";
+    }
+  }
+  
+  if ($current_date eq 0)
+  {
+    &xst_report ("platform_no_bootloader", $main::xst_dist);
+    return undef;
+  }
+  return $current_tool;
+}
+
+
 sub xst_boot_entries_get
 {
   my ($partition) = @_;
@@ -180,29 +214,11 @@ sub xst_boot_entries_get
 
 sub xst_boot_conf_get
 {
-  my %dist_map =
+  my ($tool) = &xst_boot_bootloader_get ();
+  my $config_file = &xst_boot_grub_get_config_file ();
+  my %tool_tables =
   (
-   "redhat-6.0" => "redhat-6.2",
-   "redhat-6.1" => "redhat-6.2",
-   "redhat-6.2" => "redhat-6.2",
-   "redhat-7.0" => "redhat-6.2",
-   "redhat-7.1" => "redhat-6.2",
-   "redhat-7.2" => "redhat-7.2",
-   
-   "mandrake-7.1" => "redhat-6.2",
-   "mandrake-7.2" => "mandrake-7.2",
-   
-   "debian-2.2"   => "redhat-6.2",
-   "debian-woody" => "redhat-6.2",
-
-   "suse-7.0"     => "redhat-6.2",
-
-   "turbolinux-7.0" => "redhat-6.2"
-   );
-  
-  my %dist_tables =
-      (
-       "redhat-6.2" =>
+       "lilo" =>
        {
          fn =>
          {
@@ -211,82 +227,52 @@ sub xst_boot_conf_get
          table =>
              [
               [ "partition", \&xst_partition_scan_info ],
-              [ "pixmapsup", \&xst_parse_trivial,             0 ],
-              [ "timeout",   \&xst_boot_lilo_parse_global,    LILO_CONF, "timeout" ],
+#              [ "pixmapsup", \&xst_parse_trivial,             0 ],
+              [ "timeout",   \&xst_boot_lilo_parse_global,    LILO_CONF, "delay" ],
               [ "prompt",    \&xst_boot_lilo_parse_global_kw, LILO_CONF, "prompt"  ],
               [ "default",   \&xst_boot_lilo_parse_global,    LILO_CONF, "default" ],
+              [ "boot",      \&xst_boot_lilo_parse_global,    LILO_CONF, "boot"    ],
+#	      [ "root",      \&xst_boot_lilo_parse_global,    LILO_CONF, "root"    ],
               [ "entry",     \&xst_boot_lilo_parse_entries,   LILO_CONF, "%partition%" ],
               ] 
        },
 
-       "redhat-7.2" =>
+       "grub" =>
        {
          fn =>
          {
-           GRUB_CONF  => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
+           GRUB_CONF  => $config_file,
            DEVICE_MAP => "/boot/grub/device.map",
-           MTAB       => "/etc/mtab"
+#           MTAB       => "/etc/mtab"
          },
          table =>
              [
               [ "partition", \&xst_partition_scan_info ],
-              [ "pixmapsup", \&xst_parse_trivial,           1 ],
-              [ "pixmap",    \&xst_boot_grub_parse_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
-              [ "timeout",   \&xst_boot_grub_parse_timeout, GRUB_CONF ],
-              [ "prompt",    \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
-              [ "default",   \&xst_boot_grub_parse_default, GRUB_CONF ],
-              [ "entry",     \&xst_boot_entries_get,        "%partition%" ],
-              ] 
-       },
-
-       "mandrake-7.2" =>
-       {
-         fn =>
-         {
-           GRUB_CONF  => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
-           DEVICE_MAP => "/boot/grub/device.map"
-         },
-         table =>
-             [
-              [ "partition", \&xst_partition_scan_info ],
-              [ "pixmapsup", \&xst_parse_trivial,           0 ],
+#              [ "pixmapsup", \&xst_parse_trivial,           1 ],
+#              [ "pixmap",    \&xst_boot_grub_parse_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
               [ "timeout",   \&xst_boot_grub_parse_timeout, GRUB_CONF ],
               [ "prompt",    \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
               [ "default",   \&xst_boot_grub_parse_default, GRUB_CONF ],
               [ "entry",     \&xst_boot_entries_get,        "%partition%" ],
               ] 
        }
-       );
-  
-  my $table = $dist_map{$main::xst_dist};
-  if (!$table)
-  {
-      &xst_report ("platform_no_table", $main::xst_dist);
-      return undef;
-  }
-  
-  return &xst_parse_from_table ($ {$dist_tables{$table}}{"fn"},
-                                $ {$dist_tables{$table}}{"table"});
+  );
+       
+  return &xst_parse_from_table ($ {$tool_tables{$tool}}{"fn"},
+                                $ {$tool_tables{$tool}}{"table"});
 }
 
 sub xst_boot_get_entry_parse_table
 {
-  my %dist_map =
+  my $config_file = &xst_boot_grub_get_config_file ();
+  my %tool_tables =
       (
-       "redhat-7.2"   => "redhat-7.2",
-       "mandrake-7.2" => "redhat-7.2"
-       );
-
-  my %dist_tables =
-      (
-       "redhat-7.2" =>
-       {
          entries_get => \&xst_boot_grub_get_entries_fn,
          fn =>
          {
            KEY        => "#key#",
            LABEL      => "#label#",
-           GRUB_CONF  => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
+           GRUB_CONF  => $config_file,
            DEVICE_MAP => "/boot/grub/device.map",
            MTAB       => "/etc/mtab"
          },
@@ -294,17 +280,15 @@ sub xst_boot_get_entry_parse_table
              [
               ["key",    \&xst_parse_trivial,          [KEY]],
               ["label",  \&xst_parse_trivial,          [LABEL]],
-              ["root",   \&xst_boot_grub_parse_root,   [GRUB_CONF, KEY]],
+              ["root",   \&xst_boot_grub_parse_root,   [GRUB_CONF, DEVICE_MAP, KEY]],
               ["type",   \&xst_boot_grub_parse_type,   [GRUB_CONF, KEY, PARTITION], "%root%"],
               ["image",  \&xst_boot_grub_parse_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
               ["other",  \&xst_boot_grub_parse_other,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
               ["append", \&xst_boot_grub_parse_append, [GRUB_CONF, KEY]]
               ]
-                }
        );
 
-  my $dist = $dist_map{$xst_dist};
-  return %{$dist_tables{$dist}} if $dist;
+  return %tool_tables;
 
   &xst_report ("platform_no_table", $xst_dist);
   return undef;
@@ -316,9 +300,9 @@ sub xst_boot_entry_set
   my ($j, %fn, $res);
 
   %fn = %{$$dist_attrib{"fn"}};
-
   foreach $j (keys (%fn))
   {
+		print "$j {$$dist_attrib{\"fn\"}}{$j} $$values_hash{\"key\"} aaa ---\n";
     $fn{$j} = &xst_parse_expand ($ {$$dist_attrib{"fn"}}{$j}, "key", $$values_hash{"key"});
   }
   
@@ -331,7 +315,6 @@ sub xst_boot_entries_set
   my (%dist_attrib, %fn, @old, @new, @del);
   my ($i, $proc, $entry);
   my ($tmp, $res);
-
   %dist_attrib = &xst_boot_get_entry_replace_table ();
   %fn = %{$dist_attrib{"fn"}};
 
@@ -366,104 +349,57 @@ sub xst_boot_entries_set
 sub xst_boot_conf_set
 {
   my $values_hash = $_[0];
+  my $config_file = &xst_boot_grub_get_config_file ();
+  $tool = &xst_boot_bootloader_get ();
 
-  my %dist_map =
-  (
-   "redhat-6.0" => "redhat-6.2",
-   "redhat-6.1" => "redhat-6.2",
-   "redhat-6.2" => "redhat-6.2",
-   "redhat-7.0" => "redhat-6.2",
-   "redhat-7.1" => "redhat-6.2",
-   "redhat-7.2" => "redhat-7.2",
-
-   "mandrake-7.1" => "redhat-6.2",
-   "mandrake-7.2" => "mandrake-7.2",
-   
-   "debian-2.2"   => "redhat-6.2",
-   "debian-woody" => "redhat-6.2",
-
-   "suse-7.0"     => "redhat-6.2",
-
-   "turbolinux-7.0" => "redhat-6.2"
-  );
-  
-  my %dist_tables =
+  my %tool_tables =
       (
-       "redhat-6.2" => {
+       "lilo" => {
          fn => { LILO_CONF => "/etc/lilo.conf"},
          table => [
-                   [ "timeout", \&xst_boot_lilo_replace_global,    LILO_CONF, "timeout" ],
-                   [ "prompt",  \&xst_boot_lilo_replace_global_kw, LILO_CONF, "prompt"  ],
-                   [ "default", \&xst_boot_lilo_replace_global,    LILO_CONF, "default" ],
-                   [ "entry",   \&xst_boot_lilo_entries_set,       LILO_CONF ],
-                   ] 
-                     },
+	           [ "boot",    \&xst_boot_lilo_replace_global,    LILO_CONF, "boot"    ],
+#	           [ "root",    \&xst_boot_lilo_replace_global,    LILO_CONF, "root"    ],
+             [ "timeout", \&xst_boot_lilo_replace_global,    LILO_CONF, "delay" ],
+             [ "prompt",  \&xst_boot_lilo_replace_global_kw, LILO_CONF, "prompt"  ],
+             [ "default", \&xst_boot_lilo_replace_global,    LILO_CONF, "default" ],
+             [ "entry",   \&xst_boot_lilo_entries_set,       LILO_CONF ],
+         ] 
+       },
        
-       "redhat-7.2" =>
+       "grub" =>
        {
          fn =>
          {
-           GRUB_CONF  => "/boot/grub/grub.conf",
+           GRUB_CONF  => $config_file,
            DEVICE_MAP => "/boot/grub/device.map",
            MTAB       => "/etc/mtab"
          },
          table =>
              [
-              [ "pixmap",  \&xst_boot_grub_replace_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
+ #             [ "pixmap",  \&xst_boot_grub_replace_pixmap,  [GRUB_CONF, DEVICE_MAP, MTAB] ],
               [ "timeout", \&xst_boot_grub_replace_timeout,  GRUB_CONF ],
               [ "prompt",  \&xst_boot_grub_replace_prompt,   GRUB_CONF ],
-              [ "default", \&xst_boot_grub_replace_default,  GRUB_CONF ],
-              [ "entry",   \&xst_boot_entries_set ],
-              ] 
-       },
-
-       "mandrake-7.2" =>
-       {
-         fn =>
-         {
-           GRUB_CONF  => "/boot/grub/menu.lst",
-           DEVICE_MAP => "/boot/grub/device.map"
-         },
-         table =>
-             [
-              [ "timeout", \&xst_boot_grub_replace_timeout, GRUB_CONF ],
-              [ "prompt",  \&xst_boot_grub_replace_prompt,  GRUB_CONF ],
-              [ "default", \&xst_boot_grub_replace_default, GRUB_CONF ],
-              [ "entry",   \&xst_boot_entries_set ],
+              [ "default", \&xst_boot_grub_replace_default,  GRUB_CONF , "%entry%"],
+              [ "entry",   \&xst_boot_grub_entries_set, [GRUB_CONF, DEVICE_MAP, MTAB] ],
               ] 
        }
        );
 
-  my $table = $dist_map{$main::xst_dist};
-  if (!$table)
-  {
-      &xst_report ("platform_no_table", $main::xst_dist);
-      return undef;
-  }
-  
-  return &xst_replace_from_table ($ {$dist_tables{$table}}{"fn"},
-                                  $ {$dist_tables{$table}}{"table"}, $values_hash);
-
+  return &xst_replace_from_table ($ {$tool_tables{$tool}}{"fn"},
+                                  $ {$tool_tables{$tool}}{"table"}, $values_hash);
 }
 
 sub xst_boot_get_entry_replace_table
 {
-  my %dist_map =
+  my $config_file = &xst_boot_grub_get_config_file ();
+  my %tool_tables =
       (
-       "redhat-7.2"   => "redhat-7.2",
-       "mandrake-7.2" => "redhat-7.2"
-       );
-
-  my %dist_tables =
-      (
-       "redhat-7.2" =>
-       {
          entries_get => \&xst_boot_grub_get_entries_fn,
          entries_del => \&xst_boot_grub_remove_entries,
          fn =>
          {
            KEY        => "#key#",
-           GRUB_CONF  => "/boot/grub/grub.conf",
+           GRUB_CONF  => $config_file,
            DEVICE_MAP => "/boot/grub/device.map",
            MTAB       => "/etc/mtab"
          },
@@ -471,20 +407,14 @@ sub xst_boot_get_entry_replace_table
              [
               # label has to go first, because it creates the entry if non-existent.
               ["label",  \&xst_boot_grub_replace_label,  [GRUB_CONF, KEY]],
-              ["root",   \&xst_boot_grub_replace_root,   [GRUB_CONF, KEY]],
-              ["type",   \&xst_boot_grub_replace_type,   [GRUB_CONF, KEY]],
+#              ["type",   \&xst_boot_grub_replace_type,   [GRUB_CONF, KEY]],
+              ["root",   \&xst_boot_grub_replace_root,   [GRUB_CONF, DEVICE_MAP, KEY, "%type%"]],
               ["image",  \&xst_boot_grub_replace_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
-              ["other",  \&xst_boot_grub_replace_other,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
-              ["append", \&xst_boot_grub_replace_append, [GRUB_CONF, KEY]]
+              ["other",  \&xst_boot_grub_replace_other,  [GRUB_CONF, DEVICE_MAP, KEY]],
+              ["append", \&xst_boot_grub_replace_append, [GRUB_CONF, DEVICE_MAP, KEY]]
               ]
-                }
        );
-
-  my $dist = $dist_map{$xst_dist};
-  return %{$dist_tables{$dist}} if $dist;
-
-  &xst_report ("platform_no_table", $xst_dist);
-  return undef;
+  return %tool_tables;
 }
 
 
