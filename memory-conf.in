@@ -364,7 +364,7 @@ sub get_swap_entries
 
     *FSTAB_FILE = be_open_read_from_names (@fstab_names);
 
-    if (not FSTAB_FILE) 
+    if (not *FSTAB_FILE) 
       {
 	print STDERR "Could not find file.\n";
 	return; 

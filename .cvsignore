@@ -1,2 +1,10 @@
 Makefile.in
 Makefile
+disks-conf
+hardware-conf
+memory-conf
+nameresolution-conf
+networking-conf
+shares-conf
+time-conf
+
