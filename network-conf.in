@@ -86,7 +86,6 @@ $progress_max = 10;
 # --- XML parsing ---
 
 # Scan XML from standard input to an internal tree.
-
 sub xml_parse
 {
   my ($tree, %hash, $elem);
@@ -137,6 +136,8 @@ sub xml_parse_network
     elsif ($elem eq "gatewaydev")    { $$hash{"gatewaydev"} =  &gst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "domain")        { $$hash{"domain"} =      &gst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "workgroup")     { $$hash{"workgroup"} =   &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "smbdesc")       { $$hash{"smbdesc"} =     &gst_xml_get_pcdata (shift @$tree); }
+    elsif ($elem eq "name")          { $$hash{"name"} =        &gst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "description")   { $$hash{"description"} = &gst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "winsserver")    { $$hash{"winsserver"} =  &gst_xml_get_pcdata (shift @$tree); }
     elsif ($elem eq "winsuse")       { $$hash{"winsuse"} =     &gst_xml_get_pcdata (shift @$tree); }
@@ -151,6 +152,8 @@ sub xml_parse_network
     elsif ($elem eq "dialinstalled") { shift @$tree; }
     elsif ($elem eq "smbinstalled")  { shift @$tree; }
     elsif ($elem eq "smartdhcpcd")   { shift @$tree; }
+    elsif ($elem eq "gwdevunsup")    { shift @$tree; }
+    elsif ($elem eq "profiledb")     { &xml_parse_profiledb (shift @$tree, $hash); }
     else                             { &gst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
 
@@ -163,7 +166,6 @@ sub xml_parse_network
 }
 
 # <network><statichost>...</statichost></network>
-
 sub xml_parse_statichost
 {
   my ($tree, $statichost) = @_;
@@ -201,6 +203,35 @@ sub xml_parse_dialing
   $$dialing{$name} = \%hash;
 }
 
+sub xml_parse_profile
+{
+  my ($tree, $hash) = @_;
+  my (%profile);
+
+  &xml_parse_network ($tree, \%profile);
+
+  push @{$hash->{"profiledb"}{"profile"}}, \%profile;
+}
+
+sub xml_parse_profiledb
+{
+  my ($tree, $hash) = @_;
+
+  shift @$tree; # Skip attributes.
+
+  while (@$tree)
+  {
+    if ($$tree[0] eq "profile") { &xml_parse_profile ($$tree[1], $hash); }
+    else
+    {
+		  &gst_report ("xml_unexp_tag", $$tree[0]);
+    }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
 # --- XML printing --- #
 
 sub xml_print_statichost
@@ -226,12 +257,47 @@ sub xml_print_statichost
   }
 }
 
+sub xml_print_profiledb
+{
+  my ($h) = @_;
+  my @scalar_keys =
+      qw(auto hostname gateway gatewaydev gwdevunsup domain 
+         hostmatch workgroup description smbdesc winsserver winsuse smbuse
+         smartdhcpcd smbinstalled dialinstalled name);
+  my @array_keys =
+      qw(nameserver searchdomain order);
+
+
+  &gst_xml_print_vspace ();
+
+  &gst_xml_print_line ("<profiledb>\n");
+  &gst_xml_enter ();
+  foreach $i (@{$$h{"profiledb"}{"profile"}})
+  {
+    gst_xml_print_line ("<profile>\n");
+    gst_xml_enter ();
+
+    #print profile contents
+    &gst_xml_print_scalars ($i, @scalar_keys);
+    &gst_xml_print_arrays ($i, @array_keys);
+    &xml_print_statichost ($i);
+
+    &gst_xml_print_hash_hash ($$i{"interface"}, "interface");
+    &gst_xml_print_hash_hash ($$i{"dialing"}, "dialing");
+
+    gst_xml_leave ();
+    gst_xml_print_line ("</profile>\n");
+  }
+  gst_xml_leave ();
+  gst_xml_print_line ("</profiledb>\n");
+}
+
 sub xml_print
 {
   my ($h) = @_;
   my @scalar_keys =
       qw(auto hostname gateway gatewaydev gwdevunsup domain 
-         hostmatch workgroup description winsserver winsuse smbuse
+         hostmatch workgroup smbdesc winsserver winsuse smbuse
          smartdhcpcd smbinstalled dialinstalled);
   my @array_keys =
       qw(nameserver searchdomain order);
@@ -246,20 +312,68 @@ sub xml_print
 
   &gst_xml_print_hash_hash ($$h{"interface"}, "interface");
   &gst_xml_print_hash_hash ($$h{"dialing"}, "dialing");
+  &xml_print_profiledb ($h);
 
   &gst_xml_print_end ();
 }
 
 
+# Reading profiles
+sub read_profiledb
+{
+  my ($hash) = @_;
+  my ($path);
+  my ($tree);
+
+  $path = gst_file_get_data_path () . "/" . $main::tool->{"name"} . "/" . $profile_file;
+  $tree = &gst_xml_scan ($path, $tool);
+  if ($tree && scalar @$tree)
+  {
+    if ($$tree[0] eq 'profiledb')
+    {
+      xml_parse_profiledb ($$tree[1], $hash);
+    }
+    else
+    {
+      gst_report ('xml_unexp_tag', $$tree[0]);
+    }
+  }
+}
+
+# Writing profiles
+sub write_profiledb
+{
+  my ($hash) = @_;
+  my $profiledb = $hash->{'profiledb'};
+  my $path = &gst_file_get_data_path () . "/" . $main::tool->{'name'} . "/" . $profile_file;
+
+  if ($profiledb) {
+    # Write our profiles.
+    my $fh = &gst_file_open_write_from_names ($path);
+    if ($fh)
+    {
+      local *STDOUT = $fh;
+      &xml_print_profiledb ($hash);
+      close ($fh);
+
+      delete $hash->{'profiledb'};
+    }
+  }
+  else
+  {
+    gst_file_remove ($path);
+  }
+}
+
+
 # Top-level actions.
-
-
 sub get
 {
   my $hash;
 
   # network interface stuff
   $hash = &gst_network_conf_get ();
+  &read_profiledb (\%$hash);
   &gst_network_ensure_loopback ($hash);
 
   &gst_report_end ();
@@ -272,6 +386,7 @@ sub set
   my $hash;
   
   $hash = &xml_parse ();
+  &write_profiledb ($hash);
   &gst_network_conf_set ($hash);
   &gst_report_end ();
 }
