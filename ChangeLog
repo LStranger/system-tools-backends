@@ -1,8 +1,43 @@
-2001-05-21  Chema Celorio  <chema@celorio.com>
+2001-05-21  Arturo Espinosa Aldama  <arturo@ximian.com>
 
-	* test2
+	* xml.pl.in (xst_xml_scan): Use new debug_print_log func.
 
-	* test
+	* users-conf.in (change_user): Just changed arg order to
+	make it easier to compare it with man page when checking
+	compatibility.
+
+	* replace.pl.in (xst_replace_sh): Changed behaviour so that
+	shell var will be expunged from file if $value eq "".
+	(xst_replace_sh_join): Implemented. Required by network:suse70
+
+	* platform.pl.in (check_lsb): Check through lsb file, which
+	may make our lives easier in the near future.
+	check_*: use $xst_prefix to check platform too.
+
+	* network.pl.in (xst_network_suse70_active_interfaces_get):
+	Don't list "lo" as an active interface.
+	(xst_network_suse70_ifaces_get_existing): Better code:
+	finds all NETDEV vars in rc.config and takes values from there.
+	(xst_network_suse70_parse_iface_num): Braking the 4
+	interface barrier here too. SuSE 7.0 scripts are broken, still.
+	(xst_network_suse70_set_ifconfig_arg): Beautified output.
+	(xst_network_suse70_get_file): Completly missed implemening
+	this one. New interfaces weren't getting a NETDEV number.
+	(xst_network_get_file): "suse-7.0" entry added.
+	(xst_network_suse70_interface_delete): Was calling activate
+	_by_dev with wrong value for $dev.
+	(xst_network_suse70_interface_delete): Oops. Use "_" between
+	var type and $dev.
+	(xst_network_ensure_loopback_interface): Those distros that
+	map to "" are not "ensured".
+	(xst_network_get_interfaces_parse_table): Changed from XST_NAME
+	to XST_IFACE_NAME, which is more verbose.
+	(xst_network_get_interface_replace_table): same.
+
+	* debug.pl.in (xst_debug_print_log_to_file): Seems like
+	print can't handle strings larger than 4096 bytes. This
+	routine is for printing large strings that may contain
+	\n's inside (like in.xml).
 
 2001-05-18  Arturo Espinosa Aldama  <arturo@ximian.com>
 

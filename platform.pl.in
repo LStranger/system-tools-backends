@@ -26,11 +26,26 @@
 # --- System guessing --- #
 
 
+require "___scriptsdir___/parse.pl";
+
+
+sub check_lsb
+{
+  my ($ver, $dist);
+
+  # xst_prefix not required here: parse already does that for us.
+  $dist = lc (&xst_parse_sh ("/etc/lsb-release", "DISTRIB_ID"));
+  $ver = lc (&xst_parse_sh ("/etc/lsb-release", "DISTRIB_RELEASE"));
+
+  return -1 if ($dist eq "") || ($ver eq "");
+  return "$dist-$ver";
+}
+
 sub check_debian
 {
   my $ver;
 
-  open DEBIAN, "/etc/debian_version" or return -1;
+  open DEBIAN, "$xst_prefix/etc/debian_version" or return -1;
   chomp ($ver = <DEBIAN>);
   close DEBIAN;
   return "debian-$ver";
@@ -39,7 +54,7 @@ sub check_debian
 
 sub check_redhat
 {
-  open RELEASE, "/etc/redhat-release" or return -1;
+  open RELEASE, "$xst_prefix/etc/redhat-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -56,7 +71,7 @@ sub check_redhat
 
 sub check_caldera
 {
-  open INSTALLED, "/etc/.installed" or return -1;
+  open INSTALLED, "$xst_prefix/etc/.installed" or return -1;
   while (<INSTALLED>)
   {
     chomp;
@@ -73,7 +88,7 @@ sub check_caldera
 
 sub check_suse
 {
-  open RELEASE, "/etc/SuSE-release" or return -1;
+  open RELEASE, "$xst_prefix/etc/SuSE-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -90,7 +105,7 @@ sub check_suse
 
 sub check_mandrake
 {
-  open MANDRAKE, "/etc/mandrake-release" or return -1;
+  open MANDRAKE, "$xst_prefix/etc/mandrake-release" or return -1;
   while (<MANDRAKE>)
   {
     chomp;
@@ -107,7 +122,7 @@ sub check_mandrake
 
 sub check_turbolinux
 {
-  open RELEASE, "/etc/turbolinux-release" or return -1;
+  open RELEASE, "$xst_prefix/etc/turbolinux-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -124,7 +139,7 @@ sub check_turbolinux
 
 sub check_linuxppc
 {
-  open RELEASE, "/etc/redhat-release" or return -1;
+  open RELEASE, "$xst_prefix/etc/redhat-release" or return -1;
   while (<RELEASE>)
   {
     chomp;
@@ -173,8 +188,8 @@ sub xst_platform_guess
   if ($xst_system =~ /linux/)
   {
     # Red Hat check must run after Mandrake
-    my @checks = (\&check_debian, \&check_caldera, \&check_suse, \&check_mandrake,
-                  \&check_linuxppc, \&check_redhat, \&check_turbolinux);
+    my @checks = (\&check_lsb, \&check_debian, \&check_caldera, \&check_suse, 
+                  \&check_mandrake, \&check_linuxppc, \&check_redhat, \&check_turbolinux);
     my ($check, $dist);
 
     foreach $check (@checks)

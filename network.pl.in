@@ -126,8 +126,11 @@ sub xst_network_suse70_active_interfaces_get
 
   foreach $dev (@devs)
   {
-    $num = &xst_network_suse70_parse_iface_num ("$xst_prefix/etc/rc.config", $dev);
-    push @ret, $num if $num != -1;
+    if ($dev ne "lo")
+    {
+      $num = &xst_network_suse70_parse_iface_num ("$xst_prefix/etc/rc.config", $dev);
+      push @ret, $num if $num != -1;
+    }
   }
 
   return @ret;
@@ -194,14 +197,20 @@ sub xst_network_debian_ifaces_get_existing
 sub xst_network_suse70_ifaces_get_existing
 {
   my $file = "$xst_prefix/etc/rc.config";
-  my ($i, @ret);
+  my ($i, $dev, @ret, $fd);
 
-  # Ugh, sucks, but this is the SuSE 7.0 way...
-  for ($i = 0; $i < 4; $i++)
+  $fd = &xst_file_open_read_from_names ($file);
+  return @ret if !$fd;
+  
+  while ($i = <$fd>)
   {
-    push @ret, "$i" if (&xst_parse_sh ($file, "NETDEV_$i") ne "");
+    if ($i =~ /^[ \t]*NETDEV_([0-9]+)=/)
+    {
+      push @ret, $1 if &xst_parse_sh ($file, "NETDEV_$1") ne "";
+    }
   }
 
+  close $fd;
   return @ret;
 }
 
@@ -210,13 +219,13 @@ sub xst_network_suse70_parse_iface_num
   my ($file, $dev) = @_;
   my ($i, $ret);
 
-  for ($i = 0; $i < 4; $i++)
+  foreach $i (&xst_network_suse70_ifaces_get_existing ())
   {
     $ret = &xst_parse_sh ($file, "NETDEV_$i");
     return $i if $ret eq $dev;
   }
 
-  &xst_debug_print_string ("\n\nWarning! xst_network_suse70_parse_iface_num: num for $dev not found.\n\n");
+  &xst_debug_print_string ("\n\nWarning: xst_network_suse70_parse_iface_num: num for $dev not found.\n\n");
   return -1;
 }
 
@@ -292,7 +301,8 @@ sub xst_network_suse70_set_ifconfig_arg
   if (! ($val =~ s/([ \t]+$key[ \t]+)[^ \t]+/\1$value/))
   {
     $val =~ s/[ \t]+up$//;
-    $val .= "$value up";
+    $val .= " " if $val =~ /[^ \t]$/;
+    $val .= "$key $value up";
   }
 
   return &xst_network_suse70_replace_iface_sh ($file, $iface, "IFCONFIG", $val);
@@ -309,6 +319,7 @@ sub xst_network_suse70_set_ifconfig_ip
   if (! ($val =~ s/^[0-9\.]+([ \t])/$value\1/))
   {
     $val = "$value $val";
+    $val =~ s/[ \t]+/ /;
   }
 
   return &xst_network_suse70_replace_iface_sh ($file, $iface, "IFCONFIG", $val);
@@ -356,13 +367,6 @@ sub xst_network_conf_get
   return $hash;
 }
 
-sub xst_network_deb22_get_file
-{
-  my $dev = $_[0];
-  
-  return $dev;
-}
-
 sub xst_network_rh62_get_file
 {
   my $dev = $_[0];
@@ -381,6 +385,24 @@ sub xst_network_rh62_get_file
   return "$dev$i";
 }
 
+sub xst_network_deb22_get_file
+{
+  my $dev = $_[0];
+  
+  return $dev;
+}
+
+sub xst_network_suse70_get_file
+{
+  my $file = "$xst_prefix/etc/rc.config";
+  my ($i);
+
+  $i = 0;
+  $i ++ while (&xst_parse_sh ($file, "NETDEV_$i") ne "");
+  
+  return $i;
+}
+
 sub xst_network_get_file
 {
   my $dev = $_[0];
@@ -394,7 +416,8 @@ sub xst_network_get_file
 	  "redhat-7.0"   => \&xst_network_rh62_get_file,
 	  "mandrake-7.2" => \&xst_network_rh62_get_file,
     "debian-2.2"   => \&xst_network_deb22_get_file,
-    "debian-woody" => \&xst_network_deb22_get_file
+    "debian-woody" => \&xst_network_deb22_get_file,
+    "suse-7.0"     => \&xst_network_suse70_get_file
 	  );
 
   $proc = $dist_map{$xst_dist};
@@ -402,6 +425,7 @@ sub xst_network_get_file
   return &$proc ($dev) if $proc;
 
   # FIXME: should make us bail.
+  &xst_debug_print_string ("\n\nWarning: No network_get_file proc for dist $xst_dist.\n\n");
   return undef;
 }
 
@@ -464,6 +488,7 @@ sub xst_network_dialing_set
   return $ret;
 }
 
+# This works for all systems that have ifup/ifdown scripts.
 sub xst_network_rh62_interface_activate_by_dev
 {
   my ($dev, $enabled) = @_;
@@ -604,6 +629,7 @@ sub xst_network_deb22_interface_delete
   my ($old_hash) = @_;
   my $dev = $$old_hash{"dev"};
 
+  &xst_network_rh62_interface_activate_by_dev ($dev, 0);
   &xst_replace_interfaces_iface_stanza_delete ("$xst_prefix/etc/network/interfaces", $dev);
   
   $login = $old_hash{"login"};
@@ -621,7 +647,7 @@ sub xst_network_suse70_interface_delete
   my $file = "$xst_prefix/etc/rc.config";
   my $login;
 
-  &xst_network_suse70_interface_activate_by_dev ($dev, 0);
+  &xst_network_suse70_interface_activate_by_dev ($$old_hash{"dev"}, 0);
 
 # Commented until I know what to do with ppp connections.
 #  $login = $old_hash{"login"};
@@ -631,9 +657,9 @@ sub xst_network_suse70_interface_delete
 #    &xst_network_remove_pap_entry ("/etc/ppp/chap-secrets", $login);
 #  }
 
-  &xst_replace_sh ($file, "IPADDR$dev", "");
-  &xst_replace_sh ($file, "NETDEV$dev", "");
-  &xst_replace_sh ($file, "IFCONFIG$dev", "");
+  &xst_replace_sh ($file, "IPADDR_$dev", "");
+  &xst_replace_sh ($file, "NETDEV_$dev", "");
+  &xst_replace_sh ($file, "IFCONFIG_$dev", "");
 }
 
 sub xst_network_interfaces_down_changed
@@ -1098,22 +1124,28 @@ sub xst_network_debian_woody_set_auto
   return &xst_file_buffer_save ($buff, $file);
 }
 
+# Set dist_map for your distro to "" if you don't want
+# loopback ensuring. See suse-7.0 entry for example.
 sub xst_network_ensure_loopback_interface
 {
   my ($interface) = @_;
   my $dev;
   my %dist_map =
 	 (
+    "redhat-5.2"   => "lo",
 	  "redhat-6.0"   => "lo",
 	  "redhat-6.1"   => "lo",
 	  "redhat-6.2"   => "lo",
 	  "redhat-7.0"   => "lo",
 	  "mandrake-7.2" => "lo",
 	  "debian-2.2"   => "lo",
-    "debian-woody" => "lo"
+    "debian-woody" => "lo",
+    "suse-7.0"     => ""
 	  );
 
   $dev = $dist_map {$xst_dist};
+
+  return if $dev eq "";
 
   if (!exists $$interface{$dev})
   {
@@ -1524,7 +1556,7 @@ sub xst_network_get_interfaces_parse_table
            [ "bootproto",          \&xst_network_suse70_parse_bootproto,  [IFCFG, IFACE] ],
            [ "auto",               \&xst_network_suse70_parse_iface_auto, [IFCFG, IFACE], NETCONFIG ],
            [ "user",               \&xst_parse_trivial,                   0 ], # not supported.
-           [ "name",               \&xst_network_suse70_parse_iface_sh,   [IFCFG, IFACE], XST_NAME ],
+           [ "name",               \&xst_network_suse70_parse_iface_sh,   [IFCFG, IFACE], XST_IFACE_NAME ],
            [ "dev",                \&xst_network_suse70_parse_iface_sh,   [IFCFG, IFACE], NETDEV ],
            [ "address",            \&xst_network_suse70_parse_iface_sh,   [IFCFG, IFACE], IPADDR ],
            [ "netmask",            \&xst_network_suse70_get_ifconfig_arg, [IFCFG, IFACE], netmask ],
@@ -1878,7 +1910,7 @@ sub xst_network_get_interface_replace_table
            [ "auto",               \&xst_network_suse70_replace_iface_auto, [IFCFG, IFACE], NETCONFIG ],
            [ "dev",                \&xst_network_suse70_replace_iface_sh,   [IFCFG, IFACE], NETDEV ],
 # not sup  [ "user",               \&xst_parse_trivial,                   0 ], # not supported.
-           [ "name",               \&xst_network_suse70_replace_iface_sh,   [IFCFG, IFACE], XST_NAME ],
+           [ "name",               \&xst_network_suse70_replace_iface_sh,   [IFCFG, IFACE], XST_IFACE_NAME ],
            [ "address",            \&xst_network_suse70_replace_iface_sh,   [IFCFG, IFACE], IPADDR ],
            [ "address",            \&xst_network_suse70_set_ifconfig_ip,    [IFCFG, IFACE] ],
            [ "netmask",            \&xst_network_suse70_set_ifconfig_arg,   [IFCFG, IFACE], netmask ],

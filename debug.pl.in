@@ -53,6 +53,20 @@ sub xst_debug_print_string_to_file
   print $debug_file $_[1];
 }
 
+sub xst_debug_print_log_to_file
+{
+  my ($file, $doc) = @_;
+  my (@buff, $line, $fd);
+
+  $fd = &xst_debug_open_output_file ($file);
+  
+  @buff = split ("\n", $doc);
+  foreach $line (@buff)
+  {
+    print $fd "$line\n";
+  }
+}
+
 
 sub xst_debug_print_string
 {

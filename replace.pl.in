@@ -196,7 +196,17 @@ sub xst_replace_sh
 
   &xst_report_enter ();
   &xst_report ("replace_sh", $key, $file);
-  $ret = &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);
+
+  # This will expunge the whole var if the value is empty.
+  if ($value eq "")
+  {
+    $ret = &xst_replace_split ($file, $key, "[ \t]*=[ \t]*");
+  }
+  else
+  {
+    $ret = &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);
+  }
+  
   &xst_report_leave ();
   return $ret;
 }
@@ -231,6 +241,14 @@ sub xst_replace_sh_set_domain
 
   $hostname = &xst_parse_sh_get_hostname ($file, $key);
   return &xst_replace_sh ($file, $key, "$hostname.$value");
+}
+
+sub xst_replace_sh_join
+{
+  my ($file, $key, $re, $value) = @_;
+
+  return &xst_replace_sh ($file, $key,
+                          join (&xst_replace_regexp_to_separator ($re), @$value));
 }
 
 # Quick trick to set a keyword $key in $file.

@@ -538,10 +538,10 @@ sub change_user
 	$command = "$cmd_usermod -c \'" . $$new_data[$users_prop_map{"comment"}] . 
 	  "\' -d \'" . $$new_data[$users_prop_map{"home"}] .
 	  "\' -g \'" . $$new_data[$users_prop_map{"gid"}] .
-	  "\' -s \'" . $$new_data[$users_prop_map{"shell"}] .
-	  "\' -p \'" . $$new_data[$users_prop_map{"password"}] .
-	  "\' -u \'" . $$new_data[$users_prop_map{"uid"}] .
 	  "\' -l \'" . $$new_data[$users_prop_map{"login"}] .
+	  "\' -p \'" . $$new_data[$users_prop_map{"password"}] .
+	  "\' -s \'" . $$new_data[$users_prop_map{"shell"}] .
+	  "\' -u \'" . $$new_data[$users_prop_map{"uid"}] .
 	  "\' \'" . $$old_data[$users_prop_map{"login"}] . "\'";
 	&my_system ($command);
 }
