@@ -1,0 +1,89 @@
+<?xml version="1.0"?>
+<schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xml:lang="en">
+  
+  <annotation>
+    <documentation>
+	 
+	 Internet sharing configurator XML format for the ximian-setup-tool backends.
+	 
+	 Copyright (C) 2001 Ximian, Inc.
+	 
+	 Authors: Arturo Espinosa [arturo@ximian.com]
+	 
+	 This is intended mainly as a means for documentation, not validation,
+	 but I hope to be able to validate the XML we get and return to
+	 backends with these files some day.
+    </documentation>
+  </annotation>
+  
+  <!-- Include file with useful types and stuff -->
+  <include schemaLocation="xst.xsd"/>
+
+  <!-- Include the network-specific types. -->
+  <include schemaLocation="networktypes.xsd"/>
+
+  <element type="internetsharingType" name="internetsharing">
+
+  <complexType name="internetsharingType">
+    <sequence>
+      <element type="fwrulesType"   name="fwrules"/>
+	 <element type="dhcpType"      name="dhcp"/>
+	 <element type="interfaceType" name="interface" minOccurs="0" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+
+  <!-- This tag may be expanded with more masquerading options. -->
+  <complexType name="fwrulesType">
+    <sequence>
+      <!-- Those tags described by questions are only useful for the get operation, and will be -->
+	 <!-- ignored during --set. -->
+
+      <!-- active: If setting, start/stop ipchains 'service'. If getting, the state of the service. -->
+      <element type="xstBool" name="active"    minOccurs="0"/>
+	 
+	 <!-- configured: Are there any ipchains/iptables/ipfwadm masq rules already in the kernel? -->
+      <element type="xstBool" name="configured"/>
+
+	 <!-- forwarding: Is there forwarding kernel support? -->
+      <element type="xstBool" name="forwarding"/>
+	 
+	 <!-- kerneltool: Is there kernel support for the (ipchains, iptables, ipfwadm) tool? -->
+      <element type="xstBool" name="kerneltool"/>
+	 
+	 <!-- landev: Those network adapters that will be used as landevs. Must have HWaddr (mac or similar). -->
+      <element type="xstBool" name="landev"    minOccurs="0" maxOccurs="unbounded"/>
+	 
+	 <!-- masquerading: Is there kernel masquerading support? -->
+      <element type="xstBool" name="masquerading"/>
+	 
+	 <!-- overwrite: set-only: overwrite existing forward-MASQ rules with our own? -->
+      <element type="xstBool" name="overwrite" minOccurs="0"/>
+	 
+	 <!-- tools: are the (ipchains, iptables, ipfwadm) tools installed? (ie /sbin/ipchains) -->
+      <element type="xstBool" name="tools"/>
+    </sequence>
+  </complexType>
+
+  <complexType name="dhcpType">
+    <sequence>
+      <!-- Those tags described by questions are only useful for the get operation, and will be -->
+	 <!-- ignored during --set. -->
+
+	 <!-- active: If setting, start/stop dhcpd service. If getting, the state of the service. -->
+      <element type="xstBool" name="active"    minOccurs="0"/>
+
+	 <!-- configured: Is there an /etc/dhcpd.conf or equivalent conf file? --> 
+      <element type="xstBool" name="configured"/>
+
+	 <!-- dev: Those network adapters that will be listened to for dhcp requests. -->
+      <element type="xstBool" name="dev"       minOccurs="0" maxOccurs="unbounded"/>
+
+	 <!-- installed: Is dhcpd or equivalent installed? -->
+      <element type="xstBool" name="installed"/>
+
+	 <!-- overwrite: set-only: overwrite existing dhcp.conf or equivalent with our own stuff? -->
+      <element type="xstBool" name="overwrite" minOccurs="0"/>
+    </sequence>
+  </complexType>
+
+</schema>

@@ -1,3 +1,12 @@
+2001-08-09  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* internetsharing.xsd: New schema for internet sharing,
+	based on the newly created internetsharing-conf.
+
+	* network.xsd: Now include networktypes.xsd.
+
+	* networktypes.xsd: Moved all network-specific types here.
+
 2001-07-02  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* shares.xsd: imports and exports tags are now optional.

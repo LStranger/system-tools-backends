@@ -13,6 +13,10 @@
 	 This is intended mainly as a means for documentation, not validation,
 	 but I hope to be able to validate the XML we get and return to
 	 backends with these files some day.
+
+
+	 <!-- WARNING: this is an old file: read internetsharing.xsd for the format
+	 that is being used now. Some ideas may be taken from this file later.-->
     </documentation>
   </annotation>
 
