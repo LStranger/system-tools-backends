@@ -1,3 +1,22 @@
+2005-01-02  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* file.pl.in (gst_file_run_backtick): modified, now it can return
+	stderr too. (gst_file_locate_tool): return too setuid apps.
+	(gst_file_copy_from_stock): added, it copies files from FILESDIR to
+	an specified location
+
+	* network.pl.in (gst_network_get_interface_type): cache all values
+	for not calling some commands constantly.
+	(gst_network_create_isdn_options): added, creates ISDN PPP options file.
+	(gst_network_check_pppd_plugin): added, checks for plugins existence.
+	(gst_network_interfaces_get): only show PPP/ISDN interfaces if pppd
+	exists.
+	(gst_network_check_iface): replaced everywhere with
+	gst_network_check_type(), it checks the iface type instead of the
+	iface name.
+	Other minor changes to support ISDN (at the moment it does so in
+	debian)
+
 2004-12-27  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* users-conf.in: fixed a couple of typos. fixes #162333 and #162336

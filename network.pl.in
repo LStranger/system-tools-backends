@@ -692,24 +692,55 @@ sub gst_network_dialing_get
 }
 
 # returns interface type depending on it's interface name
+# types_cache is a global var for caching interface types
 sub gst_network_get_interface_type
 {
   my ($dev) = @_;
-  my (@wireless_ifaces, $wi);
+  my (@wireless_ifaces, $wi, $type);
+
+  return $types_cache{$dev} if (exists $types_cache{$dev});
 
   #check whether interface is wireless
   $wireless_ifaces = &gst_network_get_wireless_ifaces ();
   foreach $wi (@$wireless_ifaces)
   {
-    return "wireless" if ($dev eq $wi);
+    if ($dev eq $wi)
+    {
+      $types_cache{$dev} = "wireless";
+      return $types_cache{$dev};
+    }
   }
 
-  # do the rest of checks
-  return "ethernet" if ($dev =~ /(eth|dc|ed|bfe)[0-9]/);
-  return "irlan" if ($dev =~ /irlan[0-9]/);
-  return "plip" if ($dev =~ /plip[0-9]/);
-  return "loopback" if ($dev =~ /lo[0-9]?/);
-  return "modem" if ($dev =~ /(ppp|tun)[0-9]/);
+  if ($dev =~ /ppp/)
+  {
+    # check whether the proper plugin exists
+    if (&gst_network_check_pppd_plugin ("capiplugin"))
+    {
+      $types_cache{$dev} = "isdn";
+    }
+    else
+    {
+      $types_cache{$dev} = "modem";
+    }
+  }
+  elsif ($dev =~ /(eth|dc|ed|bfe)[0-9]/)
+  {
+    $types_cache{$dev} = "ethernet";
+  }
+  elsif ($dev =~ /irlan[0-9]/)
+  {
+    $types_cache{$dev} = "irlan";
+  }
+  elsif ($dev =~ /plip[0-9]/)
+  {
+    $types_cache{$dev} = "plip";
+  }
+  elsif ($dev =~ /lo[0-9]?/)
+  {
+    $types_cache{$dev} = "loopback";
+  }
+
+  return $types_cache{$dev};
 }
 
 sub gst_network_freebsd_interfaces_get_info
@@ -1472,6 +1503,29 @@ sub gst_network_create_pppscript
   }
 }
 
+sub gst_network_create_isdn_options
+{
+  my ($file) = @_;
+
+  if (!&gst_file_exists ($file))
+  {
+    &gst_file_copy_from_stock ("general_isdn_ppp_options", $file);
+  }
+}
+
+sub gst_network_check_pppd_plugin
+{
+  my ($plugin) = @_;
+  my ($version, $output);
+
+  $version = &gst_file_run_backtick ("pppd --version", 1);
+  $version =~ s/.*version[ \t]+//;
+  chomp $version;
+
+  return 0 if !version;
+  return &gst_file_exists ("/usr/lib/pppd/$version/$plugin.so");
+}
+
 sub gst_network_interfaces_get
 {
   my (%dist_attrib, %config_hash, %hash, %fn);
@@ -1511,13 +1565,17 @@ sub gst_network_interfaces_get
     }
   }
 
-  $dev = "ppp0" if ($$tool{"system"} eq "Linux");
-  $dev = "tun0" if ($$tool{"system"} eq "FreeBSD");
+  if (&gst_file_locate_tool ("pppd"))
+  {
+    # only show PPP and ISDN devices if pppd exists
+    $dev = "ppp0" if ($$tool{"system"} eq "Linux");
+    $dev = "tun0" if ($$tool{"system"} eq "FreeBSD");
 
-  $$hash{$dev}{"dev"} = $dev;
-  $$hash{$dev}{"enabled"} = 0;
-  $$hash{$dev}{"type"} = &gst_network_get_interface_type ($dev);
-  $$hash{$dev}{"configuration"} = $modem_settings if ($modem_settings);
+    $$hash{$dev}{"dev"} = $dev;
+    $$hash{$dev}{"enabled"} = 0;
+    $$hash{$dev}{"type"} = &gst_network_get_interface_type ($dev);
+    $$hash{$dev}{"configuration"} = $modem_settings if ($modem_settings);
+  }
 
   return \%$hash;
 }
@@ -2332,7 +2390,7 @@ sub gst_network_interface_set
   my ($dev, $values_hash, $old_hash) = @_;
   my (%dist_attrib, %fn);
   my ($proc, $i, $res);
-  
+
   &gst_report_enter ();
   &gst_report ("network_iface_set", $dev);
   %dist_attrib = &gst_network_get_interface_replace_table ();
@@ -2462,8 +2520,10 @@ sub gst_network_get_ppp_options_re
   {
     $_ = $$_;
 
-    @res = /$re/;
-    return $res[0] if $res[0];
+    if (/$re/)
+    {
+      return $1;
+    }
   }
 
   return undef;
@@ -2678,7 +2738,8 @@ sub gst_network_deb22_replace_bootproto
   my %dev_to_method = 
       (
        "lo" => "loopback",
-       "ppp" => "ppp"
+       "ppp" => "ppp",
+       "ippp" => "ppp"
        );
 
   foreach $i (keys %dev_to_method)
@@ -3447,13 +3508,16 @@ sub gst_network_suse90_replace_gateway
     
 
 # runs a function if the interface is of type $type
-sub gst_network_check_iface
+sub gst_network_check_type
 {
   my ($iface) = shift @_;
   my ($type) =  shift @_;
   my ($func) =  shift @_;
+  my ($t);
 
-  if ($iface =~ "^$type")
+  $t = &gst_network_get_interface_type ($iface);
+
+  if ($t =~ "^$type")
   {
     &$func (@_);
   }
@@ -4256,30 +4320,30 @@ sub gst_network_get_interface_parse_table
 #           [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
 #           [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
 #           [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
-           [ "section",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
-           [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
-           [ "mtu",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MTU ]],
-           [ "mru",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MRU ]],
-           [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, PAPNAME ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-           [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
-           [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, LINESPEED ]],
-           [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
-           [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
-           [ "serial_escapechars", \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
-           [ "serial_hwctl",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
-           [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
-           [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
-           [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
-           [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
-           [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
-           [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
-           [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
-           [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-           [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
-           [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+           [ "section",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
+           [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
+           [ "mtu",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MTU ]],
+           [ "mru",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MRU ]],
+           [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, PAPNAME ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+           [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
+           [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, LINESPEED ]],
+           [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
+           [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
+           [ "serial_escapechars", \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
+           [ "serial_hwctl",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
+           [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
+           [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
+           [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
+           [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
+           [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
+           [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
+           [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
+           [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+           [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
+           [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
 #           [ "enabled",            \&gst_network_interface_active, IFACE,
 #                                                                   \&gst_network_active_interfaces_get ],
 #           [ "enabled",            \&gst_parse_trivial, 0 ]
@@ -4320,38 +4384,38 @@ sub gst_network_get_interface_parse_table
 #           [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
 #           [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
 #           [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
-           [ "section",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
-           [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
-           [ "mtu",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MTU ]],
-           [ "mru",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MRU ]],
-           [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, PAPNAME ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-           [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
-           [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, LINESPEED ]],
+           [ "section",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
+           [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
+           [ "mtu",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MTU ]],
+           [ "mru",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MRU ]],
+           [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, PAPNAME ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+           [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
+           [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, LINESPEED ]],
 #           [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
-           [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
+           [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
 #           [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
-           [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
-           [ "serial_escapechars", \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
-           [ "serial_hwctl",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
-           [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
+           [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
+           [ "serial_escapechars", \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
+           [ "serial_hwctl",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
+           [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
 #           [ "enabled",            \&gst_network_interface_active, "%dev%",
 #                                                                   \&gst_network_active_interfaces_get ],
 #           [ "enabled",            \&gst_network_interface_active, IFACE,
 #                                                                   \&gst_network_active_interfaces_get ],
 #           [ "enabled",            \&gst_parse_trivial, 0 ]
            # wvdial settings
-           [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
-           [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
-           [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
-           [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
-           [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
-           [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
-           [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-           [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
-           [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+           [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
+           [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
+           [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
+           [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
+           [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
+           [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
+           [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+           [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
+           [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
           ]
     },
 
@@ -4389,38 +4453,38 @@ sub gst_network_get_interface_parse_table
 #           [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
 #           [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
 #           [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
-           [ "section",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
-           [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
-           [ "mtu",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MTU ]],
-           [ "mru",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MRU ]],
-           [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, PAPNAME ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-           [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
-           [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, LINESPEED ]],
+           [ "section",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
+           [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
+           [ "mtu",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MTU ]],
+           [ "mru",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MRU ]],
+           [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, PAPNAME ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+           [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
+           [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, LINESPEED ]],
 #           [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
-           [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
+           [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
 #           [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
-           [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
-           [ "serial_escapechars", \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
-           [ "serial_hwctl",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
-           [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
+           [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
+           [ "serial_escapechars", \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
+           [ "serial_hwctl",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
+           [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
 #           [ "enabled",            \&gst_network_interface_active, "%dev%",
 #                                                                   \&gst_network_active_interfaces_get ],
 #           [ "enabled",            \&gst_network_interface_active, IFACE,
 #                                                                   \&gst_network_active_interfaces_get ],
 #           [ "enabled",            \&gst_parse_trivial, 0 ]
            # wvdial settings
-           [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
-           [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
-           [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
-           [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
-           [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
-           [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
-           [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-           [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
-           [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+           [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
+           [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
+           [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
+           [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
+           [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
+           [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
+           [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+           [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
+           [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
           ]
     },
 
@@ -4455,35 +4519,35 @@ sub gst_network_get_interface_parse_table
 #       [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
 #       [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
 #       [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
-       [ "section",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
-       [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
-       [ "mtu",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MTU ]],
-       [ "mru",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MRU ]],
-       [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, PAPNAME ]],
-       [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
-       [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-       [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
-       [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, LINESPEED ]],
+       [ "section",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
+       [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
+       [ "mtu",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MTU ]],
+       [ "mru",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MRU ]],
+       [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, PAPNAME ]],
+       [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
+       [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+       [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
+       [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, LINESPEED ]],
 #       [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
-       [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
+       [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
 #       [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
-       [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
-       [ "serial_escapechars", \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
-       [ "serial_hwctl",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
-       [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
+       [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
+       [ "serial_escapechars", \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
+       [ "serial_hwctl",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
+       [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
 #       [ "enabled",            \&gst_network_interface_active, IFACE, \&gst_network_active_interfaces_get ],
 #       [ "enabled",            \&gst_parse_trivial, 0 ]
        # wvdial settings
-       [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
-       [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
-       [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
-       [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
-       [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
-       [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
-       [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
-       [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-       [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
-       [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+       [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
+       [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
+       [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
+       [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
+       [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
+       [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
+       [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
+       [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+       [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
+       [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
       ]
     },
 
@@ -4518,36 +4582,36 @@ sub gst_network_get_interface_parse_table
 #           [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
 #           [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
 #           [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
-           [ "section",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
-           [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
-           [ "mtu",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MTU ]],
-           [ "mru",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MRU ]],
-           [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, PAPNAME ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-           [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
-           [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, LINESPEED ]],
+           [ "section",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
+           [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
+           [ "mtu",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MTU ]],
+           [ "mru",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MRU ]],
+           [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, PAPNAME ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+           [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
+           [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, LINESPEED ]],
 #           [ "ppp_options",        \&gst_parse_sh,      IFCFG, PPPOPTIONS ],
-           [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
+           [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
 #           [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
-           [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
-           [ "serial_escapechars", \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
-           [ "serial_hwctl",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
-           [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
+           [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
+           [ "serial_escapechars", \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
+           [ "serial_hwctl",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
+           [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
 #           [ "enabled",            \&gst_network_interface_active, IFACE,
 #                                                                   \&gst_network_active_interfaces_get ],
 #           [ "enabled",            \&gst_parse_trivial, 0 ]
            # wvdial settings
-           [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
-           [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
-           [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
-           [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
-           [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
-           [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
-           [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
-           [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-           [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
-           [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+           [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
+           [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
+           [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
+           [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
+           [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
+           [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
+           [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
+           [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+           [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
+           [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
           ]
     },
 
@@ -4582,36 +4646,36 @@ sub gst_network_get_interface_parse_table
 #       [ "update_dns",         \&gst_network_pump_get_nodns, PUMP, "%dev%", "%bootproto%" ],
 #       [ "dns1",               \&gst_parse_sh,      IFCFG, DNS1 ],
 #       [ "dns2",               \&gst_parse_sh,      IFCFG, DNS2 ],
-       [ "section",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
-       [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
-       [ "mtu",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MTU ]],
-       [ "mru",                \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MRU ]],
-       [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, PAPNAME ]],
-       [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
-       [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-       [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
-       [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, LINESPEED ]],
-       [ "ppp_options",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh,      IFCFG, PPPOPTIONS ]],
-       [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
+       [ "section",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, WVDIALSECT ]],
+       [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PEERDNS ]],
+       [ "mtu",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MTU ]],
+       [ "mru",                \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MRU ]],
+       [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, PAPNAME ]],
+       [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, PAP,  "%login%" ]],
+       [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+       [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, MODEMPORT ]],
+       [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, LINESPEED ]],
+       [ "ppp_options",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh,      IFCFG, PPPOPTIONS ]],
+       [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, DEFROUTE ]],
 #       [ "debug",              \&gst_parse_sh_bool, IFCFG, DEBUG ],
-       [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
-       [ "serial_escapechars", \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
-       [ "serial_hwctl",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
-       [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
+       [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, PERSIST ]],
+       [ "serial_escapechars", \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, ESCAPECHARS ]],
+       [ "serial_hwctl",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_sh_bool, IFCFG, HARDFLOWCTL ]],
+       [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ]],
 #       [ "enabled",            \&gst_network_interface_active, IFACE,
 #                                                               \&gst_network_active_interfaces_get ],
 #       [ "enabled",            \&gst_parse_trivial, 0 ]
        # wvdial settings
-       [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
-       [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
-       [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
-       [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
-       [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
-       [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
-       [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
-       [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-       [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
-       [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+       [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Phone" ]],
+       [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto DNS" ]],
+       [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Username" ]],
+       [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Password" ]],
+       [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Modem" ]],
+       [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Baud" ]],
+       [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Check Def Route" ]],
+       [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+       [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Command" ]],
+       [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_parse_ini,     WVDIAL, "Dialer %section%", "Dial Prefix" ]],
       ]
     },
 
@@ -4645,25 +4709,25 @@ sub gst_network_get_interface_parse_table
            [ "key",                \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "wireless_key" ],
            [ "remote_address",     \&gst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
            [ "section",            \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
-           [ "update_dns",         \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "usepeerdns" ]],
-           [ "noauth",             \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "noauth" ]],
-           [ "mtu",                \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
-           [ "mru",                \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
-           [ "serial_port",        \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
-           [ "serial_speed",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
-           [ "login",              \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^user \"(.*)\"" ]],
-           [ "password",           \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_pap_passwd, PAP, "%login%" ]],
-           [ "password",           \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-           [ "ppp_options",        \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_unsup, PPP_OPTIONS ]],
-           [ "set_default_gw",     \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "defaultroute" ]],
-           [ "debug",              \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "debug" ]],
-           [ "persist",            \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "persist" ]],
-           [ "serial_escapechars", \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
-           [ "serial_hwctl",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "crtscts" ]],
-           [ "external_line",      \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd[^0-9]([0-9*#]*)[wW]" ]],
-           [ "phone_number",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd.*[ptwW]([0-9, -]+)" ]],
-           [ "dial_command",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
-           [ "volume",             \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_modem_volume, CHAT ]],
+           [ "update_dns",         \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "usepeerdns" ]],
+           [ "noauth",             \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "noauth" ]],
+           [ "mtu",                \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_split_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
+           [ "mru",                \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_split_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
+           [ "serial_port",        \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
+           [ "serial_speed",       \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
+           [ "login",              \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^login \"?([^\"]*)\"?" ]],
+           [ "password",           \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_pap_passwd, PAP, "%login%" ]],
+           [ "password",           \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+           [ "ppp_options",        \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_unsup, PPP_OPTIONS ]],
+           [ "set_default_gw",     \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "defaultroute" ]],
+           [ "debug",              \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "debug" ]],
+           [ "persist",            \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "persist" ]],
+           [ "serial_escapechars", \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_split_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
+           [ "serial_hwctl",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "crtscts" ]],
+           [ "external_line",      \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd[^0-9]([0-9*#]*)[wW]" ]],
+           [ "phone_number",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd.*[ptwW]([0-9, -]+)" ]],
+           [ "dial_command",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
+           [ "volume",             \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_modem_volume, CHAT ]],
 #           [ "enabled",            \&gst_network_interface_active,       IFACE,
 #                                                                       \&gst_network_active_interfaces_get ],
 #           [ "enabled",            \&gst_parse_trivial,                  0 ]
@@ -4699,25 +4763,28 @@ sub gst_network_get_interface_parse_table
            [ "key",                \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "wireless[_-]key1?" ],
            [ "remote_address",     \&gst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
            [ "section",            \&gst_parse_interfaces_option_str,    [INTERFACES, IFACE], "provider" ],
-           [ "update_dns",         \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "usepeerdns" ]],
-           [ "noauth",             \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "noauth" ]],
-           [ "mtu",                \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
-           [ "mru",                \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
-           [ "serial_port",        \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
-           [ "serial_speed",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
-           [ "login",              \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^user \"(.*)\"" ]],
-           [ "password",           \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_pap_passwd, PAP, "%login%" ]],
-           [ "password",           \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-           [ "ppp_options",        \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_unsup, PPP_OPTIONS ]],
-           [ "set_default_gw",     \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "defaultroute" ]],
-           [ "debug",              \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "debug" ]],
-           [ "persist",            \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "persist" ]],
-           [ "serial_escapechars", \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
-           [ "serial_hwctl",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "crtscts" ]],
-           [ "external_line",      \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd[^0-9]([0-9*#]*)[wW]" ]],
-           [ "phone_number",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd.*[ptwW]([0-9, -]+)" ]],
-           [ "dial_command",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
-           [ "volume",             \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_modem_volume, CHAT ]],
+           [ "update_dns",         \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_parse_kw, PPP_OPTIONS, "usepeerdns" ]],
+           [ "noauth",             \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_parse_kw, PPP_OPTIONS, "noauth" ]],
+           [ "mtu",                \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_parse_split_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
+           [ "mru",                \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_parse_split_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
+           [ "serial_port",        \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
+           [ "serial_speed",       \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
+           [ "login",              \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^user \"?([^\"]*)\"?" ]],
+           [ "login",              \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^login \"?([^\"]*)\"?" ]],
+           [ "password",           \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_network_get_pap_passwd, PAP, "%login%" ]],
+           [ "password",           \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+           [ "ppp_options",        \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_unsup, PPP_OPTIONS ]],
+           [ "set_default_gw",     \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_parse_kw, PPP_OPTIONS, "defaultroute" ]],
+           [ "debug",              \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_parse_kw, PPP_OPTIONS, "debug" ]],
+           [ "persist",            \&gst_network_check_type,            [IFACE, "(modem|isdn)", \&gst_parse_kw, PPP_OPTIONS, "persist" ]],
+           [ "serial_escapechars", \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_split_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
+           [ "serial_hwctl",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "crtscts" ]],
+           [ "external_line",      \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd[^0-9]([0-9*#]*)[wW]" ]],
+           [ "external_line",      \&gst_network_check_type,            [IFACE, "isdn", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^number[ \t]+(.+)[wW]" ]],
+           [ "phone_number",       \&gst_network_check_type,            [IFACE, "isdn", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^number.*[wW \t](.*)" ]],
+           [ "phone_number",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd.*[ptwW]([0-9, -]+)" ]],
+           [ "dial_command",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
+           [ "volume",             \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_modem_volume, CHAT ]],
 #           [ "enabled",            \&gst_network_interface_active,       IFACE,
 #                                                                       \&gst_network_active_interfaces_get ],
 #           [ "enabled",            \&gst_parse_trivial,                  0 ]
@@ -4871,25 +4938,25 @@ sub gst_network_get_interface_parse_table
        [ "key",                \&gst_parse_wireless_opts,            [ WIRELESS, IFACE], \&gst_network_get_wireless_ifaces, KEY   ],
        [ "enabled",            \&gst_network_interface_active,       IFACE, \&gst_network_active_interfaces_get ],
        # Modem stuff
-       [ "update_dns",         \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "usepeerdns" ]],
-       [ "noauth",             \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "noauth" ]],
-       [ "mtu",                \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
-       [ "mru",                \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
-       [ "serial_port",        \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
-       [ "serial_speed",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
-       [ "login",              \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^name \"(.*)\"" ]],
-       [ "password",           \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_pap_passwd, PAP, "%login%" ]],
-       [ "password",           \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
-       [ "ppp_options",        \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_ppp_options_unsup, PPP_OPTIONS ]],
-       [ "set_default_gw",     \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "defaultroute" ]],
-       [ "debug",              \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "debug" ]],
-       [ "persist",            \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "persist" ]],
-       [ "serial_escapechars", \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_split_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
-       [ "serial_hwctl",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_kw, PPP_OPTIONS, "crtscts" ]],
-       [ "external_line",      \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd[^0-9]*([0-9]*)[wW]" ]],
-       [ "phone_number",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "atd.*[ptw]([0-9, -]+)" ]],
-       [ "dial_command",       \&gst_network_check_iface,            [IFACE, "ppp", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
-       [ "volume",             \&gst_network_check_iface,            [IFACE, "ppp", \&gst_network_get_modem_volume, CHAT ]],
+       [ "update_dns",         \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "usepeerdns" ]],
+       [ "noauth",             \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "noauth" ]],
+       [ "mtu",                \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_split_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
+       [ "mru",                \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_split_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
+       [ "serial_port",        \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
+       [ "serial_speed",       \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
+       [ "login",              \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_re, PPP_OPTIONS, "^name \"?([^\"]*)\"?" ]],
+       [ "password",           \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_pap_passwd, PAP, "%login%" ]],
+       [ "password",           \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_pap_passwd, CHAP, "%login%" ]],
+       [ "ppp_options",        \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_ppp_options_unsup, PPP_OPTIONS ]],
+       [ "set_default_gw",     \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "defaultroute" ]],
+       [ "debug",              \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "debug" ]],
+       [ "persist",            \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "persist" ]],
+       [ "serial_escapechars", \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_split_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
+       [ "serial_hwctl",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_kw, PPP_OPTIONS, "crtscts" ]],
+       [ "external_line",      \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd[^0-9]*([0-9]*)[wW]" ]],
+       [ "phone_number",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "atd.*[ptw]([0-9, -]+)" ]],
+       [ "dial_command",       \&gst_network_check_type,            [IFACE, "modem", \&gst_parse_chat, CHAT, "(atd[tp])[0-9, -w]+" ]],
+       [ "volume",             \&gst_network_check_type,            [IFACE, "modem", \&gst_network_get_modem_volume, CHAT ]],
        ]
       },
 
@@ -5482,16 +5549,16 @@ sub gst_network_get_interface_replace_table
         [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
         [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
         # wvdial settings
-        [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
-        [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
-        [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
-        [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
-        [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
-        [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
-        [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
-        [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-        [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
-        [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+        [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
+        [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
+        [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
+        [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
+        [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
+        [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
+        [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
+        [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+        [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
+        [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
       ]
     },
 
@@ -5543,16 +5610,16 @@ sub gst_network_get_interface_replace_table
         [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
         [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
         # wvdial settings
-        [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
-        [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
-        [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
-        [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
-        [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
-        [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
-        [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
-        [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-        [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
-        [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+        [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
+        [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
+        [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
+        [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
+        [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
+        [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
+        [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
+        [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+        [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
+        [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
       ]
     },
    
@@ -5604,16 +5671,16 @@ sub gst_network_get_interface_replace_table
         [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
         [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
         # wvdial settings
-        [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
-        [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
-        [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
-        [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
-        [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
-        [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
-        [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
-        [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-        [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
-        [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+        [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
+        [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
+        [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
+        [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
+        [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
+        [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
+        [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
+        [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+        [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
+        [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
       ]
     },
    
@@ -5663,16 +5730,16 @@ sub gst_network_get_interface_replace_table
         [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
         [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
         # wvdial settings
-        [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
-        [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
-        [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
-        [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
-        [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
-        [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
-        [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
-        [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-        [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
-        [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+        [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
+        [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
+        [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
+        [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
+        [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
+        [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
+        [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
+        [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+        [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
+        [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
       ]
     },
 
@@ -5722,16 +5789,16 @@ sub gst_network_get_interface_replace_table
         [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
         [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
         # wvdial settings
-        [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
-        [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
-        [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
-        [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
-        [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
-        [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
-        [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
-        [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-        [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
-        [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+        [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
+        [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
+        [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
+        [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
+        [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
+        [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
+        [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
+        [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+        [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
+        [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
       ]
     },
 
@@ -5781,16 +5848,16 @@ sub gst_network_get_interface_replace_table
       [ "serial_hwctl",       \&gst_replace_sh_bool, IFCFG, HARDFLOWCTL ],
       [ "phone_number",       \&gst_replace_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
       # wvdial settings
-      [ "phone_number",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
-      [ "update_dns",         \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
-      [ "login",              \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
-      [ "password",           \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
-      [ "serial_port",        \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
-      [ "serial_speed",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
-      [ "set_default_gw",     \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
-      [ "persist",            \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
-      [ "dial_command",       \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
-      [ "external_line",      \&gst_network_check_iface,  ["%dev%", "ppp", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
+      [ "phone_number",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Phone" ]],
+      [ "update_dns",         \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto DNS" ]],
+      [ "login",              \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Username" ]],
+      [ "password",           \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Password" ]],
+      [ "serial_port",        \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Modem" ]],
+      [ "serial_speed",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Baud" ]],
+      [ "set_default_gw",     \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Check Def Route" ]],
+      [ "persist",            \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Auto Reconnect" ]],
+      [ "dial_command",       \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Command" ]],
+      [ "external_line",      \&gst_network_check_type,  ["%dev%", "modem", \&gst_replace_ini, WVDIAL, "Dialer %section%", "Dial Prefix" ]],
      ]
    },
 
@@ -5812,7 +5879,7 @@ sub gst_network_get_interface_replace_table
 	    table =>
           [
 # not sup  [ "user",               \&gst_parse_sh_bool, IFCFG, USERCTL ],
-           [ "bootproto",          \&gst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
+           [ "_always_",           \&gst_network_deb22_replace_bootproto,  [INTERFACES, IFACE]],
            [ "auto",               \&gst_replace_interfaces_option_kw_not, [INTERFACES, IFACE], "noauto" ],
            [ "name",               \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "name" ],
            [ "address",            \&gst_replace_interfaces_option_str,    [INTERFACES, IFACE], "address" ],
@@ -5860,7 +5927,7 @@ sub gst_network_get_interface_replace_table
       },
 	    table =>
           [
-           [ "bootproto",          \&gst_network_deb22_replace_bootproto, [INTERFACES, IFACE]],
+           [ "_always_",           \&gst_network_deb22_replace_bootproto, [INTERFACES, IFACE]],
            [ "auto",               \&gst_network_debian_woody_set_auto,   [INTERFACES, IFACE]],
            [ "address",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "address" ],
            [ "netmask",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "netmask" ],
@@ -5870,26 +5937,29 @@ sub gst_network_get_interface_replace_table
            [ "section",            \&gst_replace_interfaces_option_str,   [INTERFACES, IFACE], "provider" ],
            [ "remote_address",     \&gst_network_debian_replace_remote_address, [INTERFACES, IFACE]],
            # Modem stuff
-           [ "section",            \&gst_network_check_iface,             [IFACE, "ppp", \&gst_network_set_ppp_options_connect,  PPP_OPTIONS ]],
-           [ "phone_number",       \&gst_network_check_iface,             [IFACE, "ppp", \&gst_network_create_pppscript, CHAT ]],
-           [ "update_dns",         \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "usepeerdns" ]],
-           [ "noauth",             \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "noauth" ]],
-           [ "set_default_gw",     \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "defaultroute" ]],
-           [ "debug",              \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "debug" ]],
-           [ "persist",            \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "persist" ]],
-           [ "serial_hwctl",       \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "crtscts" ]],
-           [ "mtu",                \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_join_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
-           [ "mru",                \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_join_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
-           [ "serial_port",        \&gst_network_check_iface,             [IFACE, "ppp", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
-           [ "serial_speed",       \&gst_network_check_iface,             [IFACE, "ppp", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
-           [ "login",              \&gst_network_check_iface,             [IFACE, "ppp", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^user \"(.*)\"", "user \"%login%\"" ]],
-           [ "password",           \&gst_network_check_iface,             [IFACE, "ppp", \&gst_network_set_pap_passwd, PAP, "%login%" ]],
-           [ "password",           \&gst_network_check_iface,             [IFACE, "ppp", \&gst_network_set_pap_passwd, CHAP, "%login%" ]],
-           [ "serial_escapechars", \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_join_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
-           [ "dial_command",       \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_chat, CHAT, "(atd[tp])[0-9w, -]+" ]],
-           [ "phone_number",       \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_chat, CHAT, "atd[tp]([0-9w]+)" ]],
-           [ "external_line",      \&gst_network_check_iface,             [IFACE, "ppp", \&gst_replace_chat, CHAT, "atd[tp]([0-9w, -]+)", "%external_line%W%phone_number%" ]],
-           [ "volume",             \&gst_network_check_iface,             [IFACE, "ppp", \&gst_network_set_modem_volume, CHAT ]],
+           [ "section",            \&gst_network_check_type,             [IFACE, "modem", \&gst_network_set_ppp_options_connect,  PPP_OPTIONS ]],
+           [ "phone_number",       \&gst_network_check_type,             [IFACE, "modem", \&gst_network_create_pppscript, CHAT ]],
+           [ "phone_number",       \&gst_network_check_type,             [IFACE, "isdn", \&gst_network_create_isdn_options, PPP_OPTIONS ]],
+           [ "update_dns",         \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_replace_kw, PPP_OPTIONS, "usepeerdns" ]],
+           [ "noauth",             \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_replace_kw, PPP_OPTIONS, "noauth" ]],
+           [ "set_default_gw",     \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_replace_kw, PPP_OPTIONS, "defaultroute" ]],
+           [ "debug",              \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_replace_kw, PPP_OPTIONS, "debug" ]],
+           [ "persist",            \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_replace_kw, PPP_OPTIONS, "persist" ]],
+           [ "serial_hwctl",       \&gst_network_check_type,             [IFACE, "modem", \&gst_replace_kw, PPP_OPTIONS, "crtscts" ]],
+           [ "mtu",                \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_replace_join_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
+           [ "mru",                \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_replace_join_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
+           [ "serial_port",        \&gst_network_check_type,             [IFACE, "modem", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
+           [ "serial_speed",       \&gst_network_check_type,             [IFACE, "modem", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
+           [ "login",              \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^(login|user) (.*)", "login \"%login%\"" ]],
+           [ "password",           \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_network_set_pap_passwd, PAP, "%login%" ]],
+           [ "password",           \&gst_network_check_type,             [IFACE, "(modem|isdn)", \&gst_network_set_pap_passwd, CHAP, "%login%" ]],
+           [ "serial_escapechars", \&gst_network_check_type,             [IFACE, "modem", \&gst_replace_join_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
+           [ "dial_command",       \&gst_network_check_type,             [IFACE, "modem", \&gst_replace_chat, CHAT, "(atd[tp])[0-9w, -]+" ]],
+           [ "phone_number",       \&gst_network_check_type,             [IFACE, "modem", \&gst_replace_chat, CHAT, "atd[tp]([0-9w]+)" ]],
+           [ "external_line",      \&gst_network_check_type,             [IFACE, "modem", \&gst_replace_chat, CHAT, "atd[tp]([0-9w, -]+)", "%external_line%W%phone_number%" ]],
+           [ "phone_number",       \&gst_network_check_type,             [IFACE, "isdn", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^number (.*)", "number %phone_number%" ]],
+           [ "external_line",      \&gst_network_check_type,             [IFACE, "isdn", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^number (.*)", "number %external_line%W%phone_number%" ]],
+           [ "volume",             \&gst_network_check_type,             [IFACE, "modem", \&gst_network_set_modem_volume, CHAT ]],
            ]
        },
 
@@ -5953,7 +6023,7 @@ sub gst_network_get_interface_replace_table
       [ "dial_command",       \&gst_replace_sh,                        IFCFG,   DIALCOMMAND    ],
       [ "external_line",      \&gst_replace_sh,                        IFCFG,   DIALPREFIX     ],
       [ "provider",           \&gst_replace_sh,                        IFCFG,   PROVIDER       ],
-      [ "volume",             \&gst_network_check_iface,               [ IFACE, "ppp", \&gst_network_set_modem_volume_string, IFCFG, INIT8 ]],
+      [ "volume",             \&gst_network_check_type,               [ IFACE, "modem", \&gst_network_set_modem_volume_string, IFCFG, INIT8 ]],
       [ "login",              \&gst_network_suse90_replace_provider_file,       "%provider%", USERNAME     ],
       [ "password",           \&gst_network_suse90_replace_provider_file,       "%provider%", PASSWORD     ],
       [ "phone_number",       \&gst_network_suse90_replace_provider_file,       "%provider%", PHONE        ],
@@ -6038,27 +6108,27 @@ sub gst_network_get_interface_replace_table
       [ "essid",              \&gst_replace_wireless_opts,                 [ WIRELESS, IFACE ], \&gst_network_get_wireless_ifaces, ESSID ],
       [ "key",                \&gst_replace_wireless_opts,                 [ WIRELESS, IFACE ], \&gst_network_get_wireless_ifaces, KEY   ],
       # Modem stuff
-      [ "phone_number",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_create_pppscript, CHAT ]],
-      [ "phone_number",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_slackware91_create_pppgo ]],
-      [ "update_dns",         \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "usepeerdns" ]],
-      [ "noauth",             \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "noauth" ]],
-      [ "set_default_gw",     \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "defaultroute" ]],
-      [ "debug",              \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "debug" ]],
-      [ "persist",            \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "persist" ]],
-      [ "serial_hwctl",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_kw, PPP_OPTIONS, "crtscts" ]],
-      [ "mtu",                \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_join_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
-      [ "mru",                \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_join_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
-      [ "serial_port",        \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
-      [ "serial_speed",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
-      [ "login",              \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^name \"(.*)\"", "name \"%login%\"" ]],
-      [ "ppp_options",        \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_ppp_options_unsup, PPP_OPTIONS ]],
-      [ "serial_escapechars", \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_join_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
-      [ "password",           \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_pap_passwd, PAP, "%login%" ]],
-      [ "password",           \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_pap_passwd, CHAP, "%login%" ]],
-      [ "dial_command",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "(atd[tp])[0-9w, -]+" ]],
-      [ "phone_number",       \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "atd[tp]([0-9w]+)" ]],
-      [ "external_line",      \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_replace_chat, CHAT, "atd[tp]([0-9w, -]+)", "%external_line%W%phone_number%" ]],
-      [ "volume",             \&gst_network_check_iface,                   [IFACE, "ppp", \&gst_network_set_modem_volume, CHAT ]],
+      [ "phone_number",       \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_create_pppscript, CHAT ]],
+      [ "phone_number",       \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_slackware91_create_pppgo ]],
+      [ "update_dns",         \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_kw, PPP_OPTIONS, "usepeerdns" ]],
+      [ "noauth",             \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_kw, PPP_OPTIONS, "noauth" ]],
+      [ "set_default_gw",     \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_kw, PPP_OPTIONS, "defaultroute" ]],
+      [ "debug",              \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_kw, PPP_OPTIONS, "debug" ]],
+      [ "persist",            \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_kw, PPP_OPTIONS, "persist" ]],
+      [ "serial_hwctl",       \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_kw, PPP_OPTIONS, "crtscts" ]],
+      [ "mtu",                \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_join_first_str, PPP_OPTIONS, "mtu", "[ \t]+" ]],
+      [ "mru",                \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_join_first_str, PPP_OPTIONS, "mru", "[ \t]+" ]],
+      [ "serial_port",        \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^(/dev/[^ \t]+)" ]],
+      [ "serial_speed",       \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^([0-9]+)" ]],
+      [ "login",              \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_set_ppp_options_re, PPP_OPTIONS, "^name \"(.*)\"", "name \"%login%\"" ]],
+      [ "ppp_options",        \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_set_ppp_options_unsup, PPP_OPTIONS ]],
+      [ "serial_escapechars", \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_join_first_str, PPP_OPTIONS, "escape", "[ \t]+" ]],
+      [ "password",           \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_set_pap_passwd, PAP, "%login%" ]],
+      [ "password",           \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_set_pap_passwd, CHAP, "%login%" ]],
+      [ "dial_command",       \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_chat, CHAT, "(atd[tp])[0-9w, -]+" ]],
+      [ "phone_number",       \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_chat, CHAT, "atd[tp]([0-9w]+)" ]],
+      [ "external_line",      \&gst_network_check_type,                   [IFACE, "modem", \&gst_replace_chat, CHAT, "atd[tp]([0-9w, -]+)", "%external_line%W%phone_number%" ]],
+      [ "volume",             \&gst_network_check_type,                   [IFACE, "modem", \&gst_network_set_modem_volume, CHAT ]],
      ]
    },
 
@@ -6087,8 +6157,8 @@ sub gst_network_get_interface_replace_table
       [ "essid",              \&gst_replace_wireless_opts,            [ WIRELESS, IFACE ], \&gst_network_get_wireless_ifaces, ESSID ],
       [ "key",                \&gst_replace_wireless_opts,            [ WIRELESS, IFACE ], \&gst_network_get_wireless_ifaces, KEY   ],
       # modem stuff
-      [ "dev",                \&gst_network_check_iface,              [ IFACE, "ppp", \&gst_replace_sh, PPPNET, PEER ]],
-      [ "update_dns",         \&gst_network_check_iface,              [ IFACE, "ppp", \&gst_replace_sh_bool, PPPNET, PEERDNS ]],
+      [ "dev",                \&gst_network_check_type,              [ IFACE, "modem", \&gst_replace_sh, PPPNET, PEER ]],
+      [ "update_dns",         \&gst_network_check_type,              [ IFACE, "modem", \&gst_replace_sh_bool, PPPNET, PEERDNS ]],
       [ "mtu",                \&gst_replace_sh,                       PPPNET, MTU ],
       [ "mru",                \&gst_replace_sh,                       PPPNET, MRU ],
       [ "serial_port",        \&gst_replace_sh,                       PPPNET, MODEMPORT ],
