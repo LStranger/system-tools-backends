@@ -64,7 +64,7 @@ $version = "@VERSION@";
               "redhat-7.2", "redhat-7.3", "redhat-8.0", "redhat-9",
               "openna-1.0",
               "mandrake-7.1", "mandrake-7.2", "mandrake-9.0", "mandrake-9.1",
-              "debian-2.2", "debian-woody", "debian-sarge",
+              "debian-2.2", "debian-3.0", "debian-sarge",
               "suse-7.0", "turbolinux-7.0",
               "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0",
               "gentoo", "pld-1.0");
@@ -431,8 +431,8 @@ sub conf_get_parse_table
    "mandrake-9.1"    => "redhat-7.0",
 
    "debian-2.2"      => "debian-2.2",
-   "debian-woody"    => "debian-woody",
-   "debian-sarge"    => "debian-woody",
+   "debian-3.0"      => "debian-3.0",
+   "debian-sarge"    => "debian-3.0",
 
    "suse-7.0"        => "suse-7.0",
 
@@ -485,6 +485,7 @@ sub conf_get_parse_table
               [ "ntpinstalled", \&gst_service_sysv_installed, "ntpd" ],
               ]
                 },
+       
        "debian-2.2" =>
        {
          fn =>
@@ -503,7 +504,7 @@ sub conf_get_parse_table
               ]
                 },
 
-       "debian-woody" =>
+       "debian-3.0" =>
        {
          fn =>
          {
@@ -517,7 +518,7 @@ sub conf_get_parse_table
               [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "sync",         \&gst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
               [ "sync_active",  \&gst_service_sysv_get_status, "ntpd" ],
-              [ "ntpinstalled", \&gst_service_sysv_installed, "ntp-simple" ],
+              [ "ntpinstalled", \&gst_service_sysv_list_any_installed, [ "ntp-simple", "ntp-refclock" ] ],
               ]
                 },
 
@@ -587,8 +588,8 @@ sub conf_get_replace_table
    "mandrake-9.1"    => "redhat-7.0",
 
    "debian-2.2"      => "debian-2.2",
-   "debian-woody"    => "debian-woody",
-   "debian-sarge"    => "debian-woody",
+   "debian-3.0"      => "debian-3.0",
+   "debian-sarge"    => "debian-3.0",
 
    "suse-7.0"        => "suse-7.0",
 
@@ -656,7 +657,7 @@ sub conf_get_replace_table
               ]
                 },
        
-       "debian-woody" =>
+       "debian-3.0" =>
        {
          fn =>
          {

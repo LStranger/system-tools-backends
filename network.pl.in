@@ -184,7 +184,7 @@ sub gst_network_get_broadcast_ping_cmd
        "redhat-9"     => "redhat-6.2",
        "openna-1.0"   => "redhat-6.2",
        "debian-2.2"   => "debian-2.2",
-       "debian-woody" => "debian-2.2",
+       "debian-3.0"   => "debian-2.2",
        "debian-sarge" => "debian-2.2",
        "mandrake-7.1" => "debian-2.2",
        "mandrake-7.2" => "debian-2.2",
@@ -1099,7 +1099,7 @@ sub gst_network_get_file
 		"mandrake-9.0" => \&gst_network_rh62_get_file,
 		"mandrake-9.1" => \&gst_network_rh62_get_file,
     "debian-2.2"   => \&gst_network_deb22_get_file,
-    "debian-woody" => \&gst_network_deb22_get_file,
+    "debian-3.0"   => \&gst_network_deb22_get_file,
     "debian-sarge" => \&gst_network_deb22_get_file,
     "suse-7.0"     => \&gst_network_suse70_get_file,
 	  "turbolinux-7.0"   => \&gst_network_rh62_get_file,
@@ -2156,7 +2156,7 @@ sub gst_network_ensure_loopback_interface
 	  "mandrake-9.0" => "lo",
 	  "mandrake-9.1" => "lo",
 	  "debian-2.2"   => "lo",
-    "debian-woody" => "lo",
+    "debian-3.0"   => "lo",
     "debian-sarge" => "lo",
     "suse-7.0"     => "",
 	  "turbolinux-7.0"   => "lo",
@@ -2260,7 +2260,7 @@ sub gst_network_get_parse_table
     "mandrake-9.0" => "redhat-7.0",
     "mandrake-9.1" => "redhat-7.0",
     "debian-2.2"   => "debian-2.2",
-    "debian-woody" => "debian-2.2",
+    "debian-3.0"   => "debian-2.2",
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
@@ -2524,8 +2524,8 @@ sub gst_network_get_interface_parse_table
     "mandrake-9.0" => "mandrake-9.0",
     "mandrake-9.1" => "mandrake-9.0",
     "debian-2.2"   => "debian-2.2",
-    "debian-woody" => "debian-woody",
-    "debian-sarge" => "debian-woody",
+    "debian-3.0"   => "debian-3.0",
+    "debian-sarge" => "debian-3.0",
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
     "pld-1.0"      => "pld-1.0"
@@ -2800,7 +2800,7 @@ sub gst_network_get_interface_parse_table
 
     # Basicly the same as debian-2.2, but the "auto" option changes.
     # Other stuff may be later found to be different.
-	  "debian-woody" =>
+	  "debian-3.0" =>
 	  {
 	    ifaces_get => \&gst_network_debian_ifaces_get_existing,
 	    fn =>
@@ -2955,7 +2955,7 @@ sub gst_network_get_replace_table
 	  "mandrake-9.0" => "redhat-7.0",
 	  "mandrake-9.1" => "redhat-7.0",
     "debian-2.2"   => "debian-2.2",
-    "debian-woody" => "debian-2.2",
+    "debian-3.0" => "debian-2.2",
     "debian-sarge" => "debian-2.2",
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-7.0",
@@ -3211,8 +3211,8 @@ sub gst_network_get_interface_replace_table
     "mandrake-9.0" => "mandrake-9.0",
     "mandrake-9.1" => "mandrake-9.0",
     "debian-2.2"   => "debian-2.2",
-    "debian-woody" => "debian-woody",
-    "debian-sarge" => "debian-woody",
+    "debian-3.0"   => "debian-3.0",
+    "debian-sarge" => "debian-3.0",
     "suse-7.0"     => "suse-7.0",
 	  "turbolinux-7.0"   => "redhat-6.2",
     "pld-1.0"      => "pld-1.0"
@@ -3461,7 +3461,7 @@ sub gst_network_get_interface_replace_table
              },
 
     # Basicly the same as debian-2.2, but the "auto" option changes.
-    "debian-woody" =>
+    "debian-3.0" =>
 	  {
       iface_set    => \&gst_network_rh62_interface_activate, # They use the same ifup/ifdown cmds.
       iface_delete => \&gst_network_deb22_interface_delete,
