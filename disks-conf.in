@@ -698,7 +698,7 @@ sub is_ide_scsi
 
 sub scan_ide_bus
 {
-   my ($list_devices) = @_;
+   my $device = shift;
 
    if (! opendir (DIR, "/proc/ide/")) {
       return;
@@ -707,6 +707,10 @@ sub scan_ide_bus
    foreach (readdir (DIR)) {
       if ($_ =~ /^hd[a-z]$/) {
 	 if (&is_ide_scsi ($_)) {
+	    next;
+	 }
+	 
+         if ($device && ($device ne "/dev/$_")) {
 	    next;
 	 }
 	 
@@ -722,8 +726,6 @@ sub scan_ide_bus
 
 	 if ($media ne "") { &update_disk_data ("/dev/$_", "media", $media); }
 	 if ($dma ne "")   { &update_disk_data ("/dev/$_", "dma", $dma); }
-
-	 push (@$list_devices, "/dev/$_");
       }
    }
    closedir (DIR);
@@ -731,17 +733,21 @@ sub scan_ide_bus
 
 sub scan_scsi_bus
 {
-   my ($list_devices) = @_;
+   my $device = shift;
 
    if (! `cat /proc/scsi/scsi | grep "Host"`) {
       return;
    }
    
-   @files = ( "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", 
-              "/dev/sde", "/dev/sdf", "/dev/sdg", "/dev/sdh",
-	      "/dev/sdi", "/dev/sdj", "/dev/sdk", "/dev/sdl",
-	      "/dev/sdm", "/dev/sdn", "/dev/sdo", "/dev/sdp",
-              "/dev/scd0", "/dev/scd1", "/dev/scd2", "/dev/scd3" );
+   if ($device) {
+      @files = ( $device );
+   } else {
+      @files = ( "/dev/sda", "/dev/sdb", "/dev/sdc", "/dev/sdd", 
+                 "/dev/sde", "/dev/sdf", "/dev/sdg", "/dev/sdh",
+	         "/dev/sdi", "/dev/sdj", "/dev/sdk", "/dev/sdl",
+	         "/dev/sdm", "/dev/sdn", "/dev/sdo", "/dev/sdp",
+                 "/dev/scd0", "/dev/scd1", "/dev/scd2", "/dev/scd3" );
+   }	      
 
    $SCSI_IOCTL_GET_IDLUN      = 0x5382;
    $SCSI_IOCTL_GET_BUS_NUMBER = 0x5386;
@@ -770,10 +776,8 @@ sub scan_scsi_bus
 	       my @args = unpack ("CCCCCC", $arg);
 	       %scsi_data->{'host'} = $args[0];
 	    }
-	       
 
             push (@scsi, \%scsi_data);
-	    push (@$list_devices, $dev);
          }
 	 close (RD);
       }
@@ -1051,7 +1055,7 @@ sub get_fdisk
 	  $max_cyl = $partition->{'end'};
        }
        
-       if ($prev_end ne 0){
+       if ($prev_end ne 0) {
 	  if ($partition->{'start'} - 1 ne $prev_end) {
 	     # There is no partition, free space found
 	     my $fstart = $prev_end + 1;
@@ -1105,7 +1109,7 @@ sub get_fdisk
     # Now we are out of the loop and we have to check if the current disk is 
     # valid
     if ($disk ne "") {
-       if ($max_cyl lt $last_end and $max_cyl lt ($last_end - 1)) {
+       if (($max_cyl < $last_end) and ($max_cyl < ($last_end - 1))) {
 	  # There is no partition, free space found in the bottom of the disk
 	  my $fstart = $max_cyl + 1;
           my $fend = $last_end;
@@ -1371,9 +1375,8 @@ sub get
 {
   setlocale (LC_ALL, "en_US");
  
-  my @storages;
-  &scan_ide_bus (\@storages);
-  &scan_scsi_bus (\@storages);
+  &scan_ide_bus ();
+  &scan_scsi_bus ();
   &scan_floppy ();
   &get_fdisk ();
   &read_fstab;
@@ -1709,8 +1712,6 @@ sub get_disk_info
    }
    
    for ($i = 0; $cf_disks[$i]; $i++) {
-
-      #delete ($cf_disks[$i]->{partitions});
       delete ($cf_disks[$i]);
    }
 
@@ -1719,6 +1720,9 @@ sub get_disk_info
    $cf_disks[0]->{device} = $device;
    $cf_disks[0]->{media} = "disk";
 
+   &scan_ide_bus ($device);
+   &scan_scsi_bus ($device);
+   
    &get_fdisk ($device);
    &read_fstab;
 

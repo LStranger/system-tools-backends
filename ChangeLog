@@ -1,3 +1,9 @@
+2004-07-29  Carlos García Campos <elkalmail@yahoo.es>
+
+	* disks-conf.in: removed unused variable list_devices in
+	scan_[scsi|ide]_bus. Added device as an optional paramater for
+	scan_[scsi|ide]_bus funtions.
+
 2004-07-28  Carlos García Campos <elkalmail@yahoo.es>
 
 	* disks-conf.in: added disk_info directive to get information about a
