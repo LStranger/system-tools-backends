@@ -1,3 +1,11 @@
+2001-07-10  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network-conf.in (xml_print): Print the gwdevunsup
+	tag as well.
+
+	* network.pl.in (xst_network_get_parse_table): Added
+	gwdevunsup for those platforms that don't support this.
+
 2001-07-10  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_get_attribute): Implement.

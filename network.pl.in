@@ -1877,6 +1877,7 @@ sub xst_network_get_parse_table
 	    table =>
           [
            [ "hostname",      \&xst_parse_line_first,        HOSTNAME ],
+           [ "gwdevunsup",    \&xst_parse_trivial,           "1" ],
            [ "domain",				\&xst_parse_split_first_str,   RESOLV_CONF,  "domain", "[ \t]+" ],
            [ "nameserver",    \&xst_parse_split_all_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
            [ "searchdomain",  \&xst_parse_split_first_array, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
@@ -1914,6 +1915,7 @@ sub xst_network_get_parse_table
         [ "hostname",      \&xst_parse_sh_get_hostname,          RC_CONFIG, FQHOSTNAME ],
         [ "gateway",       \&xst_parse_split_first_str,          ROUTE_CONF, "default", "[ \t]+" ],
         [ "gateway",       \&xst_parse_split_first_str,          ROUTE_CONF, "0.0.0.0", "[ \t]+" ],
+        [ "gwdevunsup",    \&xst_parse_trivial,                  "1" ],
 		    [ "domain",        \&xst_parse_sh_get_domain,            RC_CONFIG, FQHOSTNAME ],
 		    [ "nameserver",    \&xst_parse_split_all_unique_hash_comment, RESOLV_CONF, "nameserver", "[ \t]+" ],
 		    [ "searchdomain",  \&xst_parse_split_first_array_unique, RESOLV_CONF, "search", "[ \t]+", "[ \t]+" ],
