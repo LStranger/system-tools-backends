@@ -64,7 +64,7 @@ $name = "disks";
 $version = "@VERSION@";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
               "redhat-7.1",  "mandrake-7.2", "debian-2.2", "debian-woody", "debian-sarge",
-	      "suse-7.0", "suse-1.0", "unitedlinux-1.0", "turbolinux-7.0");
+	      "suse-7.0", "suse-9.1", "suse-1.0", "unitedlinux-1.0", "turbolinux-7.0");
 
 $description =<<"end_of_description;";
        Configures locally mounted partitioned media.
@@ -451,7 +451,7 @@ sub read_fstab
 
     # we want to inform the backend about the swap
     if ($fs eq "nfs" || $fs eq "smbfs" || $fs eq "proc" || $fs eq "devpts" ||
-        $fs eq "sysfs" || $fs eq "usbdevfs") {
+        $fs eq "sysfs" || $fs eq "usbdevfs" || $fs eq "usbfs") {
       next;  # We can skip these filesystems for sure.
     }
 
