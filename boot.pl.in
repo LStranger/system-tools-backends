@@ -77,7 +77,7 @@ sub xst_boot_parse_global
     if (shift (@line) eq $key)
     {
       close $fd;
-      return &xst_parse_shell_escape ($line[0]);
+      return $line[0];
     }
   }
 
@@ -116,8 +116,8 @@ sub xst_boot_parse_images
     @line = split ("[ \t]*=[ \t]*", $line, 2);    
     $key = $line[0];
     $val = $line[1];
-    $val =~ s/\"//g;
     $val =~ s/^[ \t]+//;
+    $val =~ s/\"//g;    
     $val =~ s/[ \t]+$//;
 
     $images[$found]{$key} = $val;
@@ -360,8 +360,10 @@ sub xst_boot_conf_edit_image
     $value = $$image{$key};
     $value = "\"$value\"" if ($value =~ /[ \t]/);
     
-    $line = $pre_space . $key;
-    $line = "# " . $line if $key eq "XstPartitionType";
+    $line = "";
+    $line = "# " if $key eq "XstPartitionType";
+    $line .= "\t$key";
+    
     $line .= " = " . $value if $value;
     $line .= "\n";
 
@@ -395,8 +397,10 @@ sub xst_boot_conf_add_image
     $value = $$image{$key};
     $value = "\"$value\"" if ($value =~ /[ \t]/);
 
-    $line = $key;
-    $line .= "# " if $key eq "XstPartitionType";
+    $line = "";
+    $line = "# " if $key eq "XstPartitionType";
+    $line .= "\t$key";
+    
     $line .= " = " . $value if $value;
     $line .= "\n";
 

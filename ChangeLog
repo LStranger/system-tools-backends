@@ -1,3 +1,10 @@
+2001-05-28  Tambet Ingo  <tambet@ximian.com>
+
+	* boot.pl.in (xst_boot_parse_images): Preserve leading spaces of images.
+	(xst_boot_parse_global): Don't double escape quotes.
+	(xst_boot_conf_edit_image): Fixed bug where XstPartitionType lines got wrong.
+	(xst_boot_conf_add_image): ditto.
+
 2001-05-25  Hans Petter Jansson  <hpj@ximian.com>
 
 	* file.pl.in (xst_file_backup_rotate_dirs): Create the 'First' directory on
