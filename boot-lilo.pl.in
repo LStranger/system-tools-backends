@@ -419,7 +419,7 @@ sub xst_boot_lilo_edit_entry
 {
   my ($entry, $buff, $lineno) = @_;
 
-  my $known_vars = \@lilo_image_vars if (exists $entry->{'entry'});
+  my $known_vars = \@lilo_image_vars if (exists $entry->{'image'});
   $known_vars = \@lilo_other_vars if (!$known_vars && exists $entry->{'other'});
   return $buff unless $known_vars;
   
@@ -507,10 +507,10 @@ sub xst_boot_lilo_add_entry
   my ($line, $key, $value, $known_vars);
 
   # Entry line
-  if (exists $entry->{'entry'})
+  if (exists $entry->{'image'})
   {
     $known_vars = \@lilo_image_vars;
-    $value = 'entry';
+    $value = 'image';
   }
   elsif (exists $entry->{'other'})
   {
@@ -555,7 +555,7 @@ sub xst_boot_lilo_add_entry
 
 sub xst_boot_lilo_entries_set
 {
-  my ($file, $key, $entries) = @_;
+  my ($file, $entries) = @_;
   my ($buff, $lineno, $found, $entry);
 
   return if (scalar @$entries <= 0);
@@ -579,7 +579,7 @@ sub xst_boot_lilo_entries_set
           
         if ($found > 0)
         {
-          # Found entry, change it if neccecary,
+          # Found entry, change it if necessary,
           # remove %entry from @entries and find new entry.
           &xst_boot_lilo_edit_entry ($entry, $buff, $lineno);
           $entry = undef;
