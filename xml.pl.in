@@ -188,6 +188,7 @@ sub xst_xml_print_scalars
     $val = &xst_xml_quote ($$h{$i});
     &xst_xml_print_line ("<$i>$val</$i>\n") if exists $$h{$i};
   }
+  
 }
 
 # Print the @$array using <$tag>val</$tag> foreach val in the array.
@@ -229,16 +230,20 @@ sub xst_xml_print_hash
   my ($j, $val);
   
   &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<$tag>\n");
-  &xst_xml_enter ();
+  if (defined $tag) {
+      &xst_xml_print_line ("<$tag>\n");
+      &xst_xml_enter ();
+  }
   
   foreach $j (sort keys (%$hash))
   {
     &xst_xml_print_structure ($$hash{$j}, $j);
   }
-  
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</$tag>\n");
+
+  if (defined $tag) {
+      &xst_xml_leave ();
+      &xst_xml_print_line ("</$tag>\n");
+  }
 }
 
 # Call the corresponding function depending on the reference

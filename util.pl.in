@@ -117,6 +117,21 @@ sub xst_arr_merge
   return $a;
 }
 
+# Given an array and a pattern, it returns the index of the
+# array that contains it
+sub xst_array_find_index
+{
+    my($arrayRef, $pattern) = @_;
+    my(@array)              = @{$arrayRef};
+    my($numElements)        = scalar(@array);
+    my(@indexes)            = (0..$numElements);
+    my(@elements);
+    
+    @elements = grep @{$arrayRef}[$_] =~ /$pattern/, @indexes;
+    return(wantarray ? @elements : $elements[0]);
+}
+
+    
 
 sub xst_ignore_line
 {

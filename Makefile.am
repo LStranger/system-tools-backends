@@ -1,6 +1,7 @@
 SUBDIRS = files
 
 BACKENDSBODY = \
+	dhcpd-conf.in \
 	disks-conf.in \
 	memory-conf.in \
 	network-conf.in \
@@ -20,6 +21,7 @@ PERLBODY = \
 	boot.pl.in      \
 	boot-grub.pl.in \
 	boot-lilo.pl.in \
+	dhcpd.pl.in     \
 	debug.pl.in     \
 	file.pl.in      \
 	filesys.pl.in   \
@@ -37,6 +39,7 @@ PERLBODY = \
 	report.pl.in    \
 	service.pl.in   \
 	share.pl.in     \
+	tokenizer.pl.in \
 	util.pl.in      \
 	x.pl.in         \
 	xml.pl.in
