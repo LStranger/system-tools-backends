@@ -1,5 +1,7 @@
 2002-09-18  Tambet Ingo  <tambet@ximian.com>
 
+	* service.pl.in (xst_service_sysv_get_paths): Added RedHat 7.3.
+
 	* time-conf.in: Added RedHat 7.3.
 
 2002-09-14  Carlos Garnacho Parro  <garparr@teleline.es>
