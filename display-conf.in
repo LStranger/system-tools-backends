@@ -135,8 +135,8 @@ sub set
   my $config = &parse ();
   my $xml_config = &xml_parse ();  
   
-  &xst_end ();
   &x_config_set (&distro_file (), $config, $xml_config);
+  &xst_end ();
 }
 
 sub filter

@@ -813,9 +813,21 @@ sub x_config_set
   my $config = shift;
   my $xml_config = shift;
 
-#  open ($infd, "$fname");
-#  open ($outfd, ">$fname");
-  
+  unless ($fname) {
+    # TODO: Give warning.
+    return;
+  }
+
+  unless ($config) {
+    # TODO: Give warning.
+    return;
+  }
+
+  unless ($xml_config) {
+    # TODO: Give warning.
+    return;
+  }
+    
   ($infd, $outfd) = &xst_file_open_filter_write_from_names ($fname);
   return undef unless $outfd;
 

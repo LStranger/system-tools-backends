@@ -1,5 +1,7 @@
 2001-06-29  Tambet Ingo  <tambet@ximian.com>
 
+	* x.pl.in (x_config_set): Give up if something is wrong.
+
 	* display-conf.in (xml_parse): Write conf when asked to.
 	Bad bad typo!
 
