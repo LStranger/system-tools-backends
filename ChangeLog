@@ -1,5 +1,12 @@
 2003-12-31  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* general.pl.in: fuck debian, why the hell the
+	  bind_domain_codetext function is only in debian, why
+	  should they change the liblocale-gettext library api?
+	  this should fix gst for the rest of the distros
+
+2003-12-31  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* services-conf.in, service.pl.in: made the throw_service
 	  directive more generic, it now allows bsd and sysv services
 	  to be thrown
