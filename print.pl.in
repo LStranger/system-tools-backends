@@ -63,8 +63,8 @@ sub xst_printcap_read
 {
   my ($file, $spool_dir) = @_;
   my ($fd, $found, $spool, $in_spool);
+  my (%output);
   my (%spools);
-  my ($type, $description);
 
   $fd = &xst_file_open_read_from_names ("$file");
   return undef if !$fd;
@@ -78,7 +78,7 @@ sub xst_printcap_read
 
     if ($in_spool) {
         if (/[ \t]*:([^=#]+)[#=]*(.*):/) {
-            $spools{$spool}{'lpr'}{$1} = $2;
+            $spools{$spool}{$1} = $2;
         }
 
         # Look for line continuation.
@@ -92,88 +92,131 @@ sub xst_printcap_read
         $spool = $1;
         $in_spool = 1;
 
-        # Pack away the type and description for this spool.
-        $spools{$spool}{'lpr'}{'type'} = $type;
-        $spools{$spool}{'description'} = $description;
-
-        # Reset for the next pass.
-        $type = '';
-        $description = '';
-    } elsif ( s/^\#\#PRINTTOOL.*\#\#// ) {
-      # printtool creates a comment line of the form:
-      # ##PRINTTOOL3## printer_type some multi-word description
-      # for each printer entry.  Let's parse it into the consituent
-      # type and description.
-      s/^\s+//;
-      ($type, $description) = split(/\s+/, $_, 2);
+        $spools{$spool}{'name'} = $spool;
+#
+#        # Pack away the type and description for this spool.
+#        $spools{$spool}{'type'} = $type;
+#        $spools{$spool}{'description'} = $description;
+#
+#        # Reset for the next pass.
+#        $type = '';
+#        $description = '';
+#    } elsif ( s/^\#\#PRINTTOOL.*\#\#// ) {
+#     # printtool creates a comment line of the form:
+#     # ##PRINTTOOL3## printer_type some multi-word description
+#     # for each printer entry.  Let's parse it into the consituent
+#     # type and description.
+#      s/^\s+//;
+#      ($type, $description) = split(/\s+/, $_, 2);
     }
   }
   
   close $fd;
 
-  foreach $i (keys %spools) {
-      my $dir = $spool_dir . $i;
+# Should be split out...
+
+  foreach $spool (keys %spools) {
+      my $dir = $spools{$spool}{'sd'};
+      my %tmp;
 
       if (-d ($dir) && -e ($dir . "/filter")) {
           my @known_options;
 
           # Parse general.cfg.
-          $section = "general";
+          $section = "general.cfg";
           @known_options = ('DESIRED_TO', 'PAPERSIZE',
                             'PRINTER_TYPE', 'ASCII_TO_PS');
 
-          if (-f $dir . "/$section.cfg") {
+          if (-f "$dir/$section") {
               my $j;
 
               foreach $j (@known_options) {
-                  $val = &xst_parse_sh_export ($dir . "/$section.cfg", $j);
-                  $spools{$i}{"rhs-$section"}{$j} = $val;
+                  $val = &xst_parse_sh_export ($dir . "/$section", $j);
+                  $tmp{$j} = $val;
               }
           } else {
-            &xst_report ("file_open_read_failed", "$dir/$section.cfg");
+            &xst_report ("file_open_read_failed", "$dir/$section");
           }
 
           # Parse postscript.cfg.
-          $section = "postscript";
+          $section = "postscript.cfg";
           @known_options = ('GSDEVICE', 'RESOLUTION',
                             'COLOR', 'PAPERSIZE',
                             'EXTRA_GS_OPTIONS', 'REVERSE_ORDER',
                             'PS_SEND_EOF', 'NUP',
                             'RTFLMAR', 'TOPBOTMAR');
 
-          if (-f $dir . "/$section.cfg") {
+          if (-f "$dir/$section") {
               my $j;
 
               foreach $j (@known_options) {
-                  $val = &xst_parse_sh ($dir . "/$section.cfg", $j);
-                  $spools{$i}{"rhs-$section"}{$j} = $val;
+                  $val = &xst_parse_sh ($dir . "/$section", $j);
+                  $tmp{$j} = $val;
               }
           } else {
-            &xst_report ("file_open_read_failed", "$dir/$section.cfg");
+            &xst_report ("file_open_read_failed", "$dir/$section");
           }
 
           # Parse textonly.cfg.
-          $section = "textonly";
+          $section = "textonly.cfg";
           @known_options = ('TEXTONLYOPTIONS', 'CRLFTRANS',
                             'TEXT_SEND_EOF');
 
-          if (-f $dir . "/$section.cfg") {
+          if (-f "$dir/$section") {
               my $j;
 
               foreach $j (@known_options) {
                   $val = &xst_parse_sh ($dir . "/$section.cfg", $j);
-                  $spools{$i}{"rhs-$section"}{$j} = $val;
+                  $tmp{$j} = $val;
               }
           } else {
             &xst_report ("file_open_read_failed", "$dir/$section.cfg");
           }
 
+          # Parse .config
+          $section = ".config";
+          @known_options = ('share', 'hostip',
+                            'user', 'password',
+                            'workgroup');
+
+          if (-f "$dir/$section") {
+              my $j;
+
+              foreach $j (@known_options) {
+                  $val = &xst_parse_sh ($dir . "/$section", $j);
+                  if ($val) {
+                      $output{$spool}{$j} = $val;
+                  }
+              }
+          } else {
+            &xst_report ("file_open_read_failed", "$dir/$section");
+          }
+
+          # Build Output
+          {
+              my (@mapping) = ( 'PRINTER_TYPE', 'type',
+                                'PAPERSIZE',    'paper_size',
+                                'GSDEVICE',     'gsdevice',
+                                'RESOLUTION',   'resolution' );
+              my ($src, $dst);
+
+              $output{$spool}{'name'} = $spool;
+
+              while (($src = shift (@mapping))) {
+                  $dst = shift (@mapping);
+#                  print "Copy '$src'(='$spools{$spool}{$src} to '$dst'\n";
+                  if ($tmp{$src}) {
+                      $output{$spool}{$dst} = $tmp{$src};
+                  }
+              }
+          }
+
       } else {
-          &xst_report ("print_no_printtool", $i);
+          &xst_report ("print_no_printtool", $spool);
       }
   }
 
-  return \%spools;
+  return \%output;
 }
 
 sub xst_print_conf_get

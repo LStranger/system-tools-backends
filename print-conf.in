@@ -162,18 +162,6 @@ sub xml_parse_section
 
 sub xml_print_section
 {
-  my ($h, $name) = @_;
-  my ($i, $val, $section);
-
-  $section = $$h{$name};
-  &xst_xml_print_line ("<$name>\n");
-  &xst_xml_enter ();
-  foreach $i (keys (%$section)) {
-    $val = &xst_xml_quote ($$h{$name}{$i});
-    &xst_xml_print_line ("<$i>$val</$i>\n");
-  }
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</$name>\n");
     
 }
 
@@ -186,16 +174,11 @@ sub xml_print_printer
   &xst_xml_print_line ("<printer>\n");
   &xst_xml_enter ();
 
-  &xst_xml_print_line ("<name>$spool</name>\n");
+  foreach $i (keys (%$h)) {
+    $val = &xst_xml_quote ($$h{$i});
+    &xst_xml_print_line ("<$i>$val</$i>\n");
+  }
 
-  $val = &xst_xml_quote ($$h{'description'});
-  &xst_xml_print_line ("<description>$val</description>\n");
-
-  &xml_print_section ($h, 'lpr');
-  &xml_print_section ($h, 'rhs-general');
-  &xml_print_section ($h, 'rhs-postscript');
-  &xml_print_section ($h, 'rhs-textonly');
-  
   &xst_xml_leave ();
   &xst_xml_print_line ("</printer>\n");  
 }
