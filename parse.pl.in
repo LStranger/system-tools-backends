@@ -73,7 +73,7 @@ sub xst_parse_split
     if (shift (@line) eq $key)
     {
       if ($all) {
-        push @res, $line[0];
+        push @res, @line;
       }
       else
       {

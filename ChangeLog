@@ -1,3 +1,8 @@
+2001-02-05  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_split): Keep all tokens on line
+	  associated with key.
+
 2001-02-04  Hans Petter Jansson  <hpj@ximian.com>
 
 	* parse.pl.in (xst_parse_line_first): Stopped from losing return value.
