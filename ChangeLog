@@ -1,3 +1,8 @@
+2001-10-06  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_interfaces_get_info): It's better
+	to say an interface is up if it has an IP address.
+
 2001-10-05  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* xml.pl.in (xst_xml_print_request_end): don't use print_comment:
