@@ -44,7 +44,7 @@ BEGIN {
 # --- Tool information --- #
 $name = "dhcpd";
 $version = "___version___";
-@platforms = ("redhat-7.0");
+@platforms = ("redhat-7.0", "redhat-7.1");
 
 $description =<<"end_of_description;";
        Configure dhcp server parameters
@@ -55,12 +55,13 @@ end_of_description;
 # Scan XML from standard input to an internaltree.
 sub xml_parse
 {
+  my ($file) = @_;
   my ($tree, %hash, $elem);
   my (%subnets);
   
   # Scan XML to tree.
 
-  $tree = &xst_xml_scan ();
+  $tree = &xst_xml_scan ($file);
 
   # Walk the tree recursively and extract configuration parameters.
   # This is the top level - find and enter the "networking" tag.

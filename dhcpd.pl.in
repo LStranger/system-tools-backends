@@ -726,6 +726,7 @@ sub xst_dhcpd_conf_get_parse_table
   my %dist_map =
   (
    "redhat-7.0"   => "redhat-7.0",
+   "redhat-7.1"   => "redhat-7.0",
    );
 
   my %dist_tables =
@@ -771,6 +772,7 @@ sub xst_dhcpd_conf_get_replace_table
   my %dist_map =
   (
    "redhat-7.0"   => "redhat-7.0",
+   "redhat-7.1"   => "redhat-7.0",
    );
 
   my %dist_tables =
