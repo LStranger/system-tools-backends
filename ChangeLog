@@ -1,6 +1,8 @@
 2001-07-11  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_get_replace_table): Typos.
+	(xst_network_route_set_default_gw): The gatewaydev also
+	counts to check if the default route should change.
 
 2001-07-11  Tambet Ingo  <tambet@ximian.com>
 

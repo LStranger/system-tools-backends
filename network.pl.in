@@ -904,7 +904,7 @@ sub xst_network_get_file
 sub xst_network_route_set_default_gw
 {
   my ($gatewaydev, $gateway) = @_;
-  my ($tool_route, $curr_gateway);
+  my ($tool_route, $curr_gateway, $curr_gatewaydev);
   local *ROUTE;
 
   # Just in case. This means that no static gateway is needed.
@@ -917,15 +917,23 @@ sub xst_network_route_set_default_gw
     if (/^0\.0\.0\.0[ \t]+([0-9.]+) /)
     {
       $curr_gateway = $1;
+      if ($gatewaydev ne "")
+      {
+        /([a-z0-9]+)$/;
+        $curr_gatewaydev = $1;
+      }
+      
       last;
     }
   }
   close ROUTE;
 
-  return if ($curr_gateway == $gateway);
-
-  &xst_file_run ("route del default gw $curr_gateway");
-  &xst_file_run ("route add default gw $curr_gateway $gatewaydev");
+  if (($curr_gateway ne $gateway) ||
+      ($curr_gatewaydev ne $gatewaydev))
+  {
+    &xst_file_run ("route del default gw $curr_gateway");
+    &xst_file_run ("route add default gw $curr_gateway $gatewaydev");
+  }
 }
 
 sub xst_network_run_hostname
