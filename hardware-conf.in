@@ -189,15 +189,15 @@ sub xml_print
     print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
     print "<!DOCTYPE memory []>\n\n";
     print "<hardware>\n";
-    be_xml_enter;
+    be_xml_enter ();
 
-    be_xml_vspace;
-    be_xml_indent; print "<!-- Configuration starts here -->\n";
-    be_xml_vspace;
+    be_xml_vspace ();
+    be_xml_indent (); print "<!-- Configuration starts here -->\n";
+    be_xml_vspace ();
 
     foreach $entry (@cf_hardware)
       {
-	be_xml_indent; print "<device id='$entry->{id}'>\n";
+	be_xml_indent (); print "<device id='$entry->{id}'>\n";
 
       LOOP: while (($key, $value) = each %$entry)
 	  {
@@ -211,7 +211,7 @@ sub xml_print
 		{
 		  foreach $range (@$value)
 		    {
-		      be_xml_indent; be_xml_indent; print "<io low='$range->{low}' high='$range->{high}'/>\n";
+		      be_xml_indent (); be_xml_indent (); print "<io low='$range->{low}' high='$range->{high}'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -219,7 +219,7 @@ sub xml_print
 		{
 		  foreach $number (@$value)
 		    {
-		      be_xml_indent; be_xml_indent; print "<interrupt number='$number'/>\n";
+		      be_xml_indent (); be_xml_indent (); print "<interrupt number='$number'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -227,7 +227,7 @@ sub xml_print
 		{
 		  foreach $channel (@$value)
 		    {
-		      be_xml_indent; be_xml_indent; print "<dma channel='$channel'/>\n";
+		      be_xml_indent (); be_xml_indent (); print "<dma channel='$channel'/>\n";
 		    }
 		  last SWITCH;
 		};
@@ -235,24 +235,24 @@ sub xml_print
 		{
 		  foreach $mode (@$value)
 		    {
-		      be_xml_indent; be_xml_indent; print "<mode>$mode</mode>\n";
+		      be_xml_indent (); be_xml_indent (); print "<mode>$mode</mode>\n";
 		    }
 		  last SWITCH;
 		};
 	      (/^id/ || /^io/ || /^irq/) && next LOOP;
 
-	      be_xml_indent; be_xml_indent; print "<$key>$value</$key>\n";
+	      be_xml_indent (); be_xml_indent (); print "<$key>$value</$key>\n";
 	    }
 	  }
 
-	be_xml_indent; print "</device>\n";
-	be_xml_vspace;
+	be_xml_indent (); print "</device>\n";
+	be_xml_vspace ();
       }
 
-    be_xml_indent; print "<!-- End of configuration -->\n";
-    be_xml_vspace;
+    be_xml_indent (); print "<!-- End of configuration -->\n";
+    be_xml_vspace ();
 
-    be_xml_leave;
+    be_xml_leave ();
     print "</hardware>\n";
   }
 
@@ -709,7 +709,7 @@ sub get
     combine;
 
     if ($be_verbose) { print STDERR "Printing XML.\n"; }
-    xml_print;
+    xml_print ();
   }
 
 
@@ -725,7 +725,7 @@ sub set
       }
 
     if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-    be_xml_parse;
+    be_xml_parse ();
     
     if ($be_do_immediate)
       {
@@ -744,8 +744,8 @@ sub set
 
 sub filter
   {
-    be_xml_parse;
-    xml_print;
+    be_xml_parse ();
+    xml_print ();
   }
 
 

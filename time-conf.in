@@ -130,45 +130,45 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE time []>\n\n";
   print "<time>\n";
-  be_xml_enter;
+  be_xml_enter ();
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- Configuration starts here -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- Configuration starts here -->\n";
+  be_xml_vspace ();
 
-  be_xml_indent; print "<year>$cf_year</year>\n";
-  be_xml_indent; print "<month>$cf_month</month>\n";
-  be_xml_indent; print "<monthday>$cf_mday</monthday>\n";
+  be_xml_indent (); print "<year>$cf_year</year>\n";
+  be_xml_indent (); print "<month>$cf_month</month>\n";
+  be_xml_indent (); print "<monthday>$cf_mday</monthday>\n";
   
-  be_xml_vspace;
+  be_xml_vspace ();
   
-  be_xml_indent; print "<hour>$cf_hour</hour>\n";
-  be_xml_indent; print "<minute>$cf_minute</minute>\n";
-  be_xml_indent; print "<second>$cf_second</second>\n";
+  be_xml_indent (); print "<hour>$cf_hour</hour>\n";
+  be_xml_indent (); print "<minute>$cf_minute</minute>\n";
+  be_xml_indent (); print "<second>$cf_second</second>\n";
 
-  be_xml_vspace;
-  be_xml_indent; print "<timezone>$cf_timezone</timezone>\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<timezone>$cf_timezone</timezone>\n";
+  be_xml_vspace ();
   
-  be_xml_vspace;
-  be_xml_indent; print "<synchronization active='", be_print_boolean_yesno($cf_sync_active), "'>\n";
+  be_xml_vspace ();
+  be_xml_indent (); print "<synchronization active='", be_print_boolean_yesno($cf_sync_active), "'>\n";
   
-  be_xml_enter;
+  be_xml_enter ();
   
   for $server (@cf_servers)
   {
-    be_xml_indent; print "<server>$server</server>\n";
+    be_xml_indent (); print "<server>$server</server>\n";
   }
   
-  be_xml_leave;
+  be_xml_leave ();
   
-  be_xml_indent; print "</synchronization>\n";
-  be_xml_vspace;
+  be_xml_indent (); print "</synchronization>\n";
+  be_xml_vspace ();
   
-  be_xml_indent; print "<!-- End of configuration -->\n";
-  be_xml_vspace;
+  be_xml_indent (); print "<!-- End of configuration -->\n";
+  be_xml_vspace ();
 
-  be_xml_leave;
+  be_xml_leave ();
   print "</time>\n";
 }
 
@@ -223,13 +223,13 @@ sub get
   if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
   if ($be_verbose) { print STDERR "Getting time, date and timezone.\n"; }
 
-  read_ntp_conf; be_print_progress;
-  get_time; be_print_progress;
-  check_servers; be_print_progress;
+  read_ntp_conf; be_print_progress ();
+  get_time; be_print_progress ();
+  check_servers; be_print_progress ();
 
   if ($be_verbose) { print STDERR "Printing XML.\n"; }
   if ($be_progress) { print "\n"; }
-  xml_print;
+  xml_print ();
 }
 
 
@@ -276,7 +276,7 @@ sub set
   if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
 
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-  be_xml_parse;
+  be_xml_parse ();
 
   write_ntp_conf;
   write_ntp_step_tickers;
@@ -296,8 +296,8 @@ sub set
 
 sub filter
 {
-  be_xml_parse;
-  xml_print;
+  be_xml_parse ();
+  xml_print ();
 }
 
 

@@ -147,52 +147,52 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE networking []>\n\n";
   print "<networking>\n";
-  be_xml_enter;
+  be_xml_enter ();
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- Configuration starts here -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- Configuration starts here -->\n";
+  be_xml_vspace ();
 
   # Hostname, domain, search domains, nameservers.
 
-  be_xml_indent;
+  be_xml_indent ();
   if ($cf_onboot) { print "<enabled state='yes'/>\n"; }
   else            { print "<enabled state='no'/>\n"; }
 
-  be_xml_vspace;
+  be_xml_vspace ();
 
-  if ($cfl_interface ne "") { be_xml_indent; print "<primaryinterface>$cfl_interface</primaryinterface>\n"; }
-  if ($cfl_hostip ne "") { be_xml_indent; print "<hostip>$cfl_hostip</hostip>\n"; }
-  if ($cfl_netmask ne "") { be_xml_indent; print "<netmask>$cfl_netmask</netmask>\n"; }
-  if ($cfl_gateway ne "") { be_xml_indent; print "<gateway>$cfl_gateway</gateway>\n"; }
-  be_xml_vspace;
-  if ($cfl_method ne "") { be_xml_indent; print "<method>$cfl_method</method>\n"; }
-  be_xml_vspace;
+  if ($cfl_interface ne "") { be_xml_indent (); print "<primaryinterface>$cfl_interface</primaryinterface>\n"; }
+  if ($cfl_hostip ne "") { be_xml_indent (); print "<hostip>$cfl_hostip</hostip>\n"; }
+  if ($cfl_netmask ne "") { be_xml_indent (); print "<netmask>$cfl_netmask</netmask>\n"; }
+  if ($cfl_gateway ne "") { be_xml_indent (); print "<gateway>$cfl_gateway</gateway>\n"; }
+  be_xml_vspace ();
+  if ($cfl_method ne "") { be_xml_indent (); print "<method>$cfl_method</method>\n"; }
+  be_xml_vspace ();
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- You shouldn't have to modify anything below this line -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- You shouldn't have to modify anything below this line -->\n";
+  be_xml_vspace ();
 
-  be_xml_indent; 
+  be_xml_indent (); 
   if ($cf_forward) { print "<forward state='yes'/>\n"; }
   else             { print "<forward state='no'/>\n"; }
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- You cannot modify anything below this line -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- You cannot modify anything below this line -->\n";
+  be_xml_vspace ();
 
   for $elem (@cf_interface_list)
   {
     $elem = be_xml_plain_to_entities(\$elem);
     if ($elem ne $cfl_interface)  # Hack: Don't list primary interface here.
-    { be_xml_indent; print "<knowninterface>$elem</knowninterface>\n"; }
+    { be_xml_indent (); print "<knowninterface>$elem</knowninterface>\n"; }
   }
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- End of configuration -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- End of configuration -->\n";
+  be_xml_vspace ();
 
-  be_xml_leave;
+  be_xml_leave ();
   print "</networking>\n";
 }
 
@@ -238,15 +238,15 @@ sub get
   if ($be_verbose) { print STDERR "Finding interfaces.\n"; }
   get_immediate;
 
-  read_rc_config; be_print_progress;
-  read_sysconfig_network; be_print_progress;
-  read_network_interfaces; be_print_progress;
-  read_network_options; be_print_progress;
-  read_primary_interface; be_print_progress;
+  read_rc_config; be_print_progress ();
+  read_sysconfig_network; be_print_progress ();
+  read_network_interfaces; be_print_progress ();
+  read_network_options; be_print_progress ();
+  read_primary_interface; be_print_progress ();
 
   if ($be_verbose) { print STDERR "Printing XML.\n"; }
   if ($be_progress) { print "\n"; }
-  xml_print;
+  xml_print ();
 }
 
 
@@ -296,7 +296,7 @@ sub set
   if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
 
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-  be_xml_parse;
+  be_xml_parse ();
 
   $cf_networking = 1;  # This should really be calculated from the old value
                        # and $cf_onboot. This hack will make it work, possibly
@@ -322,8 +322,8 @@ sub set
 
 sub filter
 {
-  be_xml_parse;
-  xml_print;
+  be_xml_parse ();
+  xml_print ();
 }
 
 

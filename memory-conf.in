@@ -186,47 +186,47 @@ sub xml_print
     print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
     print "<!DOCTYPE memory []>\n\n";
     print "<memory>\n";
-    be_xml_enter;
+    be_xml_enter ();
 
-    be_xml_vspace;
-    be_xml_indent; print "<!-- Configuration starts here -->\n";
-    be_xml_vspace;
+    be_xml_vspace ();
+    be_xml_indent (); print "<!-- Configuration starts here -->\n";
+    be_xml_vspace ();
 
     foreach $entry (@cf_memory) {
-      be_xml_indent; print "<MemTotal>$entry->{MemTotal}</MemTotal>\n";
-      be_xml_indent; print "<SwapTotal>$entry->{SwapTotal}</SwapTotal>\n\n";
+      be_xml_indent (); print "<MemTotal>$entry->{MemTotal}</MemTotal>\n";
+      be_xml_indent (); print "<SwapTotal>$entry->{SwapTotal}</SwapTotal>\n\n";
     }
 
     foreach $entry (@cf_partition) {
-      be_xml_indent; print "<partition>\n";
-      be_xml_indent; be_xml_indent; print "<device>$entry->{device}</device>\n";
-      be_xml_indent; be_xml_indent; print "<size>$entry->{size}</size>\n";
-      be_xml_indent; print "</partition>\n\n";
+      be_xml_indent (); print "<partition>\n";
+      be_xml_indent (); be_xml_indent (); print "<device>$entry->{device}</device>\n";
+      be_xml_indent (); be_xml_indent (); print "<size>$entry->{size}</size>\n";
+      be_xml_indent (); print "</partition>\n\n";
     }
 
-    be_xml_vspace;
+    be_xml_vspace ();
 
     foreach $entry (@cf_swapinfo) {
-      be_xml_indent; print "<swapdev>\n";
-      be_xml_indent; be_xml_indent; print "<device>$entry->{device}</device>\n";
-      be_xml_indent; be_xml_indent; print "<enabled state='", 
+      be_xml_indent (); print "<swapdev>\n";
+      be_xml_indent (); be_xml_indent (); print "<device>$entry->{device}</device>\n";
+      be_xml_indent (); be_xml_indent (); print "<enabled state='", 
                             be_print_boolean_yesno ($entry->{enabled}), 
                             "'/>\n";
-      be_xml_indent; be_xml_indent; print "<priority>$entry->{priority}</priority>\n";
-      be_xml_indent; be_xml_indent; print "<isfile state='",
+      be_xml_indent (); be_xml_indent (); print "<priority>$entry->{priority}</priority>\n";
+      be_xml_indent (); be_xml_indent (); print "<isfile state='",
                             be_print_boolean_truefalse ($entry->{is_file}),
                             "'/>\n";
-      be_xml_indent; be_xml_indent; print "<size>$entry->{size}</size>\n";
-      be_xml_indent; be_xml_indent; print "<isnew state='",
+      be_xml_indent (); be_xml_indent (); print "<size>$entry->{size}</size>\n";
+      be_xml_indent (); be_xml_indent (); print "<isnew state='",
                             be_print_boolean_truefalse ($entry->{is_new}),
                             "'/>\n";
-      be_xml_indent; print "</swapdev>\n\n";
+      be_xml_indent (); print "</swapdev>\n\n";
     }
 
-    be_xml_indent; print "<!-- End of configuration -->\n";
-    be_xml_vspace;
+    be_xml_indent (); print "<!-- End of configuration -->\n";
+    be_xml_vspace ();
 
-    be_xml_leave;
+    be_xml_leave ();
     print "</memory>\n";
   }
 
@@ -437,7 +437,7 @@ sub get
     
     if ($be_verbose) { print STDERR "Printing XML.\n"; }
     if ($be_progress) { print "\n"; }
-    xml_print;
+    xml_print ();
   }
 
 
@@ -533,7 +533,7 @@ sub set
       }
 
     if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-    be_xml_parse;
+    be_xml_parse ();
     
     if ($be_do_immediate)
       {
@@ -553,8 +553,8 @@ sub set
 
 sub filter
   {
-    be_xml_parse;
-    xml_print;
+    be_xml_parse ();
+    xml_print ();
   }
 
 

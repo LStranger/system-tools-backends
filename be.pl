@@ -63,7 +63,7 @@ sub be_xml_vspace { if (not $be_have_vspace) { print "\n"; $be_have_vspace = 1; 
 # This code tries to replace XML::Parser scanning from stdin in tree mode.
 
 
-@be_xml_scan_list;
+#@be_xml_scan_list;
 
 
 sub be_xml_scan_make_kid_array

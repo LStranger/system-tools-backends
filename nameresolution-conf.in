@@ -140,6 +140,686 @@ $cf_winsserver = "";
 $cf_hostmatch = 0;  # 0 = all, 1 = first
 
 
+# --- Configuration file manipulation --- #
+
+# NET-3 style /etc/resolv.conf
+#
+# domain <domain>
+# search <domain> <domain> ...
+# search <domain> <domain> ...
+# nameserver <IP>
+# nameserver <IP>
+# 
+# Determines the following:
+#
+# - Local domain suffix
+# - Search domains
+# - Nameservers
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SuSE 6.3,
+#         SunOS 5.7, (presumably all)
+#
+# Absent: (presumably none)
+
+sub read_resolv_conf
+{
+  my $FILE;
+
+  # Find the file.
+
+  $FILE = be_open_read_from_names(@resolv_conf_names);
+  if (not FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "domain") { $cf_domain = $line[1]; }
+    elsif ($line[0] eq "search")
+    {
+      shift @line;
+      for $elem (@line)
+      {
+        if (be_is_line_comment_start($elem)) { last; }
+        if ($elem ne "") { push_unique(\@cf_searchdomains, $elem); }
+      }
+    }
+    elsif ($line[0] eq "nameserver")
+    {
+      shift @line;
+      for $elem (@line)
+      {
+        if (be_is_line_comment_start($elem)) { last; }
+        if ($elem ne "") { push_unique(\@cf_nameservers, $elem); }
+      }
+    }
+  }
+
+  close(FILE);
+  return;
+}
+
+
+sub write_resolv_conf
+{
+  my $FILE;
+
+  # Find the file.
+
+  $FILE = open_write_from_names(@resolv_conf_names);
+  if (not FILE) { return; }  # We didn't find it.
+
+  # Write the file.
+
+  if ($cf_domain ne "")         { print FILE "domain $cf_domain\n"; }
+  for $elem (@cf_searchdomains) { print FILE "search $elem\n"; }
+  for $elem (@cf_nameservers)   { print FILE "nameserver $elem\n"; }
+
+  close(FILE);
+}
+
+
+# NET-3 style /etc/host.conf
+#
+# order hosts,bind
+# multi on
+#
+# Nothing configurable, really. We just maintain it so we can see/correct
+# problems. The above is the default if nothing else is specified.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0
+#
+# Absent: SuSE 6.3, SunOS 5.7
+
+sub read_host_conf
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@host_conf_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t,]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "order")
+    {
+      shift @line;
+      @cf_order = ();
+      push(@cf_order, @line);
+    }
+    elsif ($line[0] eq "multi")
+    {
+      if ($line[1] eq "on")      { $cf_hostmatch = 0; }
+      elsif ($line[1] eq "off")  { $cf_hostmatch = 1; }
+      else                       { $cf_hostmatch = 0; }  # Unexpected; go default.
+    }
+  }
+
+  close(FILE);
+}
+
+
+sub write_host_conf
+{
+  my $FILE;
+
+  # Find the file.
+
+  $FILE = open_write_from_names(@host_conf_names);
+  if (not FILE) { return; }  # We didn't find it.
+
+  # Write the file.
+
+  $" = ',';
+
+  if (@cf_order)     { print FILE "order @cf_order\n"; }
+  else               { print FILE "order hosts,bind\n"; }
+
+  $" = ' ';
+
+  if ($cf_hostmatch) { print FILE "multi off\n"; }
+  else               { print FILE "multi on\n"; }
+
+  close(FILE);
+}
+
+
+# NET-3 style /etc/hosts
+#
+# <IP> <name> <name> ...
+# <IP> <name> <name> ...
+#
+# These are host aliases to be used before DNS.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SuSE 6.3,
+#         SunOS 5.7, (presumably all)
+#
+# Absent: (presumably none)
+
+sub read_hosts
+{
+  local *FILE;
+  my @alias = ();
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@hosts_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] ne "" && (not be_is_line_comment_start($line[0])) &&
+        ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/))
+    {
+      push(@cf_statichosts, $line[0]);  # IP.
+      shift @line;
+
+      @alias = ();
+      for $alias (@line)
+      {
+        if (be_is_line_comment_start($alias)) { last; }
+        push(@alias, $alias);
+      }
+      push(@cf_statichosts, [@alias]);  # Alias.
+    }
+  }
+
+  close(FILE);
+}
+
+
+sub write_hosts
+{
+  my $INFILE;
+  my $OUTFILE;
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@hosts_names);
+  if (not OUTFILE) { return; }  # We didn't find it.
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  # TODO: Replace old entries with corresponding new entries for
+  # the same IP. This preserves the comment context.
+
+  my @iplist = @cf_statichosts;
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] ne "" && (not be_is_line_comment_start($line[0])) &&
+        ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/))
+    {
+      # Don't print (recognized) old entries - we handle those.
+    }
+    else { print OUTFILE; }
+  }
+
+  # Put new entries at the end.
+
+  while (@iplist)
+  {
+    if ($iplist[0] ne "")
+    {
+      printf OUTFILE ("%-16s", $iplist[0]);
+
+      my $aliaslist = $iplist[1];
+      for $alias (@$aliaslist) { print OUTFILE " $alias"; }
+
+      print OUTFILE "\n";
+    }
+
+    shift @iplist;
+    shift @iplist;
+  }
+
+  close(OUTFILE);
+}
+
+
+# Red Hat style /etc/sysconfig/network
+#
+# <filtered lines>
+# HOSTNAME=<hostname>
+# DOMAINNAME=<domainname>
+# <filtered lines>
+#
+# Determines the local hostname and domain. BEWARE: This is actually a sourced
+# shell script. We rely on some lenience from the user (and the distro) to
+# be able to parse it correctly.
+#
+# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0
+#
+# Absent: SuSE 6.3, SunOS 5.7
+
+sub read_sysconfig_network
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@sysconfig_network_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "HOSTNAME" && not be_is_line_comment_start($line[1]))
+    { $cf_hostname = $line[1]; }
+    elsif ($line[0] eq "DOMAINNAME" && not be_is_line_comment_start($line[1]))
+    { $cf_domain = $line[1]; }
+  }
+
+  close(FILE);
+}
+
+
+sub write_sysconfig_network
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $wrote_hostname = 0;
+  my $wrote_domain = 0;
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@sysconfig_network_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "HOSTNAME")
+    {
+      print OUTFILE "HOSTNAME=$cf_hostname\n";
+      $wrote_hostname = 1;
+    }
+    elsif ($line[0] eq "DOMAINNAME")
+    {
+      print OUTFILE "DOMAINNAME=$cf_domain\n";
+      $wrote_domain = 1;
+    }
+    else { print OUTFILE; }
+  }
+
+  if (not $wrote_hostname) { print OUTFILE "HOSTNAME=$cf_hostname\n"; }
+  if (not $wrote_domain)   { print OUTFILE "DOMAINNAME=$cf_domain\n"; }
+
+  close(OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
+
+
+# SuSE style /etc/rc.config
+#
+# <filtered lines>
+# FQHOSTNAME="<fully qualified hostname>"
+# SEARCHLIST="<space separated list of searchdomains>"
+# NAMESERVER="<space separated list of nameservers>"
+# <filtered lines>
+#
+# Determines the local hostname.domain, searchdomains and nameservers.
+# BEWARE: This is actually a sourced shell script. We rely on some lenience
+# from the user (and the distro) to be able to parse it correctly. The file
+# is read by SuSE configuration tools and translated to NET-3 config files
+# at strategic times.
+#
+# Exists: SuSE 6.3
+#
+# Absent: Red Hat 6.x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SunOS 5.7
+
+sub read_rc_config
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@rc_config_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  # The code for SEARCHLIST and NAMESERVER is basically the same as in
+  # read_resolv_conf, only the splitting is different.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "FQHOSTNAME" && not be_is_line_comment_start($line[1]))
+    {
+      $cf_hostname = $line[1];
+    }
+    elsif ($line[0] eq "SEARCHLIST")
+    {
+      shift @line;
+      for $elem (@line)
+      {
+        if (be_is_line_comment_start($elem)) { last; }
+        if ($elem ne "") { push_unique(\@cf_searchdomains, $elem); }
+      }
+    }
+    elsif ($line[0] eq "NAMESERVER")
+    {
+      shift @line;
+      for $elem (@line)
+      {
+        if (be_is_line_comment_start($elem)) { last; }
+        if ($elem ne "") { push_unique(\@cf_nameservers, $elem); }
+      }
+    }
+  }
+
+  close(FILE);
+}
+
+
+# SuSE /etc/rc.config likes all env arguments in double quotes. Since we're
+# really nice guys, we conform to that.
+
+sub write_rc_config
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $wrote_hostname = 0;
+  my $wrote_searchdomains = 0;
+  my $wrote_nameservers = 0;
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@rc_config_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t\"\'=]+/, $_);
+    if ($line[0] eq "FQHOSTNAME")
+    {
+      print OUTFILE "FQHOSTNAME=\"$cf_hostname\"\n";  # FIXME: Needs to be fully qualified.
+      $wrote_hostname = 1;
+    }
+    elsif ($line[0] eq "SEARCHLIST")
+    {
+      print OUTFILE "SEARCHLIST=\"@cf_searchdomains\"\n";
+      $wrote_searchdomains = 1;
+    }
+    elsif ($line[0] eq "NAMESERVER")
+    {
+      print OUTFILE "NAMESERVER=\"@cf_nameservers\"\n";
+      $wrote_nameservers = 1;
+    }
+    else
+    {
+      print OUTFILE;
+    }
+  }
+
+  if (not $wrote_hostname)      { print OUTFILE "FQHOSTNAME=\"$cf_hostname\"\n"; }
+  if (not $wrote_searchdomains) { print OUTFILE "SEARCHLIST=\"$cf_searchdomains\"\n"; }
+  if (not $wrote_nameservers)   { print OUTFILE "NAMESERVER=\"$cf_nameservers\"\n"; }
+
+  close(OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
+
+
+# Samba /etc/smb.conf
+#
+# <filtered lines>
+# workgroup = <workgroup>
+# server string = <description>
+# <filtered lines>
+#
+# Exists: (Wherever Samba is installed)
+#
+# Absent: (Wherever Samba is not installed)
+
+sub read_smb_conf
+{
+  local *FILE;
+
+  # Find the file.
+
+  *FILE = be_open_read_from_names(@smb_conf_names);
+  if (not *FILE) { return; }  # We didn't find it.
+
+  # Parse the file.
+
+  while (<FILE>)
+  {
+    @line = split(/[ \n\r\t=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if ($line[0] eq "workgroup" && not be_is_line_comment_start($line[1]))
+    {
+      $cf_workgroup = $line[1];
+    }
+    elsif ($line[0] eq "serverstring" && not be_is_line_comment_start($line[1]))
+    {
+      shift @line;
+      $cf_description = join(' ', @line);
+    }
+    elsif ($line[0] eq "server" && $line[1] eq "string" && not be_is_line_comment_start($line[2]))
+    {
+      shift @line; shift @line;
+      $cf_description = join(' ', @line);
+    }
+    elsif ($line[0] eq "winsserver" && not be_is_line_comment_start($line[1]))
+    {
+      $cf_winsserver = $line[1];
+    }
+    elsif ($line[0] eq "wins" && $line[1] eq "server" && not be_is_line_comment_start($line[2]))
+    {
+      $cf_winsserver = $line[2];
+    }
+  }
+
+  close(FILE);
+}
+
+
+sub write_smb_conf
+{
+  my $INFILE;
+  my $OUTFILE;
+  my $wrote_workgroup = 0;
+  my $wrote_description = 0;
+  my $wrote_winsserver = 0;
+  my $block = "";
+
+  # Find the file.
+
+  ($INFILE, $OUTFILE) = open_filter_write_from_names(@smb_conf_names);
+  if (not OUTFILE) { return; }  # No point if we can't write.
+
+  # Write the file, preserving as much as possible from INFILE.
+
+  while (<INFILE>)
+  {
+    @line = split(/[ \n\r\t=]+/, $_);
+    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
+
+    if (($line[0] =~ /\[.*\]/))
+    {
+      # New block.
+
+      if ($block eq "[global]")
+      {
+        # These need to be written before exiting the [global] block.
+
+        if (not $wrote_workgroup)
+        { print OUTFILE "workgroup = $cf_workgroup\n"; $wrote_workgroup = 1; }
+        if (not $wrote_description)
+        { print OUTFILE "server string = $cf_description\n"; $wrote_description = 1; }
+        if ((not $wrote_winsserver) && $cf_winsserver ne "")
+        { print OUTFILE "wins server = $cf_winsserver\n"; $wrote_winsserver = 1; }
+      }
+
+      $block = $line[0];
+    }
+
+    if ($line[0] eq "workgroup" && not be_is_line_comment_start($line[1]))
+    {
+      print OUTFILE "workgroup = $cf_workgroup\n";
+      $wrote_workgroup = 1;
+    }
+    elsif ($line[0] eq "serverstring" && not be_is_line_comment_start($line[1]))
+    {
+      print OUTFILE "serverstring = $cf_description\n";
+      $wrote_description = 1;
+    }
+    elsif ($line[0] eq "server" && $line[1] eq "string" && not be_is_line_comment_start($line[2]))
+    {
+      print OUTFILE "server string = $cf_description\n";
+      $wrote_description = 1;
+    }
+    elsif ($line[0] eq "winsserver" && not be_is_line_comment_start($line[1]))
+    {
+      print OUTFILE "winsserver = $cf_winsserver\n";
+      $wrote_winsserver = 1;
+    }
+    elsif ($line[0] eq "wins" && $line[1] eq "server" && not be_is_line_comment_start($line[2]))
+    {
+      if ($cf_winsserver ne "") { print OUTFILE "wins server = $cf_winsserver\n"; }
+      $wrote_winsserver = 1;
+    }
+    else
+    {
+      print OUTFILE;
+    }
+  }
+
+  if (not $wrote_workgroup)                             { print OUTFILE "workgroup = $cf_workgroup\n"; }
+  if (not $wrote_description)                           { print OUTFILE "server string = $cf_description\n"; }
+  if ((not $wrote_winsserver) && $cf_winsserver ne "")  { print OUTFILE "wins server = $cf_winsserver\n"; }
+
+  close(OUTFILE);
+  if (INFILE) { close(INFILE); }
+}
+
+
+# --- XML parsing ---
+
+# <resolving>...</resolving>
+
+sub xml_parse_resolving
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if    (@$tree[0] eq "hostname")        { $cf_hostname = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "domain")          { $cf_domain = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "hostnamereverse") { $cf_hostname_reverse = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "domainreverse")   { $cf_domain_reverse = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "workgroup")       { $cf_workgroup = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "description")     { $cf_description = xml_get_text(@$tree[1]); }
+    elsif (@$tree[0] eq "winsserver")      { $cf_winsserver = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "searchdomain")    { push(@cf_searchdomains, xml_get_word(@$tree[1])); }
+    elsif (@$tree[0] eq "nameserver")      { push(@cf_nameservers, xml_get_word(@$tree[1])); }
+    elsif (@$tree[0] eq "statichost")      { xml_parse_statichost(@$tree[1]); }
+    elsif (@$tree[0] eq "order")           { xml_parse_order(@$tree[1]); }
+    elsif (@$tree[0] eq "hostmatch")       { xml_parse_hostmatch(@$tree[1]); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+# <resolving><statichost>...</statichost></resolving>
+
+sub xml_parse_statichost
+{
+  my $tree = $_[0];
+  my $ip;
+  my @alias;
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if    (@$tree[0] eq "ip")    { $ip = xml_get_word(@$tree[1]); }
+    elsif (@$tree[0] eq "alias") { push(@alias, xml_get_word(@$tree[1])); }
+
+    shift @$tree;
+    shift @$tree;
+  }
+
+  if ($ip =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/)
+  {
+    push(@cf_statichosts, $ip);
+    push(@cf_statichosts, [@alias]);
+  }
+  else
+  {
+    # Print warning message: IP is not well-formed.
+  }
+}
+
+
+# <resolving><order>...</order></resolving>
+
+sub xml_parse_order
+{
+  my $tree = $_[0];
+
+  shift @$tree;  # Skip attributes.
+
+  while (@$tree)
+  {
+    if (@$tree[0] eq "") { shift @$tree; shift @$tree; next; }
+    push(@cf_order, @$tree[0]);
+
+    shift @$tree;
+    shift @$tree;
+  }
+}
+
+
+# <resolving><hostmatch return=... /></resolving>
+
+sub xml_parse_hostmatch
+{
+  my $tree = $_[0];
+
+  # Check attribute; 'all' or 'first'.
+
+  if (@$tree[0]->{return} eq "all") { $cf_hostmatch = 0; }
+  else { $cf_hostmatch = 1; }
+}
+
+
 # --- XML printing --- #
 
 
@@ -156,34 +836,34 @@ sub xml_print
   print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
   print "<!DOCTYPE nameresolution []>\n\n";
   print "<nameresolution>\n";
-  be_xml_enter;
+  be_xml_enter ();
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- Configuration starts here -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- Configuration starts here -->\n";
+  be_xml_vspace ();
 
   # Hostname, domain, search domains, nameservers.
 
-  if ($cfl_hostname ne "") { be_xml_indent; print "<hostname>$cfl_hostname</hostname>\n"; }
-  if ($cfl_domain ne "") { be_xml_indent; print "<domain>$cfl_domain</domain>\n"; }
-  if ($cfl_workgroup ne "") { be_xml_indent; print "<workgroup>$cfl_workgroup</workgroup>\n"; }
-  if ($cfl_description ne "") { be_xml_indent; print "<description>$cfl_description</description>\n"; }
-  be_xml_vspace;
-  if ($cfl_winsserver ne "") { be_xml_indent; print "<winsserver>$cfl_winsserver</winsserver>\n"; }
-  be_xml_vspace;
+  if ($cfl_hostname ne "") { be_xml_indent (); print "<hostname>$cfl_hostname</hostname>\n"; }
+  if ($cfl_domain ne "") { be_xml_indent (); print "<domain>$cfl_domain</domain>\n"; }
+  if ($cfl_workgroup ne "") { be_xml_indent (); print "<workgroup>$cfl_workgroup</workgroup>\n"; }
+  if ($cfl_description ne "") { be_xml_indent (); print "<description>$cfl_description</description>\n"; }
+  be_xml_vspace ();
+  if ($cfl_winsserver ne "") { be_xml_indent (); print "<winsserver>$cfl_winsserver</winsserver>\n"; }
+  be_xml_vspace ();
 
   for $elem (@cf_searchdomains)
   {
     $elem = be_xml_plain_to_entities(\$elem);
-    be_xml_indent; print "<searchdomain>$elem</searchdomain>\n";
+    be_xml_indent (); print "<searchdomain>$elem</searchdomain>\n";
   }
 
-  be_xml_vspace;
+  be_xml_vspace ();
 
   for $elem (@cf_nameservers)
   {
     $elem = be_xml_plain_to_entities(\$elem);
-    be_xml_indent; print "<nameserver>$elem</nameserver>\n";
+    be_xml_indent (); print "<nameserver>$elem</nameserver>\n";
   }
 
   # Static hosts.
@@ -191,64 +871,64 @@ sub xml_print
   my @iplist = @cf_statichosts;
   while (@iplist)
   {
-    if (@iplist[0] ne "")
+    if ($iplist[0] ne "")
     {
-      be_xml_vspace;
-      be_xml_indent; print "<statichost>\n";
-      be_xml_enter;
+      be_xml_vspace ();
+      be_xml_indent (); print "<statichost>\n";
+      be_xml_enter ();
 
-      @iplist[0] = be_xml_plain_to_entities(\@iplist[0]);
+      $iplist[0] = be_xml_plain_to_entities(\$iplist[0]);
 
-      be_xml_indent; print "<ip>@iplist[0]</ip>\n";
+      be_xml_indent (); print "<ip>$iplist[0]</ip>\n";
 
-      my $aliaslist = @iplist[1];
+      my $aliaslist = $iplist[1];
       for $alias (@$aliaslist)
       {
         $alias = be_xml_plain_to_entities(\$alias);
-        be_xml_indent; print "<alias>$alias</alias>\n";
+        be_xml_indent (); print "<alias>$alias</alias>\n";
       }
 
-      be_xml_leave;
-      be_xml_indent; print "</statichost>\n";
+      be_xml_leave ();
+      be_xml_indent (); print "</statichost>\n";
     }
 
     shift @iplist;
     shift @iplist;
   }
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- You shouldn't have to modify anything below this line -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- You shouldn't have to modify anything below this line -->\n";
+  be_xml_vspace ();
 
   # Search order and host matches (multi).
 
-  be_xml_indent; print "<order>";
+  be_xml_indent (); print "<order>";
   for $elem (@cf_order) { print "<$elem/>"; }
   print "</order>\n";
 
-  be_xml_indent;
+  be_xml_indent ();
   if ($cf_hostmatch) { print "<hostmatch return='first'/>\n"; }
   else               { print "<hostmatch return='all'/>\n"; }
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- You cannot modify anything below this line -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- You cannot modify anything below this line -->\n";
+  be_xml_vspace ();
 
   if ($cfl_hostname_reverse ne "")
   {
-    be_xml_indent; print "<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n";
+    be_xml_indent (); print "<hostnamereverse>$cfl_hostname_reverse</hostnamereverse>\n";
   }
 
   if ($cfl_domain_reverse ne "")
   {
-    be_xml_indent; print "<domainreverse>$cfl_domain_reverse</domainreverse>\n";
+    be_xml_indent (); print "<domainreverse>$cfl_domain_reverse</domainreverse>\n";
   }
 
-  be_xml_vspace;
-  be_xml_indent; print "<!-- End of configuration -->\n";
-  be_xml_vspace;
+  be_xml_vspace ();
+  be_xml_indent (); print "<!-- End of configuration -->\n";
+  be_xml_vspace ();
 
-  be_xml_leave;
+  be_xml_leave ();
   print "</nameresolution>\n";
 }
 
@@ -296,19 +976,19 @@ sub get
 
   if ($be_verbose) { print STDERR "Getting system configuration, generating XML output.\n"; }
 
-  read_host_conf; be_print_progress;
-  read_hosts; be_print_progress;
-  read_resolv_conf; be_print_progress;
-  read_sysconfig_network; be_print_progress;
-  read_rc_config; be_print_progress;
-  read_smb_conf; be_print_progress;
+  read_host_conf (); be_print_progress ();
+  read_hosts (); be_print_progress ();
+  read_resolv_conf (); be_print_progress ();
+  read_sysconfig_network (); be_print_progress ();
+  read_rc_config (); be_print_progress ();
+  read_smb_conf (); be_print_progress ();
 
   if ($be_verbose) { print STDERR "Getting reverse names.\n"; }
-  get_immediate; be_print_progress;
+  get_immediate (); be_print_progress ();
 
   if ($be_verbose) { print STDERR "Printing XML.\n"; }
   if ($be_progress) { print "\n"; }
-  xml_print;
+  xml_print ();
 }
 
 
@@ -373,14 +1053,14 @@ sub set
   if ($be_verbose) { print STDERR "Setting system configuration from XML input.\n"; }
 
   if ($be_verbose) { print STDERR "Parsing XML.\n"; }
-  be_xml_parse;
+  be_xml_parse ();
 
-  write_smb_conf;
-  write_rc_config;
-  write_sysconfig_network;
-  write_resolv_conf;
-  write_hosts;
-  write_host_conf;
+  write_smb_conf ();
+  write_rc_config ();
+  write_sysconfig_network ();
+  write_resolv_conf ();
+  write_hosts ();
+  write_host_conf ();
 
   if ($be_do_immediate)
   {
@@ -395,8 +1075,8 @@ sub set
 
 sub filter
 {
-  be_xml_parse;
-  xml_print;
+  be_xml_parse ();
+  xml_print ();
 }
 
 
