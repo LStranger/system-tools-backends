@@ -208,6 +208,7 @@ sub xst_report
      "xml_unexp_tag"            => ["error", _("Unexpected tag [%s].")],
      "xml_unexp_arg"            => ["error", _("Unexpected argument [%s] to tag [%s].")],
 
+     "file_copy_failed"         => ["warn",  _("Could not copy file [%s] to [$s].")],
      "file_open_read_failed"    => ["warn",  _("Could not open [%s] for reading.")],
      "file_open_read_success"   => ["info",  _("Reading options from [%s].")],
      "file_open_write_failed"   => ["error", _("Failed to write to [%s].")],

@@ -66,9 +66,10 @@ EXTRA_DIST = \
 CLEANFILES = $(backends) $(perl_libs)
 
 $(backends): %-conf: %-conf.in
-	sed s#___scriptsdir___#$(scriptsdir)#\;s#___version___#$(VERSION)# < $< > $@
+	sed 's#___scriptsdir___#$(scriptsdir)#;s#___version___#$(VERSION)#;s#___filesdir___#$(filesdir)#;s#___bindir___#$(bindir)#' < $< > $@
 	chmod +x $@
 
 $(perl_libs): %.pl: %.pl.in
-	sed -e s#___scriptsdir___#$(scriptsdir)# -e s#___bindir___#$(bindir)# < $< > $@
+	sed 's#___scriptsdir___#$(scriptsdir)#;s#___version___#$(VERSION)#;s#___filesdir___#$(filesdir)#;s#___bindir___#$(bindir)#' < $< > $@
+
 

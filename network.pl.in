@@ -613,7 +613,7 @@ sub xst_network_suse70_set_ifconfig_arg
   
   return 0 if $val =~ /^dhcpclient$/ || $val =~ /^bootp$/;
   
-  if (! ($val =~ s/([ \t]+$key[ \t]+)[^ \t]+/\1$value/))
+  if (! ($val =~ s/([ \t]+$key[ \t]+)[^ \t]+/$1$value/))
   {
     $val =~ s/[ \t]+up$//;
     $val .= " " if $val =~ /[^ \t]$/;
@@ -631,7 +631,7 @@ sub xst_network_suse70_set_ifconfig_ip
   
   return 0 if $val =~ /^dhcpclient$/ || $val =~ /^bootp$/;
   
-  if (! ($val =~ s/^[0-9\.]+([ \t])/$value\1/))
+  if (! ($val =~ s/^[0-9\.]+([ \t])/$value$1/))
   {
     $val = "$value $val";
     $val =~ s/[ \t]+/ /;
@@ -1361,7 +1361,7 @@ sub xst_network_get_pap_passwd
   $passwd = $$arr[1];
   &xst_report_leave ();
 
-  $passwd =~ s/^\"([^\"]*)\"$/\1/;
+  $passwd =~ s/^\"([^\"]*)\"$/$1/;
   
   return $passwd;
 }
@@ -1500,7 +1500,7 @@ sub xst_network_set_ppp_options_unsup
     $line = "" if $line =~ /^[ \t]*$/;
   }
   
-  $value =~ s/[ \t]+([^0-9])/\n\1/g;
+  $value =~ s/[ \t]+([^0-9])/\n$1/g;
   push @$buff, $value . "\n";
   
   &xst_file_buffer_clean ($buff);
@@ -1759,7 +1759,7 @@ sub xst_network_debian_woody_set_auto
     else
     {
       # I'm including the hash here, although the man page says it's not supported.
-      last if $$buff[$line_no] =~ s/[ \t]$iface([\# \t\n])/\1/;
+      last if $$buff[$line_no] =~ s/[ \t]$iface([\# \t\n])/$1/;
     }
 		
 		$line_no ++;

@@ -544,9 +544,10 @@ sub xst_file_rmtree
           or carp "Can't make directory $root read+writeable: $!"
               unless $safe;
 
-	    if (opendir my $d, $root) {
-        @files = readdir $d;
-        closedir $d;
+      local *DIR;
+	    if (opendir DIR, $root) {
+        @files = readdir DIR;
+        closedir DIR;
 	    }
 	    else {
         carp "Can't read $root: $!";
@@ -759,7 +760,7 @@ sub xst_file_run_bg
 @xst_builtin_paths = ( "/sbin", "/usr/sbin", "/usr/local/sbin",
                        "/bin", "/usr/bin", "/usr/local/bin" );
 
-%xst_tool_paths = {};
+%xst_tool_paths = ();
 
 sub xst_file_locate_tool
 {
@@ -771,7 +772,7 @@ sub xst_file_locate_tool
 
   &xst_report_enter ();
   
-  $found = %xst_tool_paths->{$_[0]};
+  $found = $xst_tool_paths{$_[0]};
   if ($found eq "0")
   {
     # Negative cache hit. At this point, the failure has already been reported
@@ -805,12 +806,12 @@ sub xst_file_locate_tool
 
     if ($found)
     {
-      %xst_tool_paths->{$_[0]} = $found;
+      $xst_tool_paths{$_[0]} = $found;
       &xst_report ("file_locate_tool_success", $_[0]);
     }
     else
     {
-      %xst_tool_paths->{$_[0]} = "0";
+      $xst_tool_paths{$_[0]} = "0";
       &xst_report ("file_locate_tool_failed", $_[0]);
     }
   }

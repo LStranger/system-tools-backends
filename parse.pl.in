@@ -338,7 +338,7 @@ sub xst_parse_split_first_bool
   $ret = &xst_parse_split_first_str ($file, $key, $re, $line_read_proc);
 
   return undef if ($ret eq undef);
-  return (&xst_read_boolean ($ret)? 1: 0);
+  return (&xst_util_read_boolean ($ret)? 1: 0);
 }
 
 # After getting the first field, split the result with $sep matching separators. (ie order hosts,bind)
@@ -491,7 +491,7 @@ sub xst_parse_sh_bool
   $ret = &xst_parse_sh ($file, $key);
 
   return undef if ($ret eq undef);
-  return (&xst_read_boolean ($ret)? 1: 0);
+  return (&xst_util_read_boolean ($ret)? 1: 0);
 }
 
 # Get an sh value and then split with $re, returning ref to resulting array.
@@ -554,7 +554,7 @@ sub xst_parse_sh_export_bool
   $ret = &xst_parse_sh_export ($file, $key);
 
   return undef if ($ret eq undef);
-  return (&xst_read_boolean ($ret)? 1: 0);
+  return (&xst_util_read_boolean ($ret)? 1: 0);
 }
 
 # Search for $keyword in $file, delimited by $re (default " ") or EOL.
@@ -747,7 +747,7 @@ sub xst_parse_ini_bool
   $ret = &xst_parse_ini ($file, $section, $var);
   
   return undef if ($ret eq undef);
-  return (&xst_read_boolean ($ret)? 1: 0);
+  return (&xst_util_read_boolean ($ret)? 1: 0);
 }
 
 sub xst_parse_cap_line_clean
@@ -887,7 +887,7 @@ sub xst_parse_printcap_buffer_load
 
       if ($i =~ /^[a-z0-9]+/i)
       {
-        push @outbuf, (@line [0] . ":\n");
+        push @outbuf, ($line [0] . ":\n");
         shift @line;
       }
 
@@ -1338,7 +1338,7 @@ sub xst_parse_xml_child_names
 
   while (@list)
   {
-    if (@list [0] ne "__unparsed__" && @list [0] ne "0")
+    if ($list [0] ne "__unparsed__" && $list [0] ne "0")
     {
       push @children, shift @list;
     }

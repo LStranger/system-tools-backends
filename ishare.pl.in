@@ -261,6 +261,8 @@ sub xst_ishare_conf_get_parse_table
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
+   "debian-2.2"   => "mandrake-7.2",
+   "debian-woody" => "mandrake-7.2"
    );
 
   my %dist_tables =
@@ -274,7 +276,7 @@ sub xst_ishare_conf_get_parse_table
               [ "fwrules",   \&xst_ishare_fwrules_get     ],
               [ "dhcp",      \&xst_ishare_dhcp_get        ],
               ]
-                },
+              }
        );
 
   my $dist = $dist_map {$xst_dist};
@@ -291,6 +293,8 @@ sub xst_ishare_fwrules_get_parse_table
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
+   "debian-2.2"   => "mandrake-7.2",
+   "debian-woody" => "mandrake-7.2"
    );
 
   my %dist_tables =
@@ -299,7 +303,6 @@ sub xst_ishare_fwrules_get_parse_table
        {
          fn =>
          {
-           IPCHAINS_CONF => "/etc/sysconfig/ipchains",
            PROC_IPCHAINS => "/proc/net/ip_fwchains",
            PROC_FORWARD  => "/proc/sys/net/ipv4/ip_forward",
            PROC_MASQ     => "/proc/net/ip_masquerade"
@@ -330,6 +333,8 @@ sub xst_ishare_dhcp_get_parse_table
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
+   "debian-2.2"   => "debian-2.2",
+   "debian-woody" => "debian-2.2"
    );
 
   my %dist_tables =
@@ -351,6 +356,20 @@ sub xst_ishare_dhcp_get_parse_table
                                                               "[ \t]+", "[ \t]+" ],
               ]
                 },
+       "debian-2.2" =>
+       {
+         fn =>
+         {
+           DHCPD_CONF    => "/etc/dhcpd.conf",
+           DHCPD_SERVICE => "dhcp",
+         },
+         table =>
+             [
+              [ "installed",   \&xst_service_sysv_installed,  DHCPD_SERVICE ],
+              [ "configured",  \&xst_file_exists,             DHCPD_CONF    ],
+              [ "active",      \&xst_service_sysv_get_status, DHCPD_SERVICE ],
+              ]
+                },
        );
 
   my $dist = $dist_map {$xst_dist};
@@ -367,6 +386,8 @@ sub xst_ishare_conf_get_replace_table
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
+   "debian-2.2"   => "mandrake-7.2",
+   "debian-woody" => "mandrake-7.2"
    );
 
   my %dist_tables =
@@ -397,6 +418,8 @@ sub xst_ishare_fwrules_get_replace_table
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
+   "debian-2.2"   => "debian-2.2",
+   "debian-woody" => "debian-2.2"
    );
 
   my %dist_tables =
@@ -418,6 +441,24 @@ sub xst_ishare_fwrules_get_replace_table
               [ "active",     \&xst_service_sysv_force_status,  [8, IPCHAINS_SERVICE] ],
               ]
                 },
+       "debian-2.2" =>
+       {
+         fn =>
+         {
+           IPCHAINS_CONF     => "/etc/network/ipchains",
+           IPCHAINS_SERVICE  => "setup-tools-ipchains",
+           PROC_FORWARD      => "/proc/sys/net/ipv4/ip_forward",
+           NETWORK_OPTIONS   => "/etc/network/options"
+         },
+         table =>
+             [
+              [ "active",     \&xst_replace_sh_bool,             NETWORK_OPTIONS, "ip_forward" ],          
+              [ "active",     \&xst_replace_line_first,          PROC_FORWARD ],
+              [ "active",     \&xst_service_sysv_install_script, IPCHAINS_SERVICE, "debian_ipchains" ],
+              [ "overwrite",  \&xst_ishare_ipchains_save,        IPCHAINS_CONF, "%interface%", "%landev%" ],
+              [ "active",     \&xst_service_sysv_force_status,   [5, IPCHAINS_SERVICE] ],
+              ]
+                },
        );
 
   my $dist = $dist_map {$xst_dist};
@@ -434,6 +475,8 @@ sub xst_ishare_dhcp_get_replace_table
    "redhat-7.0"   => "mandrake-7.2",
    "redhat-7.1"   => "mandrake-7.2",
    "mandrake-7.2" => "mandrake-7.2",
+   "debian-2.2"   => "debian-2.2",
+   "debian-woody" => "debian-2.2"
    );
 
   my %dist_tables =
@@ -453,6 +496,20 @@ sub xst_ishare_dhcp_get_replace_table
               [ "active",      \&xst_service_sysv_set_status, [65, DHCPD_SERVICE] ]
               ]
                 },
+       "debian-2.2" =>
+       {
+         fn =>
+         {
+           DHCPD_CONF    => "/etc/dhcpd.conf",
+           DHCPD_SERVICE => "dhcp",
+         },
+         table =>
+             [
+              [ "dev",         \&xst_ishare_dhcp_set_conf,    DHCPD_CONF, "%overwrite%", "%interface%" ],
+              [ "active",      \&xst_replace_sh_bool,         "/etc/init.d/dhcpd", "run_dhcpd", "1", "0" ],
+              [ "active",      \&xst_service_sysv_set_status, [20, DHCPD_SERVICE] ]
+              ]
+              },
        );
 
   my $dist = $dist_map {$xst_dist};

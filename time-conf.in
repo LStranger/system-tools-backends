@@ -123,7 +123,7 @@ sub xml_parse_sync
   my $tree = $_[0];
   my @sync;
 
-  push (@sync, &xst_read_boolean($$tree[0]->{active}));
+  push (@sync, &xst_util_read_boolean($$tree[0]->{active}));
   
   shift @$tree;
 

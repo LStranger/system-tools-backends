@@ -335,25 +335,25 @@ sub xst_xml_model_print_recurse
 
   while (@children)
   {
-    my $branch = @children [1];
+    my $branch = $children [1];
 
-    if (@children [0] eq "__unparsed__")
+    if ($children [0] eq "__unparsed__")
     {
-      $string .= "<" . @children [1] . ">";
+      $string .= "<" . $children [1] . ">";
     }
-    elsif (@children [0] eq "0")
+    elsif ($children [0] eq "0")
     {
-      $string .= @children [1];
+      $string .= $children [1];
     }
     elsif (@$branch == 1)  # Empty tag.
     {
-      $string .= "<" . @children [0] . &xst_xml_model_print_attributes ($branch) . "/>";
+      $string .= "<" . $children [0] . &xst_xml_model_print_attributes ($branch) . "/>";
     }
     else
     {
-      $string .= "<" . @children [0] . &xst_xml_model_print_attributes ($branch) . ">";
+      $string .= "<" . $children [0] . &xst_xml_model_print_attributes ($branch) . ">";
       $string .= &xst_xml_model_print_recurse ($branch);
-      $string .= "</" . @children [0] . ">";
+      $string .= "</" . $children [0] . ">";
     }
 
     shift @children;
@@ -754,7 +754,7 @@ sub xst_xml_get_state
   my ($tree) = @_;
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
-  return &xst_read_boolean ($$tree[0]->{state});
+  return &xst_util_read_boolean ($$tree[0]->{state});
 }
 
 # XML model operations.
@@ -777,7 +777,7 @@ sub xst_xml_model_find
 
     while (@children)
     {
-      if (@children [0] eq $elem)
+      if ($children [0] eq $elem)
       {
         shift @children;
         $branch = shift @children;
@@ -844,7 +844,7 @@ sub xst_xml_model_ensure
 
     while (@children)
     {
-      if (@children [0] eq $elem)
+      if ($children [0] eq $elem)
       {
         shift @children;
         $branch = shift @children;

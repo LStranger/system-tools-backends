@@ -693,7 +693,7 @@ sub xml_parse_state
 
   # Check attribute; 'yes', 'true', 'no', 'false'.
 
-  return(&xst_read_boolean($$tree[0]->{state}));
+  return(&xst_util_read_boolean($$tree[0]->{state}));
 }
 
 

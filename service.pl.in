@@ -23,11 +23,15 @@
 
 
 $SCRIPTSDIR = "___scriptsdir___";
+$FILESDIR = "___filesdir___";
 if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 {
+    $FILESDIR = "files";
     $SCRIPTSDIR = ".";
     $DOTIN = ".in";
 }
+
+use File::Copy;
 
 require "$SCRIPTSDIR/file.pl$DOTIN";
 require "$SCRIPTSDIR/report.pl$DOTIN";
@@ -187,7 +191,7 @@ sub xst_service_sysv_get_tree
     foreach $dir (<$rcd_path/rc*.d>)
     {
         $level = $dir;
-        $level =~ s/.*\/rc(.*)\.d/\1/;
+        $level =~ s/.*\/rc(.*)\.d/$1/;
         push @arr,  &xst_service_sysv_get_level_info ($dir, $level);
     }
 
@@ -309,7 +313,7 @@ sub xst_service_sysv_set_links_active
   {
     &xst_service_sysv_remove_link ($runlevel, "K[0-9]+$service");
     &xst_service_sysv_remove_link ($runlevel, "S[0-9]+$service");
-    &xst_service_sysv_add_link ($runlevel, "S$pri", $service);
+    &xst_service_sysv_add_link ($runlevel, "S" . sprintf ("%02d", $pri), $service);
   }
 }
 
@@ -321,7 +325,7 @@ sub xst_service_sysv_set_links_inactive
   foreach $runlevel (&xst_service_sysv_get_runlevels ())
   {
     &xst_service_sysv_remove_link ($runlevel, "S[0-9]+$service");
-    &xst_service_sysv_add_link ($runlevel, "K$pri", $service);
+    &xst_service_sysv_add_link ($runlevel, "K" . sprintf ("%02d", $pri), $service);
   }
 }
 
@@ -427,6 +431,25 @@ sub xst_service_sysv_force_status
   my ($priority, $service, $active) = @_;
 
   return &xst_service_sysv_set_status_do ($priority, $service, $active, 1);
+}
+
+sub xst_service_sysv_install_script
+{
+  my ($service, $file) = @_;
+  my ($res, $rcd_path, $initd_path);
+
+  ($rcd_path, $initd_path) = &xst_service_sysv_get_paths ();
+
+  $res = copy ("$FILESDIR/$file", "$initd_path/$service");
+  if ($res)
+  {
+      &xst_report ("file_copy_failed", "$FILESDIR/$file", "$initd_path/$service");
+      return -1;
+  }
+
+  chmod (0755, "$FILESDIR/$file");
+
+  return 0;
 }
 
 1;

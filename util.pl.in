@@ -37,15 +37,14 @@ if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
 
 # Boolean <-> strings conversion.
 
-sub xst_read_boolean
+sub xst_util_read_boolean
 {
-  if ($_[0] =~ /true/i ||
-      $_[0] =~ /yes/i ||
-      $_[0] =~ /on/i)
-  {
-    return 1;
-  }
-
+  my ($v) = @_;
+    
+  return 1 if ($v =~ "true" ||
+               $v =~ "yes"  ||
+               $v =~ "on"   ||
+               $v eq "1");
   return 0;
 }
 

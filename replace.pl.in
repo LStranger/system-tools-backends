@@ -276,11 +276,23 @@ sub xst_replace_sh_export
 }
 
 # Treat value as a yes/no bool, replace in shell style.
+# val_true and val_false have default yes/no values.
+# use &xst_replace_sh_bool (file, key, value) if defaults are desired.
 sub xst_replace_sh_bool
 {
-  my ($file, $key, $value) = @_;
+  my ($file, $key, $val_true, $val_false, $value) = @_;
 
-  $value = ($value == 1)? "yes": "no";
+  # default value magic.
+  if ($val_false eq undef)
+  {
+      $value = $val_true;
+      $val_true = undef;
+  }
+
+  $val_true  = "yes" unless $val_true;
+  $val_false = "no"  unless $val_false;
+
+  $value = ($value == 1)? $val_true: $val_false;
   
   return &xst_replace_sh ($file, $key, $value);
 }
@@ -288,9 +300,19 @@ sub xst_replace_sh_bool
 # Treat value as a yes/no bool, replace in export... shell style.
 sub xst_replace_sh_export_bool
 {
-  my ($file, $key, $value) = @_;
+  my ($file, $key, $val_true, $val_false, $value) = @_;
 
-  $value = ($value == 1)? "yes": "no";
+  # default value magic.
+  if ($val_false eq undef)
+  {
+      $value = $val_true;
+      $val_true = undef;
+  }
+
+  $val_true  = "yes" unless $val_true;
+  $val_false = "no"  unless $val_false;
+
+  $value = ($value == 1)? $val_true: $val_false;
   
   return &xst_replace_sh_export ($file, $key, $value);
 }
@@ -1307,7 +1329,7 @@ sub xst_replace_alchemist_ensure_list_types
 
     while (@children)
     {
-      if (@children [0] eq $elem)
+      if ($children [0] eq $elem)
       {
         shift @children;
         $branch = shift @children;

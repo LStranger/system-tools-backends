@@ -156,7 +156,7 @@ sub xml_parse_swapinfo
     elsif ($$tree[0] eq 'enabled') 
 	  {
 	    $node = $$tree[1];
-	    $entry->{enabled} = &xst_read_boolean ($$node[0]->{state});
+	    $entry->{enabled} = &xst_util_read_boolean ($$node[0]->{state});
 	  }
     elsif ($$tree[0] eq 'priority') 
 	  { 
@@ -169,12 +169,12 @@ sub xml_parse_swapinfo
     elsif ($$tree[0] eq 'isfile') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_file} = &xst_read_boolean ($$node[0]->{state});
+	    $entry->{is_file} = &xst_util_read_boolean ($$node[0]->{state});
 	  }
     elsif ($$tree[0] eq 'isnew') 
 	  { 
 	    $node = $$tree[1];
-	    $entry->{is_new} = &xst_read_boolean ($$node[0]->{state});
+	    $entry->{is_new} = &xst_util_read_boolean ($$node[0]->{state});
 	  }
     
     shift @$tree;

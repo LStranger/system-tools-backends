@@ -1,3 +1,30 @@
+Mon Sep 17 11:36:47 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+        * Other Perl style changes in xml, network, service and other
+	places.
+	
+	* file.pl.in (xst_file_rmtree): Got "Bad symbol for filehandle"
+	fatal error with this code in Debian. Dunno why it appeared now,
+	so I used something more "standard". Any comments on this?
+
+	* ishare.pl.in: Ported to debian-2.2. Untested.
+
+	* service.pl.in (xst_service_sysv_install_script): installs an
+	initd script from the filesdir.
+
+	* Makefile.am: Replace filesdir too.
+
+	* service.pl.in (xst_service_sysv_set_links_active): Use %02d
+	to format the priority number of the link.
+	(xst_service_sysv_set_links_inactive): same.
+
+	* util.pl.in (xst_util_read_boolean): Added "1" as a valid
+	"true" representation.
+
+	* replace.pl.in (xst_replace_sh_bool): Added optional parameters
+	for true/false value representation.
+	(xst_replace_sh_export_bool): same.
+
 2001-09-19  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* Makefile.am (backends): Process runlevel-conf instead of sysv-conf.
