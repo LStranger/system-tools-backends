@@ -1,3 +1,8 @@
+2001-02-04  Hans Petter Jansson  <hpj@ximian.com>
+
+	* parse.pl.in (xst_parse_line_first): Stopped from losing return value.
+	* parse.pl.in (xst_parse_chat): Prevented $found from being global.
+
 2001-01-31  Tambet Ingo  <tambet@ximian.com>
 
 	* users-conf.in (xml_print_nis): test function for nis.

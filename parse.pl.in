@@ -146,14 +146,13 @@ sub xst_parse_sh_bool
 sub xst_parse_line_first
 {
   my ($file) = @_;
-  my ($fd, @line, @res);
+  my ($fd, $res);
 
   $fd = be_open_read_from_names ($file);
   return undef if !$fd;
 
-  <$fd>;
-  chomp;
-  return $_;
+  chomp ($res = <$fd>);
+  return $res;
 }
 
 # parse a chat file, searching for an entry that matches $re.
@@ -161,7 +160,7 @@ sub xst_parse_line_first
 sub xst_parse_chat
 {
   my ($file, $re) = @_;
-  my $fd, $found;
+  my ($fd, $found);
 
   $fd = &be_open_read_from_names ("$file");
   if ($fd)
