@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-09-02 17:04+0300\n"
-"PO-Revision-Date: 2004-09-02 20:07+0300\n"
+"POT-Creation-Date: 2004-09-04 22:01+0300\n"
+"PO-Revision-Date: 2004-09-04 22:02+0300\n"
 "Last-Translator: Ilkka Tuohela <hile@iki.fi>\n"
 "Language-Team: Gnome Finnish Translation Team <laatu@gnome-fi.org>\n"
 "MIME-Version: 1.0\n"
@@ -179,7 +179,7 @@ msgid ""
 "version. You must enable xinetd to use this service."
 msgstr ""
 "xinetd:n sisäinen palvelu, joka ottaa järjestelmän tämänhetkisen ajan ja "
-"tulostaa sen seuraavanlaisessa muodossa: 'Wed Nov 13 22:30:27 EST 2002'. " 
+"tulostaa sen seuraavanlaisessa muodossa: 'Wed Nov 13 22:30:27 EST 2002'. "
 "Tämä on palvelun TCP-versio. Xinetd täytyy olla käytössä, jotta voit käyttää "
 "tätä palvelua."
 
@@ -190,7 +190,7 @@ msgid ""
 "version. You must enable xinetd to use this service."
 msgstr ""
 "xinetd:n sisäinen palvelu, joka ottaa järjestelmän tämänhetkisen ajan ja "
-"tulostaa sen seuraavanlaisessa muodossa: 'Wed Nov 13 22:30:27 EST 2002'. " 
+"tulostaa sen seuraavanlaisessa muodossa: 'Wed Nov 13 22:30:27 EST 2002'. "
 "Tämä on palvelun UDP-versio. Xinetd täytyy olla käytössä, jotta voit käyttää "
 "tätä palvelua."
 
@@ -217,7 +217,7 @@ msgid ""
 msgstr ""
 "Xinetd:n sisäinen palvelu, joka tulostaa saamiaan merkkejä takaisin "
 "asiakkaalle. Tämä on palvelun TCP-versio. Xinetd täytyy olla käytössä, jotta "
-"voit käyttää tätä palvelua." 
+"voit käyttää tätä palvelua."
 
 #: service-list.pl.in:58
 msgid ""
@@ -226,7 +226,7 @@ msgid ""
 msgstr ""
 "Xinetd:n sisäinen palvelu, joka tulostaa saamiaan merkkejä takaisin "
 "asiakkaalle. Tämä on palvelun UDP-versio. Xinetd täytyy olla käytössä, jotta "
-"voit käyttää tätä palvelua." 
+"voit käyttää tätä palvelua."
 
 #: service-list.pl.in:59
 msgid "Sound mixing server"
@@ -303,8 +303,8 @@ msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
 msgstr ""
-"Tarjoaa menetelmän useisiin kovalevyn ioctl-kutsuihin, joita Linuxin "
-"ATA/IDE-ajureiden alijärjestelmä tukee."
+"Tarjoaa menetelmän useisiin kovalevyn ioctl-kutsuihin, joita Linuxin ATA/IDE-"
+"ajureiden alijärjestelmä tukee."
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
@@ -318,8 +318,7 @@ msgid ""
 msgstr ""
 "hotplug on ohjelma, jota ydin käyttää käyttäjätilassa toimivien ohjelmien "
 "huomauttamiseen, kun jotain oleellisia, yleensä laitteistoon liityviä "
-"tapahtumia tapahtuu. Esimerkkinä USB- tai Cardbus-laitteen lisäys "
-"koneeseen."
+"tapahtumia tapahtuu. Esimerkkinä USB- tai Cardbus-laitteen lisäys koneeseen."
 
 #: service-list.pl.in:71
 msgid "internet superserver"
@@ -371,8 +370,8 @@ msgid ""
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
-"Suorittaa ohjelman joystick-device-check. Se on ohjelma, joka varmistaa "
-"että laitetiedostot /dev/js* ovat oikeat käytössä olevalle ytimen versiolle."
+"Suorittaa ohjelman joystick-device-check. Se on ohjelma, joka varmistaa että "
+"laitetiedostot /dev/js* ovat oikeat käytössä olevalle ytimen versiolle."
 
 #: service-list.pl.in:77
 msgid ""
@@ -380,8 +379,8 @@ msgid ""
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
 "leave this enabled for most machines."
 msgstr ""
-"Tämä paketti lataa näppäimistökartan, joka on määritelty tiedostossa "
-"/usr/sysconfig/keyboard. tämä näppäimistökartta voidaan valita käyttämällä "
+"Tämä paketti lataa näppäimistökartan, joka on määritelty tiedostossa /usr/"
+"sysconfig/keyboard. tämä näppäimistökartta voidaan valita käyttämällä "
 "ohjelmaa kbdconfig. Tämän palvelun tulisi olla käytössä useimmissa "
 "järjestelmissä."
 
@@ -408,8 +407,8 @@ msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
 msgstr ""
-"LIRC on paketti, joka sallii sinun vastaanottaa ja lähettää infrapunaviestejä "
-"useimmista yleisistä kaukosäätimistä"
+"LIRC on paketti, joka sallii sinun vastaanottaa ja lähettää "
+"infrapunaviestejä useimmista yleisistä kaukosäätimistä"
 
 #: service-list.pl.in:82
 msgid "Starts misc programs that should be started"
@@ -570,9 +569,10 @@ msgid ""
 "NFS and NIS. The portmap server must be running on machines which act as "
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
-"Portmapper hallitsee RPC-yhteyksiä, joita käytettävät muun muassa protokollat "
-"kuten NFS ja NIS. Portmap-palvelimen täytyy olla päällä järjestelmissä, jotka "
-"toimivat palvelimina protokollille, jotka käyttävät RPC-menetelmää."
+"Portmapper hallitsee RPC-yhteyksiä, joita käytettävät muun muassa "
+"protokollat kuten NFS ja NIS. Portmap-palvelimen täytyy olla päällä "
+"järjestelmissä, jotka toimivat palvelimina protokollille, jotka käyttävät "
+"RPC-menetelmää."
 
 #: service-list.pl.in:104
 msgid "Mail Transport Agent"
@@ -623,8 +623,8 @@ msgid ""
 msgstr ""
 "Tämä on palvelin, joka ottaa säännöllisesti yhteyttä Red Hat Networkin "
 "palvelimiin, etsii päivityksiä ja huomautuksia ja suorittaa järjestelmän "
-"tarkkailuun liittyviä tehtäviä sen mukaan, millaille palvelutasolle "
-"palvelin on liitetty."
+"tarkkailuun liittyviä tehtäviä sen mukaan, millaille palvelutasolle palvelin "
+"on liitetty."
 
 #: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
@@ -672,8 +672,8 @@ msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
-"Xinetd:n sisäinen palvelu, joka tulostaa aktiiviset palvelimet. Xinetd täytyy "
-"olla käytössä, jotta voit käyttää tätä palvelua."
+"Xinetd:n sisäinen palvelu, joka tulostaa aktiiviset palvelimet. Xinetd "
+"täytyy olla käytössä, jotta voit käyttää tätä palvelua."
 
 #: service-list.pl.in:117
 msgid ""
@@ -749,8 +749,8 @@ msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
-"Syslog on palvelu, jota monet palvelimet käyttävät viestien lokitukseen "
-"eri järjestelmän lokitiedostoihin. On hyvä ajatus pitää syslog aina päällä."
+"Syslog on palvelu, jota monet palvelimet käyttävät viestien lokitukseen eri "
+"järjestelmän lokitiedostoihin. On hyvä ajatus pitää syslog aina päällä."
 
 #: service-list.pl.in:127
 msgid ""
@@ -761,9 +761,9 @@ msgid ""
 msgstr ""
 "RFC 868 aikapalvelin. Tämä protokolla tarjoaa sijainnista riippumattoman, "
 "koneluettavan päiväyksen ja ajan. Aikapalvelu lähettää takaisin kysyjälle "
-"ajan sekunteina vuoden 1900 tammikuun ensimmäisen päivän keskiyöstä. Tämä "
-"on palvelun TCP-version. Xinetd:n täytyy olla käytössä jotta voit käyttää "
-"tätä palvelua."
+"ajan sekunteina vuoden 1900 tammikuun ensimmäisen päivän keskiyöstä. Tämä on "
+"palvelun TCP-version. Xinetd:n täytyy olla käytössä jotta voit käyttää tätä "
+"palvelua."
 
 #: service-list.pl.in:128
 msgid ""
@@ -774,9 +774,9 @@ msgid ""
 msgstr ""
 "RFC 868 aikapalvelin. Tämä protokolla tarjoaa sijainnista riippumattoman, "
 "koneluettavan päiväyksen ja ajan. Aikapalvelu lähettää takaisin kysyjälle "
-"ajan sekunteina vuoden 1900 tammikuun ensimmäisen päivän keskiyöstä. Tämä "
-"on palvelun UDP-version. Xinetd:n täytyy olla käytössä jotta voit käyttää "
-"tätä palvelua."
+"ajan sekunteina vuoden 1900 tammikuun ensimmäisen päivän keskiyöstä. Tämä on "
+"palvelun UDP-version. Xinetd:n täytyy olla käytössä jotta voit käyttää tätä "
+"palvelua."
 
 #: service-list.pl.in:129
 msgid "kernel random number source devices"
@@ -856,30 +856,30 @@ msgstr ""
 "palvelu käytettäväksi tiettyinä aikoina ja voi rajata käynnistettävien "
 "palvelimien määrä, sekä muitakin edistysaskeleita."
 
-#: service.pl.in:223 service.pl.in:228
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "Järjestelmän pysäytys"
 
-#: service.pl.in:224 service.pl.in:230
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "Tekstitila"
 
-#: service.pl.in:225 service.pl.in:229 service.pl.in:238
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "Graafinen tila"
 
-#: service.pl.in:226 service.pl.in:231
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "Järjestelmän uudellenkäynnistäminen"
 
-#: service.pl.in:233
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "Käynnistää kaikki järjestelmän oleelliset palvelut"
 
-#: service.pl.in:234
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "Suoritustilan oletus"
 
-#: service.pl.in:235
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Verkoton suoritustila"
