@@ -1,3 +1,8 @@
+2003-11-22  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* services.pl.in: (gst_service_sysv_list_any_installed): added, this
+	  checks that any service inside a list exists in init.d
+
 2003-10-30  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* time-conf.in: fixed the ntpd server for debian, it was "ntp-simple",

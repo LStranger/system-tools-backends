@@ -172,15 +172,6 @@ sub gst_service_get_verbose_runlevels
   $desc = $runlevels{$distro};
 
   return $runlevels{$distro};
-
-  $aaa = $runlevels{$distro};
-  $aaa = $desc;
-
-  print "---------------- $aaa{\"3\"} \n";
-
-  &gst_report ("service_sysv_unsupported", $gst_dist) if ($desc eq undef);
-  
-  return \%desc;
 }
 
 # --- Plain process utilities --- #
@@ -268,6 +259,24 @@ sub gst_service_sysv_installed
   }
 
   &gst_report_leave ();
+  return $res;
+}
+
+sub gst_service_sysv_list_any_installed
+{
+  my @service = @_;
+  my $res;
+
+  $res = 0;
+  
+  foreach $serv (@service)
+  {
+    if (gst_service_sysv_installed ($serv))
+    {
+      $res = 1;
+    }
+  }
+
   return $res;
 }
 
