@@ -1,3 +1,9 @@
+2001-09-21  Tambet Ingo  <tambet@ximian.com>
+
+	* x.pl.in (x_probe_run): Fork new X processes to avoid lockups.
+	(x_probe_collect): Implement.
+	(x_probe_scan): Implement.
+
 Tue Sep 18 11:46:35 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* service.pl.in (xst_service_sysv_install_script): reversed

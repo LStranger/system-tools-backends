@@ -344,6 +344,7 @@ BEGIN {
     'x_parse'        => ['info',  _('Configuration file [%s] successfully parsed.')],
     'x_parse_error'  => ['error', _('Error parsing keyword [%s].')],
     'x_probe_needed' => ['info',  _('Going to probe your X server, hold on.')],
+    'x_probe_error'  => ['error', _('Error occured on X server probe on colordepth [%s].')],
     'x_general_warn' => ['warn',  _('Internal error: [%s].')],
   }
                      );
@@ -1923,7 +1924,7 @@ sub x_probe_save
 }
 
 # Internal
-sub x_probe_run
+sub x_probe_run_old
 {
   my $cfg_file = shift;
   my $modes = shift;
@@ -1960,6 +1961,83 @@ sub x_probe_run
 }
 
 # Internal
+sub x_probe_scan
+{
+  my $cfg_file = shift;
+  my $depth = shift;
+
+  my $command = &xst_file_locate_tool ("XFree86");
+  open (FD, "$command :9 -xf86config $cfg_file -probeonly -depth $depth -screen XstTestScreen 2>&1 |");
+  if (FD) {
+    my @content = (<FD>);
+    close (FD);
+    my @list = grep (/^\(\*\*\) \w+\(0\): Mode \"/, @content);
+    return join ("\n", @list);
+  }
+
+  return;
+}
+
+# Internal
+sub x_probe_collect
+{
+  my $proc = shift;
+  my $modes = shift;
+  my $depth = shift;
+  my $lines;
+  my $list = [];
+
+  if ($proc->{'ready'}) {
+    sysread ($$proc{"fd"}, $lines, 4096);
+    my @tmp = split ("\n", $lines);
+    foreach (@{$modes->{'ModeLine'}}) {
+      my $mode = $_;
+
+      foreach (@tmp) {
+        my $modename = $1 if /\"(.+)\"/;
+
+        if ($modename eq $mode->{'name'}) {
+          push @$list, $mode;
+          last;
+        }
+      }
+    }
+  }
+  else {
+    &xst_report ('x_probe_error', $depth);
+    &xst_debug_print_line ("x_probe_collect: error reading XFree's output at depthd $depth.");
+    undef $list;
+  }
+
+  &xst_process_kill ($proc);
+
+  return $list;
+}
+
+# Internal
+sub x_probe_run
+{
+  my $cfg_file = shift;
+  my $modes = shift;
+
+  return unless $cfg_file;
+
+  my $hash;
+  foreach my $depth (@x_colordepths) {
+    my $proc = &xst_process_fork (\&x_probe_scan, $cfg_file, $depth);
+    &xst_process_list_check_ready (15, [$proc]);
+    my $list = &x_probe_collect ($proc, $modes, $depth);
+    if (scalar @$list) {
+      $hash->{$depth} = $list;
+    } else {
+      last;
+    }
+  }
+
+  return $hash;
+}
+
+# Internal
 sub x_probe_print_xml
 {
   my $list = shift;
@@ -1968,7 +2046,7 @@ sub x_probe_print_xml
 
   &xst_xml_print_begin ();
   &xst_xml_print_vspace ();
-  
+
   foreach my $depth (keys %$list) {
     &xst_xml_print_line ("<Depth value=\"$depth\">");
     &xst_xml_enter ();
