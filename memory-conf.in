@@ -426,7 +426,6 @@ sub setup_swap_files
 	        my ($size) = $entry->{size};
 		$size =~ tr/MB$//d;	# Remove Mb from the end
 		$size *= 1024;		# Make it to Kb
-		print "$size\n";
 		system ("/bin/dd if=/dev/zero of=$entry->{device} bs=1024 count=$size");
 	      }
 

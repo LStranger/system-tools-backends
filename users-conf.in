@@ -419,7 +419,6 @@ sub change_user
 	  "\' -l \'" . $$new_data[$users_prop_map{"login"}] .
 	  "\' \'" . $$old_data[$users_prop_map{"login"}] . "\'";
 	my_system ($command);
-	print "$command\n";
 }
 
 sub del_group
