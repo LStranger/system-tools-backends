@@ -1078,10 +1078,11 @@ sub xst_filesys_mount_off
 
 sub xst_filesys_mount_sync_all
 {
-  my ($mtab_file, $new_table) = @_;
-  my $mount_table;
+  my ($fstab_file, $mtab_file, $new_table) = @_;
+  my ($mount_table, $fs_table);
 
-  $mount_table = &xst_filesys_mtab_parse ($mtab_file);
+  $fs_table    = &xst_filesys_fstab_parse ($fstab_file);
+  $mount_table = &xst_filesys_mtab_parse  ($mtab_file);
 
   for $info (@$new_table)
   {
@@ -1093,7 +1094,19 @@ sub xst_filesys_mount_sync_all
     }
     elsif (!$mounted_info && &xst_filesys_info_get_mounted ($info))
     {
-      &xst_filesys_mount_on ($info);
+      # If the mount has an fstab entry, we prefer that over the information
+      # provided by XML.
+
+      my $fs_info = &xst_filesys_table_find_info_equivalent ($fs_table, $info);  
+
+      if ($fs_info)
+      {
+        &xst_filesys_mount_on ($fs_info);
+      }
+      else
+      {
+        &xst_filesys_mount_on ($info);
+      }
     }
   }
 }

@@ -594,8 +594,6 @@ sub set
 
   $config = &xml_parse ();
 
-  &xst_filesys_mount_sync_all (&distro_file ("mtab"), $$config{"imports"});
-
   $imports = $$config{"imports"};
   for $import (@$imports)
   {
@@ -614,6 +612,8 @@ sub set
   &xst_filesys_fstab_replace     (&distro_file ("fstab"),    $fs_new_shares);
   &xst_share_replace_smb_conf    (&distro_file ("smb.conf"), $$config{"smb_exports"});
   &xst_share_replace_nfs_exports (&distro_file ("exports"),  $$config{"nfs_exports"});
+
+  &xst_filesys_mount_sync_all (&distro_file ("fstab"), &distro_file ("mtab"), $$config{"imports"});
 
   &xst_report_end ();
 }
