@@ -1,3 +1,12 @@
+2001-09-05  Tambet Ingo  <tambet@ximian.com>
+
+	* report.pl.in (xst_report): Implement.
+	(xst_report): use dynamical report message table.
+
+	* display-conf.in (distro_file): Determine config file from X version.
+
+	* x.pl.in: Line based to token based parser. Rewrite.
+
 2001-08-30  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* internetsharing-conf.in (get_interfaces): new directive.

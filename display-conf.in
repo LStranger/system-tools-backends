@@ -30,7 +30,6 @@
 # Running programs affected:
 #
 
-
 BEGIN {
   $SCRIPTSDIR = "___scriptsdir___";
   if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
@@ -39,15 +38,15 @@ BEGIN {
       $DOTIN = ".in";
   }
   
+  require "$SCRIPTSDIR/general.pl$DOTIN";
   require "$SCRIPTSDIR/platform.pl$DOTIN";
+  require "$SCRIPTSDIR/file.pl$DOTIN";
   require "$SCRIPTSDIR/x.pl$DOTIN";
 }
 
 use File::Copy;
 use IO::File;
 use POSIX qw(tmpnam);
-
-# use strict;
 
 # --- Tool information --- #
 
@@ -61,16 +60,6 @@ end_of_description;
 
 # --- Platform handling --- #
 
-$platmap =
-{
-  "redhat-6.2"     => XFree3,
-  "redhat-7.0"     => XFree4,
-  "redhat-7.1"     => XFree4,
-  "turbolinux-7.0" => XFree4,
-  "debian-woody"   => XFree4,
-  "debian-2.2"     => XFree3
-};
-
 $filemap = {
   XFree3 => '/etc/X11/XF86Config',
   XFree4 => '/etc/X11/XF86Config-4',
@@ -80,7 +69,10 @@ $filemap = {
 
 sub distro_file
 {
-  return $$filemap{$$platmap{$xst_dist}};
+  my $x_version = &x_version ();
+  my $file = ($x_version->{'number'} >= 400) ? 'XFree4' : 'XFree3';
+
+  return $filemap->{$file};
 }
 
 # --- XML parsing ---
@@ -113,11 +105,6 @@ sub xml_print
   my $config = shift;
   my ($section, $hash);
 
-  if (ref ($config) ne "XstXConfig") {
-    # TODO: give error
-    return;
-  }
-  
   &xst_xml_print_begin ();
   &xst_xml_print_vspace ();
 
@@ -173,22 +160,22 @@ sub test
   until my $fh = IO::File->new ($tmp_file, O_RDWR|O_CREAT|O_EXCL);
 
   copy ($real_file, $tmp_file);
-  
+
   my $config = &x_parse ($tmp_file);
   my $xml_config = &xml_parse ();
   &x_config_fix ($xml_config, 0);
   
   &x_config_set ($tmp_file, $config, $xml_config);
 
-  $res = &xst_file_run ("$testX_cmd --config=$tmp_file");
+  $res = &xst_file_run ("$testX_cmd --config=$tmp_file");  
   unlink ($tmp_file);
-  
+
   &xst_report_end ();
 }
 
 sub probe
 {
-  my ($tool, $direct) = @_;  
+  my ($tool, $direct) = @_;
   my $cfg_file = &distro_file ();
   return unless $cfg_file;
 

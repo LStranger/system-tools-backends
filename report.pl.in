@@ -132,10 +132,11 @@ sub xst_report
 {
   my ($key, @args) = @_;
   my ($major, $minor, $str, $format, $res);
+  my $report_message = &xst_report_table ();
 
-  &xst_debug_print_line ("Non-existing report key $key") if !exists $xst_report_message{$key};
+  &xst_debug_print_line ("Non-existing report key $key") if !exists $$report_message{$key};
 
-  ($major, $str) = @{$xst_report_message{$key}};
+  ($major, $str) = @{$$report_message{$key}};
 
   $xst_report_started = 1 if !$xst_report_started && $key eq "begin" && $major eq "sys";
 
@@ -158,6 +159,27 @@ sub xst_report
   &xst_debug_print_indented_string ($xst_report_level, "report $major:$key: $res");
 }
 
+# Internal
+{
+  my $report_table = \%xst_report_message;
+  sub xst_report_table
+  {
+    my $table = shift @_;
+
+    if ($table) # Add
+    {
+      foreach my $key (keys %$table)
+      {
+        $$report_table{$key} = $$table{$key} unless exists $$report_table{$key};
+      }
+    }
+
+    else # Get
+    {
+      return $report_table;
+    }
+  }
+}
 
 # This disables reporting.
 &xst_report_set_threshold (0);
