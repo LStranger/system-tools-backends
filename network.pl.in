@@ -187,6 +187,13 @@ sub xst_network_conf_get
   return $hash;
 }
 
+sub xst_network_run_hostname
+{
+  my $hostname = $_[0];
+
+  &xst_run ("hostname $hostname");
+}
+
 sub xst_network_dialing_set
 {
   my %vars =
@@ -294,8 +301,9 @@ sub xst_network_conf_set
   my $values_hash = $_[0];
   my %dist_attrib;
   
+  &xst_network_ensure_local_host_entry ($values_hash, "127.0.0.1");
+  
   %dist_attrib = &xst_network_get_replace_table ();
-
   $res = &xst_replace_from_table ($dist_attrib{"fn"},
 						    $dist_attrib{"table"}, $values_hash);
   return $res;
@@ -329,62 +337,31 @@ sub xst_network_rh62_replace_bootproto
   return &xst_parse_sh ($file, $key, $proto_name_to_rh62{$value});
 }  
 
-# xst_ensure_local_host_entry (<hostname>)
-#
-# Given a hostname, add the hostname as an alias for the loopback IP, in the
-# /etc/hosts database. This is required for tools like nmblookup to work on
-# a computer with no reverse name or DNS. The name is added as the first alias,
-# which usually means it'll be returned by a lookup on the loopback IP.
-
+# lo_ip is the ip for localhost (commonly 127.0.0.1).
 sub xst_network_ensure_local_host_entry
 {
-  my $local_ip = "127.0.0.1";
-  my $local_hostname = @_[0];
-  my ($ifh, $ofh);
-  local (*INFILE, *OUTFILE);
-  my $written = 0;
+  my $values_hash = $_[0];
+  my $lo_ip = $_[1];
+  my $hostname = $$values_hash{"hostname"};
+  my $statichost = $$values_hash{"statichost"};
 
-  if ($local_hostname eq "") { return; }
+  my $i;
 
-  # Find the file.
-
-  ($ifh, $ofh) = &xst_open_filter_write_from_names (@hosts_names);
-  if (!$ofh) { return; }  # We didn't find it.
-  *INFILE = $ifh; *OUTFILE = $ofh;
-
-  # Write the file, preserving as much as possible from INFILE.
-
-  while (<INFILE>)
+  if (exists $$statichost{$lo_ip})
   {
-    @line = split(/[ \n\r\t]+/, $_);
-    if ($line[0] eq "") { shift @line; }  # Leading whitespace. He.
-
-    if ($line[0] ne "" && (not &xst_ignore_line ($line[0])) &&
-#       ($line[0] =~ /[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+/) &&
-        $line[0] eq $local_ip)
+    my $localhost = $$statichost{$lo_ip};
+    foreach $i (@$localhost)
     {
-      # Found $local_ip. Add $local_hostname to beginning of list,
-      # and remove any other occurrences.
-
-      shift @line;
-
-      printf OUTFILE ("%-16s %s", $local_ip, $local_hostname);
-      for $alias (@line)
-      {
-        if ($alias ne $local_hostname) { print OUTFILE " $alias"; }
-      }
-      print OUTFILE "\n";
-
-      $written = 1;
+      if ($i eq $hostname)
+          return;
     }
-    else { print OUTFILE; }
+
+    push @$localhost, $hostname;
   }
-
-  # If the IP wasn't present, add the entry at the end.
-
-  if (!$written) { printf OUTFILE ("%-16s %s\n", $local_ip, $local_hostname); }
-  close INFILE;
-  close OUTFILE;
+  else
+  {
+    $$statichost{$lo_ip} = [ ($hostname) ];
+  }  
 }
 
 sub xst_network_get_parse_table
@@ -527,6 +504,7 @@ sub xst_network_get_replace_table
 		    [ auto,          \&xst_replace_sh_bool,          SYSCONFIG_NW, NETWORKING ],
 		    [ forward,       \&xst_replace_sh_bool,          SYSCONFIG_NW, FORWARD_IPV4 ],
 		    [ hostname,      \&xst_replace_sh,               SYSCONFIG_NW, HOSTNAME ],
+        [ hostname,      \&xst_network_run_hostname ],
 		    [ gateway,       \&xst_replace_sh,               SYSCONFIG_NW, GATEWAY],
 		    [ gateway_dev,   \&xst_replace_sh,               SYSCONFIG_NW, GATEWAYDEV],
 		    [ domain,        \&xst_replace_sh,               SYSCONFIG_NW, DOMAIN],
@@ -593,7 +571,7 @@ sub xst_network_get_interface_replace_table
         [ serial_speed,       \&xst_replace_sh,      IFCFG, LINESPEED ],
         [ serial_init,        \&xst_replace_sh,      IFCFG, INITSTRING ],
         [ ppp_options,        \&xst_replace_sh,      IFCFG, PPPOPTIONS ],
-	   [ wvsection,          \&xst_replace_sh,      IFCFG, WVDIALSECT ],
+        [ wvsection,          \&xst_replace_sh,      IFCFG, WVDIALSECT ],
         [ auto,               \&xst_replace_sh_bool, IFCFG, ONBOOT ],
         [ user,               \&xst_replace_sh_bool, IFCFG, USERCTL ],
         [ set_default_gw,     \&xst_replace_sh_bool, IFCFG, DEFROUTE ],
