@@ -1,3 +1,7 @@
+2001-03-15  Hans Petter Jansson  <hpj@ximian.com>
+
+	* test.pl: Added test skeleton.
+
 2001-03-13  Hans Petter Jansson  <hpj@ximian.com>
 
 	* boot-conf.in: Modernize XML printing - do all output through
