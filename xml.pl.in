@@ -555,7 +555,7 @@ sub xst_xml_model_scan  # (file) If no file specified, reads stdin.
   @xst_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)/mg); # pcdata, tag, pcdata, tag, ...
   $tree = &xst_xml_model_scan_recurse;
 
-  return ($tree, $compressed);
+  return $tree, $compressed;
 }
 
 # Quote/unquote.

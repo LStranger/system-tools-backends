@@ -1332,3 +1332,10 @@ sub xst_replace_xml_attribute_with_type
 
   return 0;
 }
+
+sub xst_replace_alchemist
+{
+  my ($file, $varpath, $type, $value) = @_;
+
+  return &xst_replace_xml_attribute_with_type ($file, $varpath, "VALUE", $type, $value);
+}

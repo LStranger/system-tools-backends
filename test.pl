@@ -11,99 +11,45 @@ require "print.pl";
 
 @platforms = ( "redhat-6.2", "redhat-7.0", "redhat-7.1", "debian-2.2" );
 
-
-&xst_init ("test", "0.0.0", "Test script.", @ARGV);
-&xst_platform_ensure_supported (@platforms);
-
-
-sub test_open
+sub set
 {
-  $fh = be_open_read_from_names ("/tmp/pekk");
-  if (not $fh) { return; }
-
-  while (<$fh>)
-  {
-    print $_;
-  }
-
-  print "I think I found it.\n";
 }
 
-
-sub test_media
+sub get
 {
-  @devices = &xst_media_get_list();
-  print "\n";
-
-  for $dev (@devices)
-  {
-    print "/dev/" , $dev->{"device"} . "\n" .
-          "  Type:         " . $dev->{"type"} . "\n" .
-          "  Media:        " . $dev->{"media"} . "\n" .
-          "  Model:        " . $dev->{"model"} . "\n" .
-          "  Driver:       " . $dev->{"driver"} . "\n" .
-          "  Removable:    " . &be_print_boolean_yesno ($dev->{"is_removable"}) . "\n" .
-          "  Mounted:      " . &be_print_boolean_yesno ($dev->{"is_mounted"}) . "\n";
-
-    if ($dev->{"point_listed"} || $dev->{"point_actual"})
-    {
-      print "  Mount point:  ";
-
-      if ($dev->{"point_listed"})
-      {
-        print $dev->{"point_listed"} . " (listed) ";
-      }
-
-      if ($dev->{"point_actual"})
-      {
-        print $dev->{"point_actual"} . " (actual)";
-      }
-
-      print "\n";
-    }
-
-    if ($dev->{"fs_listed"} || $dev->{"fs_actual"})
-    {
-      print "  File system:  ";
-
-      if ($dev->{"fs_listed"})
-      {
-        print $dev->{"fs_listed"} . " (listed) ";
-      }
-
-      if ($dev->{"fs_actual"})
-      {
-        print $dev->{"fs_actual"} . " (actual)";
-      }
-
-      print "\n";
-    }
-
-    print "\n";
-  }
 }
 
-
-sub test_interfaces
+sub filter
 {
-  my $ifaces;
-  
-  $ifaces = &xst_network_conf_get();
-  &xst_debug_print_struct ($ifaces);
 }
 
+$directives =
+{
+  "get"    => [ \&get,    [], "" ],
+	"set"    => [ \&set,    [], "" ],
+	"filter" => [ \&filter, [], "" ]
+};
 
-# ---
+
+$tool = &xst_init ("test", "0.0.0", "Test script.", $directives, @ARGV);
+&xst_platform_ensure_supported ($tool, @platforms);
 
 
 # $tree = &xst_xml_scan ("/etc/alchemist/namespace/printconf/local.adl");
 # &xst_debug_print_struct ($tree);
 
-$model = &xst_xml_model_scan ("/etc/alchemist/namespace/printconf/local.adl");
-$branch = &xst_xml_model_find ($model, "/adm_context/datatree/");
-&xst_xml_model_set_pcdata ($branch, "FAAN");
-&xst_xml_model_set_attribute ($branch, "Jern", "Jepp");
-print &xst_xml_model_print ($model);
+print "He.\n";
+
+#($model, $compressed) = &xst_xml_model_scan ("/etc/alchemist/namespace/printconf/local.adl");
+#print &xst_xml_model_print ($model);
+
+&xst_replace_xml_attribute_with_type ("/etc/alchemist/namespace/printconf/local.adl",
+                                      "/adm_context/datatree/printconf/print_queues/new/fitte/",
+																			"VALUE", "STRING", "p0ke");
+
+# $branch = &xst_xml_model_find ($model, "/adm_context/datatree/");
+# &xst_xml_model_set_pcdata ($branch, "FAAN");
+# &xst_xml_model_set_attribute ($branch, "Jern", "Jepp");
 
 # print &xst_parse_xml ("/etc/alchemist/namespace/printconf/local.adl",
 #                       "/adm_context/datatree/printconf/print_queues/lpekk/filter_type", "VALUE") . "\n";

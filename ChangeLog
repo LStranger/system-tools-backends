@@ -1,5 +1,10 @@
 2001-07-18  Hans Petter Jansson  <hpj@ximian.com>
 
+	* replace.pl.in (xst_replace_alchemist): Implement. Top-level function
+	  for replacing alchemist data.
+
+2001-07-18  Hans Petter Jansson  <hpj@ximian.com>
+
 	* replace.pl.in (xst_replace_xml_pcdata_with_type): Implement.
 	  (xst_replace_xml_attribute_with_type): Implement. These are helper
 	  functions for alchemist-like XML files.
