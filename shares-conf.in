@@ -1535,7 +1535,7 @@ sub get_host_mounts
         else { print STDERR "No hosts reported by master - asking others.\n"; }
       }
     }
-    else { print STDERR "No workgroup master found.\n"; }
+    elsif ($be_verbose) { print STDERR "No workgroup master found.\n"; }
 
     if (!@smb_hosts)
     {
