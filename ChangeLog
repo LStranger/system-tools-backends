@@ -1,3 +1,10 @@
+2001-01-16  Tambet Ingo  <tambet@ximian.com>
+
+	* Added debugging support.
+	* Got rid of hardcoded tool locations, made it using be_locate_tool.
+	* Switched hardcoded /proc/meminfo to variable.
+	* Get all sizes in format %.1f to unify with frontend.
+
 2001-01-16  Chema Celorio  <chema@celorio.com>
 
 	* time-conf.in (get_zone): when scanning for timezones
