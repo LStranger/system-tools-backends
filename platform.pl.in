@@ -126,7 +126,7 @@ sub check_turbolinux
   while (<RELEASE>)
   {
     chomp;
-    if (/release\s([0-9.]+)\s.*/)
+    if (/^Turbolinux\s.*\s([0-9.]+)\s.*/)
     {
       close RELEASE;
       return "turbolinux-$1";

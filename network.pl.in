@@ -623,7 +623,8 @@ sub xst_network_get_file
 	  "mandrake-7.2" => \&xst_network_rh62_get_file,
     "debian-2.2"   => \&xst_network_deb22_get_file,
     "debian-woody" => \&xst_network_deb22_get_file,
-    "suse-7.0"     => \&xst_network_suse70_get_file
+    "suse-7.0"     => \&xst_network_suse70_get_file,
+	  "turbolinux-7.0"   => \&xst_network_rh62_get_file
 	  );
 
   $proc = $dist_map{$xst_dist};
@@ -1425,7 +1426,8 @@ sub xst_network_ensure_loopback_interface
 	  "mandrake-7.2" => "lo",
 	  "debian-2.2"   => "lo",
     "debian-woody" => "lo",
-    "suse-7.0"     => ""
+    "suse-7.0"     => "",
+	  "turbolinux-7.0"   => "lo"
 	  );
 
   $dev = $dist_map {$xst_dist};
@@ -1518,7 +1520,8 @@ sub xst_network_get_parse_table
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-2.2",
-    "suse-7.0"     => "suse-7.0"
+    "suse-7.0"     => "suse-7.0",
+	  "turbolinux-7.0"   => "redhat-7.0"
 	  );
 
   my %dist_tables =
@@ -1692,7 +1695,8 @@ sub xst_network_get_interfaces_parse_table
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-woody",
-    "suse-7.0"     => "suse-7.0"
+    "suse-7.0"     => "suse-7.0",
+	  "turbolinux-7.0"   => "redhat-6.2"
 	  );
   
   my %dist_tables =
@@ -1895,7 +1899,8 @@ sub xst_network_get_replace_table
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-2.2",
-    "suse-7.0"     => "suse-7.0"
+    "suse-7.0"     => "suse-7.0",
+	  "turbolinux-7.0"   => "redhat-7.0"
 	  );
 
   my %dist_tables =
@@ -2065,7 +2070,8 @@ sub xst_network_get_interface_replace_table
 	  "mandrake-7.2" => "redhat-6.2",
     "debian-2.2"   => "debian-2.2",
     "debian-woody" => "debian-woody",
-    "suse-7.0"     => "suse-7.0"
+    "suse-7.0"     => "suse-7.0",
+	  "turbolinux-7.0"   => "redhat-6.2"
 	  );
 
   my %dist_tables =

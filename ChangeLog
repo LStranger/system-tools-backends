@@ -1,3 +1,7 @@
+2001-06-29  Chema Celorio  <chema@celorio.com>
+
+	* network-conf.in: add suport for turbolinux 7.0
+
 2001-06-28  Hans Petter Jansson  <hpj@ximian.com>
 
 	* replace.pl.in (xst_replace_printcap_print_stanza): Implement.

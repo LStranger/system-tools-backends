@@ -54,7 +54,9 @@ sub xst_service_sysv_get_paths
        "debian-2.2"   => ["/etc", "/etc/init.d"],
        "debian-woody" => ["/etc", "/etc/init.d"],
 
-       "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d"]
+       "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d"],
+
+       "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"]
        );
 
   return @{$dist_map{$xst_dist}};
@@ -69,7 +71,8 @@ sub xst_service_sysv_get_runlevels
        "redhat-6.0" => [3, 5],
        "redhat-6.1" => [3, 5],
        "redhat-6.2" => [3, 5],
-       "redhat-7.0" => [3, 5]
+       "redhat-7.0" => [3, 5],
+       "turbolinux-7.0" => [3, 5]
        );
 
   return @{$dist_map{$xst_dist}};

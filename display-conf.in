@@ -37,7 +37,7 @@ require "___scriptsdir___/x.pl";
 
 $name = "Display";
 $version = "0.1.0";
-@platforms = qw(redhat-7.0 redhat-7.1);
+@platforms = qw(redhat-7.0 redhat-7.1 turbolinux-7.0);
 
 $description =<<"end_of_description;";
        Configures XFree86 verion 4.
@@ -49,6 +49,7 @@ $platmap =
 {
   "redhat-7.0"   => XFree4,
   "redhat-7.1"   => XFree4,
+  "turbolinux-7.0" => XFree4,
 };
 
 $filemap = {

@@ -53,7 +53,7 @@ require "___scriptsdir___/print.pl";
 
 $name = "print";
 $version = "0.1.0";
-@platforms = ("redhat-7.0", "redhat-7.1", "debian-2.2");
+@platforms = ("redhat-7.0", "redhat-7.1", "debian-2.2", "turbolinux-7.0");
 
 $description =<<"end_of_description;";
        Configures the lpr subsystem.
