@@ -1,5 +1,10 @@
 2001-12-17  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network-conf.in: Added rh72 back to supported list.
+
+	* replace.pl.in (xst_replace_join_hash): Delete entries missing
+	in the hash found in the old file. Fixes #16329
+
 	* network.pl.in (xst_network_debian_woody_get_auto): Hmm... this
 	should return 1/0. Fixes #12983
 

@@ -418,13 +418,28 @@ sub xst_replace_join_hash
 {
   my ($file, $re1, $re2, $value) = @_;
   my ($i, $res, $tmp, $val);
+  my ($oldhash, %merge);
+
+  $oldhash = &xst_parse_split_hash ($file, $re1, $re2);
+  foreach $i (keys (%$value), keys (%$oldhash))
+  {
+    $merge{$i} = 1;
+  }
 
   $res = 0;
   
-  foreach $i (keys (%$value))
+  foreach $i (keys (%merge))
   {
-    $val = join (&xst_replace_regexp_to_separator ($re2), @{$$value{$i}});
-    $tmp = &xst_replace_split ($file, $i, $re1, $val);
+    if (exists $$value{$i})
+    {
+      $val = join (&xst_replace_regexp_to_separator ($re2), @{$$value{$i}});
+      $tmp = &xst_replace_split ($file, $i, $re1, $val);
+    }
+    else
+    {
+      # This deletes the entry.
+      $tmp = &xst_replace_split ($file, $i, $re1);
+    }
     $res = $tmp if !$res;
   }
 
