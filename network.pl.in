@@ -752,6 +752,7 @@ sub xst_network_suse70_ppp_iface_activate
   if ($enabled)
   {
     &xst_debug_print_string ("\n\nifup ppp iface $name\n\n");
+    print STDERR ("\n\nifup ppp iface $name\n\n");
     return -1 if &xst_file_run ("$wvdial_dod start \"$name\" &");
   }
   else
@@ -759,7 +760,8 @@ sub xst_network_suse70_ppp_iface_activate
     # Hmm... you'd  better not have more than one ppp connection active:
     # this is the only SuSE way of doing it.
     &xst_debug_print_string ("\n\nifdown ppp iface $name\n\n");
-    return -1 if &xst_file_run ("$wvdial_dod stop &");
+    print STDERR ("\n\nifdown ppp iface $name\n\n");
+    return -1 if &xst_file_run ("$wvdial_dod stop");
   }
 
   return 0;
@@ -1030,11 +1032,13 @@ sub xst_network_rh62_interface_activate_by_dev
   if ($enabled)
   {
     &xst_debug_print_string ("\n\nifup $dev\n\n");
+    print STDERR ("\n\nifup $dev\n\n");
     return -1 if &xst_file_run ("ifup $dev &");
   }
   else
   {
     &xst_debug_print_string ("\n\nifdown $dev\n\n");
+    print STDERR ("\n\nifdown $dev\n\n");
     return -1 if &xst_file_run ("ifdown $dev");
   }
 
@@ -1084,11 +1088,13 @@ sub xst_network_suse70_interface_activate_by_dev
   if ($enabled)
   {
     &xst_debug_print_string ("\n\nifup $dev\n\n");
+    print STDERR ("\n\nifup $dev\n\n");
     return -1 if &xst_file_run ("$network start $dev &");
   }
   else
   {
     &xst_debug_print_string ("\n\nifdown $dev\n\n");
+    print STDERR ("\n\nifup $dev\n\n");
     return -1 if &xst_file_run ("$network stop $dev");
   }
 
