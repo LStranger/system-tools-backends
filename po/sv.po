@@ -2,19 +2,22 @@
 # Copyright (C) 2004 Free Software Foundation, Inc.
 # Christian Rose <menthos@menthos.com>, 2004.
 #
-# $Id: sv.po,v 1.2 2004/04/13 10:56:49 menthos Exp $
+# $Id: sv.po,v 1.3 2004/10/14 15:29:51 menthos Exp $
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
-"POT-Creation-Date: 2004-04-13 12:55+0200\n"
-"PO-Revision-Date: 2004-04-13 12:56+0200\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2004-10-14 17:29+0200\n"
+"PO-Revision-Date: 2004-10-14 17:29+0200\n"
 "Last-Translator: Christian Rose <menthos@menthos.com>\n"
 "Language-Team: Swedish <sv@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#. please, keep this list sorted
+#. service => [long_name, description]
 #: service-list.pl.in:36
 msgid "ACPI event handler"
 msgstr "ACPI-händelsehanterare"
@@ -31,11 +34,11 @@ msgstr ""
 msgid "Advanced Linux Sound Architecture"
 msgstr "Avancerad ljudarkitektur för Linux (ALSA)"
 
-#: service-list.pl.in:38 service-list.pl.in:66
+#: service-list.pl.in:38 service-list.pl.in:70
 msgid "web server"
 msgstr "webbserver"
 
-#: service-list.pl.in:38 service-list.pl.in:66
+#: service-list.pl.in:38 service-list.pl.in:70
 msgid ""
 "Apache is a World Wide Web server.  It is used to serve HTML files and CGI."
 msgstr ""
@@ -58,6 +61,9 @@ msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
 msgstr ""
+"apmd används för övervakning av batteristatusen och loggning av den via "
+"syslog(8). Den kan också användas för att stänga av maskinen när "
+"batteriladdningen är låg."
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
@@ -68,620 +74,861 @@ msgid ""
 "Runs commands scheduled by the at command at the time specified when at was "
 "run, and runs batch commands when the load average is low enough."
 msgstr ""
+"Kör kommandon som är schemalagda av at-kommandot den tid då at kördes, och "
+"kör batchkommandon när medelbelastningen är tillräckligt låg."
 
 #: service-list.pl.in:42
+msgid "Audio mixer"
+msgstr "Ljudmixer"
+
+#: service-list.pl.in:42
+msgid "This program adjusts the settings of an audio mixing device"
+msgstr "Detta program justerar inställningarna för en ljudmixerenhet"
+
+#: service-list.pl.in:43
 msgid "BinFormat Support"
 msgstr "BinFormat-stöd"
 
-#: service-list.pl.in:42
+#: service-list.pl.in:43
 msgid "Support for running non ELF binaries on Linux"
 msgstr "Stöd för körning av icke-ELF-binärer på Linux"
 
-#: service-list.pl.in:43
+#: service-list.pl.in:44
+msgid "Boot messages recorder"
+msgstr "Inspelare för startmeddelanden"
+
+#: service-list.pl.in:44
+msgid ""
+"Runs in the background and copies all strings sent to the /dev/console "
+"device to a logfile"
+msgstr ""
+"Kör i bakgrunden och kopierar alla strängar som skickats till enheten /dev/"
+"console till en loggfil"
+
+#: service-list.pl.in:45
 msgid ""
 "An xinetd internal service which generate characters. The xinetd internal "
 "service which continuously generates characters until the connection is "
 "dropped.  This is the tcp version. You must enable xinetd to use this "
 "service."
 msgstr ""
+"En intern xinetd-tjänst som genererar tecken. Den interna xinetd-tjänst som "
+"oavbrutet genererar tecken till dess att anslutningen tas bort. Detta är tcp-"
+"versionen. Du måste aktivera xinetd för att använda denna tjänst."
 
-#: service-list.pl.in:44
+#: service-list.pl.in:46
 msgid ""
 "An xinetd internal service which generate characters. The xinetd internal "
 "service which continuously generates characters until the connection is "
 "dropped.  This is the udp version. You must enable xinetd to use this "
 "service."
 msgstr ""
+"En intern xinetd-tjänst som genererar tecken. Den interna xinetd-tjänst som "
+"oavbrutet genererar tecken till dess att anslutningen tas bort. Detta är udp-"
+"versionen. Du måste aktivera xinetd för att använda denna tjänst."
 
-#: service-list.pl.in:45 service-list.pl.in:124
+#: service-list.pl.in:47
+msgid "CPU frequency monitor"
+msgstr "CPU-frekvensövervakare"
+
+#: service-list.pl.in:47
+msgid ""
+"cpufreqd is used to monitor the status of the battery and adjust the "
+"frequency of the CPU accordingly in order to preserve battery power while "
+"providing optimal performance"
+msgstr ""
+"cpufreqd används för att övervaka statusen på batteriet och justera "
+"frekvensen på processorn i överensstämmelse med detta för att spara på "
+"batterierna samtidigt som optimala prestanda tillhandahålls"
+
+#: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
 msgstr "demon för körning av schemalagda kommandon"
 
-#: service-list.pl.in:46
+#: service-list.pl.in:49
 msgid "Run scheduled jobs"
 msgstr "Kör schemalagda jobb"
 
-#: service-list.pl.in:46
+#: service-list.pl.in:49
 msgid ""
 "cron is a standard UNIX program that runs user-specified programs at "
 "periodic scheduled times. vixie cron adds a number of features to the basic "
 "UNIX cron, including better security and more powerful configuration options."
 msgstr ""
+"cron är ett UNIX-standardprogram som kör användarspecifierade program vid "
+"periodiska, schemalagda tider. vixie cron lägger till ett antal funktioner "
+"utöver de som finns med den grunsläggande UNIX cron, inklusive bättre "
+"säkerhet och mer kraftfulla konfigurationsalternativ."
 
-#: service-list.pl.in:47 service-list.pl.in:48
+#: service-list.pl.in:50 service-list.pl.in:51
 msgid "Common Unix Printing System"
 msgstr "Gemensamt Unix-utskriftssystem (CUPS)"
 
-#: service-list.pl.in:47 service-list.pl.in:48
+#: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
 msgstr ""
+"Utskriftssystem som är baserat på IPP-protokollet (Internet Printing "
+"Protocol), version  1.1"
 
-#: service-list.pl.in:49
+#: service-list.pl.in:52
 msgid ""
 "An internal xinetd service which gets the current system time then prints it "
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the tcp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"En intern xinetd-tjänst som hämtar den aktuella systemtiden och sedan "
+"skriver ut den i ett format liknande: \"Wed Nov 13 22:30:27 EST 2002\". "
+"Detta är tcp-versionen. Du måste aktivera xinetd för att använda denna "
+"tjänst."
 
-#: service-list.pl.in:50
+#: service-list.pl.in:53
 msgid ""
 "An internal xinetd service which gets the current system time then prints it "
 "out in a format like this: 'Wed Nov 13 22:30:27 EST 2002'.  This is the udp "
 "version. You must enable xinetd to use this service."
 msgstr ""
+"En intern xinetd-tjänst som hämtar den aktuella systemtiden och sedan "
+"skriver ut den i ett format liknande: \"Wed Nov 13 22:30:27 EST 2002\". "
+"Detta är udp-versionen. Du måste aktivera xinetd för att använda denna "
+"tjänst."
 
-#: service-list.pl.in:51 service-list.pl.in:52
+#: service-list.pl.in:54 service-list.pl.in:55
 msgid "Dynamic DNS Client"
 msgstr "Klient för dynamisk DNS"
 
-#: service-list.pl.in:51
+#: service-list.pl.in:54
 msgid "A Dynamic DNS Name service from www.dyndns.org"
-msgstr ""
+msgstr "En dynamisk DNS-namntjänst från www.dyndns.org"
 
-#: service-list.pl.in:52
+#: service-list.pl.in:55
 msgid "A Dynamic DNS Name service from www.dhis.org"
-msgstr ""
+msgstr "En dynamisk DNS-namntjänst från www.dhis.org"
 
-#: service-list.pl.in:53
+#: service-list.pl.in:56
 msgid "Dict Dictionary Server"
 msgstr "Dict-ordboksserver"
 
-#: service-list.pl.in:54
+#: service-list.pl.in:57
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"En intern xinetd-tjänst som ekar tecken tillbaka till klienter. Detta är tcp-"
+"versionen. Du måste aktivera xinetd för att använda denna tjänst."
 
-#: service-list.pl.in:55
+#: service-list.pl.in:58
 msgid ""
 "An xinetd internal service which echo's characters back to clients.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"En intern xinetd-tjänst som ekar tecken tillbaka till klienter. Detta är udp-"
+"versionen. Du måste aktivera xinetd för att använda denna tjänst."
 
-#: service-list.pl.in:56
+#: service-list.pl.in:59
 msgid "Sound mixing server"
 msgstr "Ljudmixningsserver"
 
-#: service-list.pl.in:56
+#: service-list.pl.in:59
 msgid "The Enlightened Sound Daemon"
-msgstr ""
+msgstr "Ljuddemonen ESD"
 
-#: service-list.pl.in:57
+#: service-list.pl.in:60
 msgid "Exim SMTP Server"
 msgstr "SMTP-servern Exim"
 
-#: service-list.pl.in:58
+#: service-list.pl.in:61
 msgid "file alteration monitor"
 msgstr "filändringsövervakare"
 
-#: service-list.pl.in:59
+#: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
-msgstr ""
+msgstr "Firstboot är ett program i guidestil som kör den första gången"
 
-#: service-list.pl.in:60
+#: service-list.pl.in:63
+msgid "Text-to-speech system"
+msgstr "System för text-till-tal"
+
+#: service-list.pl.in:63
+msgid "Festival is a general purpose text-to-speech system"
+msgstr "Festival är ett allmänt system för text-till-tal"
+
+#: service-list.pl.in:64
 msgid "Mail Fetcher"
 msgstr "E-posthämtare"
 
-#: service-list.pl.in:60
+#: service-list.pl.in:64
 msgid "A Mail Fetcher from external Servers"
-msgstr ""
+msgstr "En e-posthämtare från externa servrar"
 
-#: service-list.pl.in:61
+#: service-list.pl.in:65
 msgid "IPv6 Tunnel Broker"
-msgstr ""
+msgstr "IPv6-tunnelagent"
 
-#: service-list.pl.in:61
+#: service-list.pl.in:65
 msgid "A IPv6 Dynamic Tunnel Broker"
-msgstr ""
+msgstr "En agent för dynamiska IPv6-tunnlar"
 
-#: service-list.pl.in:62
+#: service-list.pl.in:66
 msgid "GNOME Display Manager"
 msgstr "GNOME-displayhanteraren (GDM)"
 
-#: service-list.pl.in:62
+#: service-list.pl.in:66
 msgid "gdm provides the GNOME equivalent of a \"login:\" prompt."
-msgstr ""
+msgstr "gdm tillhandahåller GNOME-ekvivalenten av en inloggningsprompt."
 
-#: service-list.pl.in:63
+#: service-list.pl.in:67
 msgid "console mouse support"
 msgstr "stöd för konsollmus"
 
-#: service-list.pl.in:63
+#: service-list.pl.in:67
 msgid ""
 "GPM adds mouse support to text-based Linux applications such the Midnight "
 "Commander. It also allows mouse-based console cut-and-paste operations, and "
 "includes support for pop-up menus on the console."
 msgstr ""
+"GPM lägger till musstöd för textbaserade Linuxprogram som till exempel "
+"Midnight Commander. Den tillåter dessutom musbaserade klipp- och "
+"klistraåtgärder i konsollen, och inkluderar stöd för popupmenyer på "
+"konsollen."
 
-#: service-list.pl.in:64
+#: service-list.pl.in:68
 msgid "Set hard disk parameters"
 msgstr "Ställ in hårddiskparametrar"
 
-#: service-list.pl.in:64
+#: service-list.pl.in:68
 msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
 msgstr ""
+"Tillhandahåller ett gränssnitt för diverse hårddisk-ioctls som stöds av "
+"Linux-drivrutinssystemet för ATA/IDE-standardenheter."
 
-#: service-list.pl.in:65
+#: service-list.pl.in:69
 msgid "Linux hotplugging support"
-msgstr ""
+msgstr "Stöd för hotplug i Linux"
 
-#: service-list.pl.in:65
+#: service-list.pl.in:69
 msgid ""
 "hotplug is a program which is used by the kernel to notify user mode "
 "software when some significant (usually hardware-related) events take place. "
 "An example is when a USB or Cardbus device has just been plugged in."
 msgstr ""
+"Hotplug är ett program som används av kärnan för att meddela program i "
+"användarläget när några signifikanta (vanligtvis hårdvarurelaterade) "
+"händelser sker. Ett exempel är när en USB- eller en Cardbus-enhet precis har "
+"anslutits."
 
-#: service-list.pl.in:67
+#: service-list.pl.in:71
 msgid "internet superserver"
-msgstr ""
+msgstr "internet-superserver"
 
-#: service-list.pl.in:67
+#: service-list.pl.in:71
 msgid ""
 "inetd allows running one daemon to invoke several others, reducing load on "
 "the system."
 msgstr ""
+"inetd tillåter att en demon körs för att starta åtskilliga andra, och därmed "
+"att systemet belastas mindre."
 
-#: service-list.pl.in:68
+#: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
-msgstr ""
+msgstr "administrationsverktyg för IPv4-paketfiltrering och NAT"
 
-#: service-list.pl.in:68
+#: service-list.pl.in:72
 msgid ""
 "Iptables is used to set up, maintain, and inspect the tables of IP packet "
 "filter rules in the Linux kernel."
 msgstr ""
+"Iptables används för att konfigurera, underhålla och inspektera tabellerna "
+"med IP-paketfiltreringsregler i Linux-kärnan."
 
-#: service-list.pl.in:69
+#: service-list.pl.in:73
 msgid "IrDA stack for Linux"
 msgstr "IrDA-stack för Linux"
 
-#: service-list.pl.in:70
+#: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol"
-msgstr ""
+msgstr "Internet-nyckelutväxlingsprotokollet"
 
-#: service-list.pl.in:70
+#: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol openbsd implementation"
-msgstr ""
+msgstr "Openbsd-implementationen av Internet-nyckelutväxlingsprotokollet"
 
-#: service-list.pl.in:71
+#: service-list.pl.in:75
 msgid "start and stop ISDN services"
 msgstr "starta och stoppa ISDN-tjänster"
 
-#: service-list.pl.in:72
+#: service-list.pl.in:76
 msgid "Check and fix joystick device nodes"
-msgstr ""
+msgstr "Kontrollera och lås styrspaksenhetsnoder"
 
-#: service-list.pl.in:72
+#: service-list.pl.in:76
 msgid ""
 "Runs joystick-device-check.  joystick-device-check is a program which "
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
 msgstr ""
+"Kör joystick-device-check. joystick-device-check är ett program som "
+"garanterar att /dev/js*-enhetsnoderna är de rätta för den version av kärnan "
+"som används."
 
-#: service-list.pl.in:73
+#: service-list.pl.in:77
 msgid ""
 "This package loads the selected keyboard map as set in /etc/sysconfig/"
 "keyboard.  This can be selected using the kbdconfig utility.  You should "
 "leave this enabled for most machines."
 msgstr ""
+"Detta paket läser in den tangentbordstabell som angivits i /etc/sysconfig/"
+"keyboard. Detta kan väljas med hjälp av verktyget kbdconfig. Du bör lämna "
+"detta aktiverat på de flesta maskiner."
 
-#: service-list.pl.in:74
+#: service-list.pl.in:78
 msgid "Kernel Log Daemon"
 msgstr "Kärnloggningsdemon"
 
-#: service-list.pl.in:74
+#: service-list.pl.in:78
 msgid ""
 "klogd is a system daemon which intercepts and logs Linux kernel messages."
 msgstr ""
+"klogd är en systemdemon som snappar upp och loggar meddelanden från Linux-"
+"kärnan."
 
-#: service-list.pl.in:75
+#: service-list.pl.in:79
 msgid ""
 "This runs the hardware probe, and optionally configures changed hardware."
 msgstr ""
+"Detta kör hårdvaruundersökningen, och konfigurerar (valfritt) ändrad "
+"hårdvara."
 
-#: service-list.pl.in:76 service-list.pl.in:77
+#: service-list.pl.in:80 service-list.pl.in:81
 msgid ""
 "LIRC is a package that allows you to decode and send infra-red signals of "
 "many commonly used remote controls"
 msgstr ""
+"LIRC är ett paket som tillåter dig att avkoda och skicka infraröda signaler "
+"som används av många vanligt förekommande fjärrkontroller"
 
-#: service-list.pl.in:78
+#: service-list.pl.in:82
 msgid "Starts misc programs that should be started"
-msgstr ""
+msgstr "Startar diverse program som ska startas"
 
-#: service-list.pl.in:79
+#: service-list.pl.in:83
 msgid ""
 "lpd is the print daemon required for lpr to work properly. It is basically a "
 "server that arbitrates print jobs to printer(s)."
 msgstr ""
+"lpd är den utskriftsdemon som krävs för att lpr ska fungera korrekt. Det är "
+"i princip en server som medlar utskriftsjobb till skrivare."
 
-#: service-list.pl.in:80
+#: service-list.pl.in:84
+msgid "Create devices"
+msgstr "Skapa enheter"
+
+#: service-list.pl.in:84
+msgid ""
+"Script that will create the devices in /dev used to interface with drivers "
+"in the kernel"
+msgstr ""
+"Skript som kommer att skapa enheterna i /dev som används som gränssnitt till "
+"enheterna i kärnan"
+
+#: service-list.pl.in:85
 msgid "Syslog Replacement"
 msgstr "Syslog-ersättning"
 
-#: service-list.pl.in:80
+#: service-list.pl.in:85
 msgid "Modern logging daemon"
 msgstr "Modern loggningsdemon"
 
-#: service-list.pl.in:81
+#: service-list.pl.in:86
 msgid "Load kernel modules"
-msgstr ""
+msgstr "Läs in kärnmoduler"
 
-#: service-list.pl.in:82
+#: service-list.pl.in:87
 msgid "tools for managing Linux kernel modules"
-msgstr ""
+msgstr "verktyg för hantering av Linux-kärnmoduler"
 
-#: service-list.pl.in:83 service-list.pl.in:99
+#: service-list.pl.in:88 service-list.pl.in:105
 msgid "database server"
 msgstr "databasserver"
 
-#: service-list.pl.in:83
+#: service-list.pl.in:88
 msgid "MySQL, a SQL-based relational database daemon"
-msgstr ""
+msgstr "MySQL, en SQL-baserad demon för relationsdatabaser"
 
-#: service-list.pl.in:84
+#: service-list.pl.in:89
 msgid "dns server"
 msgstr "dns-server"
 
-#: service-list.pl.in:84
+#: service-list.pl.in:89
 msgid ""
 "named (BIND) is a Domain Name Server (DNS) that is used to resolve host "
 "names to IP addresses."
 msgstr ""
+"named (BIND) är en domännamnsserver (DNS) som används för att slå upp "
+"värdnamn till IP-adresser."
 
-#: service-list.pl.in:85
+#: service-list.pl.in:90
 msgid ""
 "Mounts and unmounts all Network File System (NFS), SMB (Lan Manager/"
 "Windows), and NCP (NetWare) mount points."
 msgstr ""
+"Monterar och avmonterar alla monteringspunkter för nätverksfilsystem (NFS), "
+"SMB (Lan Manager/Windows) och NCP (NetWare)."
 
-#: service-list.pl.in:86
+#: service-list.pl.in:91
 msgid ""
 "Activates/Deactivates all network interfaces configured to start at boot "
 "time."
 msgstr ""
+"Aktiverar/Inaktiverar alla nätverksgränssnitt som är konfigurerade att "
+"starta vid uppstart."
 
-#: service-list.pl.in:87
+#: service-list.pl.in:92
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS server functionality, which is configured via the /etc/"
 "exports file."
 msgstr ""
+"NFS är ett populärt protokoll för fildelning på TCP/IP-nätverk. Denna tjänst "
+"tillhandahåller NFS-serverfunktionalitet som konfigureras via filen /etc/"
+"exports."
 
-#: service-list.pl.in:88
+#: service-list.pl.in:93
 msgid ""
 "NFS is a popular protocol for file sharing across TCP/IP networks. This "
 "service provides NFS file locking functionality."
 msgstr ""
+"NFS är ett populärt protokoll för fildelning på TCP/IP-nätverk. Denna tjänst "
+"tillhandahåller NFS-funktionalitet för fillåsning."
 
-#: service-list.pl.in:89
+#: service-list.pl.in:94
 msgid "Name service cache daemon"
 msgstr "Demon för namntjänstcache"
 
-#: service-list.pl.in:89
+#: service-list.pl.in:94
 msgid "Daemon that provides a cache for the most common name service requests."
 msgstr ""
 "Demon som tillhandahåller en cache för de vanligaste namntjänstbegärandena."
 
-#: service-list.pl.in:90
+#: service-list.pl.in:95
 msgid "Network Time Protocol daemon"
 msgstr "Demon för nätverkstidsprotokollet (NTP)"
 
-#: service-list.pl.in:90
+#: service-list.pl.in:95
 msgid "ntpd is the NTPv4 daemon."
 msgstr "ntpd är NTPv4-demonen."
 
-#: service-list.pl.in:91 service-list.pl.in:92
+#: service-list.pl.in:96 service-list.pl.in:97
 msgid "Update the system time over the network"
 msgstr "Uppdatera systemtiden för nätverket"
 
-#: service-list.pl.in:91 service-list.pl.in:92
+#: service-list.pl.in:96 service-list.pl.in:97
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
 msgstr ""
+"Kontrollerar tiden från en server som stöder nätverkstidsprotokollet (NTP) "
+"och justerar systemtiden i överensstämmelse med detta."
 
-#: service-list.pl.in:93
+#: service-list.pl.in:98
+msgid "Network Time Protocol (NTP) server"
+msgstr "Server för nätverkstidsprotokollet (NTP)"
+
+#: service-list.pl.in:98
+msgid ""
+"Daemon which sets and maintains the system time-of-day in synchronism with "
+"Internet standard time servers"
+msgstr ""
+"Demon som ställer in och underhåller systemets tid i synkronisation med "
+"Internet-standardtidsservrar"
+
+#: service-list.pl.in:99
 msgid "HTTP caching proxy"
 msgstr "Cachande HTTP-proxy"
 
-#: service-list.pl.in:94
+#: service-list.pl.in:100
 msgid "PCMCIA Services"
 msgstr "PCMCIA-tjänster"
 
-#: service-list.pl.in:95
+#: service-list.pl.in:101
 msgid "Caching-Only DNS Server"
-msgstr ""
+msgstr "DNS-server som endast cachar"
 
-#: service-list.pl.in:96
+#: service-list.pl.in:102
 msgid "IPsec tunnel implementation"
 msgstr "IPsec-tunnelimplementation"
 
-#: service-list.pl.in:97
+#: service-list.pl.in:103
 msgid "DARPA port to RPC program number mapper"
-msgstr ""
+msgstr "Mapper för DARPA-port till RPC-programnummer"
 
-#: service-list.pl.in:97
+#: service-list.pl.in:103
 msgid ""
 "The portmapper manages RPC connections, which are used by protocols such as "
 "NFS and NIS. The portmap server must be running on machines which act as "
 "servers for protocols which make use of the RPC mechanism."
 msgstr ""
+"Portmappern hanterar RPC-anslutningar som används av protokoll som till "
+"exempel NFS och NIS. portmap-servern måste köras på maskiner som agerar som "
+"servrar för protokoll som använder RPC-mekanismen."
 
-#: service-list.pl.in:98
+#: service-list.pl.in:104
 msgid "Mail Transport Agent"
 msgstr "Transportagent för e-post"
 
-#: service-list.pl.in:100
+#: service-list.pl.in:106
 msgid "Point to Point Protocol daemon"
 msgstr "Demon för punkt till punkt-protokollet (PPP)"
 
-#: service-list.pl.in:100
+#: service-list.pl.in:106
 msgid ""
 "The  Point-to-Point Protocol (PPP) provides a method for transmitting "
 "datagrams over serial point-to-point links."
 msgstr ""
+"Punkt-till-punktprotokollet (PPP) tillhandahåller en metod för överföring av "
+"datagram över seriella punkt-till-punktförbindelser."
 
-#: service-list.pl.in:101
+#: service-list.pl.in:107
 msgid "Privacy enhancing HTTP Proxy"
-msgstr ""
+msgstr "Integritetsförbättrande HTTP-proxyserver"
 
-#: service-list.pl.in:102
+#: service-list.pl.in:108
 msgid ""
 "Saves and restores system entropy pool for higher quality random number "
 "generation."
 msgstr ""
+"Sparar och återställer systemets entropipool för generering av slumptal med "
+"högre kvalitet."
 
-#: service-list.pl.in:103
+#: service-list.pl.in:109
 msgid ""
 "This scripts assignes raw devices to block devices (such as hard drive "
 "partitions). This is for the use of applications such as Oracle. You can set "
 "up the raw device to block device mapping by editing the file /etc/sysconfig/"
 "rawdevices."
 msgstr ""
+"Detta skript tilldelar råenheter till blockenheter (som till exempel "
+"hårddiskpartitioner). Detta är till för användning av program som exempelvis "
+"Oracle. Du kan konfigurera mappningen av råenheter till blockenheter genom "
+"att redigera filen /etc/sysconfig/rawdevices."
 
-#: service-list.pl.in:104
+#: service-list.pl.in:110
 msgid ""
 "This is a daemon which handles the task of connecting periodically to the "
 "Red Hat Network servers to check for updates, notifications and perform "
 "system monitoring tasks according to the service level that this server is "
 "subscribed for."
 msgstr ""
+"Detta är en demon som hanterar uppgiften att periodiskt ansluta till Red Hat "
+"Network-servrarna för att kontrollera uppdateringar, meddelanden och utföra "
+"systemövervakningsuppgifter enligt den servicenivå som denna server "
+"prenumerar på."
 
-#: service-list.pl.in:105 service-list.pl.in:106
+#: service-list.pl.in:111 service-list.pl.in:112
 msgid ""
 "The rsync server is a good addition to am ftp server, as it allows crc "
 "checksumming etc. You must enable xinetd to use this service."
 msgstr ""
+"rsync-servern är ett bra tillägg till en ftp-server, eftersom den tillåter "
+"kontrollsummor med crc osv. Du måste aktivera xinetd för att använda denna "
+"tjänst."
 
-#: service-list.pl.in:106
+#: service-list.pl.in:112
 msgid "Faster, flexible replacement for rcp"
-msgstr ""
+msgstr "Snabbare och mer flexibel ersättning till rcp"
 
-#: service-list.pl.in:107
+#: service-list.pl.in:113
 msgid "A Windows SMB/CIFS fileserver for UNIX"
-msgstr ""
+msgstr "En Windows SMB/CIFS-filserver för UNIX"
 
-#: service-list.pl.in:107
+#: service-list.pl.in:113
 msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
 msgstr ""
+"Samba-programvarusviten är en samling program som implementerar SMB-"
+"protokollet för UNIX-system."
 
-#: service-list.pl.in:108
+#: service-list.pl.in:114
 msgid ""
 "saslauthd is a server process which handles plaintext authentication "
 "requests on behalf of the cyrus-sasl library."
 msgstr ""
+"saslauthd är en serverprocess som hanterar förfrågningar om "
+"klartextautentisering åt biblioteket cyrus-sasl."
 
-#: service-list.pl.in:109
+#: service-list.pl.in:115
 msgid ""
 "Sendmail is a Mail Transport Agent, which is the program that moves mail "
 "from one machine to another."
 msgstr ""
+"Sendmail är en e-posttransportagent (MTA), som är det program som flyttar e-"
+"post från en maskin till en annan."
 
-#: service-list.pl.in:110
+#: service-list.pl.in:116
 msgid ""
 "An internal xinetd service, listing active servers. You must enable xinetd "
 "to use this service."
 msgstr ""
+"En intern xinetd-tjänst som listar aktiva servrar. Du måste aktivera xinetd "
+"för att använda denna tjänst."
 
-#: service-list.pl.in:111
+#: service-list.pl.in:117
 msgid ""
 "An internal xinetd service, listing active services. You must enable xinetd "
 "to use this service."
 msgstr ""
+"En intern xinetd-tjänst som listar aktiva tjänster. Du måste aktivera xinetd "
+"för att använda denna tjänst."
 
-#: service-list.pl.in:112
+#: service-list.pl.in:118
 msgid "get/set serial port information"
-msgstr ""
+msgstr "hämta/ställ in information om serieportar"
 
-#: service-list.pl.in:112
+#: service-list.pl.in:118
 msgid ""
 "setserial is a program designed to set and/or report the configuration "
 "information associated with a serial port."
 msgstr ""
+"setserial är ett program som är konstruerat för att ställa in och/eller "
+"rapportera konfigurationsinformationen som är associerad med en serieport."
 
-#: service-list.pl.in:113
+#: service-list.pl.in:119
 msgid ""
 "FAM is a file monitoring daemon. It can be used to get reports when files "
 "change. You must enable xinetd to use this service."
 msgstr ""
+"FAM är en demon för filövervakning. Den kan användas för att få rapporter då "
+"filer ändras. Du måste aktivera xinetd för att använda denna tjänst."
 
-#: service-list.pl.in:114
+#: service-list.pl.in:120
 msgid "control and monitor storage systems using S.M.A.R.T."
-msgstr ""
+msgstr "styr och övervaka lagringssystem som använder S.M.A.R.T."
 
-#: service-list.pl.in:115
+#: service-list.pl.in:121
 msgid "Perl-based spam filter using text analysis"
 msgstr "Perlbaserat skräppostfilter som använder textanalys"
 
-#: service-list.pl.in:116
+# Borde vara straffbart att expandera förkortningar...
+#: service-list.pl.in:122
 msgid "Simple Network Management Protocol (SNMP) Daemon"
-msgstr ""
+msgstr "SNMP-demon"
 
-#: service-list.pl.in:117 service-list.pl.in:118
+#: service-list.pl.in:123 service-list.pl.in:124
 msgid "OpenSSH SSH server"
 msgstr "SSH-servern OpenSSH"
 
-#: service-list.pl.in:117
+#: service-list.pl.in:123
 msgid ""
 "ssh is a program for logging into a remote machine and for executing "
 "commands on a remote machine."
 msgstr ""
+"ssh är ett program för inloggning på en fjärrmaskin och körning av kommandon "
+"på en fjärrmaskin."
 
-#: service-list.pl.in:118
+#: service-list.pl.in:124
 msgid "OpenSSH server daemon"
 msgstr "Serverdemonen OpenSSH"
 
-#: service-list.pl.in:119
+#: service-list.pl.in:125
 msgid "Linux system logging utilities"
-msgstr ""
+msgstr "Loggningsverktyg för Linux-system"
 
-#: service-list.pl.in:119
+#: service-list.pl.in:125
 msgid ""
 "Sysklogd provides two system utilities which provide support for system  "
 "logging  and  kernel  message  trapping."
 msgstr ""
+"Sysklogd tillhandahåller två systemverktyg som tillhandahåller stöd för "
+"systemloggning och infångst av meddelanden från kärnan."
 
-#: service-list.pl.in:120
+#: service-list.pl.in:126
 msgid ""
 "Syslog is the facility by which many daemons use to log messages to various "
 "system log files.  It is a good idea to always run syslog."
 msgstr ""
+"Syslog är den facilitet som många demoner använder för att logga meddelanden "
+"till diverse systemloggfiler. Det är en bra idé att alltid köra syslog."
 
-#: service-list.pl.in:121
+#: service-list.pl.in:127
 msgid ""
 "An RFC 868 time server. This protocol provides a site-independent, machine "
 "readable date and time. The Time service sends back to the originating "
 "source the time in seconds since midnight on January first 1900.  This is "
 "the tcp version. You must enable xinetd to use this service."
 msgstr ""
+"En RFC 868-tidsserver. Detta protokoll tillhandahåller ett platsoberoende, "
+"maskinläsbart datum och tid. Tidstjänsten skickar tillbaka tiden i sekunder "
+"sedan midnatt den förste januari 1900 till den ursprungliga källan. Detta är "
+"tcp-versionen. Du måste aktivera xinetd för att använda denna tjänst."
 
-#: service-list.pl.in:122
+#: service-list.pl.in:128
 msgid ""
 "An RFC 868 time server. This protocol provides a site-independent, machine "
 "readable date and time. The Time service sends back to the originating "
 "source the time in seconds since midnight on January first 1900.  This is "
 "the udp version. You must enable xinetd to use this service."
 msgstr ""
+"En RFC 868-tidsserver. Detta protokoll tillhandahåller ett platsoberoende, "
+"maskinläsbart datum och tid. Tidstjänsten skickar tillbaka tiden i sekunder "
+"sedan midnatt den förste januari 1900 till den ursprungliga källan. Detta är "
+"udp-versionen. Du måste aktivera xinetd för att använda denna tjänst."
 
-#: service-list.pl.in:123
+#: service-list.pl.in:129
 msgid "kernel random number source devices"
-msgstr ""
+msgstr "kärnkällenheter för slumptal"
 
-#: service-list.pl.in:123
+#: service-list.pl.in:129
 msgid ""
 "The  random  number  generator  gathers environmental noise from device "
 "drivers and other sources into an entropy pool. From this entropy pool "
 "random numbers are created."
 msgstr ""
+"Slumptalsgeneratorn samlar in brus i miljön från enhetsdrivrutiner och andra "
+"källor till en entropipool. Från denna entropipool skapas slumptal."
 
-#: service-list.pl.in:125
+#: service-list.pl.in:131
 msgid "Intel(TM) x86(TM)-based virtual machine"
 msgstr "Intel(TM) x86(TM)-baserad virtuell maskin"
 
-#: service-list.pl.in:125
+#: service-list.pl.in:131
 msgid ""
 "The vmware command starts an Intel X86-based virtual machine. This script "
 "manages the services needed to run VMware software."
 msgstr ""
+"vmware-kommandot startar en Intel X86-baserad virtuell maskin. Detta skript "
+"hanterar de tjänster som krävs för att köra VMware-programvara."
 
-#: service-list.pl.in:126
+#: service-list.pl.in:132
 msgid "Web-based administration toolkit"
 msgstr "Verktygslåda för webbaserad administration"
 
-#: service-list.pl.in:127
+#: service-list.pl.in:133
 msgid "Name Service Switch daemon for resolving names from NT servers"
-msgstr ""
+msgstr "Namntjänstväxlingsdemon (NSS) för uppslagning av namn från NT-servrar"
 
-#: service-list.pl.in:127
+#: service-list.pl.in:133
 msgid "Starts and stops the Samba winbind daemon"
-msgstr ""
+msgstr "Startar och stoppar Sambas winbind-demon"
 
-#: service-list.pl.in:128
+#: service-list.pl.in:134
 msgid ""
 "Allow users to run Windows(tm) applications by just clicking on them (or "
 "typing ./file.exe)"
 msgstr ""
+"Tillåt användare att köra Windows(tm)-program genom att bara klicka på dem "
+"(eller genom att skriva in ./file.exe)"
 
-#: service-list.pl.in:129
+#: service-list.pl.in:135
 msgid "X Display Manager"
 msgstr "X-displayhanteraren (XDM)"
 
-#: service-list.pl.in:129
+#: service-list.pl.in:135
 msgid "Provides the X equivalent of a \"login:\" prompt."
 msgstr "Tillhandahåller X-ekvivalenten av en \"login:\"-prompt."
 
-#: service-list.pl.in:130
+#: service-list.pl.in:136
 msgid "X font server"
 msgstr "X-typsnittsserver"
 
-#: service-list.pl.in:130
+#: service-list.pl.in:136
 msgid ""
 "Xfs is the X Window System font server. It supplies fonts to X Window System "
 "display servers."
 msgstr ""
+"Xfs är en typsnittsserver för X-fönstersystemet. Den tillhandahåller "
+"typsnitt till X-fönstersystemets displayservrar."
 
-#: service-list.pl.in:131
+#: service-list.pl.in:137
 msgid ""
 "xinetd is a powerful replacement for inetd. xinetd has access control "
 "machanisms, extensive logging capabilities, the ability to make services "
 "available based on time, and can place limits on the number of servers that "
 "can be started, among other things."
 msgstr ""
+"xinetd är en kraftfull ersättning för inetd. xinetd har mekanismer för "
+"åtkomstkontroll, stor loggningskapabilitet, förmågan att göra tjänster "
+"tillgängliga beroende på tiden, och kan använda gränser på det antal servrar "
+"som kan startas, bland annat."
 
-#: service.pl.in:180 service.pl.in:185
+#: service.pl.in:226 service.pl.in:231
 msgid "Halting the system"
 msgstr "Stannar systemet"
 
-#: service.pl.in:181 service.pl.in:187
+#: service.pl.in:227 service.pl.in:233
 msgid "Text mode"
 msgstr "Textläge"
 
-#: service.pl.in:182 service.pl.in:186 service.pl.in:194
+#: service.pl.in:228 service.pl.in:232 service.pl.in:241
 msgid "Graphical mode"
 msgstr "Grafiskt läge"
 
-#: service.pl.in:183 service.pl.in:188
+#: service.pl.in:229 service.pl.in:234
 msgid "Rebooting the system"
 msgstr "Startar om systemet"
 
 # Stavfelet borde buggrapporteras.
-#: service.pl.in:190
+#: service.pl.in:236
 msgid "Starts all system neccesary services"
 msgstr "Startar alla nödvändiga systemtjänster"
 
-#: service.pl.in:191
+#: service.pl.in:237
 msgid "Default runlevel"
 msgstr "Standardkörnivå"
 
-#: service.pl.in:192
+#: service.pl.in:238
 msgid "Networkless runlevel"
 msgstr "Nätverkslös körnivå"
+
+#~ msgid ""
+#~ "The Point-to-Point Protocol (PPP) provides a method for transmitting "
+#~ "datagrams over serial point-to-point links."
+#~ msgstr ""
+#~ "Punkt-till-punktprotokollet (PPP) tillhandahåller en metod för överföring "
+#~ "av datagram över seriella punkt-till-punktförbindelser."
+
+#~ msgid ""
+#~ "This scripts assigns raw devices to block devices (such as hard drive "
+#~ "partitions). This is for the use of applications such as Oracle. You can "
+#~ "set up the raw device to block device mapping by editing the file /etc/"
+#~ "sysconfig/rawdevices."
+#~ msgstr ""
+#~ "Detta skript tilldelar råenheter till blockenheter (som till exempel "
+#~ "hårddiskpartitioner). Detta är till för användning av program som "
+#~ "exempelvis Oracle. Du kan konfigurera mappningen av råenheter till "
+#~ "blockenheter genom att redigera filen /etc/sysconfig/rawdevices."
+
+#~ msgid ""
+#~ "The rsync server is a good addition to a ftp server, as it allows crc "
+#~ "checksumming etc. You must enable xinetd to use this service."
+#~ msgstr ""
+#~ "rsync-servern är ett bra tillägg till en ftp-server, eftersom den "
+#~ "tillåter kontrollsummor med crc osv. Du måste aktivera xinetd för att "
+#~ "använda denna tjänst."
+
+#~ msgid ""
+#~ "The rsync server is a good addition to an ftp server, as it allows crc "
+#~ "checksumming etc. You must enable xinetd to use this service."
+#~ msgstr ""
+#~ "rsync-servern är ett bra tillägg till en ftp-server, eftersom den "
+#~ "tillåter kontrollsummor med crc osv. Du måste aktivera xinetd för att "
+#~ "använda denna tjänst."
+
+#~ msgid ""
+#~ "Sysklogd provides two system utilities which provide support for system  "
+#~ "logging and kernel message trapping."
+#~ msgstr ""
+#~ "Sysklogd tillhandahåller två systemverktyg som tillhandahåller stöd för "
+#~ "systemloggning och infångst av meddelanden från kärnan."
+
+#~ msgid ""
+#~ "The random number generator gathers environmental noise from device "
+#~ "drivers and other sources into an entropy pool. From this entropy pool "
+#~ "random numbers are created."
+#~ msgstr ""
+#~ "Slumptalsgeneratorn samlar in brus i miljön från enhetsdrivrutiner och "
+#~ "andra källor till en entropipool. Från denna entropipool skapas slumptal."
 
 #~ msgid "Web server"
 #~ msgstr "Webbserver"
@@ -701,5661 +948,3 @@ msgstr "Nätverkslös körnivå"
 #~ msgstr ""
 #~ "Kommaseparerad lista med värdar som GST kommer att komma åt då "
 #~ "alternativet för fjärrkonfiguration är aktiverat"
-
-#~ msgid "Dialog complexity for the boot-admin tool"
-#~ msgstr "Dialogkomplexitet för startadministrationsverktyget"
-
-#~ msgid "Dialog complexity for the network-admin tool"
-#~ msgstr "Dialogkomplexitet för nätverksadministrationsverktyget"
-
-#~ msgid "Dialog complexity for the services-admin tool"
-#~ msgstr "Dialogkomplexitet för tjänsteadministrationsverktyget"
-
-#~ msgid "Dialog complexity for the time-admin tool"
-#~ msgstr "Dialogkomplexitet för tidsadministrationsverktyget"
-
-#~ msgid "Dialog complexity for the users-admin tool"
-#~ msgstr "Dialogkomplexitet för användaradministrationsverktyget"
-
-#~ msgid "Last GST version executed"
-#~ msgstr "Senaste GST-version som körts"
-
-#~ msgid "Remote hosts"
-#~ msgstr "Fjärrvärdar"
-
-#~ msgid ""
-#~ "The GNOME System Tools have two data display modes: basic mode and "
-#~ "advanced mode, the basic mode is intended to show less options than the "
-#~ "advanced mode"
-#~ msgstr ""
-#~ "GNOME-systemverktygen har två datavisningslägen: grundläget och avancerat "
-#~ "läge. Det avancerade läget är tänkt att visa färre alternativ än det "
-#~ "avancerade"
-
-#~ msgid ""
-#~ "The GST are able to do remote configuration through SSH, enable this "
-#~ "option to use this feature"
-#~ msgstr ""
-#~ "GST kan utföra fjärrkonfiguration genom SSH. Aktivera detta alternativ "
-#~ "för att använda denna funktion"
-
-#~ msgid "The last GST version that this computer has run"
-#~ msgstr "Den senaste GST-versionen som denna dator har kört"
-
-#~ msgid "Whether the tools will use remote administration or not"
-#~ msgstr "Huruvida verktygen ska använda fjärradministration eller inte"
-
-#~ msgid "Whether the users-admin tool should show all users and groups or not"
-#~ msgstr ""
-#~ "Huruvida användaradministrationsverktyget ska visa alla användare och "
-#~ "grupper eller inte"
-
-#~ msgid "Whether the warning dialog should be shown or not"
-#~ msgstr "Huruvida varningsdialogen ska visas eller inte"
-
-#~ msgid "*"
-#~ msgstr "*"
-
-#~ msgid "/dev/hda"
-#~ msgstr "/dev/hda"
-
-#~ msgid "/dev/hdb"
-#~ msgstr "/dev/hdb"
-
-#~ msgid "/dev/hdc"
-#~ msgstr "/dev/hdc"
-
-#~ msgid "/dev/hdd"
-#~ msgstr "/dev/hdd"
-
-#~ msgid "1024x768"
-#~ msgstr "1024×768"
-
-#~ msgid "1280x1024"
-#~ msgstr "1280×1024"
-
-#~ msgid "16,777,216"
-#~ msgstr "16 777 216"
-
-#~ msgid "256"
-#~ msgstr "256"
-
-#~ msgid "32,768"
-#~ msgstr "32 768"
-
-#~ msgid "640x480"
-#~ msgstr "640×480"
-
-#~ msgid "65,536"
-#~ msgstr "65 536"
-
-#~ msgid "800x600"
-#~ msgstr "600×600"
-
-#~ msgid "<b>Security</b>"
-#~ msgstr "<b>Säkerhet</b>"
-
-#~ msgid "<span weight=\"bold\">Basic Settings</span>"
-#~ msgstr "<span weight=\"bold\">Grundläggande inställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Image Settings</span>"
-#~ msgstr "<span weight=\"bold\">Avbildsinställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Other Settings</span>"
-#~ msgstr "<span weight=\"bold\">Andra inställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Starting the Computer</span>"
-#~ msgstr "<span weight=\"bold\">Start av datorn</span>"
-
-#~ msgid "Ask at boot"
-#~ msgstr "Fråga vid uppstart"
-
-#~ msgid "Boot Image Assistant"
-#~ msgstr "Startavbildsassistent"
-
-#~ msgid ""
-#~ "Choose a kernel image to boot, and a partition to mount as the root "
-#~ "partition. Optionally, you may also enter append parameters which are "
-#~ "passed to the kernel at boot time."
-#~ msgstr ""
-#~ "Välj en kärnavbild att starta, och en partition som kanmonteras som "
-#~ "rotpartition. Du kan alternativt också ange tilläggsparametrar som "
-#~ "skickas till kärnan då start sker."
-
-#~ msgid "Click \"Forward\" to continue"
-#~ msgstr "Klicka på \"Framåt\" för att fortsätta"
-
-#~ msgid "Confirmation"
-#~ msgstr "Bekräftelse"
-
-#~ msgid "Enable IDE SCSI emulation"
-#~ msgstr "Använd SCSI-emulering för IDE"
-
-#~ msgid ""
-#~ "Enter a name for the boot image, and specify what kind of operating "
-#~ "system it is."
-#~ msgstr ""
-#~ "Ange ett namn för startavbilden, och ange vilken typ av operativsystem "
-#~ "det är."
-
-#~ msgid "Finished"
-#~ msgstr "Klart"
-
-#~ msgid "Image Settings (Step 1 of 2)"
-#~ msgstr "Avbildsinställningar (steg 1 av 2)"
-
-#~ msgid "Image Settings (Step 2 of 2)"
-#~ msgstr "Avbildsinställningar (steg 2 av 2)"
-
-#~ msgid "Manual"
-#~ msgstr "Manuell"
-
-#~ msgid "Modify the settings for an operating system or kernel."
-#~ msgstr "Ändra inställningarna för ett operativsystem eller en kärna."
-
-#~ msgid "Number of colors:"
-#~ msgstr "Antal färger:"
-
-#~ msgid "Other Operating System (Step 2 of 2)"
-#~ msgstr "Annat operativsystem (steg 2 av 2)"
-
-#~ msgid "Password"
-#~ msgstr "Lösenord"
-
-#~ msgid "Protect with password"
-#~ msgstr "Skydda med lösenord"
-
-#~ msgid "Resolution:"
-#~ msgstr "Upplösning:"
-
-#~ msgid "Seconds to wait before loading default kernel or OS"
-#~ msgstr ""
-#~ "Sekunder att vänta innan standardkärnan eller -operativsystemet startas"
-
-#~ msgid "Specify the partition on which the operating system is installed."
-#~ msgstr "Ange den partition som operativsystemet är installerat på."
-
-#~ msgid ""
-#~ "The new boot image has been added.\n"
-#~ "\n"
-#~ "Please click \"Apply\" to save your changes. "
-#~ msgstr ""
-#~ "Den nya startavbilden har lagts till.\n"
-#~ "\n"
-#~ "Klicka på \"Verkställ\" för att spara dina ändringar."
-
-#~ msgid ""
-#~ "This assistant is designed to help you quickly and easily add a new boot "
-#~ "image to your system.\n"
-#~ "\n"
-#~ "To begin, click \"Forward\". "
-#~ msgstr ""
-#~ "Denna assistent är gjord för att hjälpa dig att snabbt och enkelt lägga "
-#~ "till en ny startavbild (boot image) till ditt system.\n"
-#~ "\n"
-#~ "För att börja klickar du på \"Framåt\". "
-
-#~ msgid "Use this dialog to modify kernel parameters."
-#~ msgstr "Använd detta dialogfönster för att ändra kärnparametrar."
-
-#~ msgid ""
-#~ "Use this tool to specify which operating systems users can choose at "
-#~ "startup."
-#~ msgstr ""
-#~ "Använd detta verktyg för att ange vilka operativsystem som användare kan "
-#~ "välja vid uppstart."
-
-#~ msgid "Video modes (only frame buffer)"
-#~ msgstr "Videolägen (endast rambuffert)"
-
-#~ msgid "_Add..."
-#~ msgstr "_Lägg till..."
-
-#~ msgid "_Device:"
-#~ msgstr "_Enhet:"
-
-#~ msgid "_Edit"
-#~ msgstr "_Redigera"
-
-#~ msgid "_Initrd image path:"
-#~ msgstr "Sökväg till _initrd-avbild:"
-
-#~ msgid "_Kernel image path:"
-#~ msgstr "Sökväg till _kärnavbild:"
-
-#~ msgid "_Name:"
-#~ msgstr "_Namn:"
-
-#~ msgid "_Operating system:"
-#~ msgstr "_Operativsystem:"
-
-#~ msgid "_Parameters:"
-#~ msgstr "_Parametrar:"
-
-#~ msgid "_Root file system device:"
-#~ msgstr "Enhet för _rotfilsystem:"
-
-#~ msgid ""
-#~ "<span weight=\"bold\">The platform you are running is not supported by "
-#~ "this tool.</span>\n"
-#~ "\n"
-#~ "If you know for sure that it works like one of the platforms listed "
-#~ "below, you can select that and continue.\n"
-#~ "\n"
-#~ "Note, however, that this might damage the system configuration or "
-#~ "downright cripple your computer."
-#~ msgstr ""
-#~ "<span weight=\"bold\">Den plattform som du använder stöds inte av detta "
-#~ "verktyg.</span>\n"
-#~ "Om du är säker på att det fungerar som en av de plattformar som anges "
-#~ "nedan kan du välja den och fortsätta.\n"
-#~ "\n"
-#~ "Observera dock att detta kan skada systemkonfigurationen eller rentav "
-#~ "förstöra data på din dator."
-
-#~ msgid ""
-#~ "<span weight=\"bold\">To run this tool, you need administrator privileges."
-#~ "</span>\n"
-#~ "\n"
-#~ "To acquire such privileges, enter your root password below. If you don't\n"
-#~ "specify a password, you will be unable to modify your system "
-#~ "configuration."
-#~ msgstr ""
-#~ "<span weight=\"bold\">För att köra detta verktyg behöver du "
-#~ "administratörsrättigheter.</span>\n"
-#~ "\n"
-#~ "För att få sådana rättigheter anger du rootlösenordet nedan. Om du inte\n"
-#~ "anger ett lösenord kommer du inte att kunna ändra din systemkonfiguration."
-
-#~ msgid "Complexity"
-#~ msgstr "Komplexitet"
-
-#~ msgid "Enter Password"
-#~ msgstr "Ange lösenord"
-
-#~ msgid "Run _Without Password"
-#~ msgstr "Kör _utan lösenord"
-
-#~ msgid "Scanning system configuration..."
-#~ msgstr "Läser igenom systemkonfigurationen..."
-
-#~ msgid "Unsupported Platform"
-#~ msgstr "Plattformen stöds inte"
-
-#~ msgid "Use this window to select the computer you wish to configure"
-#~ msgstr "Använda detta fönster för att välja den dator du vill konfigurera"
-
-#~ msgid "_Password:"
-#~ msgstr "_Lösenord:"
-
-#~ msgid "/dev/modem"
-#~ msgstr "/dev/modem"
-
-#~ msgid "/dev/ttyS0"
-#~ msgstr "/dev/ttyS0"
-
-#~ msgid "/dev/ttyS1"
-#~ msgstr "/dev/ttyS1"
-
-#~ msgid "/dev/ttyS2"
-#~ msgstr "/dev/ttyS2"
-
-#~ msgid "/dev/ttyS3"
-#~ msgstr "/dev/ttyS3"
-
-#~ msgid "<b>Profile Settings</b>"
-#~ msgstr "<b>Profilinställningar</b>"
-
-#~ msgid "<span weight=\"bold\">Access Settings</span>"
-#~ msgstr "<span weight=\"bold\">Åtkomstinställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Account Data</span>"
-#~ msgstr "<span weight=\"bold\">Kontodata</span>"
-
-#~ msgid "<span weight=\"bold\">Connection settings</span>"
-#~ msgstr "<span weight=\"bold\">Anslutningsinställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Connection</span>"
-#~ msgstr "<span weight=\"bold\">Anslutning</span>"
-
-#~ msgid "<span weight=\"bold\">DNS Servers</span>"
-#~ msgstr "<span weight=\"bold\">DNS-servrar</span>"
-
-#~ msgid "<span weight=\"bold\">Host Settings</span>"
-#~ msgstr "<span weight=\"bold\">Värdinställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Internet Service Provider Data</span>"
-#~ msgstr "<span weight=\"bold\">Data för Internetleverantör</span>"
-
-#~ msgid "<span weight=\"bold\">PPP Settings</span>"
-#~ msgstr "<span weight=\"bold\">PPP-inställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Search Domains</span>"
-#~ msgstr "<span weight=\"bold\">Sökdomäner</span>"
-
-#~ msgid "<span weight=\"bold\">Windows Networking</span>"
-#~ msgstr "<span weight=\"bold\">Windows-nätverk</span>"
-
-#~ msgid "<span weight=\"bold\">Wireless settings:</span>"
-#~ msgstr "<span weight=\"bold\">Trådlösa inställningar:</span>"
-
-#~ msgid "A_liases:"
-#~ msgstr "A_lias:"
-
-#~ msgid "Account"
-#~ msgstr "Konto"
-
-#~ msgid "Activate when the computer _starts"
-#~ msgstr "Aktivera när datorn _startar"
-
-#~ msgid "Address configuration (Step 1 of 2)"
-#~ msgstr "Adresskonfiguration (steg 1 av 2)"
-
-#~ msgid "Advanced"
-#~ msgstr "Avancerat"
-
-#~ msgid "Advanced PPP connection tuning."
-#~ msgstr "Avancerad finjustering av PPP-anslutning."
-
-#~ msgid "Aliases of other computers."
-#~ msgstr "Alias på andra datorer."
-
-#~ msgid "Allow activation control for all _users"
-#~ msgstr "Tillåt aktiveringskontroll för alla _användare"
-
-#~ msgid "Auto"
-#~ msgstr "Automatisk"
-
-#~ msgid "BOOTP"
-#~ msgstr "BOOTP"
-
-#~ msgid "Co_nfiguration:"
-#~ msgstr "Ko_nfiguration:"
-
-#~ msgid "Connection _name:"
-#~ msgstr "Anslutnings_namn:"
-
-#~ msgid "Connection name (Step 3 of 3)"
-#~ msgstr "Anslutningsnamn (steg 3 av 3)"
-
-#~ msgid "Connection type"
-#~ msgstr "Anslutningstyp"
-
-#~ msgid "Connections"
-#~ msgstr "Anslutningar"
-
-#~ msgid "Create a new network connection"
-#~ msgstr "Skapa en ny nätverksanslutning"
-
-#~ msgid "DHCP"
-#~ msgstr "DHCP"
-
-#~ msgid "DNS"
-#~ msgstr "DNS"
-
-#~ msgid "Default gateway device:"
-#~ msgstr "Standardgatewayenhet:"
-
-#~ msgid "Device:"
-#~ msgstr "Enhet:"
-
-#~ msgid "Domain / _Workgroup:"
-#~ msgstr "Domän/A_rbetsgrupp:"
-
-#~ msgid "General"
-#~ msgstr "Allmänt"
-
-#~ msgid "Hosts"
-#~ msgstr "Värdar"
-
-#~ msgid "How the names of other computers are found."
-#~ msgstr "Hur namnen på andra datorer hittas."
-
-#~ msgid "How this computer is identified."
-#~ msgstr "Hur denna dator identifieras."
-
-#~ msgid "How to access other computers."
-#~ msgstr "Hur åtkomst av andra datorer ska ske."
-
-#~ msgid "How to dial up to the Internet."
-#~ msgstr "Hur uppringning till Internet ska ske."
-
-#~ msgid "ISP phone number (Step 1 of 3)"
-#~ msgstr "Internetleverantörens telefonnummer (steg 1 av 3)"
-
-#~ msgid "Interface properties"
-#~ msgstr "Gränssnittsegenskaper"
-
-#~ msgid "Modem _volume:"
-#~ msgstr "Modem_volym:"
-
-#~ msgid "Network name:"
-#~ msgstr "Nätverksnamn:"
-
-#~ msgid "Network profiles"
-#~ msgstr "Nätverksprofiler"
-
-#~ msgid ""
-#~ "Network profiles can be used to store different network configurations."
-#~ msgstr ""
-#~ "Nätverksprofiler kan användas för att lagra olika nätverkskonfigurationer."
-
-#~ msgid "Networking Settings"
-#~ msgstr "Nätverksinställningar"
-
-#~ msgid "New network connection"
-#~ msgstr "Ny nätverksanslutning"
-
-#~ msgid "New network profile"
-#~ msgstr "Ny nätverksprofil"
-
-#~ msgid ""
-#~ "Next, please enter the user name and password which were assigned to you "
-#~ "by your ISP."
-#~ msgstr ""
-#~ "Sedan anger du det användarnamn och lösenord som din Internetleverantör "
-#~ "tilldelade dig."
-
-#~ msgid ""
-#~ "Now, please enter the address that this network device will have, and the "
-#~ "remote address to which it will be connected."
-#~ msgstr ""
-#~ "Ange nu den adress som denna nätverksenhet kommer att ha, och den "
-#~ "fjärradress till vilken den kommer att anslutas."
-
-#~ msgid "Now, please enter the address that this network device will have."
-#~ msgstr "Ange nu den adress som denna nätverksenhet kommer att ha."
-
-#~ msgid "Now, please give this connection a name."
-#~ msgstr "Ge nu denna anslutning ett namn."
-
-#~ msgid "Number to _access an external line:"
-#~ msgstr "Nummer för att komma _åt en extern linje:"
-
-#~ msgid "Number to get to an _external line:"
-#~ msgstr "Nummer för att få en _extern linje:"
-
-#~ msgid "PPPD _options:"
-#~ msgstr "PPPD-_alternativ:"
-
-#~ msgid "Pa_ssword (confirm):"
-#~ msgstr "L_ösenord (bekräfta):"
-
-#~ msgid "Phone _number:"
-#~ msgstr "Telefon_nummer:"
-
-#~ msgid ""
-#~ "Please enter the phone number you use to connect to the internet. This "
-#~ "number is provided by your ISP. "
-#~ msgstr ""
-#~ "Ange det telefonnummer som du använder för att ansluta till Internet. "
-#~ "Detta nummer tillhandahåller din Internetleverantör. "
-
-#~ msgid ""
-#~ "Please select the wireless device that you want to configure and set the "
-#~ "network name for this interface"
-#~ msgstr ""
-#~ "Välj den trådlösa enhet som du vill konfigurera och ställ in "
-#~ "nätverksnamnet för detta gränssnitt"
-
-#~ msgid "Please, give this network profile a name and a description."
-#~ msgstr "Ge denna nätverksprofil ett namn och en beskrivning."
-
-#~ msgid "Please, select which type of connection you would like to add."
-#~ msgstr "Välj den typ av anslutning som du vill lägga till."
-
-#~ msgid "Profile _name:"
-#~ msgstr "Profil_namn:"
-
-#~ msgid "Pulses"
-#~ msgstr "Pulsval"
-
-#~ msgid "Se_condary:"
-#~ msgstr "Se_kundär:"
-
-#~ msgid "Set _DNS servers manually"
-#~ msgstr "Ange _DNS-servrar manuellt"
-
-#~ msgid "Set modem as default _route to internet"
-#~ msgstr "Ställ in modemet som standard_rutt till Internet"
-
-#~ msgid ""
-#~ "To continue configuring your network connection, click \"Next\". To quit, "
-#~ "click \"Cancel\"."
-#~ msgstr ""
-#~ "För att fortsätta konfigurera din nätverksanslutning klickar du på \"Nästa"
-#~ "\". För att avsluta klickar du på \"Avbryt\"."
-
-#~ msgid "Tones"
-#~ msgstr "Tonval"
-
-#~ msgid "Use \"Auto\" if unsure."
-#~ msgstr "Använd \"Automatisk\" om du är osäker."
-
-#~ msgid "Use this dialog for setting the configuration for this interface"
-#~ msgstr ""
-#~ "Använd detta dialogfönster för att ställa in konfigurationen för detta "
-#~ "gränssnitt"
-
-#~ msgid "Username and password (Step 2 of 3)"
-#~ msgstr "Användarnamn och lösenord (steg 2 av 3)"
-
-#~ msgid "WI_NS server:"
-#~ msgstr "WI_NS-server:"
-
-#~ msgid ""
-#~ "Welcome to the Network Connection druid.\n"
-#~ "\n"
-#~ "This druid will help you configure a new \n"
-#~ "network connection. \n"
-#~ "\n"
-#~ "Click the \"Next\" button to begin."
-#~ msgstr ""
-#~ "Välkommen till guiden nätverksanslutning.\n"
-#~ "\n"
-#~ "Denna guide kommer att hjälpa dig konfigurera\n"
-#~ "en ny nätverksanslutning.\n"
-#~ "\n"
-#~ "Klicka på knappen \"Nästa\" för att börja."
-
-#~ msgid "Wireless device:"
-#~ msgstr "Trådlös enhet:"
-
-#~ msgid "Wireless settings (Step 1 of 3)"
-#~ msgstr "Trådlösa inställningar (steg 1 av 3)"
-
-#~ msgid ""
-#~ "You are about to create a new network connection.\n"
-#~ "\n"
-#~ "Please click \"Apply\" to save your changes."
-#~ msgstr ""
-#~ "Du kommer nu att skapa en ny nätverksanslutning.\n"
-#~ "\n"
-#~ "Klicka på \"Verkställ\" för att spara dina ändringar."
-
-#~ msgid "_Autodetect"
-#~ msgstr "_Detektera automatiskt"
-
-#~ msgid "_Comment:"
-#~ msgstr "_Kommentar:"
-
-#~ msgid "_Configuration:"
-#~ msgstr "_Konfiguration:"
-
-#~ msgid "_Configure"
-#~ msgstr "_Konfigurera"
-
-#~ msgid "_Delete"
-#~ msgstr "_Ta bort"
-
-#~ msgid "_Description:"
-#~ msgstr "_Beskrivning:"
-
-#~ msgid "_Dial type:"
-#~ msgstr "_Uppringningstyp:"
-
-#~ msgid "_Domain name:"
-#~ msgstr "_Domännamn:"
-
-#~ msgid "_Enable Windows networking"
-#~ msgstr "_Använd Windows-nätverk"
-
-#~ msgid "_Ethernet"
-#~ msgstr "_Ethernet"
-
-#~ msgid "_Gateway address:"
-#~ msgstr "_Gateway-adress:"
-
-#~ msgid "_Hostname:"
-#~ msgstr "_Värdnamn:"
-
-#~ msgid "_IP address:"
-#~ msgstr "_IP-adress:"
-
-#~ msgid "_IR LAN"
-#~ msgstr "_IR-LAN"
-
-#~ msgid "_Local IP address:"
-#~ msgstr "_Lokal IP-adress:"
-
-#~ msgid "_Local IP:"
-#~ msgstr "_Lokalt IP:"
-
-#~ msgid "_Modem (PPP)"
-#~ msgstr "_Modem (PPP)"
-
-#~ msgid "_Modem port:"
-#~ msgstr "_Modemport:"
-
-#~ msgid "_Network Profiles"
-#~ msgstr "_Nätverksprofiler"
-
-#~ msgid "_Network name:"
-#~ msgstr "_Nätverksnamn:"
-
-#~ msgid "_Parallel Line"
-#~ msgstr "_Parallellinje"
-
-#~ msgid "_Phone number:"
-#~ msgstr "_Telefonnummer:"
-
-#~ msgid "_Primary:"
-#~ msgstr "_Primär:"
-
-#~ msgid "_Remote IP address:"
-#~ msgstr "_Fjärr-IP-adress:"
-
-#~ msgid "_Remote IP:"
-#~ msgstr "_Fjärr-IP:"
-
-#~ msgid "_Retry if the connection breaks or fails to start"
-#~ msgstr "_Försök igen om anslutningen bryts eller inte startar"
-
-#~ msgid "_Save Current"
-#~ msgstr "_Spara aktuell"
-
-#~ msgid "_Start PPP as soon as modem connects"
-#~ msgstr "_Starta PPP så fort som modemet ansluter"
-
-#~ msgid "_Subnet mask:"
-#~ msgstr "_Subnätmask:"
-
-#~ msgid "_Update DNS when this connection becomes active"
-#~ msgstr "_Uppdatera DNS när denna anslutning blir aktiv"
-
-#~ msgid "_Use remote IP as default gateway"
-#~ msgstr "_Använd fjärr-IP-numret som standardgateway"
-
-#~ msgid "_Username:"
-#~ msgstr "_Användarnamn:"
-
-#~ msgid "_Wireless"
-#~ msgstr "_Trådlöst"
-
-#~ msgid "<span weight=\"bold\">Description</span>"
-#~ msgstr "<span weight=\"bold\">Beskrivning</span>"
-
-#~ msgid "<span weight=\"bold\">General Information</span>"
-#~ msgstr "<span weight=\"bold\">Allmän information</span>"
-
-#~ msgid "<span weight=\"bold\">Service Settings</span>"
-#~ msgstr "<span weight=\"bold\">Tjänsteinställningar</span>"
-
-#~ msgid "Click on an item in the list to show it's description."
-#~ msgstr "Klicka på ett objekt i listan för att visa dess beskrivning."
-
-#~ msgid "Description:"
-#~ msgstr "Beskrivning:"
-
-#~ msgid "Parameters:"
-#~ msgstr "Parametrar:"
-
-#~ msgid "Priority:"
-#~ msgstr "Prioritet:"
-
-#~ msgid "Service _Properties"
-#~ msgstr "Tjänste_egenskaper"
-
-#~ msgid "Service:"
-#~ msgstr "Tjänst:"
-
-#~ msgid "Use this tool to specify which services to run"
-#~ msgstr "Använd detta verktyg för att ange de tjänster som ska köras"
-
-#~ msgid "(unconfigured)"
-#~ msgstr "(inte konfigurerat)"
-
-#~ msgid ":"
-#~ msgstr "."
-
-#~ msgid "<span weight=\"bold\">Time Configuration</span>"
-#~ msgstr "<span weight=\"bold\">Tidskonfiguration</span>"
-
-#~ msgid ""
-#~ "Please select the current date and time. You can also specify a time zone "
-#~ "and a time server."
-#~ msgstr ""
-#~ "Var vänlig och välj aktuellt datum och tid. Du kan också ange en tidszon "
-#~ "och en tidsserver."
-
-#~ msgid "S_ynchronize clock with Internet servers:"
-#~ msgstr "S_ynkronisera klockan med Internetservrar:"
-
-#~ msgid "Se_lect Servers..."
-#~ msgstr "V_älj servrar..."
-
-#~ msgid "Select the servers you wish to use for time synchronization."
-#~ msgstr "Välj de servrar som du vill använda för tidssynkronisering."
-
-#~ msgid "Time zone:"
-#~ msgstr "Tidszon:"
-
-#~ msgid "To select a time zone, click on one of the dots on the map"
-#~ msgstr "Välj en tidszon genom att klicka på en av prickarna på kartan"
-
-#~ msgid "_Date:"
-#~ msgstr "_Datum:"
-
-#~ msgid "_Select Time Zone..."
-#~ msgstr "_Välj tidszon..."
-
-#~ msgid "_Time:"
-#~ msgstr "_Tid:"
-
-#~ msgid "<span weight=\"bold\">Advanced Settings</span>"
-#~ msgstr "<span weight=\"bold\">Avancerade inställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Automatic UID/GID</span>"
-#~ msgstr "<span weight=\"bold\">Automatiskt UID/GID</span>"
-
-#~ msgid "<span weight=\"bold\">Contact Information</span>"
-#~ msgstr "<span weight=\"bold\">Kontaktinformation</span>"
-
-#~ msgid "<span weight=\"bold\">Group Members</span>"
-#~ msgstr "<span weight=\"bold\">Gruppmedlemmar</span>"
-
-#~ msgid "<span weight=\"bold\">Optional Settings</span>"
-#~ msgstr "<span weight=\"bold\">Valfria inställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Password Settings</span>"
-#~ msgstr "<span weight=\"bold\">Lösenordsinställningar</span>"
-
-#~ msgid "<span weight=\"bold\">Password</span>"
-#~ msgstr "<span weight=\"bold\">Lösenord</span>"
-
-#~ msgid "<span weight=\"bold\">Profile Settings</span>"
-#~ msgstr "<span weight=\"bold\">Profilinställningar</span>"
-
-#~ msgid "<span weight=\"bold\">System Defaults</span>"
-#~ msgstr "<span weight=\"bold\">Systemstandardalternativ</span>"
-
-#~ msgid "<span weight=\"bold\">User Profile</span>"
-#~ msgstr "<span weight=\"bold\">Användarprofil</span>"
-
-#~ msgid "Assign a random password by default"
-#~ msgstr "Tilldela ett slumpmässigt lösenord som standard"
-
-#~ msgid "Check password _quality"
-#~ msgstr "_Kontrollera lösenordskvalitet"
-
-#~ msgid "Con_firmation:"
-#~ msgstr "_Konfiguration:"
-
-#~ msgid "Days between warning and password expiration:"
-#~ msgstr "Antalet dagar mellan varning och utgång av lösenord:"
-
-#~ msgid "Default _group:"
-#~ msgstr "Standard_grupp:"
-
-#~ msgid "Default _shell:"
-#~ msgstr "Standard_skal:"
-
-#~ msgid "Generate _random password"
-#~ msgstr "Generera _slumpmässigt lösenord"
-
-#~ msgid "Group Properties"
-#~ msgstr "Gruppegenskaper"
-
-#~ msgid "Group _ID:"
-#~ msgstr "Grupp-_ID:"
-
-#~ msgid "Group _members:"
-#~ msgstr "Grupp_medlemmar:"
-
-#~ msgid "Group _name:"
-#~ msgstr "Grupp_namn:"
-
-#~ msgid "Groups"
-#~ msgstr "Grupper"
-
-#~ msgid "Ma_ximum days a password may be used:"
-#~ msgstr "Ma_ximalt antal dagar som ett lösenord kan användas:"
-
-#~ msgid "Maximum UID:"
-#~ msgstr "Högsta UID:"
-
-#~ msgid "Mi_nimum days between password changes:"
-#~ msgstr "Mi_nsta antalet dagar mellan lösenordsbyten:"
-
-#~ msgid "Minimum GID:"
-#~ msgstr "Lägsta GID:"
-
-#~ msgid "Minimum UID:"
-#~ msgstr "Lägsta UID:"
-
-#~ msgid "Minimum days allowed between password changes:"
-#~ msgstr "Minsta antalet dagar mellan lösenordsbyten:"
-
-#~ msgid "Number of days that a password may be used:"
-#~ msgstr "Antalet dagar som ett lösenord får användas:"
-
-#~ msgid "O_ffice location:"
-#~ msgstr "_Kontorsadress:"
-
-#~ msgid ""
-#~ "On this page, you can define the system defaults which will be assigned "
-#~ "to new users."
-#~ msgstr ""
-#~ "På denna sida kan du ange systemets standardalternativ som kommer att "
-#~ "tilldelas nya användare."
-
-#~ msgid "Other Groups"
-#~ msgstr "Andra grupper"
-
-#~ msgid "Password set to: "
-#~ msgstr "Lösenordet sattes till: "
-
-#~ msgid "Set password b_y hand"
-#~ msgstr "Ange lösenord f_ör hand"
-
-#~ msgid "Show a_ll users and groups"
-#~ msgstr "Visa a_lla användare och grupper"
-
-#~ msgid ""
-#~ "This is the list of the groups available on the system. Create new groups "
-#~ "or edit existing groups with this dialog."
-#~ msgstr ""
-#~ "Det här är en lista över de grupper som finns på systemet. Du kan skapa "
-#~ "nya grupper eller redigera existerande grupper med detta dialogfönster."
-
-#~ msgid ""
-#~ "This is the list of the users available on the system. Create new users "
-#~ "or edit existing user settings with this dialog."
-#~ msgstr ""
-#~ "Det här är en lista över de användare som finns tillgängliga på systemet. "
-#~ "Skapa nya användare eller redigera existerande användarinställningar med "
-#~ "detta dialogfönster."
-
-#~ msgid "User Profiles"
-#~ msgstr "Användarprofiler"
-
-#~ msgid "User _ID:"
-#~ msgstr "Användar-_ID:"
-
-#~ msgid "User _password:"
-#~ msgstr "Användar_lösenord:"
-
-#~ msgid ""
-#~ "User profiles can be used as templates to facilitate the creation of new "
-#~ "users. "
-#~ msgstr ""
-#~ "Användarprofiler kan användas som mallar för att underlätta skapandet av "
-#~ "nya användare. "
-
-#~ msgid "Users"
-#~ msgstr "Användare"
-
-#~ msgid "_Add Group..."
-#~ msgstr "_Lägg till grupp..."
-
-#~ msgid "_Add Profile..."
-#~ msgstr "_Lägg till profil..."
-
-#~ msgid "_Add User..."
-#~ msgstr "_Lägg till användare..."
-
-#~ msgid "_All users:"
-#~ msgstr "_Alla användare:"
-
-#~ msgid "_Available groups:"
-#~ msgstr "_Tillgängliga grupper:"
-
-#~ msgid "_Comments"
-#~ msgstr "_Kommentarer"
-
-#~ msgid "_Days between warning and password expiration:"
-#~ msgstr "Antalet _dagar mellan varning och utgång av lösenord:"
-
-#~ msgid "_Edit User Profiles..."
-#~ msgstr "_Redigera användarprofiler..."
-
-#~ msgid "_Generate Password"
-#~ msgstr "_Generera lösenord"
-
-#~ msgid "_Home directory:"
-#~ msgstr "_Hemkatalog:"
-
-#~ msgid "_Home phone:"
-#~ msgstr "_Hemtelefon:"
-
-#~ msgid "_Main group:"
-#~ msgstr "_Huvudgrupp:"
-
-#~ msgid "_Profile:"
-#~ msgstr "_Profil:"
-
-#~ msgid "_Profiles..."
-#~ msgstr "_Profiler..."
-
-#~ msgid "_Real name:"
-#~ msgstr "_Verkligt namn:"
-
-#~ msgid "_Shell:"
-#~ msgstr "_Skal:"
-
-#~ msgid "_User's groups:"
-#~ msgstr "_Användarens grupper:"
-
-#~ msgid "_Work phone:"
-#~ msgstr "_Jobbtelefon:"
-
-#~ msgid "profiles_table"
-#~ msgstr "profiltabell"
-
-#~ msgid "vga=%s is not a valid vga value"
-#~ msgstr "vga=%s är inte ett giltigt vga-värde"
-
-#~ msgid "Boot Image Wizard"
-#~ msgstr "Guide för startavbild"
-
-#~ msgid "Unknown"
-#~ msgstr "Okänd"
-
-#~ msgid "Windows NT"
-#~ msgstr "Windows NT"
-
-#~ msgid "Windows 9x"
-#~ msgstr "Windows 9x"
-
-#~ msgid "Dos"
-#~ msgstr "DOS"
-
-#~ msgid "Linux"
-#~ msgstr "Linux"
-
-#~ msgid "Linux swap"
-#~ msgstr "Linux-växlingsutrymme"
-
-#~ msgid "GNU/Hurd"
-#~ msgstr "GNU/Hurd"
-
-#~ msgid "Invalid path: %s"
-#~ msgstr "Ogiltig sökväg: %s"
-
-#~ msgid "Image '%s' already exists, please set another name."
-#~ msgstr "Avbilden \"%s\" finns redan, använd ett annat namn."
-
-#~ msgid "Invalid image name: '%s'"
-#~ msgstr "Ogiltigt namn på avbild: \"%s\""
-
-#~ msgid "Invalid image: '%s'"
-#~ msgstr "Ogiltig avbild: \"%s\""
-
-#~ msgid "Invalid root device: '%s'"
-#~ msgstr "Ogiltig rotenhet: \"%s\""
-
-#~ msgid "_Module path:"
-#~ msgstr "_Modulsökväg:"
-
-#~ msgid "Password confirmation isn't correct."
-#~ msgstr "Lösenordsbekräftelsen är inte korrekt."
-
-#~ msgid "Boot"
-#~ msgstr "Start"
-
-#~ msgid "Configure the system boot process"
-#~ msgstr "Konfigurera systemstartprocessen"
-
-#~ msgid "Boot Image Editor"
-#~ msgstr "Redigerare för startavbild"
-
-#~ msgid "Boot Append Editor"
-#~ msgstr "Redigerare för starttillägg"
-
-#~ msgid ""
-#~ "Without at least one boot image,\n"
-#~ "your system will not start.\n"
-#~ msgstr ""
-#~ "Ditt system kommer inte att starta\n"
-#~ "utan minst en startavbild.\n"
-
-#~ msgid "Are you sure you want to delete '%s'?"
-#~ msgstr "Är du säker på att du vill ta bort \"%s\"?"
-
-#~ msgid ""
-#~ "The file ``%s'' is missing or could not be read:\n"
-#~ "The configuration will show empty."
-#~ msgstr ""
-#~ "Filen \"%s\" saknas eller kunde inte läsas:\n"
-#~ "Konfigurationen kommer att vara tom."
-
-#~ msgid "Boot Manager Settings"
-#~ msgstr "Inställningar för starthanterare"
-
-#~ msgid "Name"
-#~ msgstr "Namn"
-
-#~ msgid "Default"
-#~ msgstr "Standard"
-
-#~ msgid "Type"
-#~ msgstr "Typ"
-
-#~ msgid "Kernel Image"
-#~ msgstr "Kärnavbildsfil"
-
-#~ msgid "Device"
-#~ msgstr "Enhet"
-
-#~ msgid "/_Add ..."
-#~ msgstr "/_Lägg till..."
-
-#~ msgid "/_Properties"
-#~ msgstr "/_Egenskaper"
-
-#~ msgid "/_Delete"
-#~ msgstr "/_Ta bort"
-
-#~ msgid "Could not connect to the computer."
-#~ msgstr "Kunde inte ansluta till datorn."
-
-#~ msgid "The password you entered is invalid."
-#~ msgstr "Lösenordet du angav är ogiltigt."
-
-#~ msgid "An unexpected error has occurred."
-#~ msgstr "Ett oväntat fel har inträffat."
-
-#~ msgid "Could not find widget: %s"
-#~ msgstr "Kunde inte hitta widget: %s"
-
-#~ msgid " More _Options"
-#~ msgstr " Fler _alternativ"
-
-#~ msgid " Fewer _Options"
-#~ msgstr " Färre _alternativ"
-
-#~ msgid ""
-#~ "There are changes which haven't been applied.\n"
-#~ "Apply them now?"
-#~ msgstr ""
-#~ "Det finns ändringar som inte har verkställts.\n"
-#~ "Verkställ dem nu?"
-
-#~ msgid "Error connection signal `%s' in widget `%s'"
-#~ msgstr "Fel anslutningssignal \"%s\" i widgeten \"%s\""
-
-#~ msgid "Skipping %s directive..."
-#~ msgstr "Hoppar över %s-direktiv..."
-
-#~ msgid "Skipping actual save..."
-#~ msgstr "Hoppar över verklig sparning..."
-
-#~ msgid ""
-#~ "There was an error running the backend script,\n"
-#~ "and the configuration could not be loaded."
-#~ msgstr ""
-#~ "Det uppstod ett fel vid körning av backend-skriptet,\n"
-#~ "och konfigurationen kunde inte läsas in."
-
-# Felrapporterat i http://bugzilla.gnome.org/show_bug.cgi?id=126006
-#~ msgid "%s"
-#~ msgstr "%s"
-
-#~ msgid ""
-#~ "Welcome to the %s prerelease of the GNOME System Tools.\n"
-#~ "\n"
-#~ "This is still a work in progress, and so it may have serious bugs.\n"
-#~ "Due to the nature of these tools, bugs may render your computer\n"
-#~ "PRACTICALLY USELESS, costing time, effort and sanity points.\n"
-#~ "\n"
-#~ "You have been warned. Thank you for trying out this prerelease of\n"
-#~ "the GNOME System Tools!\n"
-#~ "\n"
-#~ "--\n"
-#~ "The GNOME System Tools team"
-#~ msgstr ""
-#~ "Välkommen till förhandsversion %s av GNOME-systemverktygen.\n"
-#~ "\n"
-#~ "Det här är ett pågående arbete och det kan därför ha allvarliga fel.\n"
-#~ "På grund av naturen hos dessa verktyg kan fel göra din dator\n"
-#~ "PRAKTISKT TAGET OANVÄNDBAR, och kosta tid, arbetstid och gråa hår.\n"
-#~ "\n"
-#~ "Du har nu blivit varnad. Tack för att du provar denna förhandsversion\n"
-#~ "av GNOME-systemverktygen!\n"
-#~ "\n"
-#~ "--\n"
-#~ "Teamet bakom GNOME-systemverktygen"
-
-#~ msgid "Warning"
-#~ msgstr "Varning"
-
-#~ msgid "Don't show me this again"
-#~ msgstr "Visa inte detta igen"
-
-#~ msgid "GNOME System Tools"
-#~ msgstr "GNOME-systemverktygen"
-
-#~ msgid "Please restart your GNOME session for these changes to take effect."
-#~ msgstr ""
-#~ "Starta om din GNOME-session för att dessa ändringar ska börja gälla."
-
-#~ msgid "Active"
-#~ msgstr "Aktiv"
-
-#~ msgid "Activating"
-#~ msgstr "Aktiverar"
-
-#~ msgid "Inactive"
-#~ msgstr "Inaktiv"
-
-#~ msgid "Deactivating"
-#~ msgstr "Deaktiverar"
-
-#~ msgid "Remove connection %s: \"%s\"?"
-#~ msgstr "Ta bort anslutningen %s: \"%s\"?"
-
-#~ msgid "Remove connection %s?"
-#~ msgstr "Ta bort anslutningen %s?"
-
-#~ msgid "Activating connection ``%s.''"
-#~ msgstr "Aktiverar anslutningen \"%s\"."
-
-#~ msgid "Deactivating connection ``%s.''"
-#~ msgstr "Kopplar från anslutningen \"%s\"."
-
-#~ msgid ""
-#~ "You don't have SMB support installed. Please install SMB support in the "
-#~ "system to enable windows networking."
-#~ msgstr ""
-#~ "Du har inte SMB-stöd installerat. Installera SMB-stöd på systemet för att "
-#~ "möjliggöra nätverksanslutning till windows."
-
-#~ msgid "SMB support missing."
-#~ msgstr "Stöd för SMB saknas."
-
-#~ msgid ""
-#~ "The host name has changed. This will prevent you from launching new "
-#~ "applications, and so you will have to log in again. Continue anyway?"
-#~ msgstr ""
-#~ "Värdnamnet har ändrats. Detta kommer att hindra dig från att starta nya "
-#~ "program, och därför kommer du att behöva logga in igen. Fortsätta ändå?"
-
-#~ msgid ""
-#~ "wvdial could not be found on your system. You need to install wvdial, or "
-#~ "the PPP (modem) connections will not activate."
-#~ msgstr ""
-#~ "wvdial kunde inte hittas på ditt system. Du måste installera wvdial, "
-#~ "annars kommer inte PPP-anslutningarna (modemanslutningarna) att kunna "
-#~ "aktiveras."
-
-#~ msgid ""
-#~ "wvdial could not be found on your system. You need to install wvdial, or "
-#~ "the PPP (modem) connections will not activate. Continue anyway?"
-#~ msgstr ""
-#~ "wvdial kunde inte hittas på ditt system. Du måste installera wvdial, "
-#~ "annars kommer inte PPP-anslutningarna (modemanslutningarna) att kunna "
-#~ "aktiveras. Fortsätta ändå?"
-
-#~ msgid ""
-#~ "The default gateway device is not activated. This will prevent you from "
-#~ "connecting to the Internet. Continue anyway?"
-#~ msgstr ""
-#~ "Standardgatewayenheten är inte aktiverad. Detta kommer att hindra dig "
-#~ "från att ansluta till Internet. Fortsätta ändå?"
-
-#~ msgid ""
-#~ "The default gateway device is missing gateway information. Please provide "
-#~ "this information to proceed, or choose another default gateway device. "
-#~ msgstr ""
-#~ "Standardgatewayenheten saknar information om gateway. Ange denna "
-#~ "information för att fortsätta, eller välj en annan standardgatewayenhet."
-
-#~ msgid ""
-#~ "The program redhat-config-network-cmd could not be found. This could "
-#~ "render missing connections under the connections tab. Please install the "
-#~ "redhat-config-network rpm package to avoid this."
-#~ msgstr ""
-#~ "Programmet redhat-config-network-cmd kunde inte hittas. Detta kan "
-#~ "innebära saknade anslutningar under anslutningsfliken. Installera rpm-"
-#~ "paketet redhat-config-network för att undvika detta."
-
-#~ msgid "Do you want to enable interface %s?"
-#~ msgstr "Vill du aktivera gränssnittet %s?"
-
-#~ msgid "Do you want to disable interface %s?"
-#~ msgstr "Vill du inaktivera gränssnittet %s?"
-
-#~ msgid ""
-#~ "Could not autodetect modem device, check that this is not busy and that "
-#~ "it's correctly attached"
-#~ msgstr ""
-#~ "Kunde inte automatiskt detektera modemenheten. Kontrollera att den inte "
-#~ "är upptagen och att den är korrekt ansluten"
-
-#~ msgid "Silent"
-#~ msgstr "Tyst"
-
-#~ msgid "Low"
-#~ msgstr "Låg"
-
-#~ msgid "Medium"
-#~ msgstr "Mellan"
-
-#~ msgid "Loud"
-#~ msgstr "Högljudd"
-
-#~ msgid "Other type"
-#~ msgstr "Annan typ"
-
-#~ msgid "Ethernet LAN card"
-#~ msgstr "Ethernetnätverkskort"
-
-#~ msgid "Wireless LAN card"
-#~ msgstr "Trådlöst nätverkskort"
-
-#~ msgid "Modem or transfer cable"
-#~ msgstr "Modem eller överföringskabel"
-
-#~ msgid "Parallel line"
-#~ msgstr "Parallellinje"
-
-#~ msgid "Infrared LAN"
-#~ msgstr "Infrarött LAN"
-
-#~ msgid "Loopback interface"
-#~ msgstr "Loopback-gränssnitt"
-
-#~ msgid "Unknown interface type"
-#~ msgstr "Okänd gränssnittstyp"
-
-#~ msgid "/_Configure"
-#~ msgstr "/_Konfigurera"
-
-#~ msgid "Status"
-#~ msgstr "Status"
-
-#~ msgid "Description"
-#~ msgstr "Beskrivning"
-
-#~ msgid ""
-#~ "The IP address or netmask for the interface was left empty. Please enter "
-#~ "valid IP addresses in those fields to continue."
-#~ msgstr ""
-#~ "IP-adressen eller nätmasken för gränssnittet lämnades tom. Ange giltiga "
-#~ "IP-adresser i de fälten för att fortsätta."
-
-#~ msgid ""
-#~ "The IP address or remote address for the interface was left empty. Please "
-#~ "enter valid IP addresses in those fields to continue."
-#~ msgstr ""
-#~ "IP-adressen eller fjärradressen för gränssnittet lämnades tom. Ange "
-#~ "giltiga IP-adresser i de fälten för att fortsätta."
-
-#~ msgid ""
-#~ "You chose to set the DNS servers for this connection manually, but left "
-#~ "the IP address for the primary DNS empty. Please enter the IP for the "
-#~ "primary DNS or uncheck the manual DNS option."
-#~ msgstr ""
-#~ "Du valde att manuellt ange DNS-servrarna för denna anslutning, men "
-#~ "lämnade IP-adressen för den primära DNS-servern tom. Ange IP-adressen för "
-#~ "den primära DNS-servern eller avmarkera alternativet att välja DNS-"
-#~ "servrarna manuellt."
-
-#~ msgid "The interface %s doesn't exist."
-#~ msgstr "Gränssnittet %s finns inte."
-
-#~ msgid "IP Address"
-#~ msgstr "IP-adress"
-
-#~ msgid "Aliases"
-#~ msgstr "Alias"
-
-#~ msgid "Run the connection druid."
-#~ msgstr "Kör anslutningsguiden."
-
-#~ msgid "Run the PPP connection druid."
-#~ msgstr "Kör PPP-anslutningsguiden."
-
-#~ msgid "Run the ethernet connection druid."
-#~ msgstr "Kör Ethernetanslutningsguiden."
-
-#~ msgid "Run the wlan connection druid."
-#~ msgstr "Kör wlan-anslutningsguiden."
-
-#~ msgid "Run the parallel port connection druid."
-#~ msgstr "Kör parallellportsanslutningsguiden."
-
-#~ msgid "Run the irlan connection druid."
-#~ msgstr "Kör irlan-anslutningsguiden."
-
-#~ msgid "Configure a network interface"
-#~ msgstr "Konfigurera ett nätverksgränssnitt"
-
-#~ msgid "interface"
-#~ msgstr "gränssnitt"
-
-#~ msgid "Network Settings"
-#~ msgstr "Nätverksinställningar"
-
-#~ msgid "Address configuration (Step 2 of 3)"
-#~ msgstr "Adresskonfiguration (steg 2 av 3)"
-
-#~ msgid "Connection name (Step 2 of 2)"
-#~ msgstr "Anslutningsnamn (steg 2 av 2)"
-
-#~ msgid "Configure network devices and connections"
-#~ msgstr "Konfigurera nätverksenheter och nätverksanslutningar"
-
-#~ msgid "Networking"
-#~ msgstr "Nätverk"
-
-#~ msgid "Are you sure you want to delete profile %s?"
-#~ msgstr "Är du säker på att du vill ta bort profilen %s?"
-
-#~ msgid "Profile name"
-#~ msgstr "Profilnamn"
-
-#~ msgid "No description available."
-#~ msgstr "Ingen beskrivning tillgänglig."
-
-#~ msgid "Settings for service %s"
-#~ msgstr "Inställningar för tjänsten %s"
-
-#~ msgid "Services Settings"
-#~ msgstr "Tjänsteinställningar"
-
-#~ msgid "Configure which services will be run when the system starts"
-#~ msgstr "Konfigurera vilka tjänster som körs då systemet startar"
-
-#~ msgid "Service"
-#~ msgstr "Tjänst"
-
-#~ msgid "Time Zone"
-#~ msgstr "Tidszon"
-
-#~ msgid ""
-#~ "You don't have NTP support running. Please run NTP support in the system "
-#~ "to enable server synchronization."
-#~ msgstr ""
-#~ "Du har inte NTP-stöd körandes. Kör NTP-stöd på systemet för att aktivera "
-#~ "serversynkronisering."
-
-#~ msgid "Time and Date Settings"
-#~ msgstr "Inställningar för tid och datum"
-
-#~ msgid "Change system time, date, and timezone"
-#~ msgstr "Ändra systemtid, datum och tidszon."
-
-#~ msgid "Time and Date"
-#~ msgstr "Tid och datum"
-
-#~ msgid "Create New profile"
-#~ msgstr "Skapa ny profil"
-
-#~ msgid "Settings for profile %s"
-#~ msgstr "Inställningar för profilen %s"
-
-#~ msgid "Create New Group"
-#~ msgstr "Skapa ny grupp"
-
-#~ msgid "User id must be a positive number."
-#~ msgstr "Användar-id måste vara ett positivt tal."
-
-#~ msgid "Such group id already exists."
-#~ msgstr "Ett sådant gruppid finns redan."
-
-#~ msgid "Group name is empty."
-#~ msgstr "Gruppnamnet är tomt."
-
-#~ msgid "The group name is too long."
-#~ msgstr "Gruppnamnet är för långt."
-
-#~ msgid "Please set a valid group name, using only lower-case letters."
-#~ msgstr ""
-#~ "Var vänlig och ange ett giltigt gruppnamn, med endast små bokstäver."
-
-#~ msgid "Group already exists."
-#~ msgstr "Gruppen finns redan."
-
-#~ msgid "The root group must not be deleted."
-#~ msgstr "Gruppen root får inte tas bort."
-
-#~ msgid "Are you sure you want to delete group %s?"
-#~ msgstr "Är du säker på att du vill ta bort gruppen %s?"
-
-#~ msgid "Settings for Group %s"
-#~ msgstr "Inställningar för gruppen %s"
-
-#~ msgid "Group"
-#~ msgstr "Grupp"
-
-#~ msgid "GID"
-#~ msgstr "GID"
-
-#~ msgid "User name contains"
-#~ msgstr "Användarnamnet innehåller"
-
-#~ msgid "User ID is"
-#~ msgstr "Användar-ID är"
-
-#~ msgid "Group name contains"
-#~ msgstr "Gruppnamnet innehåller"
-
-#~ msgid "User GID is"
-#~ msgstr "Användar-GID är"
-
-#~ msgid "Users and Groups"
-#~ msgstr "Användare och grupper"
-
-#~ msgid "Passwords doesn't match."
-#~ msgstr "Lösenorden stämmer inte överens."
-
-#~ msgid ""
-#~ "Bad password: %s.\n"
-#~ "Please try with a new password."
-#~ msgstr ""
-#~ "Felaktigt lösenord: %s.\n"
-#~ "Var vänlig och försök med ett nytt lösenord."
-
-#~ msgid "The profile must have a name"
-#~ msgstr "Profilen måste ha ett namn"
-
-#~ msgid "The profile must have a default home"
-#~ msgstr "Profilen måste ha ett standardhem"
-
-#~ msgid "The profile must have a default shell"
-#~ msgstr "Profilen måste ha ett standardskal"
-
-#~ msgid "The profile Default must not be deleted."
-#~ msgstr "Profilstandardalternativet får inte tas bort."
-
-#~ msgid "Are you sure you want to delete the profile called %s?"
-#~ msgstr "Är du säker på att du vill ta bort profilen %s?"
-
-#~ msgid "Profile"
-#~ msgstr "Profil"
-
-#~ msgid "Comment"
-#~ msgstr "Kommentar"
-
-#~ msgid "_Search"
-#~ msgstr "_Sök"
-
-#~ msgid "C_lear"
-#~ msgstr "T_öm"
-
-#~ msgid "Choice"
-#~ msgstr "Val"
-
-#~ msgid "Text"
-#~ msgstr "Text"
-
-#~ msgid "/_Add User ..."
-#~ msgstr "/_Lägg till användare..."
-
-#~ msgid "/_Add group ..."
-#~ msgstr "/_Lägg till grupp..."
-
-#~ msgid "The root user must not be deleted."
-#~ msgstr "Användaren root får inte tas bort."
-
-#~ msgid "Are you sure you want to delete user %s?"
-#~ msgstr "Är du säker på att du vill ta bort användaren %s?"
-
-#~ msgid "User Account Editor"
-#~ msgstr "Redigerare för användarkonton"
-
-#~ msgid "The username is empty."
-#~ msgstr "Användarnamnet är tomt."
-
-#~ msgid "The username is too long."
-#~ msgstr "Användarnamnet är för långt."
-
-#~ msgid "root username shouldn't be modified."
-#~ msgstr "root-användarnamnet bör inte ändras."
-
-#~ msgid ""
-#~ "Please set a valid username consisting of a lower case letter followed by "
-#~ "lower case letters and numbers."
-#~ msgstr ""
-#~ "Var vänlig och ange ett giltigt användarnamn som består av en liten "
-#~ "bokstav följt av små bokstäver och siffror."
-
-#~ msgid ""
-#~ "Username \"%s\" already exists.\n"
-#~ "\n"
-#~ "Please select a different Username"
-#~ msgstr ""
-#~ "Användarnamnet \"%s\" finns redan.\n"
-#~ "\n"
-#~ "Välj ett annat användarnamn"
-
-#~ msgid "Invalid character '%c' in comment."
-#~ msgstr "Ogiltigt tecken \"%c\" i kommentar."
-
-#~ msgid "Home directory must not be empty."
-#~ msgstr "Hemkatalogen får inte vara tom."
-
-#~ msgid "Please enter full path for home directory."
-#~ msgstr "Ange den fullständiga sökvägen till hemkatalogen."
-
-#~ msgid "root home shouldn't be modified."
-#~ msgstr "root-hemkatalogen bör inte ändras."
-
-#~ msgid "root uid shouldn't be modified."
-#~ msgstr "root-uid:t bör inte ändras."
-
-#~ msgid "Such user id already exists."
-#~ msgstr "Ett sådant användarid finns redan."
-
-#~ msgid "Please give shell with full path."
-#~ msgstr "Ange skalet med en fullständig sökväg."
-
-#~ msgid "Password must not be empty."
-#~ msgstr "Lösenord får inte vara tomt."
-
-#~ msgid "Settings for User %s"
-#~ msgstr "Inställningar för användaren %s"
-
-#~ msgid "User"
-#~ msgstr "Användare"
-
-#~ msgid "Home"
-#~ msgstr "Hem"
-
-#~ msgid "User details"
-#~ msgstr "Användardetaljer"
-
-#~ msgid "UID"
-#~ msgstr "UID"
-
-#~ msgid "Shell"
-#~ msgstr "Skal"
-
-#~ msgid "Add or remove users and groups"
-#~ msgstr "Lägg till eller ta bort användare och grupper"
-
-#~ msgid ""
-#~ "The new boot image has been added.\n"
-#~ "\n"
-#~ "Please click \"Apply\" to save your changes."
-#~ msgstr ""
-#~ "Den nya startavbilden har lagts till.\n"
-#~ "\n"
-#~ "Klicka på \"Verkställ\" för att spara dina ändringar."
-
-#~ msgid ""
-#~ "This assistant is designed to help you quickly and easily add a new boot "
-#~ "image to your system.\n"
-#~ "\n"
-#~ "To begin, click \"Forward\"."
-#~ msgstr ""
-#~ "Denna assistent är gjord för att hjälpa dig att snabbt och enkelt lägga "
-#~ "till en ny startavbild (boot image) till ditt system.\n"
-#~ "\n"
-#~ "För att börja klickar du på \"Framåt\"."
-
-#~ msgid "Network profile"
-#~ msgstr "Nätverksprofil"
-
-#~ msgid ""
-#~ "Please enter the phone number you use to connect to the internet. This "
-#~ "number is provided by your ISP."
-#~ msgstr ""
-#~ "Ange det telefonnummer som du använder för att ansluta till Internet. "
-#~ "Detta nummer tillhandahåller din Internetleverantör."
-
-#~ msgid ""
-#~ "User profiles can be used as templates to facilitate the creation of new "
-#~ "users."
-#~ msgstr ""
-#~ "Användarprofiler kan användas som mallar för att underlätta skapandet av "
-#~ "nya användare."
-
-#~ msgid "%s."
-#~ msgstr "%s."
-
-#~ msgid ""
-#~ "The default gateway device is missing gateway information. Please provide "
-#~ "this information to proceed, or choose another default gateway device."
-#~ msgstr ""
-#~ "Standardgatewayenheten saknar information om gateway. Ange denna "
-#~ "information för att fortsätta, eller välj en annan standardgatewayenhet."
-
-#~ msgid "Time Zone:"
-#~ msgstr "Tidszon:"
-
-#~ msgid "Time servers"
-#~ msgstr "Tidsservrar"
-
-#~ msgid "Profiles"
-#~ msgstr "Profiler"
-
-#~ msgid "Enter Password - GNOME System Tools"
-#~ msgstr "Ange lösenord - GNOME-systemverktygen"
-
-#~ msgid ""
-#~ "Use this window to select the computer\n"
-#~ "you wish to configure"
-#~ msgstr ""
-#~ "Använda detta fönster för att välja\n"
-#~ "den dator du vill konfigurera"
-
-#~ msgid "1. ISP phone number"
-#~ msgstr "1. ISP:ns telefonnummer"
-
-#~ msgid "2. Username and password"
-#~ msgstr "2. Användarnamn och lösenord"
-
-#~ msgid "3. Account name"
-#~ msgstr "3. Kontonamn"
-
-#~ msgid "Connection settings"
-#~ msgstr "Anslutningsinställningar"
-
-#~ msgid "Wireless settings:"
-#~ msgstr "Trådlösa inställningar:"
-
-#~ msgid "Wireless settings"
-#~ msgstr "Trådlösa inställningar"
-
-#~ msgid "Account name:"
-#~ msgstr "Kontonamn:"
-
-#~ msgid "Activate when the computer starts"
-#~ msgstr "Aktivera när datorn startar"
-
-#~ msgid "Activation"
-#~ msgstr "Aktivering"
-
-#~ msgid "Add New Internet Connection"
-#~ msgstr "Lägg till ny Internetanslutning"
-
-#~ msgid "Allow activation control for all users"
-#~ msgstr "Tillåt aktiveringskontroll för alla användare"
-
-#~ msgid "Connection active"
-#~ msgstr "Anslutningen aktiv"
-
-#~ msgid "Create a new internet connection "
-#~ msgstr "Skapa en ny Internetanslutning "
-
-#~ msgid ""
-#~ "First, please enter the phone number you use to connect to the internet. "
-#~ "This number is provided by your ISP. "
-#~ msgstr ""
-#~ "Ange först det telefonnummer som du använder för att ansluta till "
-#~ "Internet. Detta nummer tillhandahåller din Internetleverantör. "
-
-#~ msgid "_Modem volume:"
-#~ msgstr "_Modemvolym:"
-
-#~ msgid "Network profiles - GNOME System Tools"
-#~ msgstr "Nätverksprofiler - GNOME-systemverktygen"
-
-#~ msgid ""
-#~ "Network profiles can be used to store\n"
-#~ "different network configurations."
-#~ msgstr ""
-#~ "Nätverksprofiler kan användas för att\n"
-#~ "lagra olika nätverkskonfigurationer."
-
-#~ msgid "New Connection Type"
-#~ msgstr "Ny anslutningstyp"
-
-#~ msgid "New network profile - GNOME System Tools"
-#~ msgstr "Ny nätverksprofil - GNOME-systemverktygen"
-
-#~ msgid ""
-#~ "Now, please enter the address that \n"
-#~ "this network device will have."
-#~ msgstr ""
-#~ "Ange nu den adress som denna nätverks-\n"
-#~ "enhet kommer att ha."
-
-#~ msgid ""
-#~ "Now, please enter the address that this network device will have,\n"
-#~ "and the remote address to which it will be connected."
-#~ msgstr ""
-#~ "Ange nu den adress som denna nätverksenhet kommer att ha, och den\n"
-#~ "fjärradress till vilken den kommer att anslutas."
-
-#~ msgid ""
-#~ "Now, please give this account a name. This name will be used to identify "
-#~ "the account."
-#~ msgstr ""
-#~ "Nu anger du ditt kontonamn. Detta namn kommer att användas för att "
-#~ "identifiera kontot."
-
-#~ msgid "Password (confirm):"
-#~ msgstr "Lösenord (bekräfta):"
-
-#~ msgid "Password:"
-#~ msgstr "Lösenord:"
-
-#~ msgid "Phone number:"
-#~ msgstr "Telefonnummer:"
-
-#~ msgid ""
-#~ "Please select the wireless device that you want to configure \n"
-#~ "and set the network name for this interface"
-#~ msgstr ""
-#~ "Välj den trådlösa enhet som du vill konfigurera och ställ in \n"
-#~ "nätverksnamnet för detta gränssnitt"
-
-#~ msgid ""
-#~ "Please, give this network profile\n"
-#~ "a name and a description."
-#~ msgstr ""
-#~ "Ge denna nätverksprofil ett namn\n"
-#~ "och en beskrivning."
-
-#~ msgid ""
-#~ "Select which type of connection\n"
-#~ "you would like to add."
-#~ msgstr ""
-#~ "Välj den typ av anslutning som du\n"
-#~ "vill lägga till."
-
-#~ msgid ""
-#~ "Summary of new account data\n"
-#~ "goes here, plus indications on\n"
-#~ "how to proceed (go back, cancel\n"
-#~ "or finish)."
-#~ msgstr ""
-#~ "Sammanfattning av ny kontodata\n"
-#~ "hamnar här plus indikationer om\n"
-#~ "hur fortsättning ska ske (bakåt,\n"
-#~ "avbryt eller slutför)."
-
-#~ msgid ""
-#~ "To continue configuring your account, click \"Next\". To quit, click "
-#~ "\"Cancel\".\n"
-#~ msgstr ""
-#~ "För att fortsätta konfigurera ditt konto klickar du på \"Nästa\". För att "
-#~ "avsluta klickar du på \"Avbryt\".\n"
-
-#~ msgid ""
-#~ "Use this dialog for setting the configuration \n"
-#~ "for this interface"
-#~ msgstr ""
-#~ "Använd detta dialogfönster för att ställa in \n"
-#~ "konfigurationen för detta gränssnitt"
-
-#~ msgid "Use this dialog for setting the configuration for this interface."
-#~ msgstr ""
-#~ "Använd detta dialogfönster för att ställa in konfigurationen för detta "
-#~ "gränssnitt."
-
-#~ msgid "Username:"
-#~ msgstr "Användarnamn:"
-
-#~ msgid "Warning message goes here."
-#~ msgstr "Varningsmeddelande hamnar här."
-
-#~ msgid "Warning message goes here.\n"
-#~ msgstr "Varningsmeddelande hamnar här.\n"
-
-#~ msgid ""
-#~ "Welcome to the Internet Connection druid. \n"
-#~ "\n"
-#~ "This druid will help you configure a new \n"
-#~ "Internet account. \n"
-#~ "\n"
-#~ "Before you begin, you must have a modem and\n"
-#~ "an Internet Service Provider (ISP). Please ask your \n"
-#~ "ISP for any pertinent information about your connection.\n"
-#~ "\n"
-#~ "Click the \"Next\" button to begin."
-#~ msgstr ""
-#~ "Välkommen till guiden Internetanslutning. \n"
-#~ "\n"
-#~ "Denna guide kommer att hjälpa dig konfigurera ett\n"
-#~ "nytt Internetkonto.\n"
-#~ "\n"
-#~ "Innan du börjar måste du ha ett modem och en \n"
-#~ "Internetleverantör (ISP). Fråga din Internet-\n"
-#~ "leverantör om all information om din\n"
-#~ "anslutning som du saknar.\n"
-#~ "\n"
-#~ "Klicka på knappen \"Nästa\" för att börja."
-
-#~ msgid "_Wavelan"
-#~ msgstr "_Wavelan"
-
-#~ msgid "Wireless"
-#~ msgstr "Trådlöst"
-
-#~ msgid "Add"
-#~ msgstr "Lägg till"
-
-#~ msgid ""
-#~ "Change the settings and options for the\n"
-#~ "selected user or group, like a users password\n"
-#~ "or a groups name or members."
-#~ msgstr ""
-#~ "Ändra inställningarna och alternativen för den\n"
-#~ "markerade användaren eller gruppen, som exempelvis\n"
-#~ "gruppens namn eller medlemmar."
-
-#~ msgid "Click \"Next\" to continue"
-#~ msgstr "Klicka på \"Nästa\" för att fortsätta"
-
-#~ msgid ""
-#~ "Congratulations, the new user has been created.\n"
-#~ "Please click \"Finish\" to save your changes. "
-#~ msgstr ""
-#~ "Gratulerar, den nya användaren har skapats.\n"
-#~ "Klicka på \"Slutför\" för att spara dina ändringar."
-
-#~ msgid "Delete"
-#~ msgstr "Ta bort"
-
-#~ msgid ""
-#~ "EXPERIMENTAL NIS support.\n"
-#~ "It's only available if You have NIS\n"
-#~ "and when You click on \"More Settings\"."
-#~ msgstr ""
-#~ "EXPERIMENTELLT stöd för NIS.\n"
-#~ "Det är endast tillgängligt om du har\n"
-#~ "NIS och när du klickar på \"Fler inställningar\"."
-
-#~ msgid "Edit profile:"
-#~ msgstr "Redigera profil:"
-
-#~ msgid "Enter Password (Step 2 of 2)"
-#~ msgstr "Ange lösenord (steg 2 av 2)"
-
-#~ msgid "New Group"
-#~ msgstr "Ny grupp"
-
-#~ msgid "New User"
-#~ msgstr "Ny användare"
-
-#~ msgid ""
-#~ "On this page, you can select scripts and files to be copied from your "
-#~ "account into new users' accounts."
-#~ msgstr ""
-#~ "På denna sida kan du välja skript och filer som kommer att kopieras från "
-#~ "ditt konto till nya användares konton."
-
-#~ msgid "Please enter a password for the new user. "
-#~ msgstr "Ange ett lösenord för den nya användaren. "
-
-#~ msgid ""
-#~ "Please enter a username for the new user in the space below. Optionally, "
-#~ "you can fill in more information to identify the user. "
-#~ msgstr ""
-#~ "Ange ett användarnamn för den nya användaren i fältet nedan. Du kan också "
-#~ "om du vill fylla i mer information för att identifiera användaren. "
-
-#~ msgid "Settings"
-#~ msgstr "Inställningar"
-
-#~ msgid "Settings for selected user and group"
-#~ msgstr "Inställningar för den markerade användaren och gruppen"
-
-#~ msgid ""
-#~ "This druid is designed to help you quickly \n"
-#~ "and easily add new users to your system.\n"
-#~ "\n"
-#~ "To begin, click \"Next\". "
-#~ msgstr ""
-#~ "Denna guide är gjord för att hjälpa dig att\n"
-#~ "snabbt och enkelt lägga till nya användare\n"
-#~ "till ditt system.\n"
-#~ "\n"
-#~ "För att börja klickar du på \"Nästa\". "
-
-#~ msgid "User Account Wizard"
-#~ msgstr "Guide för användarkonton"
-
-#~ msgid "User Creation Druid"
-#~ msgstr "Guide för skapande av användare"
-
-#~ msgid "User Identity (Step 1 of 2)"
-#~ msgstr "Användaridentitet (steg 1 av 2)"
-
-#~ msgid "User Profiles - GNOME System Tools"
-#~ msgstr "Användarprofiler - GNOME-systemverktygen"
-
-#~ msgid "%s - GNOME System Tools"
-#~ msgstr "%s - GNOME-systemverktygen"
-
-#~ msgid "Autodetecting modem device"
-#~ msgstr "Detekterar automatiskt modemenhet"
-
-#~ msgid ""
-#~ "The phone number must be composed of\n"
-#~ "only numbers or commas (,)."
-#~ msgstr ""
-#~ "Telefonnumret får endast bestå av\n"
-#~ "siffror och komman (,)."
-
-#~ msgid ""
-#~ "The password and its confirmation\n"
-#~ "must be the same."
-#~ msgstr ""
-#~ "Lösenordet och dess bekräftelse\n"
-#~ "måste stämma överens."
-
-#~ msgid ""
-#~ "If you are specifying a password,\n"
-#~ "you should specify a user name."
-#~ msgstr ""
-#~ "Om du anger ett lösenord måste\n"
-#~ "du ange ett användarnamn."
-
-#~ msgid ""
-#~ "Please set a name for this account,\n"
-#~ "using only space, letters and numbers."
-#~ msgstr ""
-#~ "Ange ett giltigt namn för detta konto, med\n"
-#~ "endast blanksteg, bokstäver och siffror."
-
-#~ msgid ""
-#~ "You are about to create an account named with the following information:\n"
-#~ "\n"
-#~ "Account Name: %s\n"
-#~ "\n"
-#~ "Phone number: %s\n"
-#~ "\n"
-#~ "User name: %s\n"
-#~ "\n"
-#~ "Password: %s"
-#~ msgstr ""
-#~ "Du kommer att skapa ett konto namngivet med följande information:\n"
-#~ "\n"
-#~ "Kontonamn: %s\n"
-#~ "\n"
-#~ "Telefonnummer: %s\n"
-#~ "\n"
-#~ "Användarnamn: %s\n"
-#~ "\n"
-#~ "Lösenord: %s"
-
-#~ msgid "Time Zone - GNOME System Tools"
-#~ msgstr "Tidszon - GNOME-systemverktygen"
-
-#~ msgid "Time Servers - GNOME System Tools"
-#~ msgstr "Tidsservrar - GNOME-systemverktygen"
-
-#~ msgid "2.422"
-#~ msgstr "2,422"
-
-#~ msgid "<span weight=\"bold\">Activation</span>"
-#~ msgstr "<span weight=\"bold\">Aktivering</span>"
-
-#~ msgid "<span weight=\"bold\">Ad-Hoc Settings</span>"
-#~ msgstr "<span weight=\"bold\">Ad-Hoc-inställningar</span>"
-
-#~ msgid "Connection Settings"
-#~ msgstr "Anslutningsinställningar"
-
-#~ msgid ""
-#~ "How the IP address for this connection\n"
-#~ "is determined."
-#~ msgstr ""
-#~ "Hur IP-adressen för denna anslutning\n"
-#~ "bestäms."
-
-#~ msgid ""
-#~ "How the IP addresses for this connection \n"
-#~ "are determined."
-#~ msgstr ""
-#~ "Hur IP-adresserna för denna anslutning\n"
-#~ "bestäms."
-
-#~ msgid "IP Settings"
-#~ msgstr "IP-inställningar"
-
-#~ msgid ""
-#~ "Use the comment to identify the interface in the future. Activation "
-#~ "management lets you set who will activate connections, and when."
-#~ msgstr ""
-#~ "Använd kommentaren för att identifiera gränssnittet i framtiden. "
-#~ "Aktiveringshantering låter dig ange vem som kan aktivera anslutningar, "
-#~ "och när."
-
-#~ msgid "WaveLAN"
-#~ msgstr "WaveLAN"
-
-#~ msgid "Wireless networking settings."
-#~ msgstr "Inställningar för trådlöst nätverk."
-
-#~ msgid "_Ad-Hoc mode"
-#~ msgstr "_Ad-Hoc-läge"
-
-#~ msgid "_Channel:"
-#~ msgstr "_Kanal:"
-
-#~ msgid "_Frequency (GHz):"
-#~ msgstr "_Frekvens (GHz):"
-
-#~ msgid "_Session ID:"
-#~ msgstr "_Sessions-ID:"
-
-#~ msgid "The name of this computer"
-#~ msgstr "Namnet på denna dator"
-
-#~ msgid "A short description of your computer"
-#~ msgstr "En kort beskrivning av din dator"
-
-#~ msgid "The Windows Networking workgroup for your network"
-#~ msgstr "Arbetsgruppen för ditt nätverk i Windows-nätverk"
-
-#~ msgid "The IP address of your WINS server"
-#~ msgstr "IP-adressen till din WINS-server"
-
-#~ msgid "The DNS domain for your computer"
-#~ msgstr "DNS-domänen till din dator"
-
-#~ msgid "A list of your DNS servers' IP addresses"
-#~ msgstr "En lista på dina DNS-servrars IP-adresser"
-
-#~ msgid "A list of domains where hosts will be searched"
-#~ msgstr "En lista på domäner där värdar kommer att sökas"
-
-#~ msgid "The IP address of this host"
-#~ msgstr "IP-adress för denna dator"
-
-#~ msgid "Aliases for this host, one per line"
-#~ msgstr "Alias för denna dator, en per rad"
-
-#~ msgid "Are you sure you want to delete the aliases for %s?"
-#~ msgstr "Är du säker på att du vill ta bort aliasen för %s?"
-
-#~ msgid "DNS _Servers:"
-#~ msgstr "DNS-_servrar:"
-
-#~ msgid "Sea_rch domains:"
-#~ msgstr "S_ökdomäner:"
-
-#~ msgid "User Details"
-#~ msgstr "Användardetaljer"
-
-#~ msgid "Comments"
-#~ msgstr "Kommentarer"
-
-#~ msgid "Boot Manager"
-#~ msgstr "Starthanterare"
-
-#~ msgid " Less _Options"
-#~ msgstr " Färre _alternativ"
-
-#~ msgid "Network adapter setup."
-#~ msgstr "Konfiguration av nätverkskort."
-
-#~ msgid "Services Manager"
-#~ msgstr "Tjänstehanterare"
-
-#~ msgid "Time"
-#~ msgstr "Tid"
-
-#~ msgid "Users and groups."
-#~ msgstr "Användare och grupper."
-
-#~ msgid "Configure a network interface."
-#~ msgstr "Konfigurera ett nätverksgränssnitt."
-
-#~ msgid "Interface"
-#~ msgstr "Gränssnitt"
-
-#~ msgid "Dialog complexity for the runlevel-admin tool"
-#~ msgstr "Dialogkomplexitet för körnivåadministrationsverktyget"
-
-#~ msgid "Runlevel that the runlevel-admin tool shows as default in basic mode"
-#~ msgstr ""
-#~ "Körnivå som körnivåadministrationsverktyget visar som standard i "
-#~ "grundläget"
-
-#~ msgid "Advanced mode not yet implemented. Sorry."
-#~ msgstr "Avancerat läge är inte implementerat än. Tyvärr."
-
-#~ msgid "DHCP Server"
-#~ msgstr "DHCP-server"
-
-#~ msgid "DHCP server configuration"
-#~ msgstr "DHCP-serverkonfiguration."
-
-#~ msgid "DHCP server configuration "
-#~ msgstr "DHCP-serverkonfiguration "
-
-#~ msgid "DNS_1 :"
-#~ msgstr "DNS_1:"
-
-#~ msgid "DNS_2 :"
-#~ msgstr "DNS_2:"
-
-#~ msgid "E_nabled"
-#~ msgstr "_Aktiverad"
-
-#~ msgid "Host Info : "
-#~ msgstr "Värdinformation:"
-
-#~ msgid "Hosts :"
-#~ msgstr "Värdar:"
-
-#~ msgid "Hosts Editor"
-#~ msgstr "Värdredigerare"
-
-#~ msgid "Ip Address"
-#~ msgstr "Ip-adress"
-
-#~ msgid "Range _End :"
-#~ msgstr "Intervallsl_ut:"
-
-#~ msgid "Range _Start :"
-#~ msgstr "Intervall_start:"
-
-#~ msgid "Router :"
-#~ msgstr "Router:"
-
-#~ msgid "Subnet _Mask :"
-#~ msgstr "Subnät_mask:"
-
-#~ msgid "_Add"
-#~ msgstr "_Lägg till"
-
-#~ msgid "_Comment :"
-#~ msgstr "_Kommentar:"
-
-#~ msgid "_Domain :"
-#~ msgstr "_Domän:"
-
-#~ msgid "_Edit Hosts..."
-#~ msgstr "_Redigera värdar..."
-
-#~ msgid "_Hostname :"
-#~ msgstr "_Värdnamn:"
-
-#~ msgid "_IP address :"
-#~ msgstr "_IP-adress:"
-
-#~ msgid "_MAC address :"
-#~ msgstr "_MAC-adress:"
-
-#~ msgid "host"
-#~ msgstr "värd"
-
-#~ msgid "Add an unlisted import"
-#~ msgstr "Lägg till en olistad import"
-
-#~ msgid "Add partition"
-#~ msgstr "Lägg till partition"
-
-#~ msgid "Automatic (detect when mounting)"
-#~ msgstr "Automatisk (upptäck vid montering)"
-
-#~ msgid "Check for errors on startup"
-#~ msgstr "Kontrollera fel vid start"
-
-#~ msgid "Choose a mount point"
-#~ msgstr "Välj en monteringspunkt"
-
-#~ msgid "Disks & partitions"
-#~ msgstr "Diskar och partitioner"
-
-#~ msgid ""
-#~ "Disks are divided into several pieces, called partitions. Each partition "
-#~ "is dedicated for a specific storage task, such as virtual memory or home "
-#~ "directories for your users."
-#~ msgstr ""
-#~ "Diskar är indelade i flera delar som kallas partitioner. Varje partition "
-#~ "är dedikerad till en specifik lagringsuppgift, som till exempel virtuellt "
-#~ "minne eller hemkataloger för dina användare."
-
-#~ msgid "Ext2 (Linux)"
-#~ msgstr "Ext2 (Linux)"
-
-#~ msgid "FAT (DOS)"
-#~ msgstr "FAT (DOS)"
-
-#~ msgid "FAT32 (Windows 98 and newer)"
-#~ msgstr "FAT32 (Windows 98 och nyare)"
-
-#~ msgid "Mount point:"
-#~ msgstr "Monteringspunkt:"
-
-#~ msgid "Mount this partition"
-#~ msgstr "Montera denna partition"
-
-#~ msgid "NTFS (Windows NT & 2000)"
-#~ msgstr "NTFS (Windows NT och 2000)"
-
-#~ msgid "Open settings dialog for selected import"
-#~ msgstr "Öppna inställningsdialogen för vald import"
-
-#~ msgid "Partition"
-#~ msgstr "Partition"
-
-#~ msgid "Partition Settings"
-#~ msgstr "Partitionsinställningar"
-
-#~ msgid "Remember details of this partition"
-#~ msgstr "Kom ihåg detaljerna för denna partition"
-
-#~ msgid "Type:"
-#~ msgstr "Typ:"
-
-#~ msgid "VFAT (Windows 95 and newer)"
-#~ msgstr "VFAT (Windows 95 och nyare)"
-
-#~ msgid "reiserfs (Linux)"
-#~ msgstr "reiserfs (Linux)"
-
-#~ msgid "ufs (FreeBSD)"
-#~ msgstr "ufs (FreeBSD)"
-
-#~ msgid "<unknown>"
-#~ msgstr "<okänd>"
-
-#~ msgid "Appearance"
-#~ msgstr "Utseende"
-
-#~ msgid "Colors"
-#~ msgstr "Färger"
-
-#~ msgid "Colors:"
-#~ msgstr "Färger:"
-
-#~ msgid "Down"
-#~ msgstr "Ner"
-
-#~ msgid "Left"
-#~ msgstr "Vänster"
-
-#~ msgid "Model:"
-#~ msgstr "Modell:"
-
-#~ msgid "Monitor information"
-#~ msgstr "Bildskärmsinformation"
-
-#~ msgid "Narrower"
-#~ msgstr "Smalare"
-
-#~ msgid "Probe again"
-#~ msgstr "Undersök igen"
-
-#~ msgid "Refresh rate:"
-#~ msgstr "Uppdateringsfrekvens:"
-
-#~ msgid "Resolution"
-#~ msgstr "Upplösning"
-
-#~ msgid "Restart X"
-#~ msgstr "Starta om X"
-
-#~ msgid "Right"
-#~ msgstr "Höger"
-
-#~ msgid "Shift my display:"
-#~ msgstr "Skifta min bild:"
-
-#~ msgid "Shorter"
-#~ msgstr "Kortare"
-
-#~ msgid "Stretch my display:"
-#~ msgstr "Sträck ut min bild:"
-
-#~ msgid "Taller"
-#~ msgstr "Längre"
-
-#~ msgid "Test current setting"
-#~ msgstr "Testa nuvarande inställningar"
-
-#~ msgid "Up"
-#~ msgstr "Upp"
-
-#~ msgid "Use this tool to configure your monitor."
-#~ msgstr "Använd detta verktyg för att konfigurera din bildskärm."
-
-#~ msgid "Vendor:"
-#~ msgstr "Tillverkare:"
-
-#~ msgid "Wider"
-#~ msgstr "Bredare"
-
-#~ msgid "_Restore settings"
-#~ msgstr "_Återställ inställningar"
-
-#~ msgid "Add font..."
-#~ msgstr "Lägg till typsnitt..."
-
-#~ msgid "Delete font"
-#~ msgstr "Ta bort typsnitt"
-
-#~ msgid "Font family"
-#~ msgstr "Typsnittsfamilj"
-
-#~ msgid "Font size:"
-#~ msgstr "Typsnittsstorlek:"
-
-#~ msgid "Preview"
-#~ msgstr "Förhandsgranska"
-
-#~ msgid "Select the fonts you want to install."
-#~ msgstr "Välj de typsnitt du vill installera."
-
-#~ msgid "Style"
-#~ msgstr "Stil"
-
-#~ msgid "   Configure...   "
-#~ msgstr "   Konfigurera...   "
-
-#~ msgid " Exit and come back later after installing."
-#~ msgstr " Avsluta och kom tillbaka efter installation."
-
-#~ msgid " Keep the current configuration."
-#~ msgstr " Behåll den aktuella konfigurationen."
-
-#~ msgid " Never mind, don't use it then."
-#~ msgstr " Nej, använd inte den då."
-
-#~ msgid " No, I'll manually configure the local network computers."
-#~ msgstr ""
-#~ " Nej, jag kommer att manuellt konfigurera lokala datorer på nätverket."
-
-#~ msgid " No, I'll set it up later by myself."
-#~ msgstr " Nej, jag kommer att konfigurera det senare själv."
-
-#~ msgid " No, exit this druid and continue later."
-#~ msgstr " nej, avsluta denna guide och fortsätt senare."
-
-#~ msgid " No, overwrite with new defaults (recommended)"
-#~ msgstr " Nej, skriv över med nya standardalternativ (rekommenderas)"
-
-#~ msgid ""
-#~ " Overwrite with the default internet sharing configuration (recommended)."
-#~ msgstr ""
-#~ " Skriv över med standardkonfigurationen för Internetdelning "
-#~ "(rekommenderas)."
-
-#~ msgid ""
-#~ " Yes, I'll set the local network computers to use automatic IP "
-#~ "assignment  (recommended)."
-#~ msgstr ""
-#~ " Ja, jag kommer att ställa in lokala datorer på nätverket för att använda "
-#~ "automatisk IP-tilldelning (rekommenderas)."
-
-#~ msgid " Yes, keep the current DHCP configuration."
-#~ msgstr " Ja, behåll den aktuella DHCP-konfigurationen."
-
-#~ msgid " Yes, launch network tool (recommended)."
-#~ msgstr " Ja, starta nätverksverktyg (rekommenderas)."
-
-#~ msgid ""
-#~ "A local network connection was not detected.\n"
-#~ "Would you like to configure one?\n"
-#~ msgstr ""
-#~ "En lokal nätverksanslutning kunde inte hittas.\n"
-#~ "Vill du konfigurera en?\n"
-
-#~ msgid ""
-#~ "A local network interface has been detected, but it's not active.\n"
-#~ "Would you like to activate it now?\n"
-#~ msgstr ""
-#~ "Ett lokalt nätverksgränssnitt har upptäckts, men det är inte aktivt.\n"
-#~ "Vill du aktivera det nu?\n"
-
-#~ msgid ""
-#~ "A previous DHCP configuration has been detected. \n"
-#~ "Do you want to keep this configuration?"
-#~ msgstr ""
-#~ "En befintlig DHCP-konfiguration har upptäckts.\n"
-#~ "Vill du behålla denna konfiguration?"
-
-#~ msgid "Banner Removal (Junkbuster)"
-#~ msgstr "Bannerborttagning (JunkBuster)"
-
-#~ msgid "Configure DHCP Service"
-#~ msgstr "Konfigurera DHCP-tjänst"
-
-#~ msgid ""
-#~ "Congratulations! This computer is now\n"
-#~ "configured to share its Internet connection.\n"
-#~ msgstr ""
-#~ "Gratulerar! Din dator är nu konfigurerad\n"
-#~ "att dela ut dess Internetanslutning.\n"
-
-#~ msgid "DHCP service configuration."
-#~ msgstr "DHCP-tjänstkonfiguration."
-
-#~ msgid "DHCP service requirements."
-#~ msgstr "DHCP-tjänstkrav."
-
-#~ msgid "Disable"
-#~ msgstr "Slå av"
-
-#~ msgid "Enable :"
-#~ msgstr "Aktivera:"
-
-#~ msgid "End of Range"
-#~ msgstr "Slut på intervall"
-
-#~ msgid "Firewall"
-#~ msgstr "Brandvägg"
-
-#~ msgid "IP Forwarding"
-#~ msgstr "IP-vidarebefordran"
-
-#~ msgid "Internet Sharing"
-#~ msgstr "Internetdelning"
-
-#~ msgid "Internet Sharing --Advanced Mode"
-#~ msgstr "Internetdelning -- Avancerat läge"
-
-#~ msgid "Internet Sharing Configuration Druid"
-#~ msgstr "Guide för konfiguration av Internetdelning"
-
-#~ msgid "Internet Sharing Druid"
-#~ msgstr "Guide för Internetdelning"
-
-#~ msgid "Internet sharing configuration."
-#~ msgstr "Konfiguration av Internetdelning."
-
-#~ msgid "Local network interface activation."
-#~ msgstr "Lokal nätverksgränssnittsaktivering."
-
-#~ msgid "Start of Range"
-#~ msgstr "Start på intervall"
-
-#~ msgid ""
-#~ "The Internet sharing tool allows you to share your Internet conection "
-#~ "with other computers on the network."
-#~ msgstr ""
-#~ "Internetdelningsverktyget låter dig dela din Internetanslutning med andra "
-#~ "datorer på nätverket."
-
-#~ msgid "Web Cache (squid)"
-#~ msgstr "Webbcache (squid)"
-
-#~ msgid ""
-#~ "Welcome to the Internet Sharing Configuration Druid.\n"
-#~ "\n"
-#~ "This druid will help you to configure and share\n"
-#~ "your Internet connection.\n"
-#~ "\n"
-#~ "You should have already installed and configured a local\n"
-#~ "network connection, such as an Ethernet or waveLAN\n"
-#~ "card, and an internet connection, such as a modem.\n"
-#~ "\n"
-#~ "If you haven't, you will be given the option to launch the\n"
-#~ "Network Tool to configure them before continuing."
-#~ msgstr ""
-#~ "Välkommen till guiden för konfiguration av Internetdelning.\n"
-#~ "\n"
-#~ "Denna guide kommer att hjälpa dig att\n"
-#~ "konfigurera och dela din Internetanslutning.\n"
-#~ "\n"
-#~ "Du måste åtminstone ha ett lokalt nätverksgränssnitt, som\n"
-#~ "exempelvis ett Ethernet- eller WaveLAN-kort och en\n"
-#~ "Internetanslutning, som exempelvis ett modem.\n"
-#~ "\n"
-#~ "Om du inte har detta kommer du att erbjudas alternativet\n"
-#~ "att starta nätverksverktyget för att konfigurera dem innan\n"
-#~ "du fortsätter."
-
-#~ msgid ""
-#~ "Would you like to give the automatic network\n"
-#~ "address assignment service (DHCP)?\n"
-#~ msgstr ""
-#~ "Vill du använda den automatiska tjänsten för\n"
-#~ "tilldelning av nätverksadresser (DHCP)?\n"
-
-#~ msgid "Yes (recommended)."
-#~ msgstr "Ja (rekommenderas)."
-
-#~ msgid ""
-#~ "You already have an internet sharing configuration.\n"
-#~ "Do you want to keep it, or use the druid's defaults?\n"
-#~ msgstr ""
-#~ "Du har redan en befintlig Internetdelningskonfiguration.\n"
-#~ "Vill du behålla den, eller använda guidens standardalternativ?\n"
-
-#~ msgid ""
-#~ "You don't have a DHCP server installed, or\n"
-#~ "some other related component is missing."
-#~ msgstr ""
-#~ "Du har inte en DHCP-server installerad, eller\n"
-#~ "någon annan relaterad komponent saknas."
-
-#~ msgid "\n"
-#~ msgstr "\n"
-
-#~ msgid "                           "
-#~ msgstr "                           "
-
-#~ msgid "AM"
-#~ msgstr "FM"
-
-#~ msgid "Boston Office"
-#~ msgstr "Boston-kontoret"
-
-#~ msgid "Choose Location"
-#~ msgstr "Välj plats"
-
-#~ msgid "Copy"
-#~ msgstr "Kopiera"
-
-#~ msgid "Copy Location"
-#~ msgstr "Kopiera plats"
-
-#~ msgid "Current:"
-#~ msgstr "Nuvarande:"
-
-#~ msgid "Date"
-#~ msgstr "Datum"
-
-#~ msgid "Date/Time "
-#~ msgstr "Datum/tid "
-
-#~ msgid "Date/time"
-#~ msgstr "Datum/tid"
-
-#~ msgid "Edit Date/Time"
-#~ msgstr "Redigera datum/tid"
-
-#~ msgid "Edit Location"
-#~ msgstr "Redigera plats"
-
-#~ msgid "Edit:"
-#~ msgstr "Redigera:"
-
-#~ msgid "Helsinki Office"
-#~ msgstr "Helsinki-kontoret"
-
-#~ msgid "Keep clock synchronized with selected servers"
-#~ msgstr "Håll klockan synkroniserad med markerade servrar"
-
-#~ msgid "Location"
-#~ msgstr "Plats"
-
-#~ msgid "Location Management"
-#~ msgstr "Platshantering"
-
-#~ msgid "Location:"
-#~ msgstr "Plats:"
-
-#~ msgid "Locations"
-#~ msgstr "Platser"
-
-#~ msgid "Mexico CIty "
-#~ msgstr "Mexico City"
-
-#~ msgid "Name:"
-#~ msgstr "Namn:"
-
-#~ msgid "New Location"
-#~ msgstr "Ny plats"
-
-#~ msgid "New Name:"
-#~ msgstr "Nytt namn:"
-
-#~ msgid "PM"
-#~ msgstr "EM"
-
-#~ msgid "Rename"
-#~ msgstr "Byt namn"
-
-#~ msgid "Rename Location"
-#~ msgstr "Byt namn på plats"
-
-#~ msgid "Rollback-location-management-mockup"
-#~ msgstr "Återgång-platshantering-uppstädning"
-
-#~ msgid "Select servers..."
-#~ msgstr "Välj servrar..."
-
-#~ msgid "Set time zone..."
-#~ msgstr "Ställ in tidszon..."
-
-#~ msgid "Time server"
-#~ msgstr "Tidsserver"
-
-#~ msgid "Time zone"
-#~ msgstr "Tidszon"
-
-#~ msgid ""
-#~ "Use this tool to manage all the different locations where you could "
-#~ "possibly want to use your stinking laptop."
-#~ msgstr ""
-#~ "Använd detta verktyg för att hantera alla de platser där du kan tänkas "
-#~ "vilja använda din skithög till bärbara dator."
-
-#~ msgid "_Help"
-#~ msgstr "_Hjälp"
-
-#~ msgid "_Settings..."
-#~ msgstr "_Inställningar..."
-
-#~ msgid "Available partitions:"
-#~ msgstr "Tillgängliga partitioner:"
-
-#~ msgid "Available swap areas"
-#~ msgstr "Tillgängliga växlingsutrymmen"
-
-#~ msgid "Browse..."
-#~ msgstr "Bläddra..."
-
-#~ msgid "Cancel"
-#~ msgstr "Avbryt"
-
-#~ msgid "Enabled"
-#~ msgstr "Aktiverad"
-
-#~ msgid "MB"
-#~ msgstr "MB"
-
-#~ msgid "New Swap Device"
-#~ msgstr "Ny växlingsenhet"
-
-#~ msgid "OK"
-#~ msgstr "OK"
-
-#~ msgid "Path:"
-#~ msgstr "Sökväg:"
-
-#~ msgid "Physical memory:"
-#~ msgstr "Fysiskt minne:"
-
-#~ msgid "Priority"
-#~ msgstr "Prioritet"
-
-#~ msgid "Select  Swap File"
-#~ msgstr "Välj växlingsfil"
-
-#~ msgid "Size"
-#~ msgstr "Storlek"
-
-#~ msgid "Size:"
-#~ msgstr "Storlek:"
-
-#~ msgid "Swap Settings"
-#~ msgstr "Växlingsminnesinställningar"
-
-#~ msgid "Swap memory:"
-#~ msgstr "Växlingsminne (swap):"
-
-#~ msgid "Swap type:"
-#~ msgstr "Växlingstyp:"
-
-#~ msgid "_Remove"
-#~ msgstr "_Ta bort"
-
-#~ msgid "_Settings"
-#~ msgstr "_Inställningar"
-
-#~ msgid "file"
-#~ msgstr "fil"
-
-#~ msgid "partition"
-#~ msgstr "partition"
-
-#~ msgid " Move Up"
-#~ msgstr " Flytta upp"
-
-#~ msgid " Names"
-#~ msgstr " Namn"
-
-#~ msgid "Aliases Settings"
-#~ msgstr "Aliasinställningar"
-
-#~ msgid ""
-#~ "Assign aliases to IP addresses that may not be registered in the DNS or "
-#~ "WINS servers, or to override or set new names for commonly used IP "
-#~ "addresses. "
-#~ msgstr ""
-#~ "Tilldela alias till IP-adresser som kanske inte är registerade i DNS- "
-#~ "eller WINS-servrar, eller för att skriva över eller ställa in nya namn "
-#~ "för vanligt använda IP-adresser. "
-
-#~ msgid "Change the alias' IP address or its corresponding names."
-#~ msgstr "Ändra aliasets IP-adress eller dess tillhörande namn."
-
-#~ msgid "Domain"
-#~ msgstr "Domän"
-
-#~ msgid "Domain Lookup Order"
-#~ msgstr "Ordning för domänuppslagning"
-
-#~ msgid "Domain Name Service (DNS)"
-#~ msgstr "Domännamnstjänst (DNS)"
-
-#~ msgid "Domain:"
-#~ msgstr "Domän:"
-
-#~ msgid "Existing:"
-#~ msgstr "Existerande:"
-
-#~ msgid "Host"
-#~ msgstr "Värd"
-
-#~ msgid "Host name:"
-#~ msgstr "Värdnamn:"
-
-#~ msgid "IP address"
-#~ msgstr "IP-adress"
-
-#~ msgid "IP address:"
-#~ msgstr "IP-adress:"
-
-#~ msgid "Identification"
-#~ msgstr "Identifiering"
-
-#~ msgid "Let the computer know its name, function and network surroundings."
-#~ msgstr "Låt datorn veta dess namn, funktion och nätverksomgivning."
-
-#~ msgid "Move Down"
-#~ msgstr "Flytta ner"
-
-#~ msgid "New Alias"
-#~ msgstr "Nytt alias"
-
-#~ msgid "New domain:"
-#~ msgstr "Ny domän:"
-
-#~ msgid "New server:"
-#~ msgstr "Ny server:"
-
-#~ msgid "New:"
-#~ msgstr "Ny:"
-
-#~ msgid "Reverse:"
-#~ msgstr "Omvänd:"
-
-#~ msgid "Search Domains"
-#~ msgstr "Sökdomäner"
-
-#~ msgid "Servers"
-#~ msgstr "Servrar"
-
-#~ msgid "Settings for the selected alias"
-#~ msgstr "Inställningar för det markerade aliaset"
-
-#~ msgid "Use WINS server:"
-#~ msgstr "Använd WINS-server:"
-
-#~ msgid "Workgroup:"
-#~ msgstr "Arbetsgrupp:"
-
-#~ msgid "/dev/lp0 (LPT1)"
-#~ msgstr "/dev/lp0 (LPT1)"
-
-#~ msgid "/dev/lp1 (LPT2)"
-#~ msgstr "/dev/lp1 (LPT2)"
-
-#~ msgid "/dev/ttyS0 (COM1)"
-#~ msgstr "/dev/ttyS0 (COM1)"
-
-#~ msgid "/dev/ttyS1 (COM2)"
-#~ msgstr "/dev/ttyS1 (COM2)"
-
-#~ msgid "/dev/ttyS2 (COM3)"
-#~ msgstr "/dev/ttyS2 (COM3)"
-
-#~ msgid "/dev/ttyS3 (COM4)"
-#~ msgstr "/dev/ttyS3 (COM4)"
-
-#~ msgid "1200x1200"
-#~ msgstr "1200×1200"
-
-#~ msgid "1200x600"
-#~ msgstr "1200×600"
-
-#~ msgid "16 colors"
-#~ msgstr "16 färger"
-
-#~ msgid "256 colors"
-#~ msgstr "256 färger"
-
-#~ msgid "300x300"
-#~ msgstr "300×300"
-
-#~ msgid "400x400"
-#~ msgstr "400×400"
-
-#~ msgid "600x600"
-#~ msgstr "600×600"
-
-#~ msgid "A3"
-#~ msgstr "A3"
-
-#~ msgid "A4"
-#~ msgstr "A4"
-
-#~ msgid "Add Printer..."
-#~ msgstr "Lägg till skrivare..."
-
-#~ msgid "Add a New Printer"
-#~ msgstr "Lägg till en ny skrivare"
-
-#~ msgid "Connection"
-#~ msgstr "Anslutning"
-
-#~ msgid ""
-#~ "Convert PC linefeeds to Un*x format. Helps avoid \"stairstepping\" text."
-#~ msgstr ""
-#~ "Konvertera PC-radmatningar till Un*x-format. Hjälper mot "
-#~ "\"trappstegsformad\" text."
-
-#~ msgid "Convert _Linefeeds"
-#~ msgstr "Konvertera _radmatningar"
-
-#~ msgid "Document Pages per Sheet"
-#~ msgstr "Dokumentsidor per ark"
-
-#~ msgid "Driver"
-#~ msgstr "Drivrutin"
-
-#~ msgid "E_xplicitly Eject Last Page"
-#~ msgstr "Mata e_xplicit ut sista sidan"
-
-#~ msgid "High Color"
-#~ msgstr "Tusentals färger"
-
-#~ msgid "Legal"
-#~ msgstr "Legal"
-
-#~ msgid "Letter"
-#~ msgstr "Letter"
-
-#~ msgid "Name of the printer."
-#~ msgstr "Namn på skrivaren."
-
-#~ msgid "Name of the server the printer is connected to."
-#~ msgstr "Namn på servern som skrivaren är ansluten till."
-
-#~ msgid "Name the server uses for the printer."
-#~ msgstr "Namn som servern använder på skrivaren."
-
-#~ msgid "Novell _Netware (NCP) Printer"
-#~ msgstr "Novell _Netware-skrivare (NCP)"
-
-#~ msgid "Number of colors to print in."
-#~ msgstr "Antal färger att skriva ut i."
-
-#~ msgid "Options"
-#~ msgstr "Alternativ"
-
-#~ msgid "P_aper Size:"
-#~ msgstr "P_appersstorlek:"
-
-#~ msgid "P_ort Number:"
-#~ msgstr "P_ortnummer:"
-
-#~ msgid "Port number the server is listening to."
-#~ msgstr "Portnummer som servern lyssnar på."
-
-#~ msgid "Port the printer is connected to."
-#~ msgstr "Port som skrivaren är ansluten på."
-
-#~ msgid "Print one page per sheet."
-#~ msgstr "Skriv ut en sida per ark."
-
-#~ msgid "Print resolution."
-#~ msgstr "Utskriftsupplösning."
-
-#~ msgid "Printer Settings"
-#~ msgstr "Skrivarinställningar"
-
-#~ msgid "Printer connected to a port on your machine."
-#~ msgstr "Skrivare ansluten till en port på din maskin."
-
-#~ msgid "Printer listening directly for network connections."
-#~ msgstr "Skrivare som lyssnar direkt på nätverksanslutningar."
-
-#~ msgid "Printer shared on a Windows (SMB) network."
-#~ msgstr "Skrivare som delas på ett Windows-nätverk (SMB)."
-
-#~ msgid "Printer shared using the Novell Netware (NCP) protocol."
-#~ msgstr "Skrivare som delas med hjälp av protokollet Novell Netware (NCP)."
-
-#~ msgid "Printer shared using the Unix (lpd) print protocol."
-#~ msgstr "Skrivare som delas med hjälp av Unix-utskriftsprotokollet (lpd)."
-
-#~ msgid "R_esolution:"
-#~ msgstr "U_pplösning:"
-
-#~ msgid "Remote UNIX (_lpd) Printer"
-#~ msgstr "Fjärr-UNIX-nätverksskrivare (_lpd)"
-
-#~ msgid "Remote _Windows (SMB) printer"
-#~ msgstr "_Windows-nätverksskrivare (SMB)"
-
-#~ msgid "SMB workgroup the server is in."
-#~ msgstr "SMB-arbetsgrupp som skivaren är i."
-
-#~ msgid "Scale pages down and print eight per sheet."
-#~ msgstr "Skala ner sidor och skriv ut åtta per ark."
-
-#~ msgid "Scale pages down and print four per sheet."
-#~ msgstr "Skala ner sidor och skriv ut fyra per ark."
-
-#~ msgid "Scale pages down and print two per sheet."
-#~ msgstr "Skala ner sidor och skriv ut två per ark."
-
-#~ msgid "Select the type of printer to add:"
-#~ msgstr "Välj den typ av skrivare som du vill lägga till:"
-
-#~ msgid "Send an EOF after the print job to help eject the last page."
-#~ msgstr ""
-#~ "Skicka ett EOF efter utskriftsjobbet för att hjälpa till med att mata ut "
-#~ "sidan."
-
-#~ msgid "Send text documents raw to the printer."
-#~ msgstr "Skicka textdokument i rått format till skrivaren."
-
-#~ msgid "Settings..."
-#~ msgstr "Inställningar..."
-
-#~ msgid "Size of the paper in the printer."
-#~ msgstr "Storlek på pappret i skrivaren."
-
-#~ msgid "The password used to connect to the server."
-#~ msgstr "Lösenordet som används för att ansluta till servern."
-
-#~ msgid ""
-#~ "This is the list of the configured printers available on the system. "
-#~ "Create new printers or edit existing printer settings with this dialog."
-#~ msgstr ""
-#~ "Det här är en lista över de konfigurerade skrivare som finns på systemet. "
-#~ "Du kan skapa nya skrivare eller redigera existerande skrivare med detta "
-#~ "dialogfönster."
-
-#~ msgid "True Color"
-#~ msgstr "Miljontals färger"
-
-#~ msgid "Username used to connect to the server."
-#~ msgstr "Användarnamn som används för att ansluta till servern."
-
-#~ msgid "_1"
-#~ msgstr "_1"
-
-#~ msgid "_2"
-#~ msgstr "_2"
-
-#~ msgid "_4"
-#~ msgstr "_4"
-
-#~ msgid "_8"
-#~ msgstr "_8"
-
-#~ msgid "_Color Depth:"
-#~ msgstr "_Färgdjup:"
-
-#~ msgid "_Device Name:"
-#~ msgstr "_Enhetsnamn:"
-
-#~ msgid "_Direct Network Printer"
-#~ msgstr "_Direktansluten nätverksskrivare"
-
-#~ msgid "_Fast Text Printing"
-#~ msgstr "_Snabb textutskrift"
-
-#~ msgid "_Local Printer"
-#~ msgstr "_Lokal skrivare"
-
-#~ msgid "_Remote Name:"
-#~ msgstr "_Fjärrnamn:"
-
-#~ msgid "_Workgroup:"
-#~ msgstr "A_rbetsgrupp:"
-
-#~ msgid "Advanced..."
-#~ msgstr "Avancerat..."
-
-#~ msgid "Change to this Location"
-#~ msgstr "Byt till denna plats"
-
-#~ msgid "Configuration Restoration"
-#~ msgstr "Konfigurationsåterställning"
-
-#~ msgid "Create..."
-#~ msgstr "Skapa..."
-
-#~ msgid "Destroy..."
-#~ msgstr "Förstör..."
-
-#~ msgid "Edit this Location"
-#~ msgstr "Redigera denna plats"
-
-#~ msgid "Location name:"
-#~ msgstr "Platsnamn:"
-
-#~ msgid "Parent Location:"
-#~ msgstr "Förälderplats:"
-
-#~ msgid "Rename..."
-#~ msgstr "Byt namn..."
-
-#~ msgid "Restore all tools"
-#~ msgstr "Återställ alla verktyg"
-
-#~ msgid "Restore configuration from"
-#~ msgstr "Återställ konfigurationen från"
-
-#~ msgid "Restore only"
-#~ msgstr "Återställ endast"
-
-#~ msgid "View Logs..."
-#~ msgstr "Visa loggar..."
-
-#~ msgid "days ago"
-#~ msgstr "dagar sedan"
-
-#~ msgid " Edit clients... "
-#~ msgstr " Redigera klienter... "
-
-#~ msgid " _Edit clients... "
-#~ msgstr " _Redigera klienter... "
-
-#~ msgid "Access control"
-#~ msgstr "Åtkomstkontroll"
-
-#~ msgid "Add..."
-#~ msgstr "Lägg till..."
-
-#~ msgid "Allow writing"
-#~ msgstr "Tillåt skrivning"
-
-#~ msgid "Browseable"
-#~ msgstr "Bläddringsbar"
-
-#~ msgid "Client"
-#~ msgstr "Klient"
-
-#~ msgid "Clients"
-#~ msgstr "Klienter"
-
-#~ msgid "Comment:"
-#~ msgstr "Kommentar:"
-
-#~ msgid "Do not _remount this share after computer reboots"
-#~ msgstr "Montera _inte om denna utdelning efter omstarter av datorn"
-
-#~ msgid "Do not remount this share after computer reboots"
-#~ msgstr "Montera inte om denna utdelning efter omstarter av datorn"
-
-#~ msgid "Export"
-#~ msgstr "Export"
-
-#~ msgid "Export Clients"
-#~ msgstr "Exportklienter"
-
-#~ msgid "Export Settings"
-#~ msgstr "Exportinställningar"
-
-#~ msgid "Export _type:"
-#~ msgstr "_Typ av export:"
-
-#~ msgid "Export type:"
-#~ msgstr "Typ av export:"
-
-#~ msgid "Exports"
-#~ msgstr "Exporter"
-
-#~ msgid ""
-#~ "Exports are used to share directories on your computer with other "
-#~ "computers over the network. "
-#~ msgstr ""
-#~ "Exporter används för att dela kataloger på din dator med andra datorer "
-#~ "över nätverket."
-
-#~ msgid "Host:"
-#~ msgstr "Värd:"
-
-#~ msgid "If the mount point does not exist, it will be created."
-#~ msgstr "Om monteringspunkten inte finns kommer den att skapas."
-
-#~ msgid "Import"
-#~ msgstr "Import"
-
-#~ msgid "Import Settings"
-#~ msgstr "Importinställningar"
-
-#~ msgid "Import Settings--NFS Options"
-#~ msgstr "Importinställningar--NFS-alternativ"
-
-#~ msgid "Import Settings--Samba Options (Obsolete)"
-#~ msgstr "Importinställningar--Samba-alternativ (föråldrat)"
-
-#~ msgid "Import _type:"
-#~ msgstr "_Typ av import:"
-
-#~ msgid "Import type:"
-#~ msgstr "Typ av import:"
-
-#~ msgid "Imports"
-#~ msgstr "Importer"
-
-#~ msgid ""
-#~ "Imports are directories which reside in other computers and are "
-#~ "accessible to you through the network."
-#~ msgstr ""
-#~ "Importer är kataloger som finns på andra datorer och som du kan komma åt "
-#~ "över nätverket."
-
-#~ msgid "Mount Point"
-#~ msgstr "Monteringspunkt"
-
-#~ msgid "Mount p_oint:"
-#~ msgstr "M_onteringspunkt:"
-
-#~ msgid "Mounted"
-#~ msgstr "Monterad"
-
-#~ msgid "Mounting Options"
-#~ msgstr "Monteringsalternativ"
-
-#~ msgid "Mounting options"
-#~ msgstr "Monteringsalternativ"
-
-#~ msgid "NFS"
-#~ msgstr "NFS"
-
-#~ msgid "P_ublic"
-#~ msgstr "P_ublik"
-
-#~ msgid "Pass_word:"
-#~ msgstr "_Lösenord:"
-
-#~ msgid "Path"
-#~ msgstr "Sökväg"
-
-#~ msgid "Pattern:"
-#~ msgstr "Mönster:"
-
-#~ msgid "Public"
-#~ msgstr "Publik"
-
-#~ msgid "Restrict access to this share to specific clients"
-#~ msgstr "Begränsa åtkomst av denna utdelning till specifika klienter"
-
-#~ msgid "Samba"
-#~ msgstr "Samba"
-
-#~ msgid "Update"
-#~ msgstr "Uppdatera"
-
-#~ msgid ""
-#~ "Use this dialog to create a new export, or to edit the settings of an "
-#~ "existing export."
-#~ msgstr ""
-#~ "Använd detta dialogfönster för att skapa en ny export, eller för att "
-#~ "redigera inställningarna för en existerande export."
-
-#~ msgid ""
-#~ "Use this dialog to create a new import, or to edit the settings of an "
-#~ "existing import."
-#~ msgstr ""
-#~ "Använd detta dialogfönster för att skapa en ny import, eller för att "
-#~ "redigera inställningarna för en existerande import."
-
-#~ msgid ""
-#~ "Use this dialog to define the client patterns which determine who has "
-#~ "access to your NFS share. Client patterns are typically of the form "
-#~ "\"10.10.10.*\" or \" *.gnome.org\".  "
-#~ msgstr ""
-#~ "Använd detta dialogfönster för att specifiera de klientmönster som avgör "
-#~ "vem som kan komma åt din NFS-utdelning. Klientmönster är normalt på "
-#~ "formen \"10.10.10.*\" eller \" *.gnome.org\".  "
-
-#~ msgid "Writable"
-#~ msgstr "Skrivbar"
-
-#~ msgid "_Browseable"
-#~ msgstr "_Bläddringsbar"
-
-#~ msgid "_Enable"
-#~ msgstr "A_ktivera"
-
-#~ msgid "_Host:"
-#~ msgstr "_Värd:"
-
-#~ msgid "_Mount"
-#~ msgstr "_Montera"
-
-#~ msgid "_Mounted"
-#~ msgstr "_Monterad"
-
-#~ msgid "_Path:"
-#~ msgstr "_Sökväg:"
-
-#~ msgid "_Restrict access to this share to specific clients"
-#~ msgstr "Beg_ränsa åtkomst av denna utdelning till specifika klienter"
-
-#~ msgid "_Scan"
-#~ msgstr "_Genomsök"
-
-#~ msgid "_Writable"
-#~ msgstr "_Skrivbar"
-
-#~ msgid "add/edit clients"
-#~ msgstr "lägg till/ta bort klienter"
-
-#~ msgid "advanced mode--main window"
-#~ msgstr "avancerat läge--huvudfönster"
-
-#~ msgid "export settings--NFS options"
-#~ msgstr "exportinställningar--NFS-alternativ"
-
-#~ msgid "export settings--Samba options"
-#~ msgstr "exportinställningar--Samba-alternativ"
-
-#~ msgid "simple mode--main window"
-#~ msgstr "enkelt läge--huvudfönster"
-
-#~ msgid "Runlevel Settings"
-#~ msgstr "Körnivåinställningar"
-
-#~ msgid "Runlevel"
-#~ msgstr "Körnivå"
-
-#~ msgid "Security"
-#~ msgstr "Säkerhet"
-
-#~ msgid ""
-#~ "Comma separated list of hosts that GST will be able to access when the "
-#~ "remote configuration option is enabled"
-#~ msgstr ""
-#~ "Kommaseparerad lista med värdar som GST kommer att komma åt då "
-#~ "alternativet för fjärrkonfiguration är aktiverat"
-
-#~ msgid ""
-#~ "GST are able to do remote configuration through SSH, enable this option "
-#~ "to use this feature"
-#~ msgstr ""
-#~ "GST kan utföra fjärrkonfiguration genom SSH. Aktivera detta alternativ "
-#~ "för att använda denna funktion"
-
-#~ msgid "Remote Administration"
-#~ msgstr "Fjärradministration"
-
-#~ msgid "Scanning your system configuration."
-#~ msgstr "Läser av din systemkonfiguration."
-
-#~ msgid "Updating your system configuration."
-#~ msgstr "Uppdaterar din systemkonfiguration."
-
-#~ msgid "Pretending we are root..."
-#~ msgstr "Låtsas att vi är root..."
-
-#~ msgid "Number of colors"
-#~ msgstr "Antal färger"
-
-#~ msgid "Initrd image path:"
-#~ msgstr "Sökväg till initrd-avbild:"
-
-#~ msgid "Scanning system configuration."
-#~ msgstr "Läser igenom systemkonfigurationen."
-
-#~ msgid "_Configuration"
-#~ msgstr "_Konfiguration"
-
-#~ msgid "Connection name:"
-#~ msgstr "Anslutningsnamn:"
-
-#~ msgid "Create a new internet connection"
-#~ msgstr "Skapa en ny Internetanslutning"
-
-#~ msgid "How the IP address for this connection is determined."
-#~ msgstr "Hur IP-adressen för denna anslutning bestäms."
-
-#~ msgid "Number to get to an external line:"
-#~ msgstr "Nummer för att få en extern linje:"
-
-#~ msgid "Phonenumber:"
-#~ msgstr "Telefonnummer:"
-
-#~ msgid "S_ynchronize clock with Internet servers"
-#~ msgstr "S_ynkronisera klockan med Internetservrar"
-
-#~ msgid "P_arameters:"
-#~ msgstr "_Parametrar:"
-
-#~ msgid ""
-#~ "Network profiles can be used to store different\n"
-#~ " network configurations"
-#~ msgstr ""
-#~ "Nätverksprofiler kan användas för att lagra olika\n"
-#~ " nätverkskonfigurationer"
-
-#~ msgid "Profile name:"
-#~ msgstr "Profilnamn:"
-
-#~ msgid "Warning message goes here..\n"
-#~ msgstr "Varningsmeddelande hamnar här...\n"
-
-#~ msgid "System"
-#~ msgstr "System"
-
-#~ msgid "Internet Service Provider Data"
-#~ msgstr "Data för Internetleverantör"
-
-#~ msgid "Number to access an external line:"
-#~ msgstr "Nummer för att komma åt en extern linje:"
-
-#~ msgid "Number to get to an external line"
-#~ msgstr "Nummer för att få en extern linje"
-
-#~ msgid "Number to get to an external line."
-#~ msgstr "Nummer för att få en extern linje."
-
-#~ msgid "Remove"
-#~ msgstr "Ta bort"
-
-#~ msgid ""
-#~ "The internet sharing tool allows you to share your internet conection "
-#~ "with other computers on the network."
-#~ msgstr ""
-#~ "Internetdelningsverktyget låter dig dela din Internetanslutning med andra "
-#~ "datorer på nätverket."
-
-#~ msgid ""
-#~ "Welcome to the Internet Sharing Configuration Druid\n"
-#~ "\n"
-#~ "This druid will help you to configure \n"
-#~ "and share your internet connection.\n"
-#~ "\n"
-#~ "At least, you must have an installed and configured local\n"
-#~ "network interface, such as an ethernet or waveLAN card\n"
-#~ "and an internet connection, such as a modem."
-#~ msgstr ""
-#~ "Välkommen till guiden för konfiguration av Internetdelning.\n"
-#~ "\n"
-#~ "Denna guide kommer att hjälpa dig att\n"
-#~ "konfigurera och dela din Internetanslutning.\n"
-#~ "\n"
-#~ "Du måste åtminstone ha ett lokalt nätverksgränssnitt, som\n"
-#~ "exempelvis ett Ethernet- eller WaveLAN-kort och en\n"
-#~ "Internetanslutning, som exempelvis ett modem."
-
-#~ msgid ""
-#~ "A previous DHCP configuration has been detected. \n"
-#~ "Do you want to keep this configuration?\n"
-#~ msgstr ""
-#~ "En befintlig DHCP-konfiguration har upptäckts.\n"
-#~ "Vill du behålla denna konfiguration?\n"
-
-#~ msgid ""
-#~ "Congratulations! Your computer will now be\n"
-#~ "configured to share its internet connection.\n"
-#~ msgstr ""
-#~ "Gratulerar! Din dator kommer nu att konfigureras\n"
-#~ "för att dela dess Internetanslutning.\n"
-
-#~ msgid "Start rage"
-#~ msgstr "Start på intervall"
-
-#~ msgid "End range"
-#~ msgstr "Slut på intervall"
-
-#~ msgid ""
-#~ "NFS\n"
-#~ "Samba\n"
-#~ msgstr ""
-#~ "NFS\n"
-#~ "Samba\n"
-
-#~ msgid ""
-#~ "Samba\n"
-#~ "NFS\n"
-#~ msgstr ""
-#~ "Samba\n"
-#~ "NFS\n"
-
-#~ msgid "window1"
-#~ msgstr "window1"
-
-#~ msgid "Kernel image"
-#~ msgstr "Kärnavbild"
-
-#~ msgid "To select a time zone, click on one of the dots on the map."
-#~ msgstr "Välj en tidszon genom att klicka på en av prickarna på kartan."
-
-#~ msgid "Less _Options"
-#~ msgstr "Färre _alternativ"
-
-#~ msgid "Settings for user %s"
-#~ msgstr "Inställningar för användaren %s"
-
-#~ msgid "_Root:"
-#~ msgstr "_Rot:"
-
-#~ msgid "32K"
-#~ msgstr "32 kB"
-
-#~ msgid "64K"
-#~ msgstr "64 kB"
-
-#~ msgid "16M"
-#~ msgstr "16 MB"
-
-#~ msgid "Initrd:"
-#~ msgstr "Initrd:"
-
-#~ msgid "_Host name:"
-#~ msgstr "_Värdnamn:"
-
-#~ msgid "How other computers are accessed."
-#~ msgstr "Hur åtkomst av andra datorer sker."
-
-#~ msgid "_User name:"
-#~ msgstr "_Användarnamn:"
-
-#~ msgid "User name:"
-#~ msgstr "Användarnamn:"
-
-#~ msgid "Script name:"
-#~ msgstr "Skriptnamn:"
-
-#~ msgid "Selection:"
-#~ msgstr "Markering:"
-
-#~ msgid "<span weight=\"bold\">Time Server</span>"
-#~ msgstr "<span weight=\"bold\">Tidsserver</span>"
-
-#~ msgid ""
-#~ "This is a list of the users available in the system. Create new users or "
-#~ "edit existing user settings with this dialog."
-#~ msgstr ""
-#~ "Det här är en lista över de användare som finns tillgängliga på systemet. "
-#~ "Skapa nya användare eller redigera existerande användares inställningar "
-#~ "med detta dialogfönster."
-
-#~ msgid ""
-#~ "This is the list of the groups available in the system. Create new groups "
-#~ "or edit existing groups with this dialog."
-#~ msgstr ""
-#~ "Det här är en lista över de grupper som finns på ditt system. Du kan "
-#~ "skapa nya grupper eller redigera existerande grupper med detta "
-#~ "dialogfönster."
-
-#~ msgid "_Network profile"
-#~ msgstr "_Nätverksprofil"
-
-#~ msgid "Save current"
-#~ msgstr "Spara aktuell"
-
-#~ msgid "_Save"
-#~ msgstr "_Spara"
-
-#~ msgid "Save"
-#~ msgstr "Spara"
-
-#~ msgid "Profile Settings"
-#~ msgstr "Profilinställningar"
-
-#~ msgid "Connection name"
-#~ msgstr "Anslutningsnamn"
-
-#~ msgid "Account name (Step 3 of 3)"
-#~ msgstr "Kontonamn (steg 3 av 3)"
-
-#~ msgid ""
-#~ "Now, please enter the address that \n"
-#~ "this network device will have"
-#~ msgstr ""
-#~ "Ange nu den adress som denna\n"
-#~ "nätverksenhet kommer att ha"
-
-#~ msgid "Connection Type"
-#~ msgstr "Anslutningstyp"
-
-#~ msgid "ISP phone number"
-#~ msgstr "Internetleverantörens telefonnummer"
-
-#~ msgid "Username and password"
-#~ msgstr "Användarnamn och lösenord"
-
-#~ msgid "Account name"
-#~ msgstr "Kontonamn"
-
-#~ msgid "Address configuration"
-#~ msgstr "Adresskonfiguration"
-
-#~ msgid "Connection Name (Step 2 of 2)"
-#~ msgstr "Anslutningsnamn (steg 2 av 2)"
-
-#~ msgid "/_Add..."
-#~ msgstr "/_Lägg till..."
-
-#~ msgid "_Add ..."
-#~ msgstr "_Lägg till..."
-
-#~ msgid "Properties"
-#~ msgstr "Egenskaper"
-
-#~ msgid "_Properties"
-#~ msgstr "_Egenskaper"
-
-#~ msgid "_Add User ..."
-#~ msgstr "_Lägg till användare..."
-
-#~ msgid "/_Add User..."
-#~ msgstr "/_Lägg till användare..."
-
-#~ msgid "/_Add group..."
-#~ msgstr "/_Lägg till grupp..."
-
-#~ msgid "Starting the Computer"
-#~ msgstr "Start av datorn"
-
-#~ msgid "Operating system:"
-#~ msgstr "Operativsystem:"
-
-#~ msgid "Edit"
-#~ msgstr "Redigera"
-
-#~ msgid "Usual kernel parameters"
-#~ msgstr "Vanliga kärnparametrar"
-
-#~ msgid "Common kernel parameters."
-#~ msgstr "Vanliga kärnparametrar."
-
-#~ msgid "PPP _options:"
-#~ msgstr "PPP-_alternativ:"
-
-#~ msgid "Select Servers..."
-#~ msgstr "Välj servrar..."
-
-#~ msgid ""
-#~ "Could not autodetect modem device, check that this is not busy and that "
-#~ "it's correctly attached."
-#~ msgstr ""
-#~ "Kunde inte automatiskt detektera modemenheten. Kontrollera att den inte "
-#~ "är upptagen och att den är korrekt ansluten."
-
-#~ msgid "Search"
-#~ msgstr "Sök"
-
-#~ msgid "Clear"
-#~ msgstr "Töm"
-
-#~ msgid "_Edit..."
-#~ msgstr "_Redigera..."
-
-#~ msgid "<span weight=\"bold\">Basic</span>"
-#~ msgstr "<span weight=\"bold\">Grundläggande</span>"
-
-#~ msgid "Boot _type:"
-#~ msgstr "Start_typ:"
-
-#~ msgid "_Append:"
-#~ msgstr "_Tillfoga:"
-
-#~ msgid "<span weight=\"bold\">Image</span>"
-#~ msgstr "<span weight=\"bold\">Avbild</span>"
-
-#~ msgid "<span weight=\"bold\">Other</span>"
-#~ msgstr "<span weight=\"bold\">Annat</span>"
-
-#~ msgid "Scsi emulation devices"
-#~ msgstr "Scsi-emuleringsenheter"
-
-#~ msgid "Other options"
-#~ msgstr "Andra alternativ"
-
-#~ msgid "GNOME System Tools - Password"
-#~ msgstr "GNOME-systemverktygen - Lösenord"
-
-#~ msgid "Gnome System Tools"
-#~ msgstr "Gnome-systemverktygen"
-
-#~ msgid "Detected"
-#~ msgstr "Upptäckt"
-
-#~ msgid "Listed"
-#~ msgstr "Listad"
-
-#~ msgid "Bootable"
-#~ msgstr "Startbar"
-
-#~ msgid "Check"
-#~ msgstr "Kontrollera"
-
-#~ msgid "Mount point"
-#~ msgstr "Monteringspunkt"
-
-#~ msgid "_Delete..."
-#~ msgstr "_Ta bort..."
-
-#~ msgid "Ad-Hoc Settings"
-#~ msgstr "Ad-Hoc-inställningar"
-
-#~ msgid "<span weight=\"bold\">Options</span>"
-#~ msgstr "<span weight=\"bold\">Alternativ</span>"
-
-#~ msgid "Pppd _options:"
-#~ msgstr "pppd-alternati_v:"
-
-#~ msgid "<span weight=\"bold\">Script name:</span>"
-#~ msgstr "<span weight=\"bold\">Skriptnamn:</span>"
-
-#~ msgid "<span weight=\"bold\">Priority:</span>"
-#~ msgstr "<span weight=\"bold\">Prioritet:</span>"
-
-#~ msgid "<span weight=\"bold\">Parameters:</span>"
-#~ msgstr "<span weight=\"bold\">Parametrar:</span>"
-
-#~ msgid "Time _zone:"
-#~ msgstr "Tids_zon:"
-
-#~ msgid "Select _servers..."
-#~ msgstr "Välj _servrar..."
-
-#~ msgid "<span weight=\"bold\">Group settings</span>"
-#~ msgstr "<span weight=\"bold\">Gruppinställningar</span>"
-
-#~ msgid "_New password"
-#~ msgstr "_Nytt lösenord"
-
-#~ msgid "_Account"
-#~ msgstr "_Konto"
-
-#~ msgid "A_dvanced"
-#~ msgstr "A_vancerat"
-
-#~ msgid "_Delete profile"
-#~ msgstr "_Ta bort profil"
-
-#~ msgid "GNOME System Tools - Timezone"
-#~ msgstr "GNOME-systemverktygen - Tidszon"
-
-#~ msgid "GNOME System Tools - Time Servers"
-#~ msgstr "GNOME-systemverktygen - Tidsservrar"
-
-#~ msgid "Wether the users-admin tool should show all users and groups or not"
-#~ msgstr ""
-#~ "Huruvida användaradministrationsverktyget ska visa alla användare och "
-#~ "grupper eller inte"
-
-#~ msgid "wether the warning dialog should be shown or not"
-#~ msgstr "huruvida varningsdialogen ska visas eller inte"
-
-#~ msgid "Default runlevel:"
-#~ msgstr "Standardkörnivå:"
-
-#~ msgid "Host settings"
-#~ msgstr "Värdinställningar"
-
-#~ msgid "Account data"
-#~ msgstr "Kontodata"
-
-#~ msgid "Time configuration"
-#~ msgstr "Tidskonfiguration"
-
-#~ msgid "Time:"
-#~ msgstr "Tid:"
-
-#~ msgid "Date:"
-#~ msgstr "Datum:"
-
-#~ msgid "_Comment"
-#~ msgstr "_Kommentar"
-
-#~ msgid "Default shell:"
-#~ msgstr "Standardskal:"
-
-#~ msgid "Default shell"
-#~ msgstr "Standardskal"
-
-#~ msgid "Default group:"
-#~ msgstr "Standardgrupp:"
-
-#~ msgid "Default group"
-#~ msgstr "Standardgrupp"
-
-#~ msgid "_Wait"
-#~ msgstr "_Vänta"
-
-#~ msgid "Wait"
-#~ msgstr "Vänta"
-
-#~ msgid "Starting your computer"
-#~ msgstr "Start av din dator"
-
-#~ msgid "Basic"
-#~ msgstr "Grundläggande"
-
-#~ msgid "Image"
-#~ msgstr "Avbild"
-
-#~ msgid "Other"
-#~ msgstr "Annat"
-
-#~ msgid "    "
-#~ msgstr "    "
-
-#~ msgid "Windows Networking"
-#~ msgstr "Windows-nätverk"
-
-#~ msgid "_Domain:"
-#~ msgstr "_Domän:"
-
-#~ msgid "DNS Servers"
-#~ msgstr "DNS-servrar"
-
-#~ msgid "_Keep clock synchronized with selected servers"
-#~ msgstr "_Håll klockan synkroniserad med markerade servrar"
-
-#~ msgid "G_id:"
-#~ msgstr "G_id:"
-
-#~ msgid "All _users"
-#~ msgstr "Alla _användare"
-
-#~ msgid "Group _members"
-#~ msgstr "Grupp_medlemmar"
-
-#~ msgid "_Add >>"
-#~ msgstr "_Lägg till >>"
-
-#~ msgid "<< _Remove"
-#~ msgstr "<< _Ta bort"
-
-#~ msgid "Members"
-#~ msgstr "Medlemmar"
-
-#~ msgid "Use this dialog to create a new profile."
-#~ msgstr "Använd detta dialogfönster för att skapa en ny profil."
-
-#~ msgid "C_opy settings from:"
-#~ msgstr "K_opiera inställningar från:"
-
-#~ msgid ""
-#~ "User profiles can be used as templates to facilitate the creation of new "
-#~ "users. To edit a profile, change the settings in the following tabs."
-#~ msgstr ""
-#~ "Användarprofiler kan användas som mallar för att underlätta skapandet av "
-#~ "nya användare. För att redigera en profil ändrar du inställningarna på "
-#~ "följande flikar."
-
-#~ msgid "Copy..."
-#~ msgstr "Kopiera..."
-
-#~ msgid "Home directory:"
-#~ msgstr "Hemkatalog:"
-
-#~ msgid "System defaults"
-#~ msgstr "Systemets standardalternativ"
-
-#~ msgid "Maximum GID:"
-#~ msgstr "Högsta GID:"
-
-#~ msgid "Automatic UID/GID"
-#~ msgstr "Automatiskt UID/GID"
-
-#~ msgid ""
-#~ "On this page, you can define security options, such as how frequently "
-#~ "users must change their passwords."
-#~ msgstr ""
-#~ "På denna sida kan du ange säkerhetsalternativ, som till exempel hur ofta "
-#~ "användare måste ändra sina lösenord."
-
-#~ msgid "Password options"
-#~ msgstr "Lösenordsalternativ"
-
-#~ msgid "Real _name:"
-#~ msgstr "Fullständigt _namn:"
-
-#~ msgid "Basic settings"
-#~ msgstr "Grundläggande inställningar"
-
-#~ msgid "_Office location:"
-#~ msgstr "_Kontorsadress:"
-
-#~ msgid "Contact information"
-#~ msgstr "Kontaktinformation"
-
-#~ msgid "Contact Information"
-#~ msgstr "Kontaktinformation"
-
-#~ msgid "Ne_w:"
-#~ msgstr "N_y:"
-
-#~ msgid "C_onfirm:"
-#~ msgstr "_Bekräfta:"
-
-#~ msgid "Password set to:"
-#~ msgstr "Lösenordet sattes till:"
-
-#~ msgid "_Edit profiles..."
-#~ msgstr "_Redigera profiler..."
-
-#~ msgid "Home _directory:"
-#~ msgstr "Hem_katalog:"
-
-#~ msgid "Advanced settings"
-#~ msgstr "Avancerade inställningar"
-
-#~ msgid "Optional settings"
-#~ msgstr "Valfria inställningar"
-
-#~ msgid "Main _group:"
-#~ msgstr "Huvud_grupp:"
-
-#~ msgid "A_vailable groups"
-#~ msgstr "Till_gängliga grupper"
-
-#~ msgid "Us_er's groups"
-#~ msgstr "Anv_ändarens grupper"
-
-#~ msgid "<< _Remove "
-#~ msgstr "<< _Ta bort "
-
-#~ msgid "_Groups"
-#~ msgstr "_Grupper"
-
-#~ msgid "Comments:"
-#~ msgstr "Kommentarer:"
-
-#~ msgid "Create New Profile"
-#~ msgstr "Skapa ny profil"
-
-#~ msgid ""
-#~ "User profiles can be used a templates to facilitate the creation of new "
-#~ "users. "
-#~ msgstr ""
-#~ "Användarprofiler kan användas som mallar för att underlätta skapandet av "
-#~ "nya användare. "
-
-#~ msgid "Password for User %s"
-#~ msgstr "Lösenord för användaren %s"
-
-#~ msgid "Ac_tivate"
-#~ msgstr "Ak_tivera"
-
-#~ msgid "D_eactivate"
-#~ msgstr "_Inaktivera"
-
-#~ msgid "Show All"
-#~ msgstr "Visa allt"
-
-#~ msgid "Set as D_efault"
-#~ msgstr "Ställ in som s_tandard"
-
-#~ msgid "window2"
-#~ msgstr "window2"
-
-#~ msgid "window3"
-#~ msgstr "window3"
-
-#~ msgid "label49"
-#~ msgstr "label49"
-
-#~ msgid "label50"
-#~ msgstr "label50"
-
-#~ msgid "label329"
-#~ msgstr "label329"
-
-#~ msgid "label332"
-#~ msgstr "label332"
-
-#~ msgid "label1"
-#~ msgstr "label1"
-
-#~ msgid "label86"
-#~ msgstr "label86"
-
-#~ msgid "label87"
-#~ msgstr "label87"
-
-#~ msgid "label328"
-#~ msgstr "label328"
-
-#~ msgid "label79"
-#~ msgstr "label79"
-
-#~ msgid "label152"
-#~ msgstr "label152"
-
-#~ msgid "label148"
-#~ msgstr "label148"
-
-#~ msgid "label149"
-#~ msgstr "label149"
-
-#~ msgid "%s (default)"
-#~ msgstr "%s (standard)"
-
-#~ msgid "Ximian Setup Tools"
-#~ msgstr "Ximians inställningsverktyg"
-
-#~ msgid "label57"
-#~ msgstr "label57"
-
-#~ msgid ""
-#~ "A local network connection was not detected.\n"
-#~ "Would you like to configure one?"
-#~ msgstr ""
-#~ "En lokal nätverksanslutning kunde inte hittas.\n"
-#~ "Vill du konfigurera en?"
-
-#~ msgid ""
-#~ "A local network interface has been detected, but it's not active.\n"
-#~ "Would you like to activate it now?"
-#~ msgstr ""
-#~ "Ett lokalt nätverksgränssnitt har upptäckts, men det är inte aktivt.\n"
-#~ "Vill du aktivera det nu?"
-
-#~ msgid ""
-#~ "Would you like to give the automatic network\n"
-#~ "address assignment service (DHCP)?"
-#~ msgstr ""
-#~ "Vill du använda den automatiska tjänsten för\n"
-#~ "tilldelning av nätverksadresser (DHCP)?"
-
-#~ msgid ""
-#~ "You already have an internet sharing configuration.\n"
-#~ "Do you want to keep it, or use the druid's defaults?"
-#~ msgstr ""
-#~ "Du har redan en befintlig Internetdelningskonfiguration.\n"
-#~ "Vill du behålla den, eller använda guidens standardalternativ?"
-
-#~ msgid "Warning message goes here.."
-#~ msgstr "Varningsmeddelande hamnar här..."
-
-#~ msgid "label27"
-#~ msgstr "label27"
-
-#~ msgid "label26"
-#~ msgstr "label26"
-
-#~ msgid "Filename"
-#~ msgstr "Filnamn"
-
-#~ msgid "window5"
-#~ msgstr "window5"
-
-#~ msgid "label151"
-#~ msgstr "label151"
-
-#~ msgid "Boot Manager Settings - Ximian Setup Tools"
-#~ msgstr "Inställningar för starthanterare - Ximians inställningsverktyg"
-
-#~ msgid "Ximian Setup Tool"
-#~ msgstr "Ximians inställningsverktyg"
-
-#~ msgid ""
-#~ "You don't have the DHCP server package installed.\n"
-#~ "You need to install it to enable the service."
-#~ msgstr ""
-#~ "Du har inte DHCP-serverpaketet installerat.\n"
-#~ "Du måste installera den för att aktivera denna tjänst."
-
-#~ msgid "DHCPd not installed."
-#~ msgstr "DHCPd är inte installerad."
-
-#~ msgid ""
-#~ "You can't run this tool in simple mode because you have either more than "
-#~ "one range or more than one subnets defined\n"
-#~ msgstr ""
-#~ "Du kan inte köra detta verktyg i enkelt läge eftersom du har mer än ett "
-#~ "intervall eller mer än ett subnät angivet\n"
-
-#~ msgid "Can't run in simple mode."
-#~ msgstr "Kan inte köra i enkelt läge."
-
-#~ msgid "DHCP server configurator"
-#~ msgstr "DHCP-serverkonfiguratör"
-
-#~ msgid "Disks"
-#~ msgstr "Diskar"
-
-#~ msgid "Local fixed media."
-#~ msgstr "Lokal fast media."
-
-#~ msgid "Disk Partitions"
-#~ msgstr "Diskpartitioner"
-
-#~ msgid "Testing current settings."
-#~ msgstr "Testar nuvarande inställningar."
-
-#~ msgid "Restoring settings..."
-#~ msgstr "Återställer inställningar..."
-
-#~ msgid ""
-#~ "Going to probe X server. The screen will flicker\n"
-#~ "several times.\n"
-#~ "Please be patient."
-#~ msgstr ""
-#~ "Undersöker X-servern. Skärmen kommer att flimra\n"
-#~ "åtskilliga gånger.\n"
-#~ "Håll ut."
-
-#~ msgid ""
-#~ "Unable to probe your X server.\n"
-#~ "Please report it through\n"
-#~ "http://bugzilla.ximian.com\n"
-#~ "Thank you!"
-#~ msgstr ""
-#~ "Kan inte undersöka din X-server.\n"
-#~ "Rapportera det genom\n"
-#~ "http://bugzilla.ximian.com\n"
-#~ "Tack!"
-
-#~ msgid "Display"
-#~ msgstr "Display"
-
-#~ msgid "Display Configuration"
-#~ msgstr "Displaykonfiguration"
-
-#~ msgid "X Display Configuration"
-#~ msgstr "X-displaykonfiguration"
-
-#~ msgid "Probing X server."
-#~ msgstr "Undersöker X-servern."
-
-#~ msgid "32 thousand colors"
-#~ msgstr "32 000 färger"
-
-#~ msgid "65 thousand colors"
-#~ msgstr "65 000 färger"
-
-#~ msgid "16 million colors"
-#~ msgstr "16 miljoner färger"
-
-#~ msgid "Depth"
-#~ msgstr "Djup"
-
-#~ msgid "Searching fonts."
-#~ msgstr "Söker efter typsnitt."
-
-#~ msgid "Select file or dir"
-#~ msgstr "Välj fil eller katalog"
-
-#~ msgid "Font"
-#~ msgstr "Typsnitt"
-
-#~ msgid "Font Manager"
-#~ msgstr "Typsnittshanterare"
-
-#~ msgid "Font Settings"
-#~ msgstr "Typsnittsinställningar"
-
-#~ msgid ""
-#~ "Congratulations! Your computer will now be\n"
-#~ "configured to share its internet connection."
-#~ msgstr ""
-#~ "Gratulerar! Din dator kommer nu att konfigureras\n"
-#~ "för att dela dess Internetanslutning."
-
-#~ msgid "Retrieving network interface configuration"
-#~ msgstr "Hämtar konfiguration för nätverksgränssnitt"
-
-#~ msgid "No firewall support was found, or it was incomplete."
-#~ msgstr "Inget brandväggsstöd hittades, eller så var den ofullständig."
-
-#~ msgid ""
-#~ "You can configure a local network interface\n"
-#~ "manually and come back later to finish\n"
-#~ "the internet sharing configuration."
-#~ msgstr ""
-#~ "Du kan konfigurera ett lokalt nätverksgränssnitt\n"
-#~ "manuellt och komma tillbaka senare för att\n"
-#~ "slutföra konfigurationen av Internetdelningen."
-
-#~ msgid ""
-#~ "You may install a DHCP server into your\n"
-#~ "system and come back later to finish\n"
-#~ "the internet sharing configuration."
-#~ msgstr ""
-#~ "Du kan installera en DHCP-server på ditt\n"
-#~ "system och komma tillbaka senare för att\n"
-#~ "slutföra konfigurationen av Internetdelningen."
-
-#~ msgid "Could not launch configuration tool"
-#~ msgstr "Kunde inte starta konfigurationsverktyget"
-
-#~ msgid "Could not launch configuration tool: %s"
-#~ msgstr "Kunde inte starta konfigurationsverktyget: %s"
-
-#~ msgid "Create new location"
-#~ msgstr "Skapa ny plats"
-
-#~ msgid "Copy a location"
-#~ msgstr "Kopiera en plats"
-
-#~ msgid "Rename a location"
-#~ msgstr "Byt namn på en plats"
-
-#~ msgid "You must supply a name"
-#~ msgstr "Du måste ange ett namn"
-
-#~ msgid "You already have a location by that name"
-#~ msgstr "Du har redan en plats med det namnet"
-
-#~ msgid "_New..."
-#~ msgstr "_Ny..."
-
-#~ msgid "Create a new location"
-#~ msgstr "Skapa en ny plats"
-
-#~ msgid "_Copy..."
-#~ msgstr "_Kopiera..."
-
-#~ msgid "Create a new location identical to the selected one"
-#~ msgstr "Skapa en ny plats som är identisk med den markerade"
-
-#~ msgid "_Rename..."
-#~ msgstr "_Byt namn..."
-
-#~ msgid "Rename the selected location"
-#~ msgstr "Byt namn på den valda platsen"
-
-#~ msgid "Delete the selected location"
-#~ msgstr "Ta bort den markerade platsen"
-
-#~ msgid "_Apply..."
-#~ msgstr "_Verkställ..."
-
-#~ msgid "Apply the changes"
-#~ msgstr "Verkställ ändringarna"
-
-#~ msgid "Edit settings for the selected backend"
-#~ msgstr "Redigera inställningarna för den markerade backenden"
-
-#~ msgid "_Select"
-#~ msgstr "_Markera"
-
-#~ msgid "Select the selected backend for this location"
-#~ msgstr "Markera den valda backenden för denna plats"
-
-#~ msgid "_Deselect"
-#~ msgstr "Av_markera"
-
-#~ msgid "Deselect the selected backend for this location"
-#~ msgstr "Avmarkera den valda backenden för denna plats"
-
-#~ msgid "_Location"
-#~ msgstr "_Plats"
-
-#~ msgid "Location Manager"
-#~ msgstr "Platshanterare"
-
-#~ msgid ""
-#~ "Could not retrieve a configuration\n"
-#~ "snapshot. This probably means you do\n"
-#~ "not have the Ximian Setup Tools\n"
-#~ "installed properly."
-#~ msgstr ""
-#~ "Kunde inte hämta en konfigurationsversion.\n"
-#~ "Detta betyder troligtvis att Ximian Setup\n"
-#~ "Tools inte har installerats korrekt."
-
-#~ msgid ""
-#~ "Could not retrieve a configuration\n"
-#~ "snapshot. This probably means you are\n"
-#~ "running an old version of the GNOME\n"
-#~ "control center. Please upgrade to\n"
-#~ "at least version 1.3.2 or CVS HEAD."
-#~ msgstr ""
-#~ "Kunde inte hämta en konfigurationsversion.\n"
-#~ "Detta betyder troligtvis att du kör en\n"
-#~ "gammal version av GNOME-kontrollpanelen.\n"
-#~ "Uppgradera åtminstone till version 1.3.2\n"
-#~ "eller CVS HEAD."
-
-#~ msgid "You cannot delete the default location"
-#~ msgstr "Du kan inte redigera standardplatsen"
-
-#~ msgid "Are you sure you wish to destroy the location %s?"
-#~ msgstr "Är du säker på att du vill förstöra platsen %s?"
-
-#~ msgid "Ximian Setup Tools Location Manager"
-#~ msgstr "Ximians inställningsverktygs platshanterare"
-
-#~ msgid "Are You sure you want to remove %s?"
-#~ msgstr "Är du säker på att du vill ta bort %s?"
-
-#~ msgid "Path to new swap location is empty."
-#~ msgstr "Sökvägen till den nya platsen för växlingsutrymmet är tomt."
-
-#~ msgid "Swap space %s already exists."
-#~ msgstr "Växlingsutrymmet %s finns redan."
-
-#~ msgid "Swap Management"
-#~ msgstr "Växlingsfilshantering"
-
-#~ msgid "Memory"
-#~ msgstr "Minne"
-
-#~ msgid "Memory settings."
-#~ msgstr "Minnesinställningar."
-
-#~ msgid "Delete %s?"
-#~ msgstr "Ta bort %s?"
-
-#~ msgid "Print tool"
-#~ msgstr "Utskriftsverktyg"
-
-#~ msgid "Print"
-#~ msgstr "Utskrift"
-
-#~ msgid "lpr based Printer Admin"
-#~ msgstr "lpr-baserad utskriftshanterare"
-
-#~ msgid "Paper"
-#~ msgstr "Papper"
-
-#~ msgid "Share"
-#~ msgstr "Utdelning"
-
-#~ msgid "Spool"
-#~ msgstr "Spoolkatalog"
-
-#~ msgid "Printer Settings Editor"
-#~ msgstr "Redigerare för skrivarinställningar"
-
-#~ msgid "High color"
-#~ msgstr "Tusentals färger"
-
-#~ msgid "True color"
-#~ msgstr "Miljontals färger"
-
-#~ msgid "Local"
-#~ msgstr "Lokal"
-
-#~ msgid "UNIX"
-#~ msgstr "UNIX"
-
-#~ msgid "Windows"
-#~ msgstr "Windows"
-
-#~ msgid "Novell"
-#~ msgstr "Novell"
-
-#~ msgid "JetDirect"
-#~ msgstr "JetDirect"
-
-#~ msgid "Pattern"
-#~ msgstr "Mönster"
-
-#~ msgid "Write"
-#~ msgstr "Skriv"
-
-#~ msgid "New Shares Admin"
-#~ msgstr "Administrera nya utdelningar"
-
-#~ msgid "Directory import & export"
-#~ msgstr "Import och export av kataloger"
-
-#~ msgid "Shares"
-#~ msgstr "Utdelningar"
-
-#~ msgid "%s on %s\n"
-#~ msgstr "%s på %s\n"
-
-#~ msgid ""
-#~ "Could not mount the following shares -\n"
-#~ "they could be temporarily unavailable, or you\n"
-#~ "might have specified bad parameters:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Kunde inte montera följande utdelningar -\n"
-#~ "de kan vara oåtkomliga för tillfället, eller\n"
-#~ "så kan du ha angett felaktiga parametrar:\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "Could not mount the following share -\n"
-#~ "it could be temporarily unavailable, or you\n"
-#~ "might have specified bad parameters:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Kunde inte montera följande utdelning -\n"
-#~ "den kan vara oåtkomlig för tillfället, eller\n"
-#~ "så kan du ha angett felaktiga parametrar:\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "Also, could not unmount the following shares -\n"
-#~ "they might be in use by programs:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Kunde dessutom inte avmontera följande utdelningar -\n"
-#~ "de kanske används av program:\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "\n"
-#~ "Also, could not unmount the following share -\n"
-#~ "it might be in use by programs:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "\n"
-#~ "Kunde dessutom inte avmontera följande utdelning -\n"
-#~ "dem kanske används av program:\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "Could not unmount the following shares -\n"
-#~ "they might be in use by programs:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Kunde inte avmontera följande utdelningar -\n"
-#~ "de kanske används av program:\n"
-#~ "\n"
-
-#~ msgid ""
-#~ "Could not unmount the following share -\n"
-#~ "it might be in use by programs:\n"
-#~ "\n"
-#~ msgstr ""
-#~ "Kunde inte avmontera följande utdelning -\n"
-#~ "den kanske används av program:\n"
-#~ "\n"
-
-#~ msgid "Mount"
-#~ msgstr "Montera"
-
-#~ msgid "Unmount"
-#~ msgstr "Avmontera"
-
-#~ msgid ""
-#~ "Failed to create the path you requested:\n"
-#~ "A path element is a regular file, not a directory."
-#~ msgstr ""
-#~ "Misslyckades med att skapa sökvägen du begärde:\n"
-#~ "Ett av elementen i sökvägen är en vanlig fil, ingen katalog."
-
-#~ msgid ""
-#~ "Failed to create the path you requested:\n"
-#~ "A path element is a special filesystem node, not a directory."
-#~ msgstr ""
-#~ "Misslyckades med att skapa sökvägen du begärde:\n"
-#~ "Ett av elementen i sökvägen är en speciell filsystemsnod, inte en katalog."
-
-#~ msgid ""
-#~ "Failed to create the path you requested:\n"
-#~ "You don't have access to that local location."
-#~ msgstr ""
-#~ "Misslyckades med att skapa sökvägen du begärde:\n"
-#~ "Du har inte åtkomst till den lokala platsen."
-
-#~ msgid "Failed to create the path you requested."
-#~ msgstr "Misslyckades med att skapa sökvägen du begärde."
-
-#~ msgid "You need to specify a name for the export."
-#~ msgstr "Du måste ange ett namn på exporten."
-
-#~ msgid ""
-#~ "You need to specify a path, i.e. the directory\n"
-#~ "on your computer you would like to share."
-#~ msgstr ""
-#~ "Du måste ange en sökväg, d.v.s. katalogen på\n"
-#~ "din dator som du vill dela ut."
-
-#~ msgid ""
-#~ "You do not have access to the path you want to share.\n"
-#~ "Please select another one."
-#~ msgstr ""
-#~ "Du har inte åtkomst till den sökväg du vill dela ut.\n"
-#~ "Välj en annan."
-
-#~ msgid ""
-#~ "The path you want to share does not exist.\n"
-#~ "Would you like to create it?"
-#~ msgstr ""
-#~ "Sökvägen du vill dela ut finns inte.\n"
-#~ "Vill du skapa den?"
-
-#~ msgid ""
-#~ "The path you want to share points to a specific file.\n"
-#~ "You can only share directories, not files."
-#~ msgstr ""
-#~ "Sökvägen du vill dela ut pekar till en specifik fil.\n"
-#~ "Du kan bara dela ut kataloger, inte filer."
-
-#~ msgid ""
-#~ "The path you want to share is not a directory,\n"
-#~ "and you can only share directories."
-#~ msgstr ""
-#~ "Sökvägen du vill dela ut är inte en katalog,\n"
-#~ "och du kan bara dela ut kataloger."
-
-#~ msgid ""
-#~ "You don't have smbclient package installed,\n"
-#~ "Can't mount smb shares."
-#~ msgstr ""
-#~ "Du har inte paketet smbclient installerat,\n"
-#~ "kan inte montera smb-utdelningar."
-
-#~ msgid ""
-#~ "You don't have samba package installed,\n"
-#~ "Can't export smb shares."
-#~ msgstr ""
-#~ "Du har inte paketet samba installerat,\n"
-#~ "kan inte exportera smb-utdelningar."
-
-#~ msgid "You need to name the host providing the import."
-#~ msgstr "Du måste ange namnet på den värd som tillhandahåller importen."
-
-#~ msgid ""
-#~ "You need to specify a path, i.e. where on the host\n"
-#~ "the share is imported from."
-#~ msgstr ""
-#~ "Du måste ange en sökväg, d.v.s. var på värden\n"
-#~ "utdelningen importeras ifrån."
-
-#~ msgid ""
-#~ "You need to specify the local point, i.e. a directory,\n"
-#~ "where the import will be mounted."
-#~ msgstr ""
-#~ "Du måste ange den lokala monteringspunkten, d.v.s. en\n"
-#~ "katalog där importen kommer att monteras."
-
-#~ msgid ""
-#~ "You do not have access to the local point, i.e. directory\n"
-#~ "where the import would be mounted.\n"
-#~ "Please select another one."
-#~ msgstr ""
-#~ "Du har inte åtkomsträttigheter till den lokala punkten, d.v.s.\n"
-#~ "där importen skulle monteras.\n"
-#~ "Välj en annan."
-
-#~ msgid ""
-#~ "The local mount point does not exist.\n"
-#~ "Would you like to create it?"
-#~ msgstr ""
-#~ "Den lokala monteringspunkten finns inte.\n"
-#~ "Vill du skapa den?"
-
-#~ msgid ""
-#~ "The mount point you specified is not a directory.\n"
-#~ "You can only import to directories, not files."
-#~ msgstr ""
-#~ "Monteringspunkten du angav är inte en katalog.\n"
-#~ "Du kan bara importera till kataloger, inte filer."
-
-#~ msgid ""
-#~ "The mount point you specified is not a directory,\n"
-#~ "and you can only import to directories."
-#~ msgstr ""
-#~ "Monteringspunkten du angav är inte en katalog,\n"
-#~ "och du kan bara importera till kataloger."
-
-#~ msgid ""
-#~ "You need to specify a client pattern, e.g.\n"
-#~ "\"*.myschool.edu\" or \"192.168.0.1/24\"."
-#~ msgstr ""
-#~ "Du måste ange ett klientmönster, t.ex.\n"
-#~ "\"*.minskola.se\" eller \"192.168.0.1/24\"."
-
-#~ msgid "NTP support missing."
-#~ msgstr "Stöd för NTP saknas."
-
-#~ msgid "Can't create new user. Check your profile settings."
-#~ msgstr "Kan inte skapa ny användare. Kontrollera dina profilinställningar."
-
-#~ msgid "Can't create new user. Too many users probably."
-#~ msgstr "Kan inte skapa ny användare. Troligtvis för många användare."
-
-#~ msgid "Choose the file"
-#~ msgstr "Välj fil"
-
-#~ msgid "Profile Editor"
-#~ msgstr "Profilredigerare"
-
-#~ msgid "Profile with given name already exists."
-#~ msgstr "En profil med det angivna namnet finns redan."
-
-#~ msgid "Can't delete Default"
-#~ msgstr "Kan inte ta bort Standard"
-
-#~ msgid ""
-#~ "Unknown variable '%s'.\n"
-#~ "Currently we support only '%s'."
-#~ msgstr ""
-#~ "Variabeln \"%s\" är okänd.\n"
-#~ "För tillfället stöder vi bara \"%s\"."
-
-#~ msgid "Part of the path to the home directory is a file."
-#~ msgstr "En del av sökvägen till hemkatalogen är en fil."
-
-#~ msgid "There is a loop in the path to the home directory."
-#~ msgstr "Det finns en slinga i sökvägen till hemkatalogen."
-
-#~ msgid "Not enough memory to check the home directory."
-#~ msgstr "Inte tillräckligt med minne för att kontrollera hemkatalogen."
-
-#~ msgid "The path to the home directory is too long."
-#~ msgstr "Sökvägen till hemkatalogen är för lång."
-
-#~ msgid "Group name is not valid."
-#~ msgstr "Gruppnamnet är ogiltigt."
-
-#~ msgid "Group does not exist. Create new?"
-#~ msgstr "Gruppen finns inte. Skapa ny?"
-
-#~ msgid "The home directory does not exist, or its path is invalid."
-#~ msgstr "Hemkatalogen finns inte, eller så är dess sökväg ogiltig."
-
-#~ msgid "Couldn't get access to the home directory."
-#~ msgstr "Kunde inte komma åt hemkatalogen."
-
-#~ msgid "There was an error trying to access the home directory."
-#~ msgstr "Det uppstod ett fel vid försök att komma åt hemkatalogen."
-
-#~ msgid ""
-#~ "The home directory already exists. This will break the new user's "
-#~ "permissions."
-#~ msgstr ""
-#~ "Hemkatalogen finns redan. Detta kommer att ha sönder den nya användarens "
-#~ "rättigheter."
-
-#~ msgid "The home directory path exists, but it is not a directory."
-#~ msgstr "Sökvägen till hemkatalogen finns, men den är inte en katalog."
-
-#~ msgid "The home directory is not owned by the user."
-#~ msgstr "Hemkatalogen ägs inte av användaren."
-
-#~ msgid "The user doesn't have permission to read from the home directory."
-#~ msgstr "Användaren har inte rätt att läsa från hemkatalogen."
-
-#~ msgid "The user doesn't have permission to write in the home directory."
-#~ msgstr "Användaren har inte rätt att skriva i hemkatalogen."
-
-#~ msgid ""
-#~ "The user doesn't have permission to use (``execute'') the home directory."
-#~ msgstr "Användaren har inte rätt att använda (\"exekvera\") hemkatalogen."
-
-#~ msgid ""
-#~ "Invalid character '%c'.\n"
-#~ "This field doesn't accept control characters ',' ':' and '='."
-#~ msgstr ""
-#~ "Ogiltigt tecken \"%c\".\n"
-#~ "Detta fält accepterar inte kontrolltecknen \",\" \":\" och \"=\"."
-
-#~ msgid "Identity"
-#~ msgstr "Identitet"
-
-#~ msgid "&lt;unknown&gt;"
-#~ msgstr "&lt;okänd&gt;"
-
-#~ msgid "&lt;&lt; _Remove"
-#~ msgstr "&lt;&lt; _Ta bort"
-
-#~ msgid "&lt;&lt; _Remove "
-#~ msgstr "&lt;&lt; _Ta bort "
-
-#~ msgid "_Add &gt;&gt;"
-#~ msgstr "_Lägg till &gt;&gt;"
-
-#~ msgid "D_efault"
-#~ msgstr "_Standardvärde"
-
-#~ msgid "Boot Image Druid"
-#~ msgstr "Guide för startavbild"
-
-#~ msgid ""
-#~ "This druid is designed to help you quickly \n"
-#~ "and easily add new boot images to your system.\n"
-#~ "\n"
-#~ "To begin, click \"Next\". "
-#~ msgstr ""
-#~ "Denna guide är gjord för att hjälpa dig att\n"
-#~ "snabbt och enkelt lägga till nya startavbilder\n"
-#~ "(boot images) till ditt system.\n"
-#~ "\n"
-#~ "För att börja klickar du på \"Nästa\". "
-
-#~ msgid "Specify the partition the the operating system is installed on."
-#~ msgstr "Ange den partition som operativsystemet är installerat på."
-
-#~ msgid "Don't change host name"
-#~ msgstr "Ändra inte värdnamnet"
-
-#~ msgid "Activate connection"
-#~ msgstr "Aktivera anslutning"
-
-#~ msgid "\tEdit configuration in the location LOCATION."
-#~ msgstr "\tRedigera konfigurationen på platsen PLATS."
-
-#~ msgid "LOCATION"
-#~ msgstr "PLATS"
-
-#~ msgid "Specify the partition that the operating system is installed on."
-#~ msgstr "Ange den partition som operativsystemet är installerat på."
-
-#~ msgid "Start range"
-#~ msgstr "Start på intervall"
-
-#~ msgid "Closing tool."
-#~ msgstr "Stänger verktyget."
-
-#~ msgid "Start of work report."
-#~ msgstr "Början på arbetsrapporten."
-
-#~ msgid "End of work report."
-#~ msgstr "Slutet på arbetsrapporten."
-
-#~ msgid "%d"
-#~ msgstr "%d"
-
-#~ msgid "Running directive [%s] with args [%s]."
-#~ msgstr "Kör direktivet [%s] med argumenten [%s]."
-
-#~ msgid "Directive [%s] not supported."
-#~ msgstr "Direktivet [%s] stöds inte."
-
-#~ msgid "Directive [%s] structure has wrong format."
-#~ msgstr "Strukturen för direktivet [%s] har fel format."
-
-#~ msgid "Directive [%s] requires exactly [%s] args in [%s]."
-#~ msgstr "Direktivet [%s] kräver exakt [%s] argument i [%s]."
-
-#~ msgid "Directive [%s] requires at least [%s] args in [%s]."
-#~ msgstr "Direktivet [%s] kräver minst [%s] argument i [%s]."
-
-#~ msgid "Supported: [%s]"
-#~ msgstr "Stöds: [%s]"
-
-#~ msgid "Your platform [%s] is not supported."
-#~ msgstr "Din plattform [%s] stöds inte."
-
-#~ msgid "Unable to determine host platform."
-#~ msgstr "Kan inte avgöra värdplattformen."
-
-#~ msgid "Configuring for platform [%s]."
-#~ msgstr "Konfigurerar för plattformen [%s]."
-
-#~ msgid "No parse/replace table for platform [%s]."
-#~ msgstr "Ingen tolknings-/ersättningstabell för plattformen [%s]."
-
-#~ msgid "Unexpected tag [%s]."
-#~ msgstr "Oväntad tagg [%s]."
-
-#~ msgid "Unexpected argument [%s] to tag [%s]."
-#~ msgstr "Oväntat argument [%s] till taggen [%s]."
-
-#~ msgid "Could not open [%s] for reading."
-#~ msgstr "Kunde inte öppna [%s] för läsning."
-
-#~ msgid "Reading options from [%s]."
-#~ msgstr "Läser alternativ från [%s]."
-
-#~ msgid "Failed to write to [%s]."
-#~ msgstr "Misslyckades med att skriva till [%s]."
-
-#~ msgid "Could not find [%s] for writing. Creating [%s]."
-#~ msgstr "Kunde inte hitta [%s] för skrivning. Skapar [%s]."
-
-#~ msgid "Writing to [%s]."
-#~ msgstr "Skriver till [%s]."
-
-#~ msgid "Failed to pipe command [%s] for reading."
-#~ msgstr "Misslyckades med att skicka kommando genom rör [%s] för läsning."
-
-#~ msgid "Piping command [%s] for reading."
-#~ msgstr "Skickar kommandot genom rör [%s] för läsning."
-
-#~ msgid "Directory [%s] created."
-#~ msgstr "Katalogen [%s] skapad."
-
-#~ msgid "Backup directory [%s] was rotated."
-#~ msgstr "Katalogen med säkerhetskopior [%s] har roterats."
-
-#~ msgid "Saved backup for [%s]."
-#~ msgstr "Sparade säkerhetskopia för [%s]."
-
-#~ msgid "No file to patch: [%s]."
-#~ msgstr "Ingen fil att patcha: [%s]."
-
-#~ msgid "Could not find [%s] for patching. Creating [%s]."
-#~ msgstr "Kunde inte hitta och patcha [%s]. Skapar [%s]."
-
-#~ msgid "Found [%s]. Patching [%s]."
-#~ msgstr "Hittade [%s]. Patchar [%s]."
-
-#~ msgid "Loading file [%s] to buffer."
-#~ msgstr "Läser in filen [%s] till bufferten."
-
-#~ msgid "Saving buffer to file [%s]."
-#~ msgstr "Sparar bufferten till filen [%s]."
-
-#~ msgid "Running command [%s]."
-#~ msgstr "Kör kommandot [%s]."
-
-#~ msgid "Removing file [%s]."
-#~ msgstr "Tar bort filen [%s]."
-
-#~ msgid "Found tool [%s]."
-#~ msgstr "Hittade verktyget [%s]."
-
-#~ msgid "Couldn't find tool [%s]."
-#~ msgstr "Kunde inte hitta verktyget [%s]."
-
-#~ msgid "Parsing option [%s]."
-#~ msgstr "Tolkar alternativet [%s]."
-
-# Mycket osäker!
-#~ msgid "Trivialy passing [%s]."
-#~ msgstr "Passerar trivialt [%s]."
-
-#~ msgid "Getting option [%s] from [%s]."
-#~ msgstr "Hämtar alternativet [%s] från [%s]."
-
-#~ msgid "Getting configuration from [%s]."
-#~ msgstr "Hämtar konfigurationen från [%s]."
-
-#~ msgid "Getting shell option [%s] from [%s]."
-#~ msgstr "Hämtar skalalternativet [%s] från [%s]."
-
-#~ msgid "Getting keyword [%s] from [%s]."
-#~ msgstr "Hämtar nyckelordet [%s] från [%s]."
-
-#~ msgid "Getting information from [%s]."
-#~ msgstr "Hämtar information från [%s]."
-
-#~ msgid "Getting chat information from [%s]."
-#~ msgstr "Hämtar chattinformation från [%s]."
-
-#~ msgid "Getting option [%s] from [%s], section [%s]."
-#~ msgstr "Hämtar alternativet [%s] från [%s], avsnitt [%s]."
-
-#~ msgid "Getting option [%s] from interface [%s]."
-#~ msgstr "Hämtar alternativet [%s] från gränssnittet [%s]."
-
-#~ msgid "Getting keyword [%s] from interface [%s]."
-#~ msgstr "Hämtar nyckelordet [%s] från gränssnittet [%s]."
-
-#~ msgid "Keyword for interface [%s] in [%s] had unexpected value."
-#~ msgstr "Nyckelordet för gränssnittet [%s] i [%s] har ett oväntat värde."
-
-#~ msgid "Replacing key [%s] in [%s]."
-#~ msgstr "Ersätter nyckeln [%s] i [%s]."
-
-#~ msgid "Replacing shell var [%s] in [%s]."
-#~ msgstr "Ersätter skalvariabeln [%s] i [%s]."
-
-#~ msgid "Replacing keyword [%s] in [%s]."
-#~ msgstr "Ersätter nyckelordet [%s] i [%s]."
-
-#~ msgid "Replacing contents of file [%s]."
-#~ msgstr "Ersätter innehållet i filen [%s]."
-
-#~ msgid "Replacing values in [%s]."
-#~ msgstr "Ersätter värdena i [%s]."
-
-#~ msgid "Replacing variable [%s] in section [%s] of [%s]."
-#~ msgstr "Ersätter variabeln [%s] i avsnittet [%s] av [%s]."
-
-#~ msgid "Removing section [%s] from [%s]."
-#~ msgstr "Tar bort sektionen [%s] från [%s]."
-
-#~ msgid "Replacing option [%s] from interface [%s]."
-#~ msgstr "Ersätter alternativet [%s] från gränssnittet [%s]."
-
-#~ msgid "Replacing keyword [%s] from interface [%s]."
-#~ msgstr "Ersätter nyckelordet [%s] från gränssnittet [%s]."
-
-#~ msgid "Service [%s] is running."
-#~ msgstr "Tjänsten [%s] kör inte."
-
-#~ msgid "Service [%s] is stopped."
-#~ msgstr "Tjänsten [%s] är stoppad."
-
-#~ msgid "Could not find SystemV scripts for service [%s]."
-#~ msgstr "Kunde inte hitta SystemV-skript för tjänsten [%s]."
-
-# Knepigt med ordningen här!
-#~ msgid "Could not find SystemV runlevel [%s] directory [%s]."
-#~ msgstr "Kunde inte hitta katalogen [%2$s] för SystemV-körnivån [%1$s]."
-
-#~ msgid "Removed SystemV link [%s]."
-#~ msgstr "Tog bort SystemV-länken [%s]."
-
-#~ msgid "Created SystemV link [%s]."
-#~ msgstr "Skapade SystemV-länk [%s]."
-
-#~ msgid "Unknown initd operation [%s]."
-#~ msgstr "Okänd initd-åtgärd [%s]."
-
-#~ msgid "Service [%s] %s."
-#~ msgstr "Tjänst [%s] %s."
-
-#~ msgid "Service [%s] could not be %s."
-#~ msgstr "Tjänsten [%s] kunde inte bli %s."
-
-#~ msgid "Loading ISP configurations."
-#~ msgstr "Läser in ISP-konfigurationer."
-
-#~ msgid "Finding active interfaces."
-#~ msgstr "Söker efter aktiva gränssnitt."
-
-#~ msgid "Checking if interface [%s] is active."
-#~ msgstr "Kontrollerar om gränssnittet [%s] är aktivt."
-
-#~ msgid "Setting hostname to [%s]."
-#~ msgstr "Ställer in värdnamnet till [%s]."
-
-#~ msgid "Saving ISP configurations."
-#~ msgstr "Sparar ISP-konfigurationer."
-
-#~ msgid "Removing entry [%s] from [%s]."
-#~ msgstr "Tar bort posten [%s] från [%s]."
-
-#~ msgid "Configuring interface [%s]."
-#~ msgstr "Konfigurerar gränssnittet [%s]."
-
-#~ msgid "Activating interface [%s]."
-#~ msgstr "Aktiverar gränssnittet [%s]."
-
-#~ msgid "Deactivating interface [%s]."
-#~ msgstr "Deaktiverar gränssnittet [%s]."
-
-#~ msgid "Setting up interfaces."
-#~ msgstr "Ställer in gränssnitt."
-
-#~ msgid "Getting PAP/CHAP password for [%s] from [%s]."
-#~ msgstr "Hämtar PAP-/CHAP-lösenordet för [%s] från [%s]."
-
-#~ msgid "Setting option [%s] in [%s]."
-#~ msgstr "Ställer in alternativet [%s] i [%s]."
-
-#~ msgid "Setting connect option in [%s]."
-#~ msgstr "Ställer in anslutningsalternativ i [%s]."
-
-#~ msgid "Getting additional options from [%s]."
-#~ msgstr "Hämtar ytterligare alternativ från [%s]."
-
-#~ msgid "Setting additional options in [%s]."
-#~ msgstr "Ställer in ytterligare alternativ i [%s]."
-
-#~ msgid "Boot method [%s] for interface [%s] not supported."
-#~ msgstr "Startmetoden [%s] för gränssnittet [%s] stöds inte."
-
-#~ msgid "Getting remote address for interface [%s]."
-#~ msgstr "Hämtar fjärradress för gränssnittet [%s]."
-
-#~ msgid "Setting remote address for interface [%s]."
-#~ msgstr "Ställer in fjärradress för gränssnittet [%s]."
-
-#~ msgid "Mounting [%s] on [%s]."
-#~ msgstr "Monterar [%s] på [%s]."
-
-#~ msgid "Failed to mount [%s] on [%s]."
-#~ msgstr "Misslyckades med att montera [%s] på [%s]."
-
-#~ msgid "Failed to run lilo."
-#~ msgstr "Misslyckades med att köra lilo."
-
-#~ msgid "Succesfully executed lilo."
-#~ msgstr "Körde lilo utan problem."
-
-#~ msgid "Failed to open boot configuration file [%s]."
-#~ msgstr "Misslyckades med att öppna startkonfigurationsfilen [%s]."
-
-#~ msgid "Adding [%s] to fstab."
-#~ msgstr "Lägger till [%s] i fstab."
-
-#~ msgid "Looking for partitions on [%s]."
-#~ msgstr "Letar efter partitioner på [%s]."
-
-#~ msgid "Querying size of [%s]."
-#~ msgstr "Undersöker storleken på [%s]."
-
-#~ msgid "Mounting [%s]."
-#~ msgstr "Monterar [%s]."
-
-#~ msgid "Unmounting [%s]."
-#~ msgstr "Avmonterar [%s]."
-
-#~ msgid "Could not find mount tools. No mounting done."
-#~ msgstr "Kunde inte hitta monteringsverktyg. Ingen montering har gjorts."
-
-#~ msgid "Found swap entry [%s]."
-#~ msgstr "Hittade växlingspost [%s]."
-
-#~ msgid "Looking for swap entries."
-#~ msgstr "Letar efter växlingsposter."
-
-#~ msgid "No printtool setup in directory [%s]."
-#~ msgstr "Ingen printtool-konfiguration i katalogen [%s]."
-
-#~ msgid "Scanning timezones."
-#~ msgstr "Söker igenom tidszoner."
-
-#~ msgid "Scanning timezones: [%s]."
-#~ msgstr "Söker igenom tidszoner: [%s]."
-
-#~ msgid "Setting timezone as [%s]."
-#~ msgstr "Ställer tidszonen till [%s]."
-
-#~ msgid "Setting local time as [%s]."
-#~ msgstr "Ställer lokal tid till [%s]."
-
-#~ msgid "Failed to unmount [%s]."
-#~ msgstr "Misslyckades med att avmontera [%s]."
-
-#~ msgid "Getting user database."
-#~ msgstr "Hämtar användardatabas."
-
-#~ msgid " Don't use it."
-#~ msgstr " Använd inte det."
-
-#~ msgid " Exit."
-#~ msgstr " Avsluta."
-
-#~ msgid " No, (Overwrite)"
-#~ msgstr " Nej, (skriv över)"
-
-#~ msgid " No, Installed  manually"
-#~ msgstr " Nej, manuellt installerad"
-
-#~ msgid " No."
-#~ msgstr " Nej."
-
-#~ msgid " Yes."
-#~ msgstr " Ja."
-
-#~ msgid "Activate Local Interface Network"
-#~ msgstr "Aktivera lokalt gränssnittsnätverk"
-
-#~ msgid ""
-#~ "Congratulation! you have installed \n"
-#~ "Internet Sharing Tool."
-#~ msgstr ""
-#~ "Gratulerar! Du har installerat\n"
-#~ "verktyget för Internetdelning."
-
-#~ msgid "Install DHCP Service"
-#~ msgstr "Installera DHCP-tjänst"
-
-#~ msgid "Would you like to install DHCP service ?"
-#~ msgstr "Vill du installera DHCP-tjänsten?"
-
-#~ msgid ""
-#~ "You don't have installed a local Interface network.\n"
-#~ "Would you like to install it?"
-#~ msgstr ""
-#~ "Du har inte installerat ett lokalt gränssnittsnätverk.\n"
-#~ "Vill du installera det?"
-
-#~ msgid ""
-#~ "You don't have installed the requirements to use \n"
-#~ " DHCP service?"
-#~ msgstr ""
-#~ "Du har inte installerat kraven för att använda\n"
-#~ " DHCP-tjänsten?"
-
-#~ msgid "configure DHCP"
-#~ msgstr "konfigurera DHCP"
-
-#~ msgid "enable"
-#~ msgstr "aktivera"
-
-#~ msgid "Greyscale"
-#~ msgstr "Gråskala"
-
-#~ msgid "1152x864"
-#~ msgstr "1152×864"
-
-#~ msgid "1600x1200"
-#~ msgstr "1600×1200"
-
-#~ msgid "Operate on global backends"
-#~ msgstr "Arbeta med globala backender"
-
-#~ msgid "Options for the location manager"
-#~ msgstr "Alternativ för platshanteraren"
-
-#~ msgid ""
-#~ "You don't have IP forwarding support installed.\n"
-#~ "\n"
-#~ "IP Forwarding support is needed to enable internet sharing"
-#~ msgstr ""
-#~ "Du har inte stöd för IP-vidarebefordran installerat.\n"
-#~ "\n"
-#~ "Stöd för IP-vidarebefordran behövs för att aktivera Internetdelning"
-
-#~ msgid "IP Forward support missing."
-#~ msgstr "Stöd för IP-vidarebefordran saknas."
-
-#~ msgid "Position"
-#~ msgstr "Position"
-
-#~ msgid "Skipping backend init..."
-#~ msgstr "Hoppar över backend-initiering..."
-
-#~ msgid "What driver to use."
-#~ msgstr "Vilken drivrutin som ska användas."
-
-#~ msgid "Lpr based Printing"
-#~ msgstr "Lpr-baserad utskrift"
-
-#~ msgid "To activate"
-#~ msgstr "Att aktivera"
-
-#~ msgid "To inactivate"
-#~ msgstr "Att inaktivera"
-
-#~ msgid "Username already exists."
-#~ msgstr "Användarnamnet finns redan."
-
-#~ msgid "Default Location"
-#~ msgstr "Standardplats"
-
-#~ msgid "Store XML data in the archive"
-#~ msgstr "Lagra XML-data i arkivet"
-
-#~ msgid "Roll back the configuration to a given point"
-#~ msgstr "Återställ konfigurationen till den som gällde vid en given tidpunkt"
-
-#~ msgid "Change the location profile to the given one"
-#~ msgstr "Byt platsprofilen till den som angivits"
-
-#~ msgid "Push configuration data out to client machines (UNIMPLEMENTED)"
-#~ msgstr "Tvinga konfigurationsdata till klientmaskiner (OIMPLEMENTERAT)"
-
-#~ msgid "Rename a location to a new name"
-#~ msgstr "Byt namn på en plats"
-
-#~ msgid "Add a new location to the archive"
-#~ msgstr "Lägg till en ny plats till arkivet"
-
-#~ msgid "Remove a location from the archive"
-#~ msgstr "Ta bort en plats från arkivet"
-
-#~ msgid "Add a given backend to the given location"
-#~ msgstr "Lägg till en angiven backend till den angivna platsen"
-
-#~ msgid "Remove the given backend from the given location"
-#~ msgstr "Ta bort en angiven backend från den angivna platsen"
-
-#~ msgid "Use the global repository"
-#~ msgstr "Använd det globala lagringsutrymmet"
-
-#~ msgid "Identifier of location profile on which to operate"
-#~ msgstr "Identifierare på platsprofilen att operera på"
-
-#~ msgid "Backend being used for this operation"
-#~ msgstr "Backend som används för denna operation"
-
-#~ msgid "BACKEND_ID"
-#~ msgstr "BACKEND-ID"
-
-#~ msgid "Store only the differences with the parent location's config"
-#~ msgstr "Lagra endast skillnaderna mot förälderplatsens konfiguration"
-
-#~ msgid "Store only those settings set in the previous config"
-#~ msgstr ""
-#~ "Lagra endast de inställningar som är inställda i tidigare konfiguration"
-
-#~ msgid "Date to which to roll back"
-#~ msgstr "Datum att återställa till"
-
-#~ msgid "DATE"
-#~ msgstr "DATUM"
-
-#~ msgid "Roll back all configuration items"
-#~ msgstr "Återställ alla konfigurationsobjekt"
-
-#~ msgid "Roll back to the revision REVISION_ID"
-#~ msgstr "Återställ till revisionen REVISIONSID"
-
-#~ msgid "REVISION_ID"
-#~ msgstr "REVISIONSID"
-
-#~ msgid "Roll back to the last known revision"
-#~ msgstr "Återställ till den senast kända revisionen"
-
-#~ msgid "Roll back by STEPS revisions"
-#~ msgstr "Återställ STEG revisioner bakåt"
-
-#~ msgid "STEPS"
-#~ msgstr "STEG"
-
-#~ msgid "Don't run the backend, just dump the output"
-#~ msgstr "Kör inte backenden, dumpa bara utdata"
-
-#~ msgid "Parent location for the new location"
-#~ msgstr "Förälderplats för den nya platsen"
-
-#~ msgid "PARENT"
-#~ msgstr "FÖRÄLDER"
-
-#~ msgid "New name to assign to the location"
-#~ msgstr "Nytt namn att tilldela platsen"
-
-#~ msgid "NEW_NAME"
-#~ msgstr "NYTT_NAMN"
-
-#~ msgid "Add/remove this backend to/from the master backend list"
-#~ msgstr "Lägg till/ta bort denna backend till/från huvudbackendlistan"
-
-#~ msgid "Full containment"
-#~ msgstr "Fullständigt innehåll"
-
-#~ msgid "Partial containment"
-#~ msgstr "Delvis innehåll"
-
-#~ msgid "Global archiver options"
-#~ msgstr "Globala arkiveringsalternativ"
-
-#~ msgid "Archiver commands"
-#~ msgstr "Arkiveringskommandon"
-
-#~ msgid "Options for storing data"
-#~ msgstr "Alternativ för lagring av data"
-
-#~ msgid "Options for rolling back"
-#~ msgstr "Alternativ för återställning"
-
-#~ msgid "Options for adding or renaming locations"
-#~ msgstr "Alternativ för tillägg och namnbyte av platser"
-
-#~ msgid "Options for adding and removing backends"
-#~ msgstr "Alternativ för tillägg och borttagning av backendar"
-
-#~ msgid ""
-#~ "Please enter a username for the new user in the space below. You may also "
-#~ "enter a comment about the user, such as his or her real name. "
-#~ msgstr ""
-#~ "Ange ett användarnamn för den nya användaren i fältet nedan. Du kan också "
-#~ "ange en kommentar om användaren, till exempel dennes fullständiga namn."
-
-#~ msgid "Rollback and Location Management"
-#~ msgstr "Återställnings- och platshantering"
-
-#~ msgid "Global locations"
-#~ msgstr "Globala platser"
-
-#~ msgid "User locations"
-#~ msgstr "Användarplatser"
-
-#~ msgid "D_evice"
-#~ msgstr "_Enhet"
-
-#~ msgid "Dummy Printer"
-#~ msgstr "Testskrivare"
-
-#~ msgid "S_erver"
-#~ msgstr "S_ervrar"
-
-#~ msgid "S_pool"
-#~ msgstr "S_poolkatalog"
-
-#~ msgid "_Filter"
-#~ msgstr "_Filter"
-
-#~ msgid "_Password"
-#~ msgstr "_Lösenord"
-
-#~ msgid "_User"
-#~ msgstr "_Användare"
-
-#~ msgid "_Workgroup"
-#~ msgstr "A_rbetsgrupp:"
-
-#~ msgid "N_ame:"
-#~ msgstr "N_amn:"
-
-#~ msgid "Optional"
-#~ msgstr "Valfritt"
-
-#~ msgid "Not Implemented yet, sorry."
-#~ msgstr "Inte implementerat än, tyvärr."
-
-#~ msgid ""
-#~ "Use this dialog to add new kernel or\n"
-#~ "operating system to your computer."
-#~ msgstr ""
-#~ "Använd detta fönster för att lägga\n"
-#~ "till en ny kärna eller ett nytt\n"
-#~ "operativsystem till din dator."
-
-#~ msgid "Remove <-"
-#~ msgstr "Ta bort <-"
-
-#~ msgid ""
-#~ "You need full administration privileges (i.e. root)\n"
-#~ "to use this configuration tool. Please enter the root\n"
-#~ "password to acquire such privileges.\n"
-#~ msgstr ""
-#~ "Du behöver fullständiga administrationsrättigheter\n"
-#~ "(d.v.s. root) för att använda detta konfigurations-\n"
-#~ "verktyg. Ange rootlösenordet för att få sådana\n"
-#~ "rättigheter.\n"
-
-#~ msgid "Obtain DNS information from DHCP / BOOTP server"
-#~ msgstr "Få DNS-information från DHCP-/BOOTP-server"
-
-#~ msgid ""
-#~ "You need full administration privileges (i.e. root)\n"
-#~ "to run this configuration tool. You can acquire\n"
-#~ "such privileges by running it from the GNOME Control\n"
-#~ "Center or issuing an \"su\" command in a shell.\n"
-#~ "\n"
-#~ "You will be unable to make any changes. Continue anyway?"
-#~ msgstr ""
-#~ "Du måste ha fullständiga administrationsrättigheter\n"
-#~ "(dvs root) för att kunna köra detta konfigurations-\n"
-#~ "verktyg. Du kan få sådana rättigheter genom att köra\n"
-#~ "det från GNOME-kontrollpanelen eller genom att köra\n"
-#~ "kommandot \"su\" i ett skal.\n"
-#~ "\n"
-#~ "Du kommer inte att kunna göra några ändringar.\n"
-#~ "Fortsätta ändå?"
-
-#~ msgid "[ICON]"
-#~ msgstr "[IKON]"
-
-#~ msgid ""
-#~ "AM\n"
-#~ "PM\n"
-#~ msgstr ""
-#~ "FM\n"
-#~ "EM\n"
-
-#~ msgid "Full Name:"
-#~ msgstr "Fullständigt namn:"
-
-#~ msgid " Primary Group "
-#~ msgstr " Huvudgrupp "
-
-#~ msgid "Passwords"
-#~ msgstr "Lösenord"
-
-#~ msgid "Users may be grouped to share resources with others."
-#~ msgstr "Användare kan grupperas för att dela resurser med andra."
-
-#~ msgid ""
-#~ "These are global values that will affect the creation of new users. They "
-#~ "are only available when you click \"More Options\"."
-#~ msgstr ""
-#~ "Det här är globala värden som kommer att påverka skapandet av nya "
-#~ "användare. De är endast tillgängliga om du klickar på \"Fler alternativ\"."
-
-#~ msgid "Mailbox directory:"
-#~ msgstr "Brevlådekatalog:"
-
-#~ msgid "Create home for new users:"
-#~ msgstr "Skapa hem för nya användare:"
-
-#~ msgid "Min/max values for automatic UID/GID"
-#~ msgstr "Lägsta/högsta värde för automatiskt UID/GID"
-
-#~ msgid "Password expiration"
-#~ msgstr "Lösenordsgiltighet"
-
-#~ msgid "Days a password may be used:"
-#~ msgstr "Antal dagar som ett lösenord kan användas:"
-
-#~ msgid ""
-#~ "Days between warning and\n"
-#~ " password expiration:  "
-#~ msgstr ""
-#~ "Antalet dagar mellan varning\n"
-#~ " och utgång av lösenord: "
-
-#~ msgid "Minimum  password length:"
-#~ msgstr "Minsta lösenordslängd:"
-
-#~ msgid "Please enter user's password and it's confirmation."
-#~ msgstr "Ange användarens lösenord och dess bekräftelse."
-
-#~ msgid ""
-#~ "So you want to make a new profile,\n"
-#~ "huh? This here is your dialog."
-#~ msgstr ""
-#~ "Så du vill skapa en ny profil, va?\n"
-#~ "Detta är ditt dialogfönster."
-
-#~ msgid "Profile Editor -- Users and Groups Tool"
-#~ msgstr "Profilredigerare -- Verktyg för användare och grupper"
-
-#~ msgid "Copy Profile"
-#~ msgstr "Kopiera profil"
-
-#~ msgid "Days betweem warning and password expiration:"
-#~ msgstr "Antalet dagar mellan varning och utgång av lösenord:"
-
-#~ msgid ""
-#~ "Please set a valid main group name, with only lower-case letters,\n"
-#~ "or select one from pull-down menu."
-#~ msgstr ""
-#~ "Var vänlig och ange ett giltigt namn på huvudgruppen med endast\n"
-#~ "smp bokstäver, eller välj ett från rullgardinsmenyn."
-
-#~ msgid "Networking Administration"
-#~ msgstr "Nätverksadministration"
-
-#~ msgid "Gateway IP:"
-#~ msgstr "Gateway-IP:"
-
-#~ msgid "Netmask:"
-#~ msgstr "Nätmask:"
-
-#~ msgid "Enable automatically at boot"
-#~ msgstr "Aktivera automatiskt vid start"
-
-#~ msgid "Primary networking"
-#~ msgstr "Primärt nätverk"
-
-#~ msgid "druid? "
-#~ msgstr "guide? "
-
-#~ msgid ""
-#~ "Okay in the interest of actually committing\n"
-#~ "this sometime this week, i am going to forego\n"
-#~ "writing good sentences for now."
-#~ msgstr ""
-#~ "Okej, bara för att jag överhuvudtaget ska kunna\n"
-#~ "skicka in detta denna vecka kommer jag att strunta\n"
-#~ "i att skriva vettiga meningar, och inte bry mig om\n"
-#~ "att översättare får översätta mina nonsensmeningar."
-
-#~ msgid ""
-#~ "Use this tool to manage the operating systems\n"
-#~ "or Linux kernels on your machine."
-#~ msgstr ""
-#~ "Använd detta verktyg för att hantera operativ-\n"
-#~ "systemen och Linuxkärnorna på din maskin."
-
-#~ msgid "Clients for <export name>"
-#~ msgstr "Klienter för <exportnamn>"
-
-#~ msgid "Save Profile"
-#~ msgstr "Spara profil"
-
-#~ msgid "%P %%"
-#~ msgstr "%P %%"
-
-#~ msgid "Change"
-#~ msgstr "Ändra"
-
-#~ msgid "Import Settings--Samba Options"
-#~ msgstr "Importinställningar--Samba-alternativ"
-
-#~ msgid "Make this my default"
-#~ msgstr "Gör detta till mitt standardval"
-
-#~ msgid "This kernel requires additional parameters"
-#~ msgstr "Denna kärna kräver ytterligare parameter"
-
-#~ msgid "User:"
-#~ msgstr "Användare:"
-
-#~ msgid "SMB"
-#~ msgstr "SMB"
-
-#~ msgid "Local path:"
-#~ msgstr "Lokal sökväg:"
-
-#~ msgid "NFS Export Settings"
-#~ msgstr "Inställningar för NFS-export"
-
-#~ msgid "NFS Client Settings"
-#~ msgstr "NFS-klientinställningar"
-
-#~ msgid "Client pattern:"
-#~ msgstr "Klientmönster:"
-
-#~ msgid "Allow writing from these clients"
-#~ msgstr "Tillåt skrivning från dessa klienter"
-
-#~ msgid "New import"
-#~ msgstr "Ny import"
-
-#~ msgid "Mount this import"
-#~ msgstr "Montera denna import"
-
-#~ msgid "Remember this import between boots"
-#~ msgstr "Kom ihåg denna import mellan starter"
-
-#~ msgid ""
-#~ "The directories in your machine may be made available to others through "
-#~ "the network using exports. SMB exports are compatible with Microsoft "
-#~ "Windows (TM) and Unix or Linux machines with Samba installed."
-#~ msgstr ""
-#~ "Katalogerna på din maskin kan göras tillgängliga för andra över nätverket "
-#~ "genom att använda utdelningar. SMB-utdelningar är kompatibla med "
-#~ "Microsoft Windows (tm) och Unix- eller Linuxmaskiner med Samba "
-#~ "installerat."
-
-#~ msgid "SMB exports"
-#~ msgstr "SMB-exporter"
-
-#~ msgid "NFS exports"
-#~ msgstr "NFS-exporter"
-
-#~ msgid "Enter a new password manually, or have one randomly assigned."
-#~ msgstr ""
-#~ "Ange ett nytt lösenord manuellt, eller få ett slumpmässigt lösenord "
-#~ "tilldelat."
-
-#~ msgid "Change the user's password or options like  their name."
-#~ msgstr "Byt användarens lösenord eller alternativ som användarens namn."
-
-#~ msgid "Settings for the selected group"
-#~ msgstr "Inställningar för den markerade gruppen"
-
-#~ msgid "Change the group's options like its name and members."
-#~ msgstr "Ändra alternativ för gruppen som dess namn och medlemmar."
-
-#~ msgid "Settings for group "
-#~ msgstr "Inställningar för gruppen "
-
-#~ msgid "Settings for the selected user and group"
-#~ msgstr "Inställningar för den markerade användaren och gruppen"
-
-#~ msgid "Unkown User"
-#~ msgstr "Okänd användare"
-
-#~ msgid " Full Options >> "
-#~ msgstr " Alla alternativ >> "
-
-#~ msgid "Enable this alias"
-#~ msgstr "Använd detta alias"
-
-#~ msgid "I can't think of anything for this page."
-#~ msgstr "Jag kan inte tänka ut vad som ska finnas på denna sida."
-
-#~ msgid "This device is active"
-#~ msgstr "Denna enhet är aktiv"
-
-#~ msgid "PPP"
-#~ msgstr "PPP"
-
-#~ msgid "User/Group Settings - Ximian Setup Tools"
-#~ msgstr "Användar-/gruppinställningar - Ximians inställningsverktyg"
-
-#~ msgid ""
-#~ "The IP address must have the form of four digits\n"
-#~ "sepparated by a dot (.), being these digits in the range of 0 to 255,\n"
-#~ "except for the first and last ones, which must be in the range of 1 to "
-#~ "254."
-#~ msgstr ""
-#~ "IP-adressen måste bestå av fyra tal åtskilda med en punkt (.).\n"
-#~ "Dessa tal måste vara i intervallet 0 till 255, förutom det första och\n"
-#~ "sista, som måste vara i intervallet 1 till 254."
-
-#~ msgid ""
-#~ "The domain may only contain letters, numbers and dots (.),\n"
-#~ "which may work as sub-domain separators."
-#~ msgstr ""
-#~ "Domänen kan endast innehålla bokstäver, siffror och punkter (.),\n"
-#~ "som kan användas som avskiljare för subdomäner."
-
-#~ msgid "Settings for alias of "
-#~ msgstr "Inställningar för aliaset "
-
-#~ msgid "Create New Alias"
-#~ msgstr "Skapa nytt alias"
-
-#~ msgid ""
-#~ "There are changes which haven't been applyed.\n"
-#~ "Apply now?"
-#~ msgstr ""
-#~ "Det finns ändringar som inte har verkställts än.\n"
-#~ "Verkställ nu?"
-
-#~ msgid ""
-#~ "The alias entry may only contain letters, numbers and dots (.),\n"
-#~ "which may work as sub-domain separators."
-#~ msgstr ""
-#~ "Aliaset kan endast innehålla bokstäver, siffror och punkter (.),\n"
-#~ "som kan användas som avskiljare för subdomäner."
-
-#~ msgid "Network Shares - Ximian Setup Tools"
-#~ msgstr "Nätverksutdelningar - Ximians inställningsverktyg"
-
-#~ msgid "Date/Time Settings - Ximian Setup Tools"
-#~ msgstr "Datum-/Tidsinställningar - Ximians inställningsverktyg"
-
-#~ msgid "Disk Partitions - Ximian Setup Tools"
-#~ msgstr "Diskpartitioner - Ximians inställningsverktyg"
-
-#~ msgid "Swap Management - Ximian Setup Tools"
-#~ msgstr "Hantering av växlingsutrymme - Ximians inställningsverktyg"
-
-#~ msgid "PPP connection"
-#~ msgstr "PPP-anslutning"
-
-#~ msgid "blah"
-#~ msgstr "bläh"
-
-#~ msgid "Name Resolution Administration"
-#~ msgstr "Namnuppslagningsadministration"
-
-#~ msgid "Time of day:"
-#~ msgstr "Tid på dagen:"
-
-#~ msgid ""
-#~ "It doesn't work yet. It's here only on testing purposes and currently "
-#~ "uses local data."
-#~ msgstr ""
-#~ "Det fungerar inte än. Det finns här bara för teständamål och använder för "
-#~ "tillfället lokal data."
-
-#~ msgid "You have to specify path to new swap location!"
-#~ msgstr "Du måste ange sökvägen till det nya växlingsutrymmet!"
-
-#~ msgid "It's already used as swap space!"
-#~ msgstr "Det används redan som växlingsutrymme!"
-
-#~ msgid "Username is empty."
-#~ msgstr "Användarnamnet är tomt."
-
-#~ msgid "Disks Administration"
-#~ msgstr "Diskadministration"
-
-#~ msgid "Time Administration"
-#~ msgstr "Tidsadministration"
-
-#~ msgid "Memory Administration"
-#~ msgstr "Minnesadministration"
-
-#~ msgid "Member Users"
-#~ msgstr "Medlemsanvändare"
-
-#~ msgid "Swap Partition"
-#~ msgstr "Växlingspartition"
-
-#~ msgid "Swap File"
-#~ msgstr "Växlingsfil"
-
-#~ msgid "Megabytes"
-#~ msgstr "megabyte"
-
-#~ msgid "Use non-default priority:"
-#~ msgstr "Använd prioritet som är icke-standard:"
-
-#~ msgid "Use non-default priority"
-#~ msgstr "Använd prioritet som är icke-standard"
-
-#~ msgid "Mb"
-#~ msgstr "MB"
-
-#~ msgid ""
-#~ "Automatic (detect when mounting)\n"
-#~ "Ext2 (Linux)\n"
-#~ "FAT (DOS)\n"
-#~ "VFAT (Windows 95 and newer)\n"
-#~ "FAT32 (Windows 98 and newer)\n"
-#~ "NTFS (Windows NT & 2000)\n"
-#~ msgstr ""
-#~ "Automatisk (upptäck vid montering)\n"
-#~ "Ext2 (Linux)\n"
-#~ "FAT (DOS)\n"
-#~ "VFAT (Windows 95 och nyare)\n"
-#~ "FAT32 (Windows 98 och nyare)\n"
-#~ "NTFS (Windows NT och 2000)\n"
-
-#~ msgid "Settings for the selected IP address"
-#~ msgstr "Inställningar för den markerade IP-adressen"
-
-#~ msgid "."
-#~ msgstr "."
-
-#~ msgid ""
-#~ "(GMT -1100) Midway Island, Samoa\n"
-#~ "(GMT -1000) Hawaii\n"
-#~ "(GMT -0900) Alaska\n"
-#~ "(GMT -0800) Pacific Time (US & Canada); Tijuana\n"
-#~ "(GMT -0700) Arizona\n"
-#~ "(GMT -0600) Central Time (US & Canada); Mexico City, Tegucigalpa, "
-#~ "Saskatchewan\n"
-#~ "(GMT -0500) Eastern Time (US & Canada); Bogota, Lima, Quito\n"
-#~ "(GMT -0400) Atlantic Time (Canada); Caracas, La Paz, Santiago\n"
-#~ "(GMT -0345) Guyana\n"
-#~ "(GMT -0300) Brazil\n"
-#~ "(GMT -0200) Mid-Atlantic\n"
-#~ "(GMT -0100) Azores, Cape Verde Islands\n"
-#~ "(GMT) Casablanca, Monrovia, Dublin, Edinburgh, Lisbon, London\n"
-#~ "(GMT +0100) Amsterdam, Berlin, Bern, Rome, Oslo, Vienna\n"
-#~ "(GMT +0200) Athens, Istanbul, Minsk, Bucharest, Cairo\n"
-#~ "(GMT +0300) Baghdad, Kuwait, Moscow, Volgograd\n"
-#~ "(GMT +0330) Tehran\n"
-#~ "(GMT +0400) Abu Dhabi, Muscat, Baku, Tblisi\n"
-#~ "(GMT +0430) Kabul\n"
-#~ "(GMT +0500) Ekaterinburg, Islamabad, Karachi\n"
-#~ "(GMT +0530) Bombay, Calcutta, Madras, New Delhi\n"
-#~ "(GMT +0600) Astana, Almaty, Dhaka, Colombo\n"
-#~ "(GMT +0630) Rangoon, Kuala Lumpur\n"
-#~ "(GMT +0700) Bangkok, Hanoi, Jakarta\n"
-#~ "(GMT +0800) Singapore, Taipei\n"
-#~ "(GMT +0900) Seoul, Yakutsk\n"
-#~ "(GMT +0930) Adelaide, Darwin\n"
-#~ "(GMT +1000) Brisbane, Canberra, Melbourne, Sydney, Vladivostok\n"
-#~ "(GMT +1100) Magadan, Solomon Islands, New Caledonia\n"
-#~ "(GMT +1200) Auckland, Wellington, Fiji, Kamchatka\n"
-#~ msgstr ""
-#~ "(GMT -1100) Midwayön, Samoa\n"
-#~ "(GMT -1000) Hawaii\n"
-#~ "(GMT -0900) Alaska\n"
-#~ "(GMT -0800) Stillahavstid (USA och Kanada); Tijuana\n"
-#~ "(GMT -0700) Arizona\n"
-#~ "(GMT -0600) Central tid (USA och Kanada); Mexico City, Tegucigalpa, "
-#~ "Saskatchewan\n"
-#~ "(GMT -0500) Östlig tid (USA och Kanada); Bogotá, Lima, Quito\n"
-#~ "(GMT -0400) Atlanttid (Kanada); Caracas, La Paz, Santiago\n"
-#~ "(GMT -0345) Guyana\n"
-#~ "(GMT -0300) Brasilien\n"
-#~ "(GMT -0200) Mellanatlanten\n"
-#~ "(GMT -0100) Azorerna, Kap Verde-öarna\n"
-#~ "(GMT) Casablanca, Monrovia, Dublin, Edinburgh, Lissabon, London\n"
-#~ "(GMT +0100) Amsterdam, Berlin, Bern, Rom, Oslo, Stockholm, Wien\n"
-#~ "(GMT +0200) Aten, Helsingfors, Istanbul, Minsk, Bukarest, Kairo\n"
-#~ "(GMT +0300) Bagdad, Kuwait, Moskva, Volgograd\n"
-#~ "(GMT +0330) Teheran\n"
-#~ "(GMT +0400) Abu Dhabi, Muscat, Baku, Tbilisi\n"
-#~ "(GMT +0430) Kabul\n"
-#~ "(GMT +0500) Jekaterinburg, Islamabad, Karachi\n"
-#~ "(GMT +0530) Bombay, Calcutta, Madras, New Delhi\n"
-#~ "(GMT +0600) Astana, Alma-Ata, Dhaka, Colombo\n"
-#~ "(GMT +0630) Rangoon, Kuala Lumpur\n"
-#~ "(GMT +0700) Bangkok, Hanoi, Jakarta\n"
-#~ "(GMT +0800) Singapore, Taipei\n"
-#~ "(GMT +0900) Söul, Jakutsk\n"
-#~ "(GMT +0930) Adelaide, Darwin\n"
-#~ "(GMT +1000) Brisbane, Canberra, Melbourne, Sydney, Vladivostok\n"
-#~ "(GMT +1100) Magadan, Solomonöarna, Nya Kaledonien\n"
-#~ "(GMT +1200) Auckland, Wellington, Fiji, Kamtjatka\n"
-
-#~ msgid "(GMT -1000) Hawaii"
-#~ msgstr "(GMT -1000) Hawaii"
-
-#~ msgid ""
-#~ "Swap Partition\n"
-#~ "Swap File\n"
-#~ msgstr ""
-#~ "Växlingspartition\n"
-#~ "Växlingsfil\n"
