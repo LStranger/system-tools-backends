@@ -127,7 +127,11 @@ sub gst_boot_grub_edit_entry
 		
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\troot (". $value. ")\n";
-    $val .= "\tkernel " . $entry->{"image"} . " " . $entry->{"append"} . "\n\n";
+    $val .= "\tkernel " . $entry->{"image"} . " " . $entry->{"append"} . "\n";
+    if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
+      $val .= "\tinitrd ". $entry->{"initrd"} . "\n";
+    }
+    $val .= "\n";
   }
   else
   {
@@ -138,7 +142,8 @@ sub gst_boot_grub_edit_entry
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\trootnoverify (" . $value . ")\n";
     $val .= "\tmakeactive\n";
-    $val .= "\tchainloader +1\n\n";
+    $val .= "\tchainloader +1";
+    $val .= "\n\n";
   }
   $$buff[$lineno] = $val;
 
@@ -164,7 +169,11 @@ sub gst_boot_grub_add_entry
 		
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\troot (". $value. ")\n";
-    $val .= "\tkernel " . $entry->{"image"} . " " . $entry->{"append"} . "\n\n";
+    $val .= "\tkernel " . $entry->{"image"} . " " . $entry->{"append"} . "\n";
+    if (exists ($entry->{"initrd"}) && ($entry->{"initrd"} ne "")) {
+      $val .= "\tinitrd ". $entry->{"initrd"} . "\n";
+    }
+    $val .= "\n";
     push @$buff, $val;
   }
   elsif (exists ($entry->{"other"}))
@@ -176,7 +185,8 @@ sub gst_boot_grub_add_entry
     $val = "title " . $entry->{"label"} . "\n";
     $val .= "\trootnoverify (" . $value . ")\n";
     $val .= "\tmakeactive\n";
-    $val .= "\tchainloader +1\n\n";
+    $val .= "\tchainloader +1";
+    $val .= "\n\n";
     push @$buff, $val;
   }
   else
@@ -664,6 +674,15 @@ sub gst_boot_grub_parse_type
   return $res;
 }
 
+sub gst_boot_grub_parse_initrd
+{
+  my ($grub_conf, $entry) = @_;
+  my ($initrd);
+
+  $initrd = &gst_boot_grub_parse_cmd ($grub_conf, "initrd", $entry);
+  return $initrd;
+}
+
 # Watch it: this assumes that the entry exists.
 sub gst_boot_grub_replace_cmd_in_buff
 {
@@ -923,4 +942,3 @@ sub gst_boot_grub_replace_label
 }
 
 1;
-

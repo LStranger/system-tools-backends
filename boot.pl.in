@@ -284,7 +284,8 @@ sub gst_boot_get_entry_parse_table
               ["type",   \&gst_boot_grub_parse_type,   [GRUB_CONF, KEY, PARTITION], "%root%"],
               ["image",  \&gst_boot_grub_parse_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
               ["other",  \&gst_boot_grub_parse_other,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
-              ["append", \&gst_boot_grub_parse_append, [GRUB_CONF, KEY]]
+              ["append", \&gst_boot_grub_parse_append, [GRUB_CONF, KEY]],
+              ["initrd", \&gst_boot_grub_parse_initrd, [GRUB_CONF, KEY]]
               ]
        );
 
@@ -302,7 +303,6 @@ sub gst_boot_entry_set
   %fn = %{$$dist_attrib{"fn"}};
   foreach $j (keys (%fn))
   {
-		print "$j {$$dist_attrib{\"fn\"}}{$j} $$values_hash{\"key\"} aaa ---\n";
     $fn{$j} = &gst_parse_expand ($ {$$dist_attrib{"fn"}}{$j}, "key", $$values_hash{"key"});
   }
   
@@ -412,7 +412,7 @@ sub gst_boot_get_entry_replace_table
               ["root",   \&gst_boot_grub_replace_root,   [GRUB_CONF, DEVICE_MAP, KEY, "%type%"]],
               ["image",  \&gst_boot_grub_replace_image,  [GRUB_CONF, DEVICE_MAP, MTAB, KEY]],
               ["other",  \&gst_boot_grub_replace_other,  [GRUB_CONF, DEVICE_MAP, KEY]],
-              ["append", \&gst_boot_grub_replace_append, [GRUB_CONF, DEVICE_MAP, KEY]]
+              ["append", \&gst_boot_grub_replace_append, [GRUB_CONF, DEVICE_MAP, KEY]],
               ]
        );
   return %tool_tables;

@@ -1,3 +1,8 @@
+2003-04-25  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* boot-grub.pl.in, boot-lilo.pl.in, boot.pl.in: added support for
+	initrd both in grub and lilo
+
 2003-04-23  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network.pl.in: made it to bring down and up an interface when
