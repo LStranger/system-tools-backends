@@ -75,11 +75,4 @@ sub _ # scalar (string)
 }
 
 
-sub N_ # scalar (string)
-{
-  my ($str) = @_;
-  return $str;
-}
-
-
 1;

@@ -24,6 +24,7 @@
 
 require "___scriptsdir___/report.pl";
 require "___scriptsdir___/platform.pl";
+require "___scriptsdir___/gettext.pl";
 
 
 # --- Operation modifying variables --- #
@@ -48,6 +49,10 @@ $xst_do_immediate = 1;
 # Location management stuff
 $xst_location = "";
 $xst_no_archive = 0;
+
+
+# Gettext
+&textdomain ("ximian-setup-tools");
 
 
 # --- Generic part of usage text --- #

@@ -1,5 +1,14 @@
 2001-04-23  Arturo Espinosa  <arturo@ximian.com>
 
+	* debug.pl.in: minor cosmetic change to path.
+	* general.pl.in: require gettext.pl routines and set textdomain
+	to "ximian-setup-tools".
+	* gettext.pl.in: Removed function N_. This is only a C trick
+	to fool the preprocessor. Oh, but this is not C.
+	* report.pl.in: Surround strings to be translated by '_()'.
+	
+2001-04-23  Arturo Espinosa  <arturo@ximian.com>
+
 	* network.pl.in: init.d script for smb in Debian is samba.
 	* service.pl.in (xst_service_sysv_get_paths): Added paths for
 	  Debian and Mandrake.

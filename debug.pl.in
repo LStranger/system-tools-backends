@@ -151,7 +151,7 @@ sub xst_debug_rotate_try
 {
 
   my $debug_file = $_[0];
-  my $debug_tool_dir = &xst_file_get_debug_path () . "/$xst_name/";
+  my $debug_tool_dir = &xst_file_get_debug_path () . "/$xst_name";
 
   # If this is the first debug created by this tool on this invocation,
   # rotate the debug directories and create a new, empty one.
