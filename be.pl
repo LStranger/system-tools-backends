@@ -261,32 +261,32 @@ sub be_xml_scan_recurse
   
   while (@be_xml_scan_list)
   {
-	$el = $be_xml_scan_list[0]; shift @be_xml_scan_list;
-	
-    if (($el eq "") || $el =~ /^\<[!?].*\>$/s) { next; } # Empty strings, PI and DTD must go.
-    if ($el =~ /^\<.*\/\>$/s) # Empty.
+    $el = $be_xml_scan_list[0]; shift @be_xml_scan_list;
+
+    if (($el eq "") || $el =~ /^\<[!?].*\>$/s) { next; }  # Empty strings, PI and DTD must go.
+    if ($el =~ /^\<.*\/\>$/s)  # Empty.
     {
-	    $el =~ /^\<([a-zA-Z_-]+).*\/\>$/s;
-	 	  push(@list, $1);
-			push(@list, be_xml_scan_make_kid_array($el));
-	  }
-	  elsif ($el =~ /^\<\/.*\>$/s) # End.
-	  {
-	    last;
-	  }
-	  elsif ($el =~ /^\<.*\>$/s) # Start.
-	  {
-	    $el =~ /^\<([a-zA-Z_-]+).*\>$/s;
-		  push(@list, $1);
-		  $sublist = be_xml_scan_make_kid_array($el);
-		  push(@list, be_xml_scan_recurse($sublist));
-		  next;
-	  }
-	  elsif ($el ne "")	# PCDATA.
-	  {
-	    push(@list, 0);
-		  push(@list, "$el");
-	  }
+      $el =~ /^\<([a-zA-Z_-]+).*\/\>$/s;
+      push(@list, $1);
+      push(@list, be_xml_scan_make_kid_array($el));
+    }
+    elsif ($el =~ /^\<\/.*\>$/s)  # End.
+    {
+      last;
+    }
+    elsif ($el =~ /^\<.*\>$/s)  # Start.
+    {
+      $el =~ /^\<([a-zA-Z_-]+).*\>$/s;
+      push(@list, $1);
+      $sublist = be_xml_scan_make_kid_array($el);
+      push(@list, be_xml_scan_recurse($sublist));
+      next;
+    }
+    elsif ($el ne "")  # PCDATA.
+    {
+      push(@list, 0);
+      push(@list, "$el");
+    }
   }
 	 
   return(\@list);
@@ -296,18 +296,17 @@ sub be_xml_scan
   {
     my $doc; my @tree; my $i;
 		
-		if ($be_input_file eq "") 
-		{
+    if ($be_input_file eq "") 
+    {
       $doc .= $i while ($i = <STDIN>);
-		}
-		else
-		{
-		  open INPUT_FILE, $be_input_file;
-      $doc .= $i while ($i = <INPUT_FILE>);
-			close INPUT_FILE;
     }
-		
-    print STDERR $doc if $be_verbose;
+    else
+    {
+      open INPUT_FILE, $be_input_file;
+      $doc .= $i while ($i = <INPUT_FILE>);
+      close INPUT_FILE;
+    }
+
     @be_xml_scan_list = ($doc =~ /([^\<]*)(\<[^\>]*\>)[ \t\n\r]*/mg); # pcdata, tag, pcdata, tag, ...
     
     $tree = be_xml_scan_recurse;
@@ -537,7 +536,7 @@ sub be_open_write_from_names
     else
       {
 	(my $fullname = "$be_prefix/$name") =~ tr/\//\//s;
-	be_report_info(98, "Found \"$name\". Writing to \"$fullname\".\n");
+	be_report_info(98, "Found \"$name\". Writing to \"$fullname\"");
       }
     
     ($name = "$be_prefix/$name") =~ tr/\//\//s;  # '//' -> '/' 
