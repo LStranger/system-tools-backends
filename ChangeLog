@@ -1,5 +1,12 @@
 2001-05-30  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* network.pl.in (xst_network_iface2dial): To merge ppp interface
+	information with dialing stuff.
+	(xst_network_suse70_set_ppp): Implemented, with some trickery.
+	(xst_network_suse70_ppp_iface_activate): Takes care of SuSE 70
+	ppp interface activation.
+	(xst_network_suse70_activate_ppp): same.
+
 	* parse.pl.in (xst_parse_replace_hash_values): If replaced  value
 	is a reference, set that as the interpolated value, not the
 	string representation.

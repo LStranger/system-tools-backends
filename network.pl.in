@@ -390,6 +390,33 @@ sub xst_network_dial2iface
   return \%iface;
 }
 
+sub xst_network_iface2dial
+{
+  my ($dial_hash, $iface) = @_;
+  my ($dial, $i);
+
+  my %map = ("address"        => "address",
+             "update_dns"     => "update_dns",
+             "login"          => "login",
+             "password"       => "password",
+             "device"         => "serial_port",
+             "speed"          => "serial_speed",
+             "set_default_gw" => "set_default_gw",
+             "persist"        => "persist",
+             "phone"          => "phone_number",
+             "xst_dev"        => "dev"
+             );
+
+  $dial = $$dial_hash{$iface{"name"}};
+
+  foreach $i (keys %map)
+  {
+    $dial{$i} = $$iface{$map{$i}} if exists $$iface{$map{$i}};
+  }
+
+  $dial{"type"} = "dialer";
+}
+
 sub xst_network_suse70_get_ppp
 {
   my ($dial, $iface) = @_;
@@ -405,10 +432,74 @@ sub xst_network_suse70_get_ppp
 
 sub xst_network_suse70_set_ppp
 {
+  my ($dial, $iface) = @_;
+  my ($d, $tmp, $wv, $i);
+
+  foreach $d (keys %$iface)
+  {
+    $i = $$iface{$d};
+    if ($$i{"dev"} =~ /^ppp/)
+    {
+      # This takes care of connection name changes.
+      $wv = $$i{"wv"};
+
+      $tmp = $$dial{$wv};
+      delete $$dial{$wv};
+      $$dial{$$i{"name"}} = $tmp;
+      
+      # Then merges interface with dialing.
+      &xst_network_iface2dial ($dial, $i);
+    }
+  }
+}
+
+sub xst_network_suse70_ppp_iface_activate
+{
+  my ($name, $enabled);
+  my ($wvdial_dod, $tool_ifconfig, @paths);
+
+  @paths = &xst_service_sysv_get_paths ();
+  $wvdial_dod = $paths[1] . "/wvdial.dod";
+  $tool_ifconfig = &xst_file_locate_tool ("ifconfig");
+
+  if ($enabled)
+  {
+    &xst_debug_print_string ("\n\nifup ppp iface $name\n\n");
+    return -1 if &xst_file_run ("$wvdial_dod start \"$name\" &");
+  }
+  else
+  {
+    # Hmm... you'd  better not have more than one ppp connection active:
+    # this is the only SuSE way of doing it.
+    &xst_debug_print_string ("\n\nifdown ppp iface $name\n\n");
+    return -1 if &xst_file_run ("$wvdial_dod stop &");
+  }
+
+  return 0;
 }
 
 sub xst_network_suse70_activate_ppp
 {
+  my ($iface) = @_;
+  my ($d, $i);
+
+  foreach $d (keys %$iface)
+  {
+    $i = $$iface{$d};
+    if ($$i{"dev"} =~ /^ppp/ && (! $$i{"enabled"}))
+    {
+      &xst_network_suse70_ppp_iface_activate ($$i{"name"}, 0);
+    }
+  }
+
+  foreach $d (keys %$iface)
+  {
+    $i = $$iface{$d};
+    if ($$i{"dev"} =~ /^ppp/ && $$i{"enabled"})
+    {
+      &xst_network_suse70_ppp_iface_activate ($$i{"name"}, 1);
+    }
+  }
 }
 
 sub xst_network_interfaces_get
@@ -1790,7 +1881,7 @@ sub xst_network_get_replace_table
            [ "smbuse",        \&xst_service_sysv_set_status,  91, "smb" ],
            [ "interface",     \&xst_network_suse70_set_ppp,   "%dialing%" ],
            [ "dialing",       \&xst_network_dialing_set,      WVDIAL ],
-# We're calling this sepparated cuz we are going to call wvdial.           
+# We're calling this sepparated cuz we are going to call wvdial to activate.           
            [ "interface",     \&xst_network_suse70_activate_ppp ],
            [ "interface",     \&xst_network_interfaces_set,		OLD_HASH ]
            ]
