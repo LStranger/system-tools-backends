@@ -760,249 +760,135 @@ sub xst_share_replace_nfs_exports  # filename, table
   } 
 }
 
-sub xst_share_find_hosts
-{
-  my @hosts;
 
-  my %dist_map =
-      (
-       "redhat-5.2"   => "redhat-5.2",
-       "redhat-6.0"   => "redhat-6.2",
-       "redhat-6.1"   => "redhat-6.2",
-       "redhat-6.2"   => "redhat-6.2",
-       "redhat-7.0"   => "redhat-6.2",
-       "redhat-7.1"   => "redhat-6.2",
-       "mandrake-7.2" => "redhat-6.2",
-       "debian-2.2"   => "debian-2.2",
-       "debian-woody" => "debian-woody",
-       "suse-7.0"     => "suse-7.0",
-       "turbolinux-7.0"   => "redhat-6.2"
-     }
+sub xst_share_get_smbclient_list_cmd
+{
+  my ($host) = @_;
+  my ($tool_smbclient);
+
+  $tool_smbclient = &xst_file_locate_tool ("smbclient");
+
+  return "$tool_smbclient -N -U % -L -I $host";
 }
+
+
+sub xst_share_scan_smb_host_call
+{
+  my ($host) = @_;
+  my ($cmd, $dirs);
+  local *SMBCLIENT;
+
+  $cmd = &xst_share_get_smbclient_list_cmd ($host);
+  open (SMBCLIENT, "/bin/sh -c \"$cmd\" 2> /dev/null |");
+
+  while (<SMBCLIENT>)
+  {
+    last if /^[ \t]+Sharename[ \t]+Type[ \t]+Comment/;
+  }
+  
+  while (<SMBCLIENT>)
+  {
+    chomp;
+    last if /^$/;
+    # Looking for sth like " 	fredsdir       Disk      Fred's Service"
+    if (/^[ \t]*([^ \t]+)[ \t]+Disk/)
+    {
+      $dirs .= ":" . $1;
+    }
+  }
+  close SMBCLIENT;
+
+  return "$host:$dirs";
+}
+
+
+sub xst_share_scan_smb_start
+{
+  my (@hosts) = @_;
+  my ($host, @procs);
+
+  foreach $host (@hosts)
+  {
+    push @procs, &xst_process_fork (\&xst_share_scan_smb_host_call, $host);
+  }
+
+  return \@procs;
+}
+
+
+sub xst_share_scan_nfs_host_call
+{
+  my ($host) = @_;
+  my ($cmd, $dirs);
+  local *SHOWMOUNT;
+
+  $cmd = &xst_share_get_showmount_cmd ($host);
+  open (SHOWMOUNT, "/bin/sh -c \"$cmd\" 2> /dev/null |");
+  while (<SHOWMOUNT>)
+  {
+    chomp;
+    $dirs .= ":$_";
+  }
+  close SHOWMOUNT;
+
+  return "$host$dirs";
+}
+
+
+sub xst_share_scan_nfs_start
+{
+  my (@hosts) = @_;
+  my ($host, @procs);
+
+  foreach $host (@hosts)
+  {
+    push @procs, &xst_process_fork (\&xst_share_scan_nfs_host_call, $host);
+  }
+
+  return \@procs;
+}
+
+
+sub xst_share_scan_share_collect
+{
+  my ($procs, $host2name) = @_;
+  my ($proc, $str, %hash, $host, @dirs);
+
+  foreach $proc (@$procs)
+  {
+    if ($$proc{"ready"})
+    {
+      sysread ($$proc{"fd"}, $str, 4096);
+      @dirs = split (':', $str);
+      $host = shift @dirs;
+      $hash{$$host2name{$host}} = [ @dirs ];
+    }
+    &xst_process_kill ($proc);
+  }
+
+  return \%hash;
+}
+
 
 sub xst_share_scan_network
 {
-  my ($ping_tool, $showmount_tool, $nmblookup_tool, $smbclient_tool,
-      $broadcast_ip, $network_ip);
-  my @hosts;
-  my ($i, $j);
+  my ($host, @hosts);
+  my ($proc, @procs, $lookup_procs, $nfs_procs, $smb_procs);
+  my ($i, @names, %host2name, $nfs_table, $smb_table);
 
-  $ping_tool = be_locate_tool("ping");
-  $showmount_tool = be_locate_tool("showmount");
-  $nmblookup_tool = be_locate_tool("nmblookup");
-  $smbclient_tool = be_locate_tool("smbclient");
-
-  $broadcast_ip = ip_calc_broadcast($cf_hostip, $cf_netmask);
-  $network_ip = ip_calc_network($cf_hostip, $cf_netmask);
-
-  be_report_info(15, "Mapping IP subnet " . $network_ip);
-
-  # Map subnet.
-
-  open(PING_HD, "$ping_tool -b -c 2 -n $broadcast_ip 2>/dev/null |");
-  while (<PING_HD>)
-  {
-    if (/bytes from/)
-    {
-      $ip = join('.', ($_ =~ /from ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/));
-      be_push_unique(\@hosts, $ip);
-    }
-  }
-  close(PING_HD);
-
-  if ($#hosts == -1)
-  {
-    # If nothing was found, make a second attempt, this time with fewer
-    # options. Eliminate those that ping might not understand.
-
-    open(PING_HD, "$ping_tool -c 2 -n $broadcast_ip 2>/dev/null |");
-    while (<PING_HD>)
-    {
-      if (/bytes from/)
-      {
-        $ip = join('.', ($_ =~ /from ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/));
-        be_push_unique(\@hosts, $ip);
-      }
-    }
-    close(PING_HD);
-  }
-
-  be_report_info(1, "Subnet ping found " . ($#hosts + 1) . " hosts");
-  be_print_progress ();
-
-  # List NFS shares.
-
-  if ($showmount_tool eq "")
-  {
-    be_report_error(1, "Can't locate showmount - NFS scan skipped");
-  }
-  else
-  {
-    be_report_info(16, "Doing NFS detection on broadcast " . $broadcast_ip);
+  @hosts = &xst_network_find_hosts ();
   
-    $i = 0; $j = 0;
-    for $host (@hosts)
-    {
-      if ($host eq $cf_hostip) { next; }
-      be_report_info(17, "Querying NFS service on " . $host);
-      open(MOUNTS_HD, "$showmount_tool --directories --no-headers $host 2>/dev/null |");
-      while (<MOUNTS_HD>)
-      {
-        if (/[Dd]irectories.*:/) { next; }
-        push(@cf_shares_list, $host);                          # Host
-        push(@cf_shares_list, ($_ =~ /[ \t]*([^ \t\n\r]+)/));  # Path
-        push(@cf_shares_list, "");                             # Comment
-        push(@cf_shares_list, 0);                              # Mounted
-        push(@cf_shares_list, 1);                              # Detected
-        push(@cf_shares_list, "nfs");                          # Type
-        push(@cf_shares_list, "");                             # User
-        push(@cf_shares_list, "");                             # Password
-        push(@cf_shares_list, "");                             # Mount point
-        push(@cf_shares_list, 0);                              # Flag: Printed.
-        push(@cf_shares_list, 0);                              # Listed.
-      
-        $j++;
-      }
-      close(MOUNTS_HD);
+  $lookup_procs = &xst_network_lookup_address_start (@hosts);
+  $nfs_procs = &xst_share_scan_nfs_start (@hosts);
+  $smb_procs = &xst_share_scan_smb_start (@hosts);
 
-      $i++;
-    }
+  &xst_process_list_check_ready (10, [@$lookup_procs, @$nfs_procs, @$smb_procs]);
 
-    be_report_info(02, "Found $j NFS exports on $i hosts");
-    be_print_progress ();
-  }
+  @names = &xst_network_lookup_address_collect ($lookup_procs);
+  # http://tlc.perlarchive.com/articles/perl/ug0001.shtml
+  @host2name{@hosts} = @names;
 
-  # List SMB shares if applicable.
-
-  if ($cf_workgroup ne "")
-  {
-    my ($smb_master_ip, $smb_master_name);
-    my @smb_hosts;
-    
-    be_report_info(03, "Doing SMB detection in workgroup $cf_workgroup");
-
-    # Find the workgroup master.
-  
-    open(FD, "$nmblookup_tool -M -S $cf_workgroup |");
-    while (<FD>)
-    {
-      if (/^[a-zA-Z0-9.]+ $cf_workgroup</)
-      {
-        ($smb_master_ip) = ($_ =~ /(^[a-zA-Z0-9.]+)/);
-      }
-      elsif (/^[ \t]+[A-Za-z0-9]+[ \t]+</)
-      {
-        ($smb_master_name) = ($_ =~ /^[ \t]+([A-Za-z0-9]+)/);
-        last;
-      }
-    }
-    close(FD);
-
-    be_print_progress ();
-
-    if ($smb_master_name ne "")
-    {
-      be_report_info(04, "Workgroup master is $smb_master_name ($smb_master_ip)");
-
-      # List computers.
-
-      open(FD, "$smbclient_tool -N -U % -L $smb_master_name -I $smb_master_ip |");
-      while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
-
-      while (<FD>)
-      {
-        if ($_ eq "" || $_ eq "\n") { last; }
-        elsif (/^[ \t]+[^ \t-]+/)
-        {
-          be_push_unique(\@smb_hosts, ($_ =~ /^[ \t]+([^ \t-]+)/));
-        }
-      }
-      close(FD);
-
-      if ($#smb_hosts + 1) { be_report_info(05, "Master reported " . ($#smb_hosts + 1) . " hosts in workgroup"); }
-      else { be_report_info(06, "No hosts reported by master - asking others"); }
-    }
-    else { be_report_warning(02, "No workgroup master found"); }
-
-    if (!@smb_hosts)
-    {
-      # The master browser didn't list any hosts for some reason.
-      # This happens fairly often (but randomly) on my network, so we work
-      # around it by asking some other hosts to make sure.
-
-      for $host (@hosts)
-      {
-        if ($host eq $smb_master_ip) { next; }  # Already asked the fucker.
-
-        # Typically only Unix machines (samba) will understand these requests,
-        # since they have service entries for their own IPs, whereas Windows
-        # boxen don't.
-        
-        be_report_info(07, "Asking $host for host list");
-
-        open(FD, "$smbclient_tool -N -U % -L $host -I $host |");
-        while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
-        
-        while (<FD>)
-        {
-          if ($_ eq "" || $_ eq "\n") { last; }
-          elsif (/^[ \t]+[^ \t-]+/)
-          {
-            be_push_unique(\@smb_hosts, ($_ =~ /^[ \t]+([^ \t-]+)/));
-          }
-        }
-        close(FD);
-
-        if (@smb_hosts)
-        {
-          be_report_info(8, "Got " . ($#smb_hosts + 1) . " SMB hosts");
-          last;
-        }
-        else { be_report_warning(9, "No SMB hosts found"); }
-      }
-    }
-
-    # List shares on each computer.
-
-    $i = 0; $j = 0;
-    while (@smb_hosts)
-    {
-      open(FD, "$smbclient_tool -N -U % -L $smb_hosts[0] |");
-      while (<FD>) { if (/^[ \t]+Sharename[ \t]+Type[ \t]+Comment/) { last; } }
-      while (<FD>)
-      {
-        if ($_ eq "" || $_ eq "\n") { last; }
-        elsif (/^[ \t]+[^ \t-]+[ \t]+Disk/)
-        {
-          ($path) = ($_ =~ /^[ \t]+([^ \t-]+)/);  # Path
-          $path = "/\L$path";
-          $smb_hosts[0] = "\L$smb_hosts[0]";
-
-          push(@cf_shares_list, $smb_hosts[0]);                # Host
-          push(@cf_shares_list, $path);                        # Path
-          push(@cf_shares_list, ($_ =~ /^[ \t]+[^ \t-]+[ \t]+Disk[ \t]+(.*)$/));  # Comment
-          push(@cf_shares_list, 0);                            # Mounted
-          push(@cf_shares_list, 1);                            # Detected
-          push(@cf_shares_list, "smb");                        # Type
-          push(@cf_shares_list, "");                           # User
-          push(@cf_shares_list, "");                           # Password
-          push(@cf_shares_list, "");                           # Mount point
-          push(@cf_shares_list, 0);                            # Flag: Printed
-          push(@cf_shares_list, 0);                            # Listed
-          
-          $j++;
-        }
-      }
-      close(FD);
-
-      shift @smb_hosts;
-      $i++;
-    }
-    
-    be_report_info(10, "Found $j SMB exports on $i hosts");
-    be_print_progress ();
-  }
-  else { be_report_warning(10, "No workgroup configured - SMB scan skipped"); }
+  return &xst_share_scan_collect ([@$nfs_procs, @$smb_procs], \%host2name);
 }
 
 1;

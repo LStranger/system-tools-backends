@@ -90,6 +90,95 @@ sub xst_network_ipv4_calc_bcast
   return &xst_network_ipv4_vec2str (&xst_network_ipv4_calc_bcast_vec);
 }
 
+
+# Selects a ping command, which must ping just twice, with
+# one second interval, returning numeric IPs to the given
+# broadcast address.
+sub xst_network_get_broadcast_ping_cmd
+{
+  my ($bcast) = @_;
+  my ($tool_ping);
+
+  $tool_ping = &xst_file_locate_tool ("ping");
+
+  my %cmd_map =
+      (
+       "debian-2.2" => "$tool_ping -c 2 -i 1 -n $bcast",
+       "redhat-6.2" => "$tool_ping -c 2 -i 1 -n -b $bcast"
+       );
+  my %dist_map =
+      (
+       "redhat-6.0"   => "redhat-6.2",
+       "redhat-6.1"   => "redhat-6.2",
+       "redhat-6.2"   => "redhat-6.2",
+       "redhat-7.0"   => "redhat-6.2",
+       "redhat-7.1"   => "redhat-6.2",
+       "debian-2.2"   => "debian-2.2",
+       "debian-woody" => "debian-2.2",
+       "mandrake-7.2" => "debian-2.2",
+       "suse-7.0"     => "debian-2.2" # FIXME: assumed that only redhat distros use -b.
+       );
+
+  return $cmd_map{$dist_map{$xst_dist}};
+}
+
+
+# Run ping, taking what looks like the replying host addresses, return
+# colon-sepparated (:) string. To be used with xst_process_fork.
+sub xst_network_ping_broadcast_call
+{
+  my ($bcast) = @_;
+  my ($cmd, %hosts);
+  local *PING;
+
+  $cmd = &xst_network_get_broadcast_ping_cmd ($bcast);
+  open (PING, "/bin/sh -c \"$cmd\" 2> /dev/null |");
+  while (<PING>)
+  {
+    if (/([0-9.]+):?[ \t]+icmp_seq/)
+    {
+      # If it already exists, it is the second count, and we can return then.
+      last if exists $hosts{$1};
+      $hosts{$1} = 1 ;
+    }
+  }
+  close PING;
+
+  return join (':', keys (%hosts));
+}
+
+
+# Return an array of IPs of the hosts in all the adjacent local networks.
+sub xst_network_find_hosts
+{
+  my ($iface, $ifaces, $dev, $hosts_str, @hosts, $proc, @procs);
+
+  $ifaces = &xst_network_active_interfaces_get_info ();
+
+  foreach $dev (keys %$ifaces)
+  {
+    $iface = $$ifaces{$dev};
+    if (exists $$iface{"bcast"})
+    {
+      push @procs, &xst_process_fork (\&xst_network_ping_broadcast_call, $$iface{"bcast"});
+    }
+  }
+
+  &xst_process_list_check_ready (3, \@procs);
+
+  foreach $proc (@procs)
+  {
+    if ($$proc{"ready"})
+    {
+      sysread ($$proc{"fd"}, $hosts_str, 4096);
+      push @hosts, split (':', $hosts_str);
+    }
+  }
+
+  return @hosts;
+}
+
+
 # like, &xst_network_lookup_address_block ("132.248.10.2") returns 'dns2.unam.mx'
 # but watch it: it will block until libc timeouts or a result is found. If
 # nothing found, returns the address.
@@ -131,22 +220,20 @@ sub xst_network_lookup_address_start
   return \@procs;
 }
 
-# Take a timeout and a ref to a list of forked lookup processes,
-# and collect the information from those ready, before timeout.
+# Take a ref to a list of forked lookup processes,
+# and collect the information from those ready.
 sub xst_network_lookup_address_collect
 {
-  my ($timeout, $procs) = @_;
+  my ($procs) = @_;
   my ($name, @names, $proc);
   
-  &xst_process_list_check_ready ($timeout, $procs);
-
-  # For every process, if its descriptor bit is on, read info.
+  # For every process, if the "ready" flag is on, read info.
   # Else, populate with the given address. Then kill child and wait for it to die.
   foreach $proc (@$procs)
   {
     if ($$proc{"ready"})
     {
-      sysread ($$proc{"fd"}, $name, 1024);
+      sysread ($$proc{"fd"}, $name, 4096);
       push @names, $name;
     }
     else
@@ -173,7 +260,8 @@ sub xst_network_lookup_address
   my $procs;
 
   $procs = &xst_network_lookup_address_start (@addrs);
-  return &xst_network_lookup_address_collect ($timeout, $procs);
+  &xst_process_list_check_ready ($timeout, $procs);
+  return &xst_network_lookup_address_collect ($procs);
 }
 
 

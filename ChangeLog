@@ -1,3 +1,23 @@
+2001-07-06  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network.pl.in (xst_network_lookup_address_collect):
+	Improved reusability by taking out xst_process_list_check_ready.
+	(xst_network_lookup_address): Put that call here.
+
+	* share.pl.in (xst_share_get_smbclient_list_cmd): Get
+	smbclient command to get a list of shares from a host.
+	(xst_share_scan_smb_host_call): Function to be called
+	from xst_process_fork.
+	(xst_share_scan_smb_start): Spawn an smbclient for
+	every host.
+	(xst_share_scan_nfs_host_call): Analogue.
+	(xst_share_scan_nfs_start): Same.
+	(xst_share_scan_share_collect): Get strings from
+	children and return hash with host => [ @dirs ].
+	(xst_share_scan_network): Finished, not tested. Launches
+	all processes in parallel, after the bcast ping, including
+	name lookups. Returns hash with information.
+
 2001-07-06  Hans Petter Jansson  <hpj@ximian.com>
 
 	* parse.pl.in (xst_parse_xml): Begin XML config parser.
@@ -12,6 +32,12 @@
 	xst_process_list_check_ready and inspects "ready" key.
 	(xst_network_active_interfaces_get_info): Run ifconfig,
 	getting addr, bcast and mask info for all ifaces in a hash.
+	(xst_network_get_broadcast_ping_cmd): Code that selects
+	the right command to ping a given broadcast.
+	(xst_network_ping_broadcast_call): Runs a broadcast ping and
+	returns string containing replying hosts.
+	(xst_network_find_hosts): Return an array of IPs of the hosts
+	in all the adjacent local networks.
 
 	* util.pl.in (xst_process_fork): Do a pipe, fork
 	a process where the child executes a given function,
@@ -228,7 +254,6 @@ Tue Jun 12 04:41:33 2001  Arturo Espinosa  <arturo@ximian.com>
 	  (xst_replace_cap): Implement.
 	  (xst_replace_remove_cap_section): Implement.
 
->>>>>>> 1.280
 2001-06-26  Tambet Ingo  <tambet@ximian.com>
 
 	* xml.pl.in (xst_xml_get_text): ref safe now. Don't return 'ARRAY'
