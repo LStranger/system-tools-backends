@@ -1,3 +1,5 @@
+COPYING
+INSTALL
 *.tar.gz
 configure
 intl
