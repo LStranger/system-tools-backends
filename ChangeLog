@@ -2,6 +2,7 @@
 
 	* memory-conf.in (xml_print): No prototypes, thank-you. Read
 	http://www.perl.com/pub/language/misc/fmproto.html for enlightening.
+	(xml_print): Use xst_xml_print_{begin,end}.
 
 	* x.pl.in: same. Prototypes were invented to allow people to
 	call procedures as if they were Perl special functions. That's not
