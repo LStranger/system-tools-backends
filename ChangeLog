@@ -1,3 +1,15 @@
+2002-09-02 Álvaro Peña <alvaropg@mac.com>
+
+	* platform.pl.in: Added Slackware 8.0.0 to platforms list
+	and check_slackware for check it.
+
+	* time-conf.in: Added slackware-8.0.0 to platforms list
+	(conf_get_replace_table & conf_get_parse_table): in dist_map
+	slackware-8.0.0 is like	debian-2.2
+
+	* users-conf.in: Added slackware-8.0.0 to platforms list
+	in logindefs_dist_map slackware-8.0.0 using rh_logindefs_defaults
+
 2002-09-02  Theo van Klaveren  <t.vanklaveren@student.utwente.nl>
 
 	* users-conf.in: basic FreeBSD porting work, adding/deleting

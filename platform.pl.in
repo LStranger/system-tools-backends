@@ -38,20 +38,21 @@ require "$SCRIPTSDIR/xml.pl$DOTIN";
 
 
 $PLATFORM_INFO = {
-  "debian-2.2"     => "Debian GNU/Linux 2.2 Potato",
-  "debian-woody"   => "Debian GNU/Linux 3.0 Woody",
-  "redhat-5.2"     => "Red Hat Linux 5.2 Apollo",
-  "redhat-6.0"     => "Red Hat Linux 6.0 Hedwig",
-  "redhat-6.1"     => "Red Hat Linux 6.1 Cartman",
-  "redhat-6.2"     => "Red Hat Linux 6.2 Zoot",
-  "redhat-7.0"     => "Red Hat Linux 7.0 Guinness",
-  "redhat-7.1"     => "Red Hat Linux 7.1 Seawolf",
-  "redhat-7.2"     => "Red Hat Linux 7.2 Enigma",
-  "mandrake-7.1"   => "Linux Mandrake 7.1",
-  "mandrake-7.2"   => "Linux Mandrake 7.2 Odyssey",
-  "mandrake-8.0"   => "Linux Mandrake 8.0 Traktopel",
-  "suse-7.0"       => "SuSE Linux 7.0",
-  "turbolinux-7.0" => "Turbolinux 7.0"
+  "debian-2.2"      => "Debian GNU/Linux 2.2 Potato",
+  "debian-woody"    => "Debian GNU/Linux 3.0 Woody",
+  "redhat-5.2"      => "Red Hat Linux 5.2 Apollo",
+  "redhat-6.0"      => "Red Hat Linux 6.0 Hedwig",
+  "redhat-6.1"      => "Red Hat Linux 6.1 Cartman",
+  "redhat-6.2"      => "Red Hat Linux 6.2 Zoot",
+  "redhat-7.0"      => "Red Hat Linux 7.0 Guinness",
+  "redhat-7.1"      => "Red Hat Linux 7.1 Seawolf",
+  "redhat-7.2"      => "Red Hat Linux 7.2 Enigma",
+  "mandrake-7.1"    => "Linux Mandrake 7.1",
+  "mandrake-7.2"    => "Linux Mandrake 7.2 Odyssey",
+  "mandrake-8.0"    => "Linux Mandrake 8.0 Traktopel",
+  "suse-7.0"        => "SuSE Linux 7.0",
+  "turbolinux-7.0"  => "Turbolinux 7.0",
+  "slackware-8.0.0" => "Slackware 8.0.0"
     };
   
 sub check_lsb
@@ -166,6 +167,22 @@ sub check_turbolinux
   return -1;
 }
 
+sub check_slackware
+{
+  open RELEASE, "$xst_prefix/etc/slackware-version" or return -1;
+  while (<RELEASE>)
+  {
+    chomp;
+    if (/([0-9.]+)\s.*/)
+    {
+        close RELEASE;
+        return "slackware-$1";
+    }
+  }
+  close RELEASE;
+  return -1;
+}
+
 
 sub check_linuxppc
 {
@@ -252,7 +269,8 @@ sub xst_platform_guess
   my %check = (
     # Red Hat check must run after Mandrake
     "linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, 
-                 \&check_mandrake, \&check_linuxppc, \&check_redhat,  \&check_turbolinux],
+                 \&check_mandrake, \&check_linuxppc, \&check_redhat,  \&check_turbolinux,
+                 \&check_slackware],
     # Isn't just "freebsd" enough?
     "freebsdelf" => [ \&check_freebsd ],
     "solaris"    => [ \&check_solaris ]

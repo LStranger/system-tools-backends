@@ -76,6 +76,8 @@ $version = "___version___";
 
               "suse-7.0", "turbolinux-7.0",
 
+              "slackware-8.0.0",
+
               "freebsd-4", "freebsd-5");
 
 $description =<<"end_of_description;";
@@ -216,23 +218,24 @@ my $rh_logindefs_defaults = {
 };
 
 my $logindefs_dist_map = {
-  'redhat-5.2'     => $rh_logindefs_defaults,
-  'redhat-6.0'     => $rh_logindefs_defaults,
-  'redhat-6.1'     => $rh_logindefs_defaults,
-  'redhat-6.2'     => $rh_logindefs_defaults,
-  'redhat-7.0'     => $rh_logindefs_defaults,
-  'redhat-7.1'     => $rh_logindefs_defaults,
-  'redhat-7.2'     => $rh_logindefs_defaults,
-  'mandrake-7.1'   => $rh_logindefs_defaults,
-  'mandrake-7.2'   => $rh_logindefs_defaults,
+  'redhat-5.2'      => $rh_logindefs_defaults,
+  'redhat-6.0'      => $rh_logindefs_defaults,
+  'redhat-6.1'      => $rh_logindefs_defaults,
+  'redhat-6.2'      => $rh_logindefs_defaults,
+  'redhat-7.0'      => $rh_logindefs_defaults,
+  'redhat-7.1'      => $rh_logindefs_defaults,
+  'redhat-7.2'      => $rh_logindefs_defaults,
+  'mandrake-7.1'    => $rh_logindefs_defaults,
+  'mandrake-7.2'    => $rh_logindefs_defaults,
 
   # FIXME: I don't know about those, so using RH values for now.
-  'debian-2.2'     => $rh_logindefs_defaults,
-  'debian-woody'   => $rh_logindefs_defaults,
-  'suse-7.0'       => $rh_logindefs_defaults,
-  'turbolinux-7.0' => $rh_logindefs_defaults,
-  'freebsd-4'      => $rh_logindefs_defaults,
-  'freebsd-5'      => $rh_logindefs_defaults,
+  'debian-2.2'      => $rh_logindefs_defaults,
+  'debian-woody'    => $rh_logindefs_defaults,
+  'suse-7.0'        => $rh_logindefs_defaults,
+  'turbolinux-7.0'  => $rh_logindefs_defaults,
+  'slackware-8.0.0' => $rh_logindefs_defaults,
+  'freebsd-4'       => $rh_logindefs_defaults,
+  'freebsd-5'       => $rh_logindefs_defaults,
 };
 
 

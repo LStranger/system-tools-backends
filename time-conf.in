@@ -66,7 +66,9 @@ $version = "___version___";
               
               "debian-2.2", "debian-woody",
 
-              "suse-7.0", "turbolinux-7.0");
+              "suse-7.0", "turbolinux-7.0",
+	      
+	      "slackware-8.0.0");
 
 $description =<<"end_of_description;";
        Configures your system clock, timezone and time server list.
@@ -424,7 +426,9 @@ sub conf_get_parse_table
 
    "suse-7.0"     => "suse-7.0",
 
-   "turbolinux-7.0" => "redhat-7.0"
+   "turbolinux-7.0" => "redhat-7.0",
+   
+   "slackware-8.0.0" => "debian-2.2"
    );
 
   my %dist_tables =
@@ -530,7 +534,9 @@ sub conf_get_replace_table
 
    "suse-7.0"     => "suse-7.0",
 
-   "turbolinux-7.0"   => "redhat-7.0"
+   "turbolinux-7.0"   => "redhat-7.0",
+   
+   "slackware-8.0.0"  => "debian-2.2"
    );
 
   my %dist_tables =
