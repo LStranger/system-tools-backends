@@ -930,7 +930,7 @@ msgstr "Αυτόματη ενεργοποίηση πρόσβασης σε εξω
 
 #: users-conf.in:187
 msgid "Access to tape drives"
-msgstr "Πρόσβαση σε ·tape·drives"
+msgstr "Πρόσβαση σε  tape drives"
 
 #: users-conf.in:188
 msgid "Be able to get administrator privileges"
