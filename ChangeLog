@@ -1,5 +1,13 @@
 2001-03-29  Kenneth Christiansen  <kenneth@gnu.org>
 
+        * internet-share: replacement for ishare-launc.pl. Try to follow
+          the naming use in /etc/rc.d/rc.init. If you place this file there
+          and put the config file in the dir specified in internet-share it
+          should be able to run this script at startup.
+        * ishare-launch.pl: remove
+
+2001-03-29  Kenneth Christiansen  <kenneth@gnu.org>
+
         * internet-config.cfg: Template for now an internet config can look
         * ishare-launch.pl: Launcher program that reads the above config file
           and activates the settings.

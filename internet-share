@@ -22,6 +22,9 @@ $|;
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
+# Reads configuration data from:
+# /etc/sysconfig/ishare/internet-share.cfg
+
 # -- Global variables --#
 
 my @echo;
@@ -30,7 +33,7 @@ my @ipchains;
 
 # -- Parse data -- #
 
-open CFGFILE, "internet-share.cfg";
+open CFGFILE, "/etc/sysconfig/ishare/internet-share.cfg";
 
 my @xml_source = <CFGFILE>;
 
@@ -171,9 +174,15 @@ sub parse_boolean # (string)
 
 # -- Main -- #
 
-&parse_head_tags (\@xml_source);
+if ($ARGV[0] eq "") { 
+  print "Usage: ishare {start|restart}\n"
+}
 
-## execute in right order
-&exec_from_array (@echo);
-&exec_from_array (@modprobe);
-&exec_from_array (@ipchains);
+if ($ARGV[0] eq "start" || $ARGV[0] eq "restart") {
+  &parse_head_tags (\@xml_source);
+
+  ## execute in right order
+  &exec_from_array (@echo);
+  &exec_from_array (@modprobe);
+  &exec_from_array (@ipchains);
+}
