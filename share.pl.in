@@ -315,7 +315,7 @@ sub xst_share_parse_nfs_exports
 
   $entries = &xst_parse_split_hash_with_continuation ($nfs_exports_name, "[ \t]+", "[ \t]+");
 
-  for $point (keys %$entries)
+  foreach $point (keys %$entries)
   {
     my $clients = $$entries{$point};
     my $info = &xst_share_nfs_info_new ();
@@ -323,12 +323,15 @@ sub xst_share_parse_nfs_exports
 
     &xst_share_nfs_info_set_point ($info, $point);
 
-    for $client (@$clients)
+    foreach $client (@$clients)
     {
       my $cinfo = &xst_share_nfs_client_info_new ();
+      my $pattern;
 
-      $client =~ /([a-zA-Z0-9.-_*?@\/]+)/;
-      &xst_share_nfs_client_info_set_pattern ($cinfo, $1);
+      $client =~ /^([a-zA-Z0-9.-_*?@\/]+)/;
+      $pattern = $1;
+      $pattern = "0.0.0.0/0" if $pattern eq "";
+      &xst_share_nfs_client_info_set_pattern ($cinfo, $pattern);
 
       my $option_str = "";
       my @options;
