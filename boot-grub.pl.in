@@ -65,8 +65,8 @@ sub xst_boot_grub_linux2grub
     chomp $line;
     if ($line =~ /\(([^\)]+)\)[ \t]+$path$drive$/)
     {
-	 $res = $1;
-	 last;
+      $res = $1;
+      last;
     }
   }
   close $fd;
@@ -148,24 +148,31 @@ sub xst_boot_grub_search_entry
 
 sub xst_boot_grub_get_entries
 {
-  my ($grubconf) = @_;
-  my ($fd, $line, @res, $title);
+  my ($grub_conf) = @_;
+  my ($fd, $line, @res, $title, $i);
   
-  $fd = &xst_file_open_read_from_names ("$grubconf");
-  return undef if !$fd;
+  $grub_conf = [$grub_conf] if (ref $grub_conf eq undef);
 
+  foreach $i (@$grub_conf)
+  {
+    $fd = &xst_file_open_read_from_names ("$i");
+    last if $fd;
+  }
+
+  return undef if !$fd;
+  
   push @res, $title while ($title = &xst_boot_grub_get_next_entry ($fd));
   close $fd;
 
-  return \@res;
+  return @res;
 }
 
 sub xst_boot_grub_parse_cmd
 {
-  my ($grubconf, $cmd, $entry) = @_;
+  my ($grub_conf, $cmd, $entry) = @_;
   my ($line, $fd);
 
-  $fd = &xst_file_open_read_from_names ("$grubconf");
+  $fd = &xst_file_open_read_from_names ("$grub_conf");
   return undef if !$fd;
   
   if ($entry ne undef)
@@ -182,6 +189,7 @@ sub xst_boot_grub_parse_cmd
     if ($line =~ /^$cmd[= \t][ \t]*(.*)/)
     {
       close $fd;
+      return 1 if $1 eq "";
       return $1;
     }
   }
@@ -192,41 +200,41 @@ sub xst_boot_grub_parse_cmd
 
 sub xst_boot_grub_parse_timeout
 {
-  my ($grubconf) = @_;
+  my ($grub_conf) = @_;
   my ($timeout);
 
-  $timeout = &xst_boot_grub_parse_cmd ($grubconf, "timeout");
+  $timeout = &xst_boot_grub_parse_cmd ($grub_conf, "timeout");
   return $timeout * 10 if $timeout ne undef;
   return 0;
 }
 
 sub xst_boot_grub_parse_prompt
 {
-  my ($grubconf) = @_;
+  my ($grub_conf) = @_;
   my ($timeout);
 
-  $timeout = &xst_boot_grub_parse_timeout ($grubconf);
+  $timeout = &xst_boot_grub_parse_timeout ($grub_conf);
   return 1 if $timeout;
   return 0;
 }
 
 sub xst_boot_grub_parse_default
 {
-  my ($grubconf) = @_;
-  my ($default, $entries);
+  my ($grub_conf) = @_;
+  my ($default, @entries);
 
-  $entries = &xst_boot_grub_get_entries ($grubconf);
-  return undef if (scalar @$entries) == 0;
+  @entries = &xst_boot_grub_get_entries ($grub_conf);
+  return undef if (scalar @entries) == 0;
 
-  $default = &xst_boot_grub_parse_cmd ($grubconf, "default");
+  $default = &xst_boot_grub_parse_cmd ($grub_conf, "default");
   $default = 0 if $default eq undef;
 
-  return $$entries[$default];
+  return $entries[$default];
 }
 
 sub xst_boot_grub_parse_root
 {
-  my ($grub_conf, $entry) = @_;
+  my ($grub_conf, $entry, $device_map) = @_;
   my ($root);
 
   $fd = &xst_file_open_read_from_names ("$grub_conf");
@@ -238,19 +246,60 @@ sub xst_boot_grub_parse_root
     next if $line =~ /^[ \t]*$/;
     last if &xst_boot_grub_line_is_title ($line) ne undef;
 
-    if ($line =~ /^root \(([^\)])\)/)
+    if ($line =~ /^root \(([^\)]+)\)/)
     {
       $root = $1;
       last;
     }
 
-    if ($line =~ /^(kernel|chainload) \(([^\)])\)/)
+    if ($line =~ /^(kernel|chainload) \(([^\)]+)\)/)
     {
       $root = $2;
     }
   }
 
-  return &xst_boot_grub_grub2linux ($root);
+  return &xst_boot_grub_grub2linux ($device_map, $root);
+}
+
+sub xst_boot_grub_parse_kernel_chainloader
+{
+  my ($grub_conf, $entry, $keyword) = @_;
+  my ($cmd);
+
+  $cmd = &xst_boot_grub_parse_cmd ($grub_conf, $keyword, $entry);
+  return undef if $cmd eq undef;
+
+  $cmd =~ s/^\([^\)]\)//;
+  $cmd =~ s/[ \t].*//;
+
+  return $cmd;
+}
+
+sub xst_boot_grub_parse_image
+{
+  my ($grub_conf, $entry) = @_;
+
+  return &xst_boot_grub_parse_kernel_chainloader ($grub_conf, $entry, "kernel");
+}
+
+sub xst_boot_grub_parse_other
+{
+  my ($grub_conf, $entry) = @_;
+
+  return &xst_boot_grub_parse_kernel_chainloader ($grub_conf, $entry, "chainloader");
+}
+
+sub xst_boot_grub_parse_append
+{
+  my ($grub_conf, $entry) = @_;
+  my ($cmd);
+
+  $cmd = &xst_boot_grub_parse_cmd ($grub_conf, "kernel", $entry);
+  return undef if $cmd eq undef;
+
+  $cmd =~ s/^[^ \t]+[ \t]+//;
+
+  return $cmd;
 }
 
 sub xst_boot_grub_parse_type
@@ -275,7 +324,8 @@ sub xst_boot_grub_parse_type
   if ($res eq undef)
   {
     $partinfo = &xst_partition_scan_info ();
-    $res = $$partinfo{$rootdev};
+    $rootdev =~ s/.*\///;
+    $res = $ {$$partinfo{$rootdev}}{"typestr"};
   }
   
   return $res;

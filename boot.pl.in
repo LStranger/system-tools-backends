@@ -596,13 +596,13 @@ sub xst_boot_entries_get
   %dist_attrib = &xst_boot_get_entries_parse_table ();
   %fn = %{$dist_attrib{"fn"}};
   $proc = $dist_attrib{"entries_get"};
-  @entries = &$proc ();
+  @entries = &$proc ($fn{"GRUB_CONF"});
 
   foreach $i (@entries)
   {
     foreach $j (keys (%fn))
     {
-      $ {$dist_attrib{"fn"}{$j}} = &xst_parse_expand ($fn{$j}, "entry", $i);
+      $ {$dist_attrib{"fn"}}{$j} = &xst_parse_expand ($fn{$j}, "entry", $i);
     }
 
     $entry = &xst_parse_from_table ($dist_attrib{"fn"},
@@ -646,10 +646,10 @@ sub xst_boot_conf_get
          },
          table =>
              [
-              [ 'timeout',  \&xst_boot_lilo_parse_global,    LILO_CONF, 'timeout' ],
-              [ 'prompt',   \&xst_boot_lilo_parse_global_kw, LILO_CONF, 'prompt' ],
-              [ 'default',  \&xst_boot_lilo_parse_global,    LILO_CONF, 'default' ],
-              [ 'entries',  \&xst_boot_lilo_parse_entries,   LILO_CONF ],
+              [ "timeout",  \&xst_boot_lilo_parse_global,    LILO_CONF, "timeout" ],
+              [ "prompt",   \&xst_boot_lilo_parse_global_kw, LILO_CONF, "prompt"  ],
+              [ "default",  \&xst_boot_lilo_parse_global,    LILO_CONF, "default" ],
+              [ "entry",    \&xst_boot_lilo_parse_entries,   LILO_CONF ],
               ] 
        },
 
@@ -662,10 +662,10 @@ sub xst_boot_conf_get
          },
          table =>
              [
-              [ 'timeout',  \&xst_boot_grub_parse_timeout, GRUB_CONF ],
-              [ 'prompt',   \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
-              [ 'default',  \&xst_boot_grub_parse_default, GRUB_CONF ],
-              [ 'entries',  \&xst_boot_entries_get,                  ],
+              [ "timeout",  \&xst_boot_grub_parse_timeout, GRUB_CONF ],
+              [ "prompt",   \&xst_boot_grub_parse_prompt,  GRUB_CONF ],
+              [ "default",  \&xst_boot_grub_parse_default, GRUB_CONF ],
+              [ "entry",    \&xst_boot_entries_get,                  ],
               ] 
        }
        );
@@ -697,18 +697,17 @@ sub xst_boot_get_entries_parse_table
          fn =>
          {
            ENTRY => "#entry#",
-           GRUB_CONF => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
-           GRUB_DEV  => "/boot/grub/device.map"
+           GRUB_CONF  => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
+           DEVICE_MAP => "/boot/grub/device.map"
          },
          table =>
              [
-              ["label",  \&xst_parse_trivial,        ENTRY],
-              ["root",   \&xst_boot_grub_parse_root, [GRUB_CONF, ENTRY]],
-              ["type",   \&xst_boot_grub_parse_type, [GRUB_CONF, ENTRY], "%root%"]
-              ["other",  \&],
-              ["image",  \&],
-              ["append", \&]
-              
+              ["label",  \&xst_parse_trivial,          ENTRY],
+              ["root",   \&xst_boot_grub_parse_root,   [GRUB_CONF, ENTRY, DEVICE_MAP]],
+              ["type",   \&xst_boot_grub_parse_type,   [GRUB_CONF, ENTRY], "%root%"],
+              ["image",  \&xst_boot_grub_parse_image,  [GRUB_CONF, ENTRY]],
+              ["other",  \&xst_boot_grub_parse_other,  [GRUB_CONF, ENTRY]],
+              ["append", \&xst_boot_grub_parse_append, [GRUB_CONF, ENTRY]]
               ]
                 }
        );
@@ -779,33 +778,33 @@ sub _lilo_fix_default
 {
   my $hash = shift;
 
-  my $entries = $hash->{'entries'};
+  my $entries = $hash->{"entry"};
   return unless $entries;
   
   # 'default'
-  if (exists ($hash->{'default'}))
+  if (exists ($hash->{"default"}))
   {
     # Check if valid
     my $found;
     foreach my $entry (@$entries)
     {
-      if ($hash->{'default'} eq $entry->{'label'})
+      if ($hash->{"default"} eq $entry->{"label"})
       {
         $found = 1;
         last;
       }
     }
-    delete $hash->{'default'} unless $found;
+    delete $hash->{"default"} unless $found;
   }
   
-  unless (exists ($hash->{'default'}))
+  if (not exists ($hash->{"default"}))
   {
     # No 'default', let's add
     foreach my $entry (@$entries)
     {
-      if ($hash->{'key'} == 0)
+      if ($hash->{"key"} == 0)
       {
-        $hash->{'default'} = $entry->{'label'};
+        $hash->{"default"} = $entry->{"label"};
         last;
       }
     }
