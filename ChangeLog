@@ -1,3 +1,8 @@
+2001-02-28  Hans Petter Jansson  <hpj@ximian.com>
+
+	* disks-conf.in (read_fstab, write_fstab): Don't touch LABEL= lines
+	  for now.
+
 2001-02-27  Chema Celorio  <chema@celorio.com>
 
 	* boot.pl.in (xst_boot_conf_set): fix a small typo
@@ -14,6 +19,7 @@
 
 	* Makefile.am (perl_libs): remove be.pl
 
+>>>>>>> 1.86
 2001-02-27  Tambet Ingo  <tambet@ximian.com>
 
 	* boot-conf.in (set_immediate): New function, we didn't actually run lilo before.

@@ -284,7 +284,7 @@ sub read_fstab
     @line = split(/[ \n\r\t]+/, $_);
 
     if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "") { next; }
+    if ($line[0] eq "" || $line[0] =~ /$LABEL=.*/) { next; }
     if (&xst_ignore_line($line[0])) { next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
@@ -299,7 +299,7 @@ sub read_fstab
     
     if ($disk eq "/dev/fd" || $disk eq $device)
     { 
-      next;  # Skip floppies and CD-ROMs.
+      next;  # Skip floppies, CD-ROMs and those pesky LABEL= lines (to be fixed).
     }
 
     # (Find and update) or (add) our internal disk/partition record.
@@ -331,7 +331,7 @@ sub write_fstab
     @line = split(/[ \n\r\t]+/, $_);
 
     if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "") { print OUTFILE; next; }
+    if ($line[0] eq "" || $line[0] =~ /$LABEL=.*/) { print OUTFILE; next; }
     if (&xst_ignore_line($line[0])) { print OUTFILE; next; }
     ($device, $point, $fs, $options, $dump, $check) = @line;
 
