@@ -472,4 +472,12 @@ sub xst_xml_get_text
   return $retval;
 }
 
+sub xst_xml_get_state
+{
+  my ($tree) = @_;
+
+  # Check attribute; 'yes', 'true', 'no', 'false'.
+  return &xst_read_boolean ($$tree[0]->{state});
+}
+
 1;

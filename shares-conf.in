@@ -1,14 +1,11 @@
 #!/usr/bin/env perl
 #-*- Mode: perl; tab-width: 2; indent-tabs-mode: nil; c-basic-offset: 2 -*-
 
-# Simple shares configurator. Designed to be architecture- and distribution independent.
+# Shares configurator. Designed to be architecture and distribution independent.
 #
-# Version 0.1.0 - copyright (C) 2000-2001 Ximian, Inc.
+# Copyright (C) 2000-2001 Ximian, Inc.
 #
 # Authors: Hans Petter Jansson <hpj@ximian.com>
-#          Michael Vogt <mvo@debian.org> - Debian 2.[2|3] support.
-#          David Lee Ludwig <davidl@wpi.edu> - Debian 2.[2|3] support.
-#
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -26,27 +23,20 @@
 
 # Best viewed with 100 columns of width.
 
-# WARNING: Works with Red Hat (and probably most derivates) and SuSE.
-# You need to have Samba installed. We're more than happy to receive patches
-# for other distributions.
-
 # Configuration files affected:
 #
+# /etc/resolv.conf
+# /etc/host.conf
+# /etc/hosts
 # /etc/sysconfig/network
-# /etc/sysconfig/network-scripts/ifcfg-*
-# /etc/network/interfaces
-# /etc/network/options
 # /etc/rc.config
-# /etc/fstab
 # /etc/smb.conf
 
-# Running programs affected/used:
+# Running programs affected:
 #
-# ifconfig
-# ping
-# showmount
-# nmblookup
-# smbclient
+# smbd
+# nmbd
+# ifconfig: check current interfaces and activate/deactivate.
 
 
 require "___scriptsdir___/general.pl";
@@ -54,1261 +44,189 @@ require "___scriptsdir___/platform.pl";
 require "___scriptsdir___/util.pl";
 require "___scriptsdir___/file.pl";
 require "___scriptsdir___/xml.pl";
-require "___scriptsdir___/service.pl";
+require "___scriptsdir___/filesys.pl";
 require "___scriptsdir___/network.pl";
-
+require "___scriptsdir___/share.pl";
 
 # --- Tool information --- #
 
 $name = "shares";
 $version = "0.1.0";
-@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0");
+@platforms = ("debian-2.2",
+              "redhat-5.2",
+              "redhat-6.0",
+              "redhat-6.1",
+              "redhat-6.2",
+              "redhat-7.0",
+              "mandrake-7.2");
 
 $description =<<"end_of_description;";
-       Configures network imports and exports.
+       Configures network shares for import or export.
 end_of_description;
 
-$progress_max = 8;
 
-
-# --- System config file locations --- #
-
-# We list each config file type with as many alternate locations as possible.
-# They are tried in array order. First found = used.
-
-# Right now there's only one entry per array, as I couldn't find any
-# typical deviations.
-
-@sysconfig_network_names =  ( "/etc/sysconfig/network" );
-@network_interfaces_names = ( "/etc/network/interfaces" );
-@network_options_names =    ( "/etc/network/options" );
-@rc_config_names =          ( "/etc/rc.config" );
-@fstab_names =              ( "/etc/fstab" );
-@exports_names =            ( "/etc/exports" );
-@smb_conf_names =           ( "/etc/smb.conf", "/etc/samba/smb.conf" );
-
-
-# --- Internal configuration variables --- #
-
-# Configuration is parsed/read to, and printed/written from, these temporary variables.
-
-$cf_hostip = "";
-$cf_netmask = "";
-$cf_workgroup = "";
-@cf_shares_list = ();
-@cf_exports_list = ();
-
-$cf_interface = "";
-$cf_netmask = "";
-$cf_hostip = "";
-
-
-# --- Configuration file manipulation --- #
-
-# Debian 2.[2|3]+ style /etc/network/interfaces
-#
-# <&filtered lines>
-# iface <interface> inet <static|dhcp|bootp|ppp>
-#     address <ip>
-#     netmask <ip mask>
-#     gateway <gateway ip>
-#     broadcast <broadcast ip>
-#     network <network ip>
-#     noauto (this is only used to not enable the interface on boot)
-#     up <command to run when the interface is brought up>
-#     down <command to run when the interface is brought down>
-# <&filtered lines>
-# (more interfaces may follow)
-#
-# A "#" character at the very beginning of a line causes that line to be
-# treated as a comment.
-# A "\" character at the very end of a line causes that line to continue onto
-# the next line.
-#
-# &read_network_interfaces_into_hash will read the contents of
-# /etc/network/interfaces into a hash table of references to hash tables.  For
-# example:
-#
-# %ifaces = ("eth0" => {"method" => "dhcp"},
-#            "eth1" => {"method" => "static",
-#                       "address" => "192.168.0.42",
-#                       "netmask" => "255.255.255.0"});
-#
-# The resulting hash table, %ifaces, is returned.
-#
-# NOTE: For more information on the format of /etc/network/interfaces, read
-# the "interfaces" man page (section 5).  Also be sure to look at the example
-# file in /usr/share/doc/netbase/examples/interfaces.  Both of these are
-# included as part of the "netbase" package in Debian 2.[2|3].
-#
-# Exists: Debian 2.[2|3]
-#
-# Absent:
-
-sub read_network_interfaces_into_hash
-{
-  local *FILE;
-  my (%ifaces, $current_name, $current_iface);
-
-  *FILE = &xst_file_open_read_from_names(@network_interfaces_names);
-  if (not *FILE) { return; }
-
-  # Build a list of all interfaces
-  while (<FILE>)
-  {
-    # Split the current line into a list of tokens.
-    @line = split(/[ \n\r\t]+/, $_);
-
-    # Remove leading whitespace.
-    if ($line[0] eq "") { shift(@line); }
-
-    # Check to see if this line continues onto other lines.  If so, append
-    # them
-    while ($line[$#line] eq "\\")
-    {
-      # Remove the \ character.
-      pop @line;
-
-      # Read in the next line and split it into a list of tokens.
-      @nextline = split(/[ \n\r\t]+/, <FILE>);
-
-      # Remove any leading whitepage.
-      if ($nextline[0] eq "") { shift(@nextline); }
-
-      # Append @nextline to the end of @line
-      push @line, @nextline;
-    }
-
-    # Make sure this line isn't a comment.
-    if (&xst_ignore_line($line[0])) { next; }
-
-    # Check if the line specifies a new interface.
-    if ($line[0] eq "iface" && not &xst_ignore_line($line[1]))
-    {
-      # Make sure the device was detected via ifconfig (see "&get_immediate").
-      # NOTE: This will weed out any loopback or dummy interfaces.
-      if (not &xst_item_is_in_list($line[1], @cf_interface_list))
-      {
-        &xst_report ("compat", "$line[1] isn't an available, configured interface");
-        next;
-      }
-
-      # Make sure the interface is &set up for IPv4/internet networking
-      if ($line[2] ne "inet") { next; }
-
-      # Also make sure there is a &set configuration method.
-      if ($line[3] eq "" || &xst_ignore_line($line[3]))
-      {
-        &xst_report ("compat", "Interface $line[1] has no configuration method");
-        next;
-      }
-
-      # Create a new hash table for this interface.
-      my %iface_hash = ();
-
-      # Set this interface to be the 'current' one.
-      $current_name = $line[1];
-      $current_iface = $ifaces{$current_name} = \%iface_hash;
-
-      # Set the interface's method
-      $$current_iface{"method"} = $line[3];
-    }
-    else  # Add an attribute to an already &set interface.
-    {
-      # Make sure an interface has been &set.
-      if (not $current_iface) { next; }
-
-      # Make sure the attribute has been properly &set
-      if (not $line[1]) { next; }
-
-      # Set the attribute
-      $$current_iface{$line[0]} = join(' ', $line[1..$#line]);
-    }
-  }
-
-  # All done.  Clean up before returning.
-  close($FILE);
-
-  return %ifaces;
-}
-
-
-# Debian 2.[2|3]+ style /etc/network/interfaces
-#
-# (See '&read_network_interfaces_into_hash()' for information on
-# /etc/network/interfaces as well as the structure of %ifaces.
-#
-# Takes network interface information and places them into the correct
-# variables.
-#
-# Exists: Debian 2.[2|3]
-#
-# Absent:
-
-sub read_network_interfaces
-{
-  my (%ifaces, $current_name, $current_iface);
-  my $chosen_name;
-
-  %ifaces = &read_network_interfaces_into_hash();
-
-  # Now, a "primary" interface will be selected.  The selection order is as
-  # follows:
-  #
-  # * If only one interface exists, use that one.
-  # * If an interface has a preset gateway, use that one.
-  # * The first interface with a dynamic configuration "method" (such as "dhcp",
-  #   "bootp", "ppp", etc.) will be selected.
-  # * If all else fails, pick the first interface.
-
-  # See if only one interface exists.
-  if ( scalar(keys(%ifaces)) == 1 )
-  {
-    $chosen_name = (keys(%ifaces))[0];
-
-    &xst_report ("compat", "Only one interface, $chosen_name, exists. It is being " .
-                 "selected as the primary interface");
-  }
-
-  # For that matter, do any interfaces exist at all.
-  elsif ( scalar(keys(%ifaces)) == 0 )
-  {
-    &xst_report ("compat", "No network interfaces found");
-    return;
-  }
-
-  else
-  {
-    # Look for an interface with a preset gateway.
-    $chosen_name = &xst_get_key_for_subkeys(\%ifaces, ["gateway"]);
-
-    # If need be, look for an interface with a dynamic configuration "method".
-    if ( $chosen_name eq "" )
-    {
-      $chosen_name = &xst_get_key_for_subkey_and_subvalues(\%ifaces, "method", ["dhcp", "bootp", "ppp"]);
-    }
-
-    # If an interface hasn't been chosen, then just pick the first available one.
-    if ( $chosen_name eq "" )
-    {
-      $chosen_name = (keys(%ifaces))[0];
-    }
-  }
-
-  # Now that a "primary" interface has been chosen, &set the proper global
-  # variables.
-  %current_iface = %{$ifaces{$chosen_name}};
-
-  $cf_interface = $chosen_name;
-  $cf_hostip = $current_iface{"address"};
-  $cf_netmask = $current_iface{"netmask"};
-  $cf_gateway = $current_iface{"gateway"};
-  $cf_method = $current_iface{"method"};
-  if ( exists $current_iface{"noauto"} ) { $cf_onboot = 0; }
-  else { $cf_onboot = 1; }
-}
-
-# Red Hat style /etc/sysconfig/network-scripts/ifcfg-*
-#
-# <&filtered lines>
-# IPADDR=<ip>
-# NETMASK=<ip mask>
-# NETWORK=<network ip>
-# BROADCAST=<broadcast ip>
-# BOOTPROTO=<bootp|dhcp|none>
-# ONBOOT=<boolean>
-# <&filtered lines>
-#
-# Determines the configuration of a specific network interface. First
-# argument must be the name of the interface.
-#
-# Exists: Red Hat [5|6].x
-#
-# Absent:
-
-sub read_sysconfig_network_scripts_ifcfg
-{
-  local *FILE;
-
-  # Find the file.
-
-  *FILE = &xst_file_open_read_from_names("/etc/sysconfig/network-scripts/ifcfg-$_[0]");
-  if (not *FILE) { return; }
-
-  # Parse the file.
-
-  while (<FILE>)
-  {
-    @line = split(/[ \n\r\t\"\'=]+/, $_);
-    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
-
-    if ($line[0] eq "IPADDR" && not &xst_ignore_line($line[1]))
-    { $cf_hostip = $line[1]; }
-    elsif ($line[0] eq "NETMASK" && not &xst_ignore_line($line[1]))
-    { $cf_netmask = $line[1]; }
-  }
-
-  close(FILE);
-}
-
-
-# Red Hat style primary interface reader.
-#
-# Tries to figure out what the "primary" interface is, and calls
-# &read_sysconfig_network_scripts_ifcfg on that interface.
-#
-# Must run after &get_immediate and &read_sysconfig_network, which will
-# (hopefully) provide information to identify the primary device.
-
-sub read_primary_interface
-{
-  # If the interface was specified, we use that.
-
-  if ($cf_interface ne "") { }
-
-  # If the known-interfaces list contains only one interface, we use that.
-  # This is actually not too uncommon, after weeding lo and dummy.
-
-  elsif ($#cf_interface_list == 0) { $cf_interface = $cf_interface_list[0]; }
-  
-  # If we have a gateway, try to find an interface with a matching subnet, by
-  # going through the interface configurations. This will fail if a gateway
-  # has been configured without any interfaces, or if the gateway is on a
-  # foreign, bridged subnet. Both are pretty rare conditions.
-
-  elsif ($cf_gateway ne "")
-  {
-    for $elem (@cf_interface_list)
-    {
-      &read_sysconfig_network_scripts_ifcfg($elem);
-      if ($cf_netmask eq "") { next; }
-
-      if (&ip_calc_network($cf_gateway, $cf_netmask) eq &ip_calc_network($cf_hostip, $cf_netmask))
-      {
-        $cf_interface = $elem;
-        last;
-      }
-
-      $cf_hostip = "";
-      $cf_netmask = "";
-      $cf_method = "";
-      $cf_onboot = 0;
-    }
-  }
-
-  # Last ditch. Pick an interface from the list according to some built-in
-  # rules. ethN on Linux and hmeN or Solaris.
-
-  else
-  {
-    for $elem (@cf_interface_list)
-    {
-      if (($elem =~ /eth.*/) || ($elem =~ /hme.*/))
-      {
-        $cf_interface = $elem;
-        last;
-      }
-    }
-  }
-
-  if ($cf_interface ne "") { &read_sysconfig_network_scripts_ifcfg($cf_interface); }
-}
-
-
-# Red Hat style /etc/sysconfig/network
-#
-# <&filtered lines>
-# NETWORKING=<boolean>
-# FORWARD_IPV4=<boolean>
-# GATEWAY=<ip>
-# GATEWAYDEV=<interface>
-# <&filtered lines>
-#
-# Determines the primary network configuration. BEWARE: This is actually a
-# sourced shell script. We rely on some lenience from the user (and the distro)
-# to be able to parse it correctly.
-#
-# Exists: Red Hat [5|6].x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0
-#
-# Absent: SuSE 6.3, SunOS 5.7
-
-sub read_sysconfig_network
-{
-  local *FILE;
-
-  # Find the file.
-
-  *FILE = &xst_file_open_read_from_names(@sysconfig_network_names);
-  if (not *FILE) { return; }  # We didn't find it.
-
-  # Parse the file.
-
-  while (<FILE>)
-  {
-    @line = split(/[ \n\r\t\"\'=]+/, $_);
-    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
-
-    if ($line[0] eq "GATEWAY" && not &xst_ignore_line($line[1]))
-    { $cf_gateway = $line[1]; }
-    elsif ($line[0] eq "GATEWAYDEV" && not &xst_ignore_line($line[1]))
-    { $cf_interface = $line[1]; }
-  }
-
-  close(FILE);
-}
-
-
-# SuSE style /etc/rc.config
-#
-# <&filtered lines>
-# FQHOSTNAME="<fully qualified hostname>"
-# SEARCHLIST="<space separated list of searchdomains>"
-# NAMESERVER="<space separated list of nameservers>"
-# <&filtered lines>
-#
-# Determines the local hostname.domain, searchdomains and nameservers.
-# BEWARE: This is actually a sourced shell script. We rely on some lenience
-# from the user (and the distro) to be able to parse it correctly. The file
-# is read by SuSE configuration tools and translated to NET-3 config files
-# at strategic times.
-#
-# Exists: SuSE 6.3
-#
-# Absent: Red Hat 6.x, Caldera 2.4, TurboLinux 6.0, Mandrake 7.0, SunOS 5.7
-
-sub read_rc_config
-{
-  local *FILE;
-
-  # Find the file.
-
-  *FILE = &xst_file_open_read_from_names(@rc_config_names);
-  if (not *FILE) { return; }  # We didn't find it.
-
-  # Parse the file.
-
-  while (<FILE>)
-  {
-    @line = split(/[ \n\r\t\"\'=]+/, $_);  # Handles quoted arguments.
-    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
-
-    if ($line[0] eq "NETDEV_0" && not &xst_ignore_line($line[1]))
-    {
-      $cf_interface = $line[1];
-    }
-    elsif ($line[0] eq "IPADDR_0")
-    {
-      $cf_hostip = $line[1];
-    }
-    elsif ($line[0] eq "IFCONFIG_0")
-    {
-      shift @line;
-
-      while (@line)
-      {
-        if (&xst_ignore_line($line[0])) { last; }
-	
-	if ($line[0] eq "broadcast")
-	{
-	  # Calculate this ourselves.
-
-	  shift @line;
-	  shift @line;
-	}
-	elsif ($line[0] eq "netmask")
-	{
-	  $cf_netmask = $line[1];
-	  shift @line;
-	  shift @line;
-	}
-	elsif ($line[0] eq "bootp")
-	{
-	  last;
-	}
-	elsif ($line[0] =~ /dhcp.*/)
-	{
-	  last;
-	}
-        elsif ($line[0] ne "") { $cf_hostip = $line[0]; shift @line; }
-	else { shift @line; }
-      }
-    }
-  }
-
-  close(FILE);
-}
-
-
-# Samba /etc/smb.conf
-#
-# <&filtered lines>
-# workgroup = <workgroup>
-# server string = <description>
-# <&filtered lines>
-#
-# Exists: (Wherever Samba is installed)
-#
-# Absent: (Wherever Samba is not installed)
-
-sub read_smb_conf
-{
-  local *FILE;
-  my $section = "";
-  my $path = "", $enabled = 1, $public = 0, $browseable = 0, $comment = "",
-     $writeable = 0, $printable = 0;
-
-  # Find the file.
-
-  *FILE = &xst_file_open_read_from_names(@smb_conf_names);
-  if (not *FILE) { return; }  # We didn't find it.
-
-  # Parse the file.
-
-  while (<FILE>)
-  {
-    @line = split(/[ \n\r\t=]+/, $_);
-    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
-
-    if (join(' ', @line) =~ /^\[.*\]/)
-    {
-      # New section. If last section was a share, store it in global
-      # records, then flush locals for next instance.
-
-      if (($path ne "") && !$printable)
-      {
-        push @cf_exports_list, "smb";        # Type
-        push @cf_exports_list, $path;        # Path
-        push @cf_exports_list, $section;     # Name
-        push @cf_exports_list, $comment;     # Comment
-        push @cf_exports_list, $enabled;     # Enabled
-        push @cf_exports_list, $browseable;  # Browseable
-        push @cf_exports_list, $public;      # Public
-        push @cf_exports_list, $writeable;   # Writeable
-      }
-
-      $path = ""; $comment = ""; $enabled = 1; $public = 0; $browseable = 0;
-      $writeable = 0; $printable = 0;
-
-      ($section) = (join(' ', @line) =~ /^\[(.*)\]/);
-    }
-    elsif ($line[0] eq "workgroup" && not &xst_ignore_line($line[1]))
-    {
-      $cf_workgroup = $line[1];
-    }
-    elsif ($line[0] eq "path" && not &xst_ignore_line($line[1]))
-    {
-      $path = $line[1];
-    }
-    elsif ($line[0] eq "comment" && not &xst_ignore_line($line[1]))
-    {
-      shift @line;
-      $comment = join(' ', @line);
-    }
-    elsif ($line[0] eq "available" && not &xst_ignore_line($line[1]))
-    {
-      $enabled = &xst_read_boolean($line[1]);
-    }
-    elsif ($line[0] =~ /^browse?able/ && not &xst_ignore_line($line[1]))
-    {
-      $browseable = &xst_read_boolean($line[1]);
-    }
-    elsif ($line[0] eq "public" && not &xst_ignore_line($line[1]))
-    {
-      $public = &xst_read_boolean($line[1]);
-    }
-    elsif ($line[0] eq "guest" && $line[1] eq "ok" &&
-           not &xst_ignore_line($line[2]))
-    {
-      $public = &xst_read_boolean($line[2]);
-    }
-    elsif ($line[0] =~ /write?able/ && not &xst_ignore_line($line[1]))
-    {
-      $writeable = &xst_read_boolean($line[1]);
-    }
-    elsif ($line[0] eq "printable" && not &xst_ignore_line($line[1]))
-    {
-      $printable = &xst_read_boolean($line[1]);
-    }
-  }
-
-  # Push the last share found, if any.
-
-  if (($path ne "") && !$printable)
-  {
-    push @cf_exports_list, "smb";        # Type
-    push @cf_exports_list, $path;        # Path
-    push @cf_exports_list, $section;     # Name
-    push @cf_exports_list, $comment;     # Comment
-    push @cf_exports_list, $enabled;     # Enabled
-    push @cf_exports_list, $browseable;  # Browseable
-    push @cf_exports_list, $public;      # Public
-    push @cf_exports_list, $writeable;   # Writeable
-  }
-
-  close(FILE);
-}
-
-
-sub write_smb_conf
-{
-  local (*INFILE, *OUTFILE);
-  my ($section, $printable, $wrote_security) = ("", 0, 0);
-  my @buf = ();
-
-  (*INFILE, *OUTFILE) = &xst_file_open_filter_write_from_names(@smb_conf_names);
-  if (not *OUTFILE) { return; }  # No point if we can't write.
-
-  while (<INFILE>)
-  {
-    @line = split(/[ \n\r\t=]+/, $_);
-    if ($line[0] eq "") { shift(@line); }  # Leading whitespace. He.
-
-    if (join(' ', @line) =~ /^\[.*\]/)
-    {
-      # New section. If last section was a printable, leave it alone
-      # (output it as-is).
-
-      if ($printable || $section =~ /^global/i || $section =~ /^homes/i)
-      {
-        print OUTFILE join('', @buf);
-        $printable = 0;
-      }
-      
-      if ($section =~ /^global/i && !$wrote_security)
-      {
-        print OUTFILE "   security = share\n";
-      }
-
-      ($section) = (join(' ', @line) =~ /^\[(.*)\]/);
-      @buf = ();
-      push @buf, $_;
-    }
-    elsif ($line[0] eq "printable" && !&xst_ignore_line($line[1]))
-    {
-      $printable = &xst_read_boolean($line[1]);
-      push @buf, $_;
-    }
-    elsif ($line[0] eq "security" && !&xst_ignore_line($line[1]) &&
-           $section =~ /^global/i)
-    {
-      push @buf, "   security = share\n";
-      $wrote_security = 1;
-    }
-    else
-    {
-      push @buf, $_;
-    }
-  }
-
-  # Print section left in the buffer.
-
-  if ($printable || $section =~ /^global/i || $section =~ /^homes/i)
-  {
-    print OUTFILE join('', @buf);
-  }
-  
-  if ($section =~ /^global/i && !$wrote_security)
-  {
-    print OUTFILE "   security = share\n";
-  }
-
-  # Now, print our exports at the end.
-  
-  my @shares = @cf_exports_list;
-  
-  while (@shares)
-  {
-    if ($shares[0] ne "")
-    {
-      if ($shares[0] eq "smb")
-      {
-        print OUTFILE "\n[$shares[2]]\n",
-                      "   path = $shares[1]\n",
-                      "   available = ", &xst_print_boolean_yesno($shares[4]), "\n",
-                      "   browseable = ", &xst_print_boolean_yesno($shares[5]), "\n",
-                      "   writable = ", &xst_print_boolean_yesno($shares[7]), "\n",
-                      "   public = ", &xst_print_boolean_yesno($shares[6]), "\n";
-
-        if ($shares[3] ne "") { print OUTFILE "   comment = $shares[3]\n"; }
-
-        shift @shares; shift @shares; shift @shares; shift @shares;
-        shift @shares; shift @shares; shift @shares; shift @shares;
-      }
-      elsif ($shares[0] eq "nfs")
-      { shift @shares; shift @shares; shift @shares; }
-    }
-  }
-  
-  close(INFILE);
-  close(OUTFILE);
-}
-
-
-# /etc/fstab
-#
-# <device> <mount point> <filesystem> <option,option,...> <dump> <fsck>
-# <device> <mount point> smbfs        defaults            0      0
-# <device> <mount point> nfs          defaults            0      0
-# <device> <mount point> <filesystem> <option,option,...> <dump> <fsck>
-#
-# Exists: (Presumably everywhere)
-#
-# Absent: (Presumably nowhere)
-
-sub read_fstab
-{
-  my $ifh;
-  local *FILE;
-
-  # Find the file.
-
-  $ifh = &xst_file_open_read_from_names(@fstab_names);
-  if (not $ifh) { return; }  # We didn't find it.
-  *FILE = $ifh;
-
-  # Parse the file.
-
-  while (<FILE>)
-  {
-    my ($host, $path, $type);
-
-    @line = split(/[ \n\r\t]+/, $_);
-
-    if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "") { next; }
-    if (&xst_ignore_line($line[0])) { next; }
-    ($device, $dir, $fs, $options) = @line;
-
-    $host = ""; $path = "";
-    ($password) = ($options =~ /password=([^ \t,]*)/);
-    ($user) = ($options =~ /username=([^ \t,]*)/);
-    if ($dir eq "none") { $dir = ""; }
-
-    if ($fs eq "smbfs")
-    {
-      ($host) = ($device =~ /[\/\\]*([^\/\\]+)/);
-      ($path) = ($device =~ /[\/\\]*[^\/\\]+(.*)/);
-      $path =~ tr/\\/\//;
-      $type = "smb";
-    }
-    elsif ($fs eq "nfs")
-    {
-      ($host) = ($device =~ /(.*):/);
-      ($path) = ($device =~ /.*:(.*)/);
-      $type = "nfs";
-    }
-
-    # (Find and update) or (add) our internal mount record.
-
-    if ($host ne "" && $path ne "")
-    {
-      $found = 0;
-      for ($i = 0; $cf_shares_list[$i] ne ""; )
-      {
-        if (($cf_shares_list[$i] =~ /^$host$/i) == 1 &&
-            ($cf_shares_list[$i + 1] =~ /^$path$/i) == 1 &&
-            ($cf_shares_list[$i + 5] eq $type))
-        {
-          # Found. Flag it as mounted and &set extra mount parameters.
-
-          if (!($options =~ /noauto/)) { $cf_shares_list[$i + 3] = 1; }  # Mounted
-          $cf_shares_list[$i + 10] = 1;  # Listed
-          $cf_shares_list[$i + 6] = $user;
-          $cf_shares_list[$i + 7] = $password;
-          $cf_shares_list[$i + 8] = $dir;
-          $found = 1; last;
-        }
-
-        $i = $i + 11;  # Host, path, comment, mounted, detected, type, user,
-                       # password, point, printed, listed.
-      }
-      
-      if (!$found)
-      {
-        push(@cf_shares_list, $host);      # Host
-        push(@cf_shares_list, $path);      # Path
-        push(@cf_shares_list, "");         # Comment
-        if (!($options =~ /noauto/)) { push(@cf_shares_list, 1); }  # Mounted
-        else { push(@cf_shares_list, 0); }                          # Mounted
-        push(@cf_shares_list, 0);          # Detected
-        push(@cf_shares_list, $type);      # Type
-        push(@cf_shares_list, $user);      # User
-        push(@cf_shares_list, $password);  # Password
-        push(@cf_shares_list, $dir);       # Point
-        push(@cf_shares_list, 0);          # Printed
-        push(@cf_shares_list, 1);          # Listed
-      }
-    }
-  }
-
-  close(FILE);
-}
-
-
-sub write_fstab
-{
-  my ($ifh, $ofh);
-  local (*INFILE, *OUTFILE);
-  
-  ($ifh, $ofh) = &xst_file_open_filter_write_from_names(@fstab_names);
-  if (not $ofh) { return; }  # No point if we can't write.
-  *INFILE = $ifh; *OUTFILE = $ofh;
-
-  while (<INFILE>)
-  {
-    my ($host, $path, $type);
-
-    @line = split(/[ \n\r\t]+/, $_);
-
-    if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "") { print OUTFILE; next; }
-    if (&xst_ignore_line($line[0])) { print OUTFILE; next; }
-    ($device, $dir, $fs, $options) = @line;
-
-    $host = ""; $path = "";
-    ($password) = ($options =~ /password=([^ \t,]*)/);
-    ($user) = ($user =~ /username=([^ \t,]*)/);
-
-    if ($fs eq "smbfs")
-    {
-      ($host) = ($device =~ /[\/\\]*([^\/\\]+)/);
-      ($path) = ($device =~ /[\/\\]*[^\/\\]+(.*)/);
-      $path =~ tr/\\/\//;
-      $type = "smb";
-    }
-    elsif ($fs eq "nfs")
-    {
-      ($host) = ($device =~ /(.*):/);
-      ($path) = ($device =~ /.*:(.*)/);
-      $type = "nfs";
-    }
-    else
-    {
-      print OUTFILE; next;
-    }
-
-    # Try to find a corresponding internal mount record and insert it here.
-
-    if ($host ne "" && $path ne "")
-    {
-      $found = 0;
-    
-      for ($i = 0; $cf_shares_list[$i] ne ""; )
-      {
-        if (($cf_shares_list[$i] =~ /^$host$/i) == 1 &&
-            ($cf_shares_list[$i + 1] =~ /^$path$/i) == 1 &&
-            ($cf_shares_list[$i + 5] eq $type))
-        {
-          # Found. Write it out.
-          
-          if (!($cf_shares_list[$i + 10]))
-          {
-            # Stay unlisted.
-          }
-          elsif ($type eq "smb")
-          {
-            # FIXME: The fmask here needs to be user-controllable through
-            # a multiple-choice interface. It's too permissive right now.
-
-            print OUTFILE "//$cf_shares_list[$i]$cf_shares_list[$i + 1] ";
-
-            if ($cf_shares_list[$i + 8] ne "") { print OUTFILE "$cf_shares_list[$i + 8]"; }
-            else { print OUTFILE "none"; }
-
-            print OUTFILE " smbfs username=$cf_shares_list[$i + 6],",
-                          "password=$cf_shares_list[$i + 7],fmask=0777";
-            if (!($cf_shares_list[$i + 3])) { print OUTFILE ",noauto"; }
-
-            # Options merging and printing. Note that we always write some
-            # options, above.
-
-            my @options = ($options =~ /([a-zA-Z0-9=]+),?/mg);
-            for $option (@options)
-            {
-              # Strip options we handle, keep the rest.
-
-              if ($option eq "auto" || $option eq "noauto" ||
-                  $option eq "defaults" || $option =~ /^username/ ||
-                  $option =~ "^password" || $option =~ /^fmask/) { next; }
-
-              print $OUTFILE "," . $option;
-            }
-
-            # Dump and fsck priority.
-
-            print OUTFILE " 0 0\n";
-          }
-          elsif ($type eq "nfs")
-          {
-            print OUTFILE "$cf_shares_list[$i]:$cf_shares_list[$i + 1] ";
-
-            if ($cf_shares_list[$i + 8] ne "") { print OUTFILE "$cf_shares_list[$i + 8]"; }
-            else { print OUTFILE "none"; }
-            
-            print OUTFILE " nfs ";
-
-            # Options merging and printing.
-
-            my $prev = 0;
-
-            if (!($cf_shares_list[$i + 3]))
-            {
-              print OUTFILE "noauto"; $prev = 1;
-            }
-
-            my @options = ($options =~ /([a-zA-Z0-9=]+),?/mg);
-            for $option (@options)
-            {
-              # Strip options we handle, keep the rest.
-
-              if ($option eq "auto" || $option eq "noauto" ||
-                  $option eq "defaults") { next; }
-              if ($prev) { print OUTFILE ","; }
-              print OUTFILE $option;
-              $prev = 1;
-            }
-
-            if (!$prev) { print OUTFILE "defaults"; }
-
-            # Dump and fsck priority.
-
-            print OUTFILE " 0 0\n";
-          }
-          else
-          {
-            # Unsupported share type. This is actually caught earlier.
-          }
-
-          $found = 1;
-          $cf_shares_list[$i + 9] = 1;  # Printed
-        }
-
-        $i = $i + 11;  # Host, path, comment, mounted, detected, type, user,
-                       # password, point, printed, listed.
-      }
-
-#      if (!$found) { print OUTFILE; }
-    }
-  }
-
-  # Print leftover shares.
-
-  for ($i = 0; $cf_shares_list[$i] ne ""; )
-  {
-    if (!($cf_shares_list[$i + 9]))
-    {
-      # Not already printed. Do it now.
-
-      if (!($cf_shares_list[$i + 10]))
-      {
-        # Stay unlisted.
-      }
-      elsif ($cf_shares_list[$i + 5] eq "smb")
-      {
-        # FIXME: The fmask here needs to be user-controllable through
-        # a multiple-choice interface. It's too permissive right now.
-
-        print OUTFILE "//$cf_shares_list[$i]$cf_shares_list[$i + 1] ";
-
-        if ($cf_shares_list[$i + 8] ne "") { print OUTFILE "$cf_shares_list[$i + 8]"; }
-        else { print OUTFILE "none"; }
-
-        print OUTFILE " smbfs ",
-                      "username=$cf_shares_list[$i + 6],",
-                      "password=$cf_shares_list[$i + 7],fmask=0777";
-        if (!($cf_shares_list[$i + 3])) { print OUTFILE ",noauto"; }
-        print OUTFILE " 0 0\n";
-      }
-      elsif ($cf_shares_list[$i + 5] eq "nfs")
-      {
-        print OUTFILE "$cf_shares_list[$i]:$cf_shares_list[$i + 1] ";
-
-        if ($cf_shares_list[$i + 8] ne "") { print OUTFILE "$cf_shares_list[$i + 8]"; }
-        else { print OUTFILE "none"; }
-
-        print OUTFILE " nfs ";
-
-        if (!($cf_shares_list[$i + 3])) { print OUTFILE "noauto"; }
-        else { print OUTFILE "defaults"; }
-        print OUTFILE " 0 0\n";
-      }
-      else
-      {
-        # Unsupported share type. This is actually caught earlier.
-      }
-
-      $cf_shares_list[$i + 9] = 1;  # Printed
-    }
-
-    $i = $i + 11;  # Host, path, comment, mounted, detected, type, user,
-                   # password, point, printed, listed.
-  }
-
-  close(INFILE);
-  close(OUTFILE);
-}
-
-
-# /etc/exports
-#
-# <path> <client spec>(<option>,<option>,...) <client spec>(...) ...
-# <path> <client spec>(<option>,<option>,...) <client spec>(...) ...
-# ...
-#
-# Exists: (Presumably everywhere)
-#
-# Absent: (Presumably nowhere)
-
-sub read_exports
-{
-  my $ifh;
-  local *FILE;
-
-  # Find the file.
-
-  $ifh = &xst_file_open_read_from_names(@exports_names);
-  if (not $ifh) { return; }  # We didn't find it.
-  *FILE = $ifh;
-
-  # Parse the file.
-
-  while (<FILE>)
-  {
-    my $host;
-    my $clients = [];
-
-    @line = split(/[ \n\r\t]+/, $_);
-
-    if ($line[0] eq "") { shift @line; }
-    if ($line[0] eq "") { next; }
-    if (&xst_ignore_line($line[0])) { next; }
-
-    $path = $line[0]; shift @line;
-    push @cf_exports_list, "nfs";  # Type
-    push @cf_exports_list, $path;  # Path
-
-    for $client (@line)
-    {
-      ($spec) = ($client =~ /^([^\(]+)/);
-      ($options) = ($client =~ /\(([^\)]+)/);
-      push @$clients, $spec;                        # Spec
-      if ($options =~ /rw/) { push @$clients, 1; }  # Writeable
-      else                  { push @$clients, 0; }  # Writeable
-    }
-
-    push @cf_exports_list, $clients;  # Client patterns and options
-  }
-
-  close(FILE);
-}
-
-
-sub write_exports
-{
-  my $ofh;
-  local *FILE;
-
-  # Find the file.
-
-  $ofh = &xst_file_open_write_from_names(@exports_names);
-  if (not $ofh) { return; }
-  *FILE = $ofh;
-
-  # We rewrite everything, as we have complete command of the things to go
-  # in this file.
-
-  my @shares = @cf_exports_list;
-
-  while (@shares)
-  {
-    if ($shares[0] ne "")
-    {
-      if ($shares[0] eq "smb")
-      {
-        shift @shares; shift @shares; shift @shares; shift @shares;
-        shift @shares; shift @shares; shift @shares; shift @shares;
-      }
-      elsif ($shares[0] eq "nfs")
-      {
-        print FILE "$shares[1]";  # Path
-
-        my $clients = $shares[2];
-        while (@$clients)
-        {
-          if ($$clients[0] ne "")
-          {
-            print FILE " $$clients[0]";               # Pattern
-            if ($$clients[1]) { print FILE "(rw)"; }  # Writeable
-          }
-          shift @$clients; shift @$clients;
-        }
-
-        print FILE "\n";
-        shift @shares; shift @shares; shift @shares;
-      }
-    }
-  }
-  
-  close(FILE);
-}
-
-
-# --- XML parsing --- #
-
+# --- XML parsing ---
 
 # Scan XML from standard input to an internal tree.
 
 sub xml_parse
 {
+  my $tree;
+  my $config = {};
   # Scan XML to tree.
 
   $tree = &xst_xml_scan;
 
   # Walk the tree recursively and extract configuration parameters.
-  # This is the top level - find and enter the toplevel tag.
+  # This is the top level - find and enter the "network" tag.
 
   while (@$tree)
   {
-    if ($$tree[0] eq "shares") { &xml_parse_toplevel($$tree[1]); }
+    if ($$tree[0] eq "shares") { &xml_parse_shares ($$tree[1], $config); }
 
     shift @$tree;
     shift @$tree;
   }
 
-  return($tree);
+  return($config);
 }
 
+# <shares>...</shares>
 
-sub xml_parse_toplevel
+sub xml_parse_shares
 {
-  my $tree = $_[0];
+  my ($tree, $config) = @_;
 
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
   {
-    if    ($$tree[0] eq "imports") { &xml_parse_imports ($$tree[1]); }
-    elsif ($$tree[0] eq "exports") { &xml_parse_exports ($$tree[1]); }
-
+    if    ($$tree[0] eq "imports") { &xml_parse_imports ($$tree[1], $config); }
+    elsif ($$tree[0] eq "exports") { &xml_parse_exports ($$tree[1], $config); }
     shift @$tree;
     shift @$tree;
   }
 }
+
+# <imports>...</imports>
 
 sub xml_parse_imports
 {
-  my $tree = $_[0];
+  my ($tree, $config) = @_;
+  my $table;
+
+  $table = &xst_filesys_table_new ();
 
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
   {
-    if ($$tree[0] eq "import") { &xml_parse_import ($$tree[1]); }
+    if ($$tree[0] eq "import") { &xml_parse_import ($$tree[1], $table); }
 
     shift @$tree;
     shift @$tree;
   }
+
+  $$config{'imports'} = $table;
 }
+
+# <exports>...</exports>
 
 sub xml_parse_exports
 {
-  my $tree = $_[0];
+  my ($tree, $config) = @_;
+  my ($smb_table, $nfs_table);
+
+  $smb_table = &xst_share_smb_table_new ();
+  $nfs_table = &xst_share_nfs_table_new ();
 
   shift @$tree;  # Skip attributes.
 
   while (@$tree)
   {
-    if ($$tree[0] eq "export") { &xml_parse_export ($$tree[1]); }
+    if ($$tree[0] eq "export") { &xml_parse_export ($$tree[1], $smb_table, $nfs_table); }
 
     shift @$tree;
     shift @$tree;
   }
+
+  $$config{'smb_exports'} = $smb_table;
+  $$config{'nfs_exports'} = $nfs_table;
 }
+
+# <import>...</import>
 
 sub xml_parse_import
 {
-  my $tree = $_[0];
+  my ($tree, $table) = @_;
   my $type = "", $host = "", $path = "", $comment = "", $user = "",
      $password = "", $mounted = 0, $detected = 0, $point = "", $listed = 0;
 
+  my $info = &xst_filesys_info_new ();
+
   $type = $$tree[0]->{type};
   shift @$tree;
-  
+
   while (@$tree)
   {
-    if ($$tree[0] eq "host")        { $host = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "path")     { $path = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "user")     { $user = &xst_xml_get_text($$tree[1]); }
-    elsif ($$tree[0] eq "password") { $password = &xst_xml_get_text($$tree[1]); }
-    elsif ($$tree[0] eq "comment")  { $comment = &xst_xml_get_text($$tree[1]); }
-    elsif ($$tree[0] eq "point")    { $point = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "mounted")  { $mounted = &xml_parse_mounted($$tree[1]); }
-    elsif ($$tree[0] eq "detected") { $detected = &xml_parse_detected($$tree[1]); }
-    elsif ($$tree[0] eq "listed")   { $listed = &xml_parse_listed($$tree[1]); }
+    if    ($$tree[0] eq "host")     { $host     = &xst_xml_get_word  ($$tree[1]); }
+    elsif ($$tree[0] eq "path")     { $path     = &xst_xml_get_word  ($$tree[1]); }
+    elsif ($$tree[0] eq "user")     { $user     = &xst_xml_get_text  ($$tree[1]); }
+    elsif ($$tree[0] eq "password") { $password = &xst_xml_get_text  ($$tree[1]); }
+    elsif ($$tree[0] eq "comment")  { $comment  = &xst_xml_get_text  ($$tree[1]); }
+    elsif ($$tree[0] eq "point")    { $point    = &xst_xml_get_word  ($$tree[1]); }
+    elsif ($$tree[0] eq "mounted")  { $mounted  = &xst_xml_get_state ($$tree[1]); }
+    elsif ($$tree[0] eq "detected") { $detected = &xst_xml_get_state ($$tree[1]); }
+    elsif ($$tree[0] eq "listed")   { $listed   = &xst_xml_get_state ($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
   }
 
-  push(@cf_shares_list, $host);      # Host
-  push(@cf_shares_list, $path);      # Path
-  push(@cf_shares_list, $comment);   # Comment
-  push(@cf_shares_list, $mounted);   # Mounted
-  push(@cf_shares_list, $detected);  # Detected
-  push(@cf_shares_list, $type);      # Type
-  push(@cf_shares_list, $user);      # User
-  push(@cf_shares_list, $password);  # Password
-  push(@cf_shares_list, $point);     # Point
-  push(@cf_shares_list, 0);          # Printed
-  push(@cf_shares_list, $listed);    # Listed
+  &xst_filesys_info_set_network_host ($info, $host);
+  &xst_filesys_info_set_network_path ($info, $path);
+#  &xst_filesys_info_set_comment      ($info, $comment);
+  &xst_filesys_info_set_permanent    ($info, $listed);
+  &xst_filesys_info_set_mounted      ($info, $mounted);
+  &xst_filesys_info_set_detected     ($info, $detected);
+  &xst_filesys_info_set_point        ($info, $point);
+
+  if ($type eq "nfs")
+  {
+    &xst_filesys_info_set_fs         ($info, "nfs");
+  }
+  else
+  {
+    &xst_filesys_info_set_fs         ($info, "smbfs");
+    &xst_filesys_info_set_option     ($info, "username", ($user eq "")     ? " " : $user);
+    &xst_filesys_info_set_option     ($info, "password", ($password eq "") ? " " : $password);
+  }
+
+  &xst_filesys_table_add ($table, $info);
 }
 
-sub xml_parse_mounted
-{
-  my $tree = $_[0];
-
-  # Check attribute; 'yes', 'true', 'no', 'false'.
-
-  return(&xst_read_boolean($$tree[0]->{state}));
-}
-
-
-sub xml_parse_detected
-{
-  my $tree = $_[0];
-
-  # Check attribute; 'yes', 'true', 'no', 'false'.
-
-  return(&xst_read_boolean($$tree[0]->{state}));
-}
-
-
-sub xml_parse_listed
-{
-  my $tree = $_[0];
-
-  # Check attribute; 'yes', 'true', 'no', 'false'.
-
-  return(&xst_read_boolean($$tree[0]->{state}));
-}
-
+# <export>...</export>
 
 sub xml_parse_export
 {
-  my $tree = $_[0];
+  my ($tree, $smb_table, $nfs_table) = @_;
   my $type = "";
+  my $info;
 
   $type = $$tree[0]->{type};
   shift @$tree;
   
   if ($type eq "nfs")
   {
-    my $path = "", $clients = [];
-    
+    my $path = "";
+    my $client_table = &xst_share_nfs_client_table_new ();
+
+    $info = xst_share_nfs_info_new ();
+
     while (@$tree)
     {
-      if ($$tree[0] eq "path")          { $path = &xst_xml_get_word($$tree[1]); }
-      elsif ($$tree[0] eq "allow")      { push(@$clients, &xml_parse_allow($$tree[1])); }
+      if    ($$tree[0] eq "path")       { $path = &xst_xml_get_word ($$tree[1]);       }
+      elsif ($$tree[0] eq "allow")      { &xml_parse_allow ($$tree[1], $client_table); }
 
       shift @$tree;
       shift @$tree;
@@ -1316,9 +234,9 @@ sub xml_parse_export
     
     if ($path ne "")
     {
-      push @cf_exports_list, "nfs";     # Type
-      push @cf_exports_list, $path;     # Path
-      push @cf_exports_list, $clients;  # Clients
+      &xst_share_nfs_info_set_point        ($info, $path);
+      &xst_share_nfs_info_set_client_table ($info, $client_table);
+      &xst_share_nfs_table_add             ($nfs_table, $info);
     }
   }
   elsif ($type eq "smb")
@@ -1326,15 +244,17 @@ sub xml_parse_export
     my $name = "", $path = "", $comment = "", $enabled = 0, $browseable = 0,
        $public = 0, $writeable = 0;
 
+    $info = xst_share_smb_info_new ();
+
     while (@$tree)
     {
-      if ($$tree[0] eq "name")          { $name = &xst_xml_get_word($$tree[1]); }
-      elsif ($$tree[0] eq "path")       { $path = &xst_xml_get_word($$tree[1]); }
-      elsif ($$tree[0] eq "comment")    { $comment = &xst_xml_get_text($$tree[1]); }
-      elsif ($$tree[0] eq "enabled")    { $enabled = &xml_parse_enabled($$tree[1]); }
-      elsif ($$tree[0] eq "browse")     { $browseable = &xml_parse_browseable($$tree[1]); }
-      elsif ($$tree[0] eq "public")     { $public = &xml_parse_public($$tree[1]); }
-      elsif ($$tree[0] eq "write")      { $writeable = &xml_parse_writeable($$tree[1]); }
+      if    ($$tree[0] eq "name")       { $name       = &xst_xml_get_word  ($$tree[1]); }
+      elsif ($$tree[0] eq "path")       { $path       = &xst_xml_get_word  ($$tree[1]); }
+      elsif ($$tree[0] eq "comment")    { $comment    = &xst_xml_get_text  ($$tree[1]); }
+      elsif ($$tree[0] eq "enabled")    { $enabled    = &xst_xml_get_state ($$tree[1]); }
+      elsif ($$tree[0] eq "browse")     { $browseable = &xst_xml_get_state ($$tree[1]); }
+      elsif ($$tree[0] eq "public")     { $public     = &xst_xml_get_state ($$tree[1]); }
+      elsif ($$tree[0] eq "write")      { $writeable  = &xst_xml_get_state ($$tree[1]); }
 
       shift @$tree;
       shift @$tree;
@@ -1342,14 +262,14 @@ sub xml_parse_export
 
     if ($path ne "")
     {
-      push @cf_exports_list, "smb";        # Type
-      push @cf_exports_list, $path;        # Path
-      push @cf_exports_list, $name;        # Name
-      push @cf_exports_list, $comment;     # Comment
-      push @cf_exports_list, $enabled;     # Enabled
-      push @cf_exports_list, $browseable;  # Browseable
-      push @cf_exports_list, $public;      # Public
-      push @cf_exports_list, $writeable;   # Writeable
+      &xst_share_smb_info_set_name    ($info, $name);
+      &xst_share_smb_info_set_point   ($info, $point);
+      &xst_share_smb_info_set_comment ($info, $comment);
+      &xst_share_smb_info_set_enabled ($info, $enabled);
+      &xst_share_smb_info_set_browse  ($info, $browseable);
+      &xst_share_smb_info_set_public  ($info, $public);
+      &xst_share_smb_info_set_write   ($info, $writeable);
+      &xst_share_smb_table_add        ($smb_table, $info);
     }
   }
   else
@@ -1360,633 +280,249 @@ sub xml_parse_export
   }
 }
 
-
 sub xml_parse_allow
 {
-  my $tree = $_[0];
-  my $pattern = "", $write = 0;
-  my @list;
+  my ($tree, $client_table) = @_;
+  my $pattern = "";
+  my $write = 0;
 
   shift @$tree;  # No attributes.
 
   while (@$tree)
   {
-    if ($$tree[0] eq "pattern")       { $pattern = &xst_xml_get_word($$tree[1]); }
-    elsif ($$tree[0] eq "write")      { $write = &xml_parse_writeable($$tree[1]); }
+    if    ($$tree[0] eq "pattern") { $pattern = &xst_xml_get_word  ($$tree[1]); }
+    elsif ($$tree[0] eq "write")   { $write   = &xst_xml_get_state ($$tree[1]); }
 
     shift @$tree;
     shift @$tree;
   }
 
-  push @list, $pattern;
-  push @list, $write;
-  return @list;
+  my $info = &xst_share_nfs_client_info_new ();
+  &xst_share_nfs_client_info_set_pattern ($info, $pattern);
+  &xst_share_nfs_client_info_set_write   ($info, $write);
+  &xst_share_nfs_client_table_add        ($client_table, $info);
 }
-
-
-sub xml_parse_enabled
-{
-  my $tree = $_[0];
-
-  # Check attribute; 'yes', 'true', 'no', 'false'.
-
-  return(&xst_read_boolean($$tree[0]->{state}));
-}
-
-
-sub xml_parse_browseable
-{
-  my $tree = $_[0];
-
-  # Check attribute; 'yes', 'true', 'no', 'false'.
-
-  return(&xst_read_boolean($$tree[0]->{state}));
-}
-
-
-sub xml_parse_public
-{
-  my $tree = $_[0];
-
-  # Check attribute; 'yes', 'true', 'no', 'false'.
-
-  return(&xst_read_boolean($$tree[0]->{state}));
-}
-
-
-sub xml_parse_writeable
-{
-  my $tree = $_[0];
-
-  # Check attribute; 'yes', 'true', 'no', 'false'.
-
-  return(&xst_read_boolean($$tree[0]->{state}));
-}
-
 
 # --- XML printing --- #
 
+sub xml_print_import_common  # filesys_info
+{
+  my ($fsinfo) = @_;
+  my ($host, $path, $point);
+
+  $point = &xst_filesys_info_get_point        ($fsinfo);
+  $host  = &xst_filesys_info_get_network_host ($fsinfo);
+  $path  = &xst_filesys_info_get_network_path ($fsinfo);
+
+  &xst_xml_print_pcdata    ("host",     $host);
+  &xst_xml_print_pcdata    ("path",     $path);
+  &xst_xml_print_pcdata    ("point",    $point);
+  &xst_xml_print_state_tag ("listed",   &xst_filesys_info_get_permanent ($fsinfo));
+  &xst_xml_print_state_tag ("mounted",  &xst_filesys_info_get_mounted   ($fsinfo));
+  &xst_xml_print_state_tag ("detected", &xst_filesys_info_get_detected  ($fsinfo));
+}
+
+sub xml_print_import_nfs
+{
+  my ($fsinfo) = @_;
+
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<import type='nfs'>");
+  &xst_xml_enter ();
+
+  &xml_print_import_common ($fsinfo);
+
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</import>");
+  &xst_xml_print_vspace ();
+}
+
+sub xml_print_import_smb
+{
+  my ($fsinfo) = @_;
+
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<import type='smb'>");
+  &xst_xml_enter ();
+
+  &xml_print_import_common ($fsinfo);
+
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</import>");
+  &xst_xml_print_vspace ();
+}
+
+sub xml_print_export_nfs
+{
+  my ($info) = @_;
+  my $client_table;
+
+  $client_table = &xst_share_nfs_info_get_client_table ($info);
+
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<export type='nfs'>");
+  &xst_xml_enter ();
+
+  &xst_xml_print_pcdata ("path", &xst_share_nfs_info_get_point ($info));
+
+  for $client (@$client_table)
+  {
+    &xst_xml_container_enter ("allow");
+    &xst_xml_print_pcdata    ("pattern", &xst_share_nfs_client_info_get_pattern ($client));
+    &xst_xml_print_state_tag ("write",   &xst_share_nfs_client_info_get_write   ($client));
+    &xst_xml_container_leave ();
+  }
+
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</export>");
+  &xst_xml_print_vspace ();
+}
+
+sub xml_print_export_smb
+{
+  my ($info) = @_;
+
+  &xst_xml_print_vspace ();
+  &xst_xml_print_line ("<export type='smb'>");
+  &xst_xml_enter ();
+
+  &xst_xml_print_pcdata    ("path",       &xst_share_smb_info_get_point   ($info));
+  &xst_xml_print_pcdata    ("comment",    &xst_share_smb_info_get_comment ($info));
+  &xst_xml_print_state_tag ("enabled",    &xst_share_smb_info_get_enabled ($info));
+  &xst_xml_print_state_tag ("browseable", &xst_share_smb_info_get_browse  ($info));
+  &xst_xml_print_state_tag ("public",     &xst_share_smb_info_get_public  ($info));
+  &xst_xml_print_state_tag ("writable",   &xst_share_smb_info_get_write   ($info));
+
+  &xst_xml_leave ();
+  &xst_xml_print_line ("</export>");
+  &xst_xml_print_vspace ();
+}
 
 sub xml_print
 {
-  print "<?xml version='1.0' encoding='ISO-8859-1' standalone='yes'?>\n";
-  print "<!DOCTYPE shares []>\n\n";
-  print "<shares>\n";
-  &xst_xml_enter ();
+  my ($config) = @_;
+  my ($import_table, $smb_export_table, $nfs_export_table);
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- Configuration starts here -->\n");
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- Imports, listed and potentials -->\n");
-  &xst_xml_print_vspace ();
+  $import_table     = $$config{"imports"};
+  $smb_export_table = $$config{"smb_exports"};
+  $nfs_export_table = $$config{"nfs_exports"};
 
-  &xst_xml_print_line ("<imports>");
-  &xst_xml_enter ();
+  &xst_xml_print_begin ();
 
-  my @shares = @cf_shares_list;
+  &xst_xml_container_enter ("imports");
 
-  while (@shares)
+  foreach $i (@$import_table)
   {
-    if ($shares[0] ne "")
-    {
-      &xst_xml_print_vspace ();
-      &xst_xml_print_line ("<import type='$shares[5]'>\n");
-      &xst_xml_enter ();
+    my ($fs);
 
-      $shares[0] = &xst_xml_quote($shares[0]);
-      $shares[1] = &xst_xml_quote($shares[1]);
-      $shares[2] = &xst_xml_quote($shares[2]);
-      $shares[6] = &xst_xml_quote($shares[6]);
-      $shares[7] = &xst_xml_quote($shares[7]);
+    $fs = &xst_filesys_info_get_fs ($i);
 
-      &xst_xml_print_line ("<host>$shares[0]</host>\n");
-      &xst_xml_print_line ("<path>$shares[1]</path>\n");
-      if ($shares[6] ne "") { &xst_xml_print_line ("<user>$shares[6]</user>\n"); }
-      if ($shares[7] ne "") { &xst_xml_print_line ("<password>$shares[7]</password>\n"); }
-      if ($shares[2] ne "") { &xst_xml_print_line ("<comment>$shares[2]</comment>\n"); }
-      if ($shares[8] ne "") { &xst_xml_print_line ("<point>$shares[8]</point>\n"); }
-
-      &xst_xml_print_indent ();
-
-      print "<mounted state='";
-      print &xst_print_boolean_truefalse($shares[3]);
-      print "'/>";
-
-      print "<listed state='";
-      print &xst_print_boolean_truefalse($shares[10]);
-      print "'/>";
-
-      print "<detected state='";
-      print &xst_print_boolean_truefalse($shares[4]);
-      print "'/>\n";
-
-      &xst_xml_leave ();
-      &xst_xml_print_line ("</import>\n");
-    }
-    
-    shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
-    shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
-    shift @shares;
+    if    ($fs eq "nfs")   { &xml_print_import_nfs ($i); }
+    elsif ($fs eq "smbfs") { &xml_print_import_smb ($i); }
+    else                   { next; }
   }
 
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</imports>");
-
+  &xst_xml_container_leave ();
   &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- Exports -->\n");
-  &xst_xml_print_vspace ();
-  
-  &xst_xml_print_line ("<exports>");
-  &xst_xml_enter ();
+  &xst_xml_container_enter ("exports");
 
-  my @shares = @cf_exports_list;
-  
-  while (@shares)
+  foreach $i (@$smb_export_table)
   {
-    if ($shares[0] ne "")
-    {
-      &xst_xml_print_vspace ();
-      &xst_xml_print_line ("<export type='$shares[0]'>\n");
-      &xst_xml_enter ();
-
-      &xst_xml_print_line ("<path>$shares[1]</path>\n");
-
-      if ($shares[0] eq "smb")
-      {
-        &xst_xml_print_line ("<name>$shares[2]</name>\n");
-        if ($shares[3] ne "") { &xst_xml_print_line ("<comment>$shares[3]</comment>\n"); }
-
-        &xst_xml_print_indent ();
-        print "<enabled state='", &xst_print_boolean_truefalse($shares[4]), "'/>";
-        print "<browse state='", &xst_print_boolean_truefalse($shares[5]), "'/>";
-        print "<public state='", &xst_print_boolean_truefalse($shares[6]), "'/>\n";
-        &xst_xml_print_indent ();
-        print "<write state='", &xst_print_boolean_truefalse($shares[7]), "'/>\n";
-
-        shift @shares; shift @shares; shift @shares; shift @shares;
-        shift @shares; shift @shares; shift @shares; shift @shares;
-      }
-      elsif ($shares[0] eq "nfs")
-      {
-        &xst_xml_print_line ("<name>none</name>");
-
-        my $clients = $shares[2];
-        while (@$clients)
-        {
-          if ($$clients[0] ne "")
-          {
-            &xst_xml_print_line ("<allow><pattern>$$clients[0]</pattern><write state='" . 
-                                 &xst_print_boolean_truefalse($$clients[1]) . "'/></allow>");
-          }
-          shift @$clients; shift @$clients;
-        }
-
-        shift @shares; shift @shares; shift @shares;
-      }
-
-      &xst_xml_leave ();
-      &xst_xml_print_line ("</export>\n");
-    }
-    
+    &xml_print_export_smb ($i);
   }
-  
-  &xst_xml_leave ();
-  &xst_xml_print_line ("</exports>");
 
-  &xst_xml_print_vspace ();
-  &xst_xml_print_line ("<!-- End of configuration -->\n");
-  &xst_xml_print_vspace ();
+  foreach $i (@$nfs_export_table)
+  {
+    &xml_print_export_nfs ($i);
+  }
 
-  &xst_xml_leave ();
-  print "</shares>\n";
+  &xst_xml_container_leave ();
+
+  &xst_xml_print_end ();
 }
 
 
-# --- IP calculation --- #
+# Configuration handling.
 
-# Both functions take two arguments: IP and netmask.
-
-
-sub ip_calc_network
+sub remove_local_from_filesys_table
 {
-  my @ip_reg1;
-  my @ip_reg2;
-
-  @ip_reg1 = ($_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
-  @ip_reg2 = ($_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
-  
-  $ip_reg1[0] = ($ip_reg1[0] * 1) & ($ip_reg2[0] * 1);
-  $ip_reg1[1] = ($ip_reg1[1] * 1) & ($ip_reg2[1] * 1);
-  $ip_reg1[2] = ($ip_reg1[2] * 1) & ($ip_reg2[2] * 1);
-  $ip_reg1[3] = ($ip_reg1[3] * 1) & ($ip_reg2[3] * 1);
-  
-  return(join('.', @ip_reg1));
+  return;
 }
 
-
-sub ip_calc_broadcast
+sub remove_network_from_filesys_table
 {
-  my @ip_reg1;
-  my @ip_reg2;
-
-  @ip_reg1 = ($_[0] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
-  @ip_reg2 = ($_[1] =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
-  
-  @ip_reg1 = ($cf_hostip =~ /([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/);
-
-  $ip_reg1[0] = ($ip_reg1[0] * 1) | (~($ip_reg2[0] * 1) & 255);
-  $ip_reg1[1] = ($ip_reg1[1] * 1) | (~($ip_reg2[1] * 1) & 255);
-  $ip_reg1[2] = ($ip_reg1[2] * 1) | (~($ip_reg2[2] * 1) & 255);
-  $ip_reg1[3] = ($ip_reg1[3] * 1) | (~($ip_reg2[3] * 1) & 255);
-
-  return(join('.', @ip_reg1));
 }
 
-
-# --- Get (read) config --- #
-
-
-sub get_interfaces
+sub get_configured_imports
 {
-  my $if_cmd;
-  my $iftext;
-  my @list;
+  my ($imports, $listed_imports, $mounted_imports);
 
-  # Get a list of all interfaces, both configured and unconfigured.
-  # Should work on both GNU and Solaris.
+  $listed_imports  = &xst_filesys_fstab_parse ("/etc/fstab");
+  $mounted_imports = &xst_filesys_mtab_parse  ("/etc/mtab");
 
-  $if_cmd = &xst_file_locate_tool("ifconfig");
-  $iftext = `$if_cmd -a 2>/dev/null`;
+  &xst_filesys_table_set_permanent_true ($listed_imports);
+  &xst_filesys_table_set_mounted_true   ($mounted_imports);
 
-  @list = ($iftext =~ /^([a-z0-9]+)[ :\t].*/mg);
-
-  if (not @list)
-  {
-    &xst_report ("compat", "Could not find any network devices");
-    return(0);
-  }
-  
-  # Remove loopback and dummy interfaces from the list.
-  
-  for $elem (@list)
-  {
-    if (!($elem =~ /^(lo)|(dummy).*/)) { push(@cf_interface_list, $elem); }
-  }
+  $imports = &xst_filesys_table_merge_superset ($mounted_imports, $listed_imports);
+  &remove_local_from_filesys_table ($imports);
+  return $imports;
 }
 
-
-sub get_host_mounts
+sub get_configured_exports
 {
-  my ($ping_tool, $showmount_tool, $nmblookup_tool, $smbclient_tool,
-      $broadcast_ip, $network_ip);
-  my @hosts;
-  my ($i, $j);
+  my ($smb_exports, $nfs_exports);
 
-  $ping_tool = &xst_file_locate_tool("ping");
-  $showmount_tool = &xst_file_locate_tool("showmount");
-  $nmblookup_tool = &xst_file_locate_tool("nmblookup");
-  $smbclient_tool = &xst_file_locate_tool("smbclient");
+  $smb_exports = &xst_share_parse_smb_conf    ("/etc/samba/smb.conf");
+  $nfs_exports = &xst_share_parse_nfs_exports ("/etc/exports");
 
-  $broadcast_ip = &ip_calc_broadcast($cf_hostip, $cf_netmask);
-  $network_ip = &ip_calc_network($cf_hostip, $cf_netmask);
-
-  &xst_report ("compat", "Mapping IP subnet " . $network_ip);
-
-  # Map subnet.
-
-  open(PING_HD, "$ping_tool -b -c 2 -n $broadcast_ip 2>/dev/null |");
-  while (<PING_HD>)
-  {
-    if (/bytes from/)
-    {
-      $ip = join('.', ($_ =~ /from ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/));
-      &xst_push_unique(\@hosts, $ip);
-    }
-  }
-  close(PING_HD);
-
-  if ($#hosts == -1)
-  {
-    # If nothing was found, make a second attempt, this time with fewer
-    # options. Eliminate those that ping might not understand.
-
-    open(PING_HD, "$ping_tool -c 2 -n $broadcast_ip 2>/dev/null |");
-    while (<PING_HD>)
-    {
-      if (/bytes from/)
-      {
-        $ip = join('.', ($_ =~ /from ([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)/));
-        &xst_push_unique(\@hosts, $ip);
-      }
-    }
-    close(PING_HD);
-  }
-
-  &xst_report ("compat", "Subnet ping found " . ($#hosts + 1) . " hosts");
-  &xst_print_progress ();
-
-  # List NFS shares.
-
-  if ($showmount_tool eq "")
-  {
-    &xst_report ("compat", "Can't locate showmount - NFS scan skipped");
-  }
-  else
-  {
-    &xst_report ("compat", "Doing NFS detection on broadcast " . $broadcast_ip);
-  
-    $i = 0; $j = 0;
-    for $host (@hosts)
-    {
-      if ($host eq $cf_hostip) { next; }
-      &xst_report ("compat", "Querying NFS service on " . $host);
-      open(MOUNTS_HD, "$showmount_tool --directories --no-headers $host 2>/dev/null |");
-      while (<MOUNTS_HD>)
-      {
-        if (/[Dd]irectories.*:/) { next; }
-        push(@cf_shares_list, $host);                          # Host
-        push(@cf_shares_list, ($_ =~ /[ \t]*([^ \t\n\r]+)/));  # Path
-        push(@cf_shares_list, "");                             # Comment
-        push(@cf_shares_list, 0);                              # Mounted
-        push(@cf_shares_list, 1);                              # Detected
-        push(@cf_shares_list, "nfs");                          # Type
-        push(@cf_shares_list, "");                             # User
-        push(@cf_shares_list, "");                             # Password
-        push(@cf_shares_list, "");                             # Mount point
-        push(@cf_shares_list, 0);                              # Flag: Printed.
-        push(@cf_shares_list, 0);                              # Listed.
-      
-        $j++;
-      }
-      close(MOUNTS_HD);
-
-      $i++;
-    }
-
-    &xst_report ("compat", "Found $j NFS exports on $i hosts");
-    &xst_print_progress ();
-  }
-
-  # List SMB shares if applicable.
-
-  if ($cf_workgroup ne "")
-  {
-    my ($smb_master_ip, $smb_master_name);
-    my @smb_hosts;
-    
-    &xst_report ("compat", "Doing SMB detection in workgroup $cf_workgroup");
-
-    # Find the workgroup master.
-  
-    open(FD, "$nmblookup_tool -M -S $cf_workgroup |");
-    while (<FD>)
-    {
-      if (/^[a-zA-Z0-9.]+ $cf_workgroup</)
-      {
-        ($smb_master_ip) = ($_ =~ /(^[a-zA-Z0-9.]+)/);
-      }
-      elsif (/^[ \t]+[A-Za-z0-9]+[ \t]+</)
-      {
-        ($smb_master_name) = ($_ =~ /^[ \t]+([A-Za-z0-9]+)/);
-        last;
-      }
-    }
-    close(FD);
-
-    &xst_print_progress ();
-
-    if ($smb_master_name ne "")
-    {
-      &xst_report ("compat", "Workgroup master is $smb_master_name ($smb_master_ip)");
-
-      # List computers.
-
-      open(FD, "$smbclient_tool -N -U % -L $smb_master_name -I $smb_master_ip |");
-      while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
-
-      while (<FD>)
-      {
-        if ($_ eq "" || $_ eq "\n") { last; }
-        elsif (/^[ \t]+[^ \t-]+/)
-        {
-          &xst_push_unique(\@smb_hosts, ($_ =~ /^[ \t]+([^ \t-]+)/));
-        }
-      }
-      close(FD);
-
-      if ($#smb_hosts + 1) { &xst_report ("compat", "Master reported " . ($#smb_hosts + 1) . " hosts in workgroup"); }
-      else { &xst_report ("compat", "No hosts reported by master - asking others"); }
-    }
-    else { &xst_report ("compat", "No workgroup master found"); }
-
-    if (!@smb_hosts)
-    {
-      # The master browser didn't list any hosts for some reason.
-      # This happens fairly often (but randomly) on my network, so we work
-      # around it by asking some other hosts to make sure.
-
-      for $host (@hosts)
-      {
-        if ($host eq $smb_master_ip) { next; }  # Already asked the fucker.
-
-        # Typically only Unix machines (samba) will understand these requests,
-        # since they have service entries for their own IPs, whereas Windows
-        # boxen don't.
-        
-        &xst_report ("compat", "Asking $host for host list");
-
-        open(FD, "$smbclient_tool -N -U % -L $host -I $host |");
-        while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
-        
-        while (<FD>)
-        {
-          if ($_ eq "" || $_ eq "\n") { last; }
-          elsif (/^[ \t]+[^ \t-]+/)
-          {
-            &xst_push_unique(\@smb_hosts, ($_ =~ /^[ \t]+([^ \t-]+)/));
-          }
-        }
-        close(FD);
-
-        if (@smb_hosts)
-        {
-          &xst_report ("compat", "Got " . ($#smb_hosts + 1) . " SMB hosts");
-          last;
-        }
-        else { &xst_report ("compat", "No SMB hosts found"); }
-      }
-    }
-
-    # List shares on each computer.
-
-    $i = 0; $j = 0;
-    while (@smb_hosts)
-    {
-      open(FD, "$smbclient_tool -N -U % -L $smb_hosts[0] |");
-      while (<FD>) { if (/^[ \t]+Sharename[ \t]+Type[ \t]+Comment/) { last; } }
-      while (<FD>)
-      {
-        if ($_ eq "" || $_ eq "\n") { last; }
-        elsif (/^[ \t]+[^ \t-]+[ \t]+Disk/)
-        {
-          ($path) = ($_ =~ /^[ \t]+([^ \t-]+)/);  # Path
-          $path = "/\L$path";
-          $smb_hosts[0] = "\L$smb_hosts[0]";
-
-          push(@cf_shares_list, $smb_hosts[0]);                # Host
-          push(@cf_shares_list, $path);                        # Path
-          push(@cf_shares_list, ($_ =~ /^[ \t]+[^ \t-]+[ \t]+Disk[ \t]+(.*)$/));  # Comment
-          push(@cf_shares_list, 0);                            # Mounted
-          push(@cf_shares_list, 1);                            # Detected
-          push(@cf_shares_list, "smb");                        # Type
-          push(@cf_shares_list, "");                           # User
-          push(@cf_shares_list, "");                           # Password
-          push(@cf_shares_list, "");                           # Mount point
-          push(@cf_shares_list, 0);                            # Flag: Printed
-          push(@cf_shares_list, 0);                            # Listed
-          
-          $j++;
-        }
-      }
-      close(FD);
-
-      shift @smb_hosts;
-      $i++;
-    }
-    
-    &xst_report ("compat", "Found $j SMB exports on $i hosts");
-    &xst_print_progress ();
-  }
-  else { &xst_report ("compat", "No workgroup configured - SMB scan skipped"); }
+  return ($smb_exports, $nfs_exports);
 }
 
+# Top-level actions.
 
 sub get
 {
-  &xst_report ("compat", "Finding interfaces");
+  my ($imports, $smb_exports, $nfs_exports);
+  my $config = {};
 
-  &get_interfaces; &xst_print_progress ();          # Needed for primary interface detection.
-  &read_rc_config;                          # Ditto.
-  &read_network_interfaces;                 # Ditto
-  &read_sysconfig_network;                  # Ditto.
-  &read_primary_interface;                  # IP subnet information.
-  &read_smb_conf; &xst_print_progress ();           # SMB workgroup.
-#  if ($xst_do_immediate) { &get_host_mounts; }
-  &xst_print_progress ();
-  &read_fstab;
-  &read_exports; &xst_print_progress ();
+  $imports = &get_configured_imports ();
+  ($smb_exports, $nfs_exports) = &get_configured_exports ();
+
+  $$config{"imports"}     = $imports;
+  $$config{"smb_exports"} = $smb_exports;
+  $$config{"nfs_exports"} = $nfs_exports;
 
   &xst_end();
-  &xml_print ();
+  &xml_print ($config);
 }
-
-
-# --- Set (write) config --- #
-
-
-sub set_immediate
-{
-  my $exportfs_tool;
-  my $mount_tool;
-  my $umount_tool;
-  my $smbmount_tool;
-
-  $exportfs_tool = &xst_file_locate_tool("exportfs");
-  $mount_tool = &xst_file_locate_tool("mount");
-  $umount_tool = &xst_file_locate_tool("umount");
-  $smbmount_tool = &xst_file_locate_tool("smbmount");
-
-  # Update exports.
-
-  &xst_service_sysv_run_initd_script ("samba", "restart");
-  &xst_service_sysv_run_initd_script ("smb",   "restart");
-
-  &xst_progress(60);
-
-  if ($exportfs_tool eq "")
-  {
-    &xst_report ("compat", "Could not reload NFS export tables");
-  }
-  else
-  {
-    system "$exportfs_tool -a >/dev/null 2>/dev/null";
-    &xst_report ("compat", "NFS export tables reloaded");
-  }
-
-  &xst_progress(80);
-
-  # Update imports.
-
-  my $num_done = 0;
-
-  if (($mount_tool ne "") && ($umount_tool ne ""))
-  {
-    my @shares = @cf_shares_list;
-
-    while (@shares)
-    {
-      if ($shares[0] ne "" && $shares[8] ne "")
-      {
-        if ($shares[3])
-        {
-          &xst_report ("compat", "Mounting $shares[8]");
-          if ($shares[5] eq "smb")
-          {
-            $shares[1] =~ tr/\///d;
-            system "$smbmount_tool //$shares[0]/$shares[1] $shares[8] -o password=$shares[7],username=$shares[6]";
-          }
-          else
-          {
-            system "$mount_tool $shares[8] >/dev/null 2>/dev/null";
-          }
-        }
-        else
-        {
-          &xst_report ("compat", "Unmounting $shares[8]");
-          system "$umount_tool $shares[8] >/dev/null 2>/dev/null";
-        }
-      }
-
-      shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
-      shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
-      shift @shares;
-      
-      $num_done++;
-      &xst_progress(80 + (20 / ((($#cf_shares_list + 1) / 11) - $num_done + 1)));
-    }
-  }
-  else
-  {
-    &xst_report ("compat", "Could not find mount tools. No mounting done");
-  }
-}
-
 
 sub set
 {
-  &xml_parse ();
+  my $config;
+  my ($fs);
 
-  &write_fstab; &xst_progress(10);
-  &write_exports; &xst_progress(20);
-  &write_smb_conf; &xst_progress(30);
+  $config = &xml_parse ();
 
-  if ($xst_do_immediate)
-  {
-    &set_immediate;
-  }
-  
-  &xst_end();
+  &xst_filesys_mount_sync_all ("/etc/mtab", $$config{"imports"});
+
+  $fs = &xst_filesys_fstab_parse ("/etc/fstab");
+  &xst_filesys_table_set_permanent_true ($fs);
+  $fs = &xst_filesys_table_merge_superset ($$config{"imports"}, $fs);
+
+  &xst_filesys_fstab_replace     ("/etc/fstab",    $fs);
+  &xst_share_replace_smb_conf    ("/etc/smb.conf", $$config{"smb_exports"});
+  &xst_share_replace_nfs_exports ("/etc/exports",  $$config{"nfs_exports"});
+
+  &xst_end ();
 }
-
-
-# --- Filter config: XML in, XML out --- #
-
 
 sub filter
 {
-  &xml_parse ();
-  &xst_end();
-  &xml_print ();
+  my $config;
+
+  $config = &xml_parse ();
+  &xst_end ();
+  &xml_print ($config);
 }
 
 

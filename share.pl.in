@@ -418,9 +418,9 @@ sub xst_share_replace_nfs_exports
       {
         print $outfd "(rw)";
       }
-
-      print $outfd "\n";
     }
+
+    print $outfd "\n";
   }
   
   close $outfd;

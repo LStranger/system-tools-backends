@@ -436,67 +436,36 @@ sub xst_filesys_table_find_info_equivalent  # filesys_table, filesys_info
                                   &xst_filesys_info_get_point ($info));
 }
 
-# The key_generator is a ref to a func that takes a filesys_info and returns
-# a unique key for it. This allows some abstraction over merging.
-
-sub xst_filesys_table_to_hash
-{
-  my ($table, $key_generator) = @_;
-  my %hash, $i;
-
-  foreach $i (@$table)
-  {
-    $hash{&$key_generator ($i)} = $i;
-  }
-
-  return \%hash;
-}
-
-# The converse. No ref to function here, thankfully.
-
-sub xst_filesys_hash_to_table
-{
-  my ($hash) = @_;
-  my ($outtab, $key);
-  
-  $outtab = &xst_filesys_table_new ();
-  foreach $key (keys %$hash)
-  {
-    &xst_filesys_table_add ($outtab, $$hash{$key});
-  }
-
-  return $outtab;
-}
-
 # Merges filesys tables A and B, resolving conflicts by giving priority to A.
 # Any entries in A not in B are preserved. This can also be described as
 # "salting" one table with another.
 #
 # Returns a newly allocated table C, which is a superset of A and B.
 
-sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B, key_generator
+sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B
 {
-  my ($intab_a, $intab_b, $key_generator) = @_;
+  my ($intab_a, $intab_b) = @_;
   my ($hash_c, $hash_b, $key);
   my $outtab;
 
   $outtab = &xst_filesys_table_dup ($intab_a);
-  $hash_c = &xst_filesys_table_to_hash ($outtab, $key_generator);
-  $hash_b = &xst_filesys_table_to_hash ($intab_b, $key_generator);
 
-  foreach $key (keys %$hash_b)
+  foreach $info_b (@$intab_b)
   {
-    if (exists $$hash_c{$key})
+    my $info_c;
+
+    if ($info_c = &xst_filesys_table_find_info_equivalent ($outtab, $info_b))
     {
-      &xst_filesys_info_merge ($$hash_c{$key}, $$hash_b{$key});
+      &xst_filesys_info_merge ($info_c, $info_b);
     }
     else
     {
-      $$hash_c{$key} = &xst_filesys_info_dup ($$hash_b{$key});
+      $info_c = &xst_filesys_info_dup ($info_b);
+      &xst_filesys_table_add ($outtab, $info_c);
     }
   }
 
-  return &xst_filesys_hash_to_table ($hash_c);
+  return $outtab;
 }
 
 # Merges filesys tables A and B, resolving conflicts by giving priority to A.
@@ -506,27 +475,23 @@ sub xst_filesys_table_merge_superset  # filesys_table A, filesys_table B, key_ge
 
 sub xst_filesys_table_merge_subset    # filesys_table A, filesys_table B
 {
-  my ($intab_a, $intab_b, $key_generator) = @_;
+  my ($intab_a, $intab_b) = @_;
   my ($hash_c, $hash_b, $key);
   my $outtab;
 
   $outtab = &xst_filesys_table_dup ($intab_a);
-  $hash_c = &xst_filesys_table_to_hash ($outtab, $key_generator);
-  $hash_b = &xst_filesys_table_to_hash ($intab_b, $key_generator);
 
-  foreach $key (keys %$hash_b)
+  foreach $info_b (@$intab_b)
   {
-    if (exists $$hash_c{$key})
+    my $info_c;
+
+    if ($info_c = &xst_filesys_table_find_info_equivalent ($outtab, $info_b))
     {
-      &xst_filesys_info_merge ($$hash_c{$key}, $$hash_b{$key});
-    }
-    else
-    {
-      delete $$hash_c{$key};
+      &xst_filesys_info_merge ($info_c, $info_b);
     }
   }
 
-  return &xst_filesys_hash_to_table ($hash_c);
+  return $outtab;
 }
 
 # Called to indicate that entries in a filesys table are mounted.
@@ -739,9 +704,9 @@ sub xst_filesys_fstab_get_next_entry_line  # $infd, $outfd
   {
     # Each line is in the following format:
     # <device> <mount point> <filesystem> <options> <dump flag> <fsck priority>
-    my @line = split /[ \t]+/,  $_;
+    my @line = split /[ \t]+/, $_;
     if ($line[0] eq "") { shift @line; }
-    if (@line < 6 || &xst_ignore_line (@line)) { print *$outfd; next; }
+    if (@line < 6 || &xst_ignore_line (@line)) { print $outfd $_; next; }
 
     return $_;
   }
@@ -793,6 +758,41 @@ sub xst_filesys_info_print_options       # filesys_info
   return $optstring;
 }
 
+sub xst_filesys_info_print_device
+{
+  my ($info) = @_;
+  my $device;
+
+  if (&xst_filesys_info_get_label ($info))
+  {
+    $device = "LABEL=" . &xst_filesys_info_get_label ($info);
+  }
+  elsif (&xst_filesys_info_get_uuid ($info))
+  {
+    $device = "UUID=" . &xst_filesys_info_get_uuid ($info);
+  }
+  elsif (&xst_filesys_info_get_network_host ($info) &&
+         &xst_filesys_info_get_network_path ($info))
+  {
+    if (&xst_filesys_info_get_fs ($info) eq "smbfs")
+    {
+      $device = "//" . &xst_filesys_info_get_network_host ($info) .
+              "/"  . &xst_filesys_info_get_network_path ($info);
+    }
+    else
+    {
+      $device = &xst_filesys_info_get_network_host ($info) . ":" .
+              &xst_filesys_info_get_network_path ($info);
+    }
+  }
+  else
+  {
+    $device = &xst_filesys_info_get_device ($info);
+  }
+
+  return $device;
+}
+
 sub xst_filesys_info_print_entry
 {
   my ($info) = @_;
@@ -800,28 +800,7 @@ sub xst_filesys_info_print_entry
 
   # <device>
 
-  if (&xst_filesys_info_get_label ($info))
-  {
-    $line = sprintf ("%-23s", ("LABEL=" . &xst_filesys_info_get_label ($info)));
-  }
-  elsif (&xst_filesys_info_get_network_host ($info) &&
-         &xst_filesys_info_get_network_path ($info))
-  {
-    if (&xst_filesys_info_get_fs ($info) eq "smbfs")
-    {
-      $line = sprintf ("%-23s", ("//" . &xst_filesys_info_get_network_host ($info) .
-                                 "/"  . &xst_filesys_info_get_network_path ($info)));
-    }
-    else
-    {
-      $line = sprintf ("%-23s", (&xst_filesys_info_get_network_host ($info) . ":" .
-                                 &xst_filesys_info_get_network_path ($info)));
-    }
-  }
-  else
-  {
-    $line = sprintf ("%-23s", (&xst_filesys_info_get_device ($info)));
-  }
+  $line = sprintf ("%-23s", &xst_filesys_info_print_device ($info));
 
   # <mount point>
 
@@ -927,36 +906,89 @@ sub xst_filesys_fstab_replace  # filename, table
 
   for $info (@$new_table)
   {
-    print "Looking for entry - ";
-    if (!&xst_filesys_table_find_info_equivalent ($old_table, $info))
+    my $old_info = &xst_filesys_table_find_info_equivalent ($old_table, $info);
+
+#    print "Looking for entry - ";
+    if (&xst_filesys_info_get_permanent ($info) && !$old_info)
     {
-      print "adding.\n";
+#      print "adding.\n";
       &xst_filesys_fstab_add_entry ($file, $info);
     }
-    elsif (!&xst_filesys_info_match_data (&xst_filesys_table_find_info_equivalent ($old_table, $info), $info))
+    elsif (!&xst_filesys_info_get_permanent ($info) && $old_info)
     {
-      print "updating.\n";
+#      print "removing.\n";
+      &xst_filesys_fstab_remove_entry ($file, $info);
+    }
+    elsif ($old_info && !&xst_filesys_info_match_data ($old_info, $info))
+    {
+#      print "updating.\n";
       &xst_filesys_fstab_update_entry ($file, $info);
     }
     else
     {
-      print "found.\n";
+#      print "found.\n";
     }
   }
 
-  for $info (@$old_table)
+  for $old_info (@$old_table)
   {
-    print "Looking for entry - ";
-    if (!&xst_filesys_table_find_info_equivalent ($new_table, $info))
+#    print "Looking for entry - ";
+    if (!&xst_filesys_table_find_info_equivalent ($new_table, $old_info))
     {
-      print "removing.\n";
-      &xst_filesys_fstab_remove_entry ($file, $info);
+#      print "removing.\n";
+      &xst_filesys_fstab_remove_entry ($file, $old_info);
     }
     else
     {
-      print "found.\n";
+#      print "found.\n";
     }
   }
 }
+
+
+# --- Mounting --- #
+
+
+sub xst_filesys_mount_on
+{
+  my ($info) = @_;
+  my $fs;
+
+  $fs = &xst_filesys_info_get_fs ($info);
+  $fs = "auto" if ($fs eq "");
+
+  &xst_file_run ("mount -t " . $fs . " -o " . &xst_filesys_info_print_options ($info) . " " .
+                 &xst_filesys_info_print_device ($info) . " " . &xst_filesys_info_get_point ($info));
+}
+
+sub xst_filesys_mount_off
+{
+  my ($info) = @_;
+
+  &xst_file_run ("umount -f " . &xst_filesys_info_get_point ($info));
+}
+
+sub xst_filesys_mount_sync_all
+{
+  my ($mtab_file, $new_table) = @_;
+  my $mount_table;
+
+  $mount_table = &xst_filesys_mtab_parse ($mtab_file);
+
+  for $info (@$new_table)
+  {
+    my $mounted_info = &xst_filesys_table_find_info_equivalent ($mount_table, $info);
+
+    if ($mounted_info && !&xst_filesys_info_get_mounted ($info))
+    {
+      &xst_filesys_mount_off ($mounted_info);
+    }
+    elsif (!$mounted_info && &xst_filesys_info_get_mounted ($info))
+    {
+      &xst_filesys_mount_on ($info);
+    }
+  }
+}
+
 
 1;

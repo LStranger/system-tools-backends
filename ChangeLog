@@ -1,3 +1,27 @@
+2001-05-16  Hans Petter Jansson  <hpj@ximian.com>
+
+	* file.pl.in (xst_open_filter_write_from_names): Fix log output.
+
+	* filesys.pl.in (xst_filesys_table_to_hash): Not in use, so removed.
+	  (xst_filesys_hash_to_table): Ditto.
+	  (xst_filesys_table_merge_superset): Use new compare algorithm, not
+	  key generator.
+	  (xst_filesys_table_merge_subset): Ditto.
+	  (xst_filesys_fstab_get_next_entry_line): Fix printing of ignored lines.
+	  (xst_filesys_info_print_device): Implement.
+	  (xst_filesys_info_print_entry): Reduce.
+	  (xst_filesys_fstab_replace): Fix to only print permanent file systems.
+	  Comment out some debug.
+	  (xst_filesys_mount_on): Implement.
+	  (xst_filesys_mount_off): Implement.
+	  (xst_filesys_mount_sync_all): Implement.
+
+	* share.pl.in (xst_share_replace_nfs_exports): Put newline in right place.
+
+	* xml.pl.in (xst_xml_get_state): Implement.
+
+	* shares-conf.in: Completely rewritten shares backend.
+
 2001-05-16  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* platform.pl.in (xst_platform_guess): Changed code so xst_dist = "unknown"
