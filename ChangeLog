@@ -1,5 +1,11 @@
 2003-05-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* runlevel-conf.in, service.pl.in, users-conf.in, time-conf.in,
+	network-conf.in, network.pl.in, platform.pl.in: added RedHat 9
+	support
+
+2003-05-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* runlevel-conf.in, service.pl.in: added support for file-rc (ATM in
 	debian), tidied up things to allow several init types, but still much
 	more work is to come about this...
