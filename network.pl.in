@@ -1805,6 +1805,7 @@ sub xst_network_get_parse_table
 		   [
 		    [ "hostname",      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
         [ "gateway",       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY ],
+        [ "gatewaydev",    \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV ],
 		    [ "domain",        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN ],
 		    [ "nameserver",    \&xst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
 		    [ "searchdomain",  \&xst_parse_split_first_array_unique, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],
@@ -1840,6 +1841,7 @@ sub xst_network_get_parse_table
 		   [
 		    [ "hostname",      \&xst_parse_sh,                SYSCONFIG_NW, HOSTNAME ],
         [ "gateway",       \&xst_parse_sh,                SYSCONFIG_NW, GATEWAY ],
+        [ "gatewaydev",    \&xst_parse_sh,                SYSCONFIG_NW, GATEWAYDEV ],
 		    [ "domain",        \&xst_parse_sh,                SYSCONFIG_NW, DOMAIN ],
 		    [ "nameserver",    \&xst_parse_split_all_unique_hash_comment, RESOLV_CONF,  "nameserver", "[ \t]+" ],
 		    [ "searchdomain",  \&xst_parse_split_first_array_unique, RESOLV_CONF,  "search", "[ \t]+", "[ \t]+" ],

@@ -124,6 +124,7 @@ sub xml_parse_network
        if ($$tree[0] eq "auto")            { $$hash{"auto"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "hostname")        { $$hash{"hostname"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "gateway")         { $$hash{"gateway"} = &xst_xml_get_pcdata ($$tree[1]); }
+    elsif ($$tree[0] eq "gatewaydev")      { $$hash{"gatewaydev"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "domain")          { $$hash{"domain"} = &xst_xml_get_pcdata ($$tree[1]); }
     elsif ($$tree[0] eq "nameserver")      { &push_unique (\@nameserver, &xst_xml_get_pcdata ($$tree[1])); }
     elsif ($$tree[0] eq "searchdomain")    { &push_unique (\@searchdomain, &xst_xml_get_pcdata ($$tree[1])); }
@@ -251,8 +252,8 @@ sub xml_print
 {
   my $h = $_[0];
   my @scalar_keys =
-      qw(auto hostname gateway domain domainname hostmatch workgroup
-         description winsserver winsuse smbuse
+      qw(auto hostname gateway gatewaydev domain domainname
+         hostmatch workgroup description winsserver winsuse smbuse
          smartdhcpcd smbinstalled dialinstalled);
   my @array_keys =
       qw(nameserver searchdomain order);

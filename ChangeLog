@@ -1,3 +1,14 @@
+2001-07-09  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* network-conf.in (xml_print): gatewaydev support.
+	(xml_parse_network): same.
+
+	* network.pl.in (xst_network_get_parse_table): new gatewaydev
+	feature required to avoid ambiguous situations. RedHat-only
+	for the moment. SuSE doesn't need it (well, doesn't use it).
+	(xst_network_get_replace_table): same.
+	TODO: investigate what to do for Debian.
+
 2001-07-09  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_update_display_mode): Implement.
