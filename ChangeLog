@@ -1,3 +1,9 @@
+2004-01-13  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network.pl.in: delay the call to wvdialconf to the moment in which
+	  the config is applied, so when wvdialconf is buggy and blocks it 
+	  doesn't affect in the tool's startup
+
 2004-01-07  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Release 0.31.1

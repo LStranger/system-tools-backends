@@ -378,7 +378,6 @@ sub gst_network_dialing_get
   my ($i, $j, $name, $val);
 
   &gst_report_enter ();
-  &gst_file_run ("wvdialconf $gst_prefix/$file") if (!-e "$gst_prefix/$file");
   &gst_report ("network_dialing_get");
   
   @sections = &gst_parse_ini_sections ($file);
@@ -1241,6 +1240,7 @@ sub gst_network_dialing_set
 
   &gst_report_enter ();
   &gst_report ("network_dialing_set");
+  &gst_file_run ("wvdialconf $gst_prefix/$file") if (!-e "$gst_prefix/$file");
 
   # Remove those that are in old, but not in values.
   $old_hash = $$old_hash{"dialing"};
