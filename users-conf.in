@@ -538,12 +538,20 @@ sub change_user_chfn
   $office_phone = shift @line;
   $home_phone =   shift @line;
 
-  $fname = "\'" . $fname . "\'";
-  $office = "\'" . $office . "\'";
-  $office_phone = "\'" . $office_phone . "\'";
-  $home_phone = "\'" . $home_phone . "\'";
+  $fname = "-f \'" . $fname . "\'";
+  $office = "-o \'" . $office . "\'";
+  $home_phone = "-h \'" . $home_phone . "\'";
+
+  if ($xst_dist =~ /debian/)
+  {
+    $office_phone = "-w \'" . $office_phone . "\'";
+  }
+  else
+  {
+    $office_phone = "-p \'" . $office_phone . "\'";
+  }  
   
-  $command = "$cmd_chfn -f $fname -o $office -p $office_phone -h $home_phone $username";
+  $command = "$cmd_chfn $fname $office $office_phone $home_phone $username";
   &my_system ($command);
 }
 
