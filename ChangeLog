@@ -6,6 +6,12 @@
 
 	* .cvsignore : add mouse-conf.in
 
+2001-04-02  Michael Meeks  <michael@ximian.com>
+
+	* backends/print.pl.in: Revise to simplify
+
+	* backends/print-conf.in: ditto.
+
 2001-03-30  Ravi Pratap  <ravi@che.iitm.ac.in>
 
 	* mouse-conf.in (get, set, filter) : Add
