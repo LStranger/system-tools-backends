@@ -1,3 +1,16 @@
+2001-04-19  Arturo Espinosa  <arturo@ximian.com>
+
+	* file.pl.in (xst_file_run): return -1 if command fails to be found.
+	  return system (command) / 256 (as stated in perlfunc) to return exit
+	  code of process. Fixed stdio/stderr redirection.
+	  (xst_file_locate_tool): return trivialy if path is absolute.
+	* network.pl.in: when checking for "smbuse", use new service behaviour
+	  to check for smbd and nmbd.
+	* service.pl.in (xst_service_sysv_get_status): some init.d scripts are broken.
+	  Stole redhat's init.d/function:status to do new, more fine-grained checking.
+	  (xst_service_sysv_get_status_any): just a proxy.
+	  (xst_service_sysv_run_initd_script): fixed init.d script invocation typo.
+	
 2001-04-17  Arturo Espinosa  <arturo@ximian.com>
 
 	* file.pl.in: changed wrong report keys.
