@@ -262,7 +262,7 @@ sub be_push_unique
 	    if ($elem eq $_[$i]) { $found = $elem; last; }
 	  }
 	
-	if ($found eq "") { push($$arr, $_[$i]); }
+	if ($found eq "") { push(@$arr, $_[$i]); }
       }
   }
 
