@@ -52,16 +52,8 @@ require "___scriptsdir___/share.pl";
 
 $name = "shares";
 $version = "0.1.0";
-@platforms =
-(
-  "debian-2.2",
-  "redhat-5.2",
-  "redhat-6.0",
-  "redhat-6.1",
-  "redhat-6.2",
-  "redhat-7.0",
-  "mandrake-7.2"
-);
+@platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
+              "mandrake-7.2", "debian-2.2", "debian-woody", "suse-7.0");
 
 $description =<<"end_of_description;";
        Configures network shares for import or export.
@@ -71,14 +63,16 @@ end_of_description;
 
 $platmap =
 {
-  "debian-2.2"   => "redhat-7.0",
   "redhat-5.2"   => "redhat-6.2",
   "redhat-6.0"   => "redhat-6.2",
   "redhat-6.1"   => "redhat-6.2",
   "redhat-6.2"   => "redhat-6.2",
   "redhat-7.0"   => "redhat-7.0",
   "redhat-7.1"   => "redhat-7.0",
-  "mandrake-7.2" => "redhat-7.0"
+  "debian-2.2"   => "redhat-7.0",
+  "debian-woody" => "redhat-7.0",
+  "mandrake-7.2" => "redhat-7.0",
+  "suse-7.0"     => "redhat-6.2"
 };
 
 $filemap =

@@ -41,14 +41,18 @@ sub xst_service_sysv_get_paths
 {
   my %dist_map =
       (
-       "redhat-6.0" => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-6.1" => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-6.2" => ["/etc/rc.d", "/etc/rc.d/init.d"],
-       "redhat-7.0" => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-5.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-6.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-6.1"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-6.2"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
+       "redhat-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d"],
 
        "mandrake-7.2" => ["/etc/rc.d", "/etc/rc.d/init.d"],
 
-       "debian-2.2" => ["/etc", "/etc/init.d"]
+       "debian-2.2"   => ["/etc", "/etc/init.d"],
+       "debian-woody" => ["/etc", "/etc/init.d"],
+
+       "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d"]
        );
 
   return @{$dist_map{$xst_dist}};

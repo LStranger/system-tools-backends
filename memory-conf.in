@@ -49,7 +49,7 @@ $DEBUG = 1; # 1 == command; no debug. 2 == no commands, just report. 3 == report
 $name = "memory";
 $version = "0.1.0";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
-              "mandrake-7.2", "debian-2.2", "debian-woody");
+              "mandrake-7.2", "debian-2.2", "debian-woody", "suse-7.0");
 
 $description =<<"end_of_description;";
 Configures main and swap memory.

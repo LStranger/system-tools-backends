@@ -1,3 +1,10 @@
+2001-05-17  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* service.pl.in (xst_service_sysv_get_paths): Added woody and
+	suse 7.0 paths.
+	* *-conf.in: Added suse 7.0, except for network and users.
+	* time-conf.in: Added suse 7.0 table, and missing woody entries.
+
 2001-05-17  Tambet Ingo  <tambet@ximian.com>
 
 	* users-conf.in (read_skel_dir): Implement.

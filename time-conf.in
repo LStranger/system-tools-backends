@@ -51,7 +51,7 @@ require "___scriptsdir___/replace.pl";
 $name = "time";
 $version = "0.1.0";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0", "redhat-7.1",
-              "mandrake-7.2", "debian-2.2", "debian-woody");
+              "mandrake-7.2", "debian-2.2", "debian-woody", "suse-7.0");
 
 $description =<<"end_of_description;";
        Configures your system clock, timezone and time server list.
@@ -376,7 +376,10 @@ sub conf_get_parse_table
    "redhat-7.1"   => "redhat-7.0",
    "mandrake-7.2" => "redhat-7.0",
 
-   "debian-2.2"   => "debian-2.2"
+   "debian-2.2"   => "debian-2.2",
+   "debian-woody" => "debian-2.2",
+
+   "suse-7.0"     => "suse-7.0"
    );
 
   my %dist_tables =
@@ -405,7 +408,6 @@ sub conf_get_parse_table
          fn =>
          {
            NTP_CONF     => "/etc/ntp.conf",
-           STEP_TICKERS => "/etc/ntp/step-tickers",
            ZONEINFO     => "/usr/share/zoneinfo",
            LOCAL_TIME    => "/etc/localtime"
          },
@@ -436,6 +438,24 @@ sub conf_get_parse_table
               [ "ntpinstalled", \&xst_service_sysv_installed, "ntp" ],
               ]
                 },
+
+       "suse-7.0" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",   \&time_get_local_time ],
+              [ "timezone",     \&time_get_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_parse_split_all_hash_comment, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_get_status, "xntpd" ],
+              [ "ntpinstalled", \&xst_service_sysv_installed, "xntpd" ],
+              ]
+                }
        );
 
   my $dist = $dist_map {$xst_dist};
@@ -457,7 +477,10 @@ sub conf_get_replace_table
    "redhat-7.1"   => "redhat-7.0",
    "mandrake-7.2" => "redhat-7.0",
 
-   "debian-2.2"   => "debian-2.2"
+   "debian-2.2"   => "debian-2.2",
+   "debian-woody" => "debian-2.2",
+
+   "suse-7.0"     => "suse-7.0"
    );
 
   my %dist_tables =
@@ -511,6 +534,23 @@ sub conf_get_replace_table
               [ "timezone",    \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
               [ "sync",        \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
               [ "sync_active", \&xst_service_sysv_set_status, 23, "ntp" ],
+              ]
+                },
+       
+       "suse-7.0" =>
+       {
+         fn =>
+         {
+           NTP_CONF     => "/etc/ntp.conf",
+           ZONEINFO     => "/usr/share/zoneinfo",
+           LOCAL_TIME    => "/etc/localtime"
+         },
+         table =>
+             [
+              [ "local_time",   \&time_set_local_time ],
+              [ "timezone",     \&time_set_rh62_zone, [LOCAL_TIME, ZONEINFO] ],
+              [ "sync",         \&xst_replace_join_all, NTP_CONF, "server", "[ \t]+" ],
+              [ "sync_active",  \&xst_service_sysv_set_status, 90, "xntpd" ],
               ]
                 }
        );
