@@ -1,3 +1,8 @@
+2001-08-16  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* ishare.pl.in (xst_ishare_dhcp_conf_add_interface): Oops:
+	missing semicolons here.
+
 2001-08-15  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* boot.pl.in: Removed use strict until we can honour this

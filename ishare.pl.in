@@ -166,9 +166,9 @@ sub xst_ishare_dhcp_conf_add_interface
   push @$buff, "subnet $network netmask $netmask {\n\n";
   push @$buff, "\toption routers       $address;\n";
   push @$buff, "\toption subnet-mask   $netmask;\n\n";
-  push @$buff, "\trange  dynamic-bootp $min $max\n\n";
-  push @$buff, "\tdefault-lease-time 21600\n";
-  push @$buff, "\tmax-lease-time     43200\n\n";
+  push @$buff, "\trange  dynamic-bootp $min $max;\n\n";
+  push @$buff, "\tdefault-lease-time 21600;\n";
+  push @$buff, "\tmax-lease-time     43200;\n\n";
   push @$buff, "\thost $hostname {\n";
   push @$buff, "\t\thardware ethernet $hwaddr;\n";
   push @$buff, "\t\tfixed-address $address;\n";
