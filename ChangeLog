@@ -1,5 +1,7 @@
 2001-07-24  Tambet Ingo  <tambet@ximian.com>
 
+	* boot-conf.in (set): Removed some old cruft.
+
 	* x.pl.in: we use strict from now on. Only for this file.
 	Fixed damned bug that ruined $sections variable and crashed
 	display tool.

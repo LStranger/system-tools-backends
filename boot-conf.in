@@ -214,7 +214,6 @@ sub xml_print
   
 
 # Top-level actions.
-
 sub get
 {
   my $hash;
@@ -228,40 +227,18 @@ sub get
 
 
 # --- Set (write) config --- #
-
-
-sub set_immediate
-{
-  if (&xst_file_run("lilo"))
-  {
-    &xst_report ("boot_lilo_failed");
-  }
-  else
-  {
-    &xst_report ("boot_lilo_success");
-  }
-}
-
-
 sub set
 {
-  my $hash;
-  
-  $hash = &xml_parse ();
+  my $hash = &xml_parse ();
 
   &xst_boot_conf_set ($hash);
-
-  if ($xst_do_immediate)
-  {
-    &set_immediate;
-  }
+  &xst_file_run ($tool_lilo);
   
   &xst_end ();
 }
 
 
 # --- Filter config: XML in, XML out --- #
-
 sub filter
 {
   my $hash;
