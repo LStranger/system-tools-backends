@@ -1508,34 +1508,34 @@ sub get_host_mounts
     }
     close(FD);
 
-    if ($be_verbose)
-    {
-      if ($smb_master_name ne "") { print STDERR "Workgroup master is $smb_master_name ($smb_master_ip).\n"; }
-      else { print STDERR "No workgroup master found.\n"; }
-    }
-
     be_print_progress ();
 
-    # List computers.
-
-    open(FD, "$smbclient_tool -N -U % -L $smb_master_name -I $smb_master_ip |");
-    while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
-
-    while (<FD>)
+    if ($smb_master_name ne "")
     {
-      if ($_ eq "" || $_ eq "\n") { last; }
-      elsif (/^[ \t]+[^ \t-]+/)
+      if ($be_verbose) { print STDERR "Workgroup master is $smb_master_name ($smb_master_ip).\n"; }
+
+      # List computers.
+
+      open(FD, "$smbclient_tool -N -U % -L $smb_master_name -I $smb_master_ip |");
+      while (<FD>) { if (/^[ \t]+Server[ \t]+Comment/) { last; } }
+
+      while (<FD>)
       {
-        be_push_unique(\@smb_hosts, ($_ =~ /^[ \t]+([^ \t-]+)/));
+        if ($_ eq "" || $_ eq "\n") { last; }
+        elsif (/^[ \t]+[^ \t-]+/)
+        {
+          be_push_unique(\@smb_hosts, ($_ =~ /^[ \t]+([^ \t-]+)/));
+        }
+      }
+      close(FD);
+
+      if ($be_verbose)
+      {
+        if ($#smb_hosts + 1) { print STDERR "Master reported ", $#smb_hosts + 1, " hosts in workgroup.\n"; }
+        else { print STDERR "No hosts reported by master - asking others.\n"; }
       }
     }
-    close(FD);
-
-    if ($be_verbose)
-    {
-      if ($#smb_hosts + 1) { print STDERR "Master reported ", $#smb_hosts + 1, " hosts in workgroup.\n"; }
-      else { print STDERR "No hosts reported by master - asking others.\n"; }
-    }
+    else { print STDERR "No workgroup master found.\n"; }
 
     if (!@smb_hosts)
     {
