@@ -103,12 +103,21 @@ sub gst_network_get_wireless_ifaces
 # Tries to detect modem in a closed list of devices
 sub gst_network_autodetect_modem
 {
-  my (@arr) = ("/dev/modem", "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3");
+  my (@arr);
 
-  $pid = `pidof pppd 2>/dev/null`;
+  if ($$tool{"system"} eq "Linux")
+  {
+    @arr = ("/dev/modem", "/dev/ttyS0", "/dev/ttyS1", "/dev/ttyS2", "/dev/ttyS3");
 
-  if ($pid =~ /\d/) {
+    $pid = `pidof pppd 2>/dev/null`;
+
+    if ($pid =~ /\d/) {
       return;
+    }
+  }
+  elsif ($$tool{"system"} eq "FreeBSD")
+  {
+    @arr = ("/dev/modem", "/dev/cuaa0", "/dev/cuaa1", "/dev/cuaa2", "/dev/cuaa3");
   }
   
   foreach $tty (@arr) {
@@ -666,7 +675,7 @@ sub gst_network_interface_active
 
   &gst_report_enter ();
   &gst_report ("network_iface_is_active", $search_iface);
-  
+
   @ifaces = &$proc ();
   while ($ifaces[0] ne "")
   {
@@ -674,7 +683,7 @@ sub gst_network_interface_active
   }
 
   &gst_report_leave ();
-  return undef;
+  return 0;
 }
 
 sub gst_network_interface_ensure_broadcast_and_network
@@ -1181,9 +1190,7 @@ sub gst_network_slackware91_create_pppscript
     $contents .= 'TIMEOUT 75' . "\n";
     $contents .= 'CONNECT' . "\n";
 
-    open FILE, ">$gst_prefix/$pppscript";
-    print FILE $contents;
-    close FILE;
+    &gst_file_buffer_save ($contents, $pppscript);
   }
 }
 
@@ -1205,10 +1212,7 @@ sub gst_network_slackware91_create_pppgo
     $contents .= "( $pppd connect \"$chat -v -f /etc/ppp/pppscript\") || exit 1 \n";
     $contents .= "exit 0 \n";
 
-    open FILE, ">$gst_prefix/$pppgo";
-    print FILE $contents;
-    close FILE;
-
+    &gst_file_buffer_save ($contents, $pppgo);
     chmod 0777, "$gst_prefix/$pppgo";
   }
 }
@@ -1276,7 +1280,8 @@ sub gst_network_interfaces_get
     $iface = &gst_parse_from_table ($dist_attrib{"fn"},
                                     $dist_attrib{"table"});
     &gst_network_interface_ensure_broadcast_and_network ($iface);
-    $$iface{"file"} = $i;
+    $$iface{"file"} = $i if ($$iface{"file"} eq undef);
+
     $hash{$i} = $iface;
   }
 
@@ -1946,11 +1951,34 @@ sub gst_network_freebsd_interface_delete
 {
   my ($old_hash) = @_;
   my ($dev)      = $$old_hash{"dev"};
-  my ($startif)  = "/etc/start_if.$file";
+  my ($startif)  = "/etc/start_if.$dev";
   my ($file)     = "/etc/rc.conf";
+  my ($pppconf)  = "/etc/ppp/ppp.conf";
+  my ($buff, $line_no, $end_line_no, $i);
 
   &gst_file_run ("ifconfig $dev down");
 
+  if ($dev =~ /^tun[0-9]+/)
+  {
+    # Delete the ppp.conf section
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+
+    $buff = &gst_file_buffer_load ($pppconf);
+
+    $line_no     = &gst_parse_pppconf_find_stanza      ($buff, $section);
+    $end_line_no = &gst_parse_pppconf_find_next_stanza ($buff, $line_no + 1);
+    $end_line_no = scalar @$buff + 1 if ($end_line_no == -1);
+    $end_line_no--;
+
+    for ($i = $line_no; $i <= $end_line_no; $i++)
+    {
+      delete $$buff[$i];
+    }
+
+    &gst_file_buffer_clean ($buff);
+    &gst_file_buffer_save ($buff, $pppconf);
+  }
+  
   &gst_replace_sh  ($file, "ifconfig_$dev", "");
   &gst_file_remove ($startif);
 }
@@ -1960,7 +1988,7 @@ sub gst_network_interface_changed
     my ($iface, $iface_old) = @_;
     my ($attr);
     my @attrs = qw(bootproto dev address netmask broadcast network gateway update_dns
-                  dns1 dns2 mtu mru remote_address login serial_port serial_speed
+                  dns1 dns2 mtu mru remote_address login serial_port serial_speed essid
                   ppp_options set_default_gw persist serial_hwctl phone_number enabled);
 
     return 1 if (!$iface_old);
@@ -2471,7 +2499,7 @@ sub gst_network_pump_iface_supported
 {
   my ($iface) = @_;
   my ($dev);
-  my @devs = qw(eth wvlan plip irlan);
+  my @devs = qw(eth wlan plip irlan);
 
   foreach $dev (@devs)
   {
@@ -2479,6 +2507,151 @@ sub gst_network_pump_iface_supported
   }
 
   return 0;
+}
+
+sub gst_network_parse_pppconf
+{
+  my ($pppconf, $startif, $iface, $key) = @_;
+  my ($section);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    return undef if ($section eq undef);
+
+    return &gst_parse_pppconf ($pppconf, $section, $key);
+  }
+}
+
+sub gst_network_parse_pppconf_bool
+{
+  my ($pppconf, $startif, $iface, $key) = @_;
+  my ($section);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    return undef if ($section eq undef);
+
+    return &gst_parse_pppconf_bool ($pppconf, $section, $key);
+  }
+}
+
+sub gst_network_parse_pppconf_re
+{
+  my ($pppconf, $startif, $iface, $key, $re) = @_;
+  my ($section);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    return undef if ($section eq undef);
+
+    return &gst_parse_pppconf_re ($pppconf, $section, $key, $re);
+  }
+}
+
+sub gst_network_replace_pppconf
+{
+  my ($pppconf, $startif, $iface, $key, $val) = @_;
+  my ($section);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    &gst_replace_pppconf ($pppconf, $section, $key, $val);
+  }
+}
+
+sub gst_network_replace_pppconf_bool
+{
+  my ($pppconf, $startif, $iface, $key, $val) = @_;
+  my ($section);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    &gst_replace_pppconf_bool ($pppconf, $section, $key, $val);
+  }
+}
+
+sub gst_network_replace_pppconf_route
+{
+  my ($pppconf, $startif, $iface, $key, $val) = @_;
+  my ($section);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    &gst_replace_pppconf_common ($pppconf, $section, $key,
+                                 ($val == 1)? "add default HISADDR" : undef);
+  }
+}
+
+sub gst_network_replace_pppconf_dial_command
+{
+  my ($pppconf, $startif, $iface, $val) = @_;
+  my ($section, $dial);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    $dial = &gst_parse_pppconf ($pppconf, $section, "dial");
+    $dial =~ s/ATD[TP]/$val/;
+
+    &gst_replace_pppconf ($pppconf, $section, "dial", $dial);
+  }
+}
+
+sub gst_network_replace_pppconf_volume
+{
+  my ($pppconf, $startif, $iface, $val) = @_;
+  my ($section, $dial, $vol, $pre, $post);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    $dial = &gst_parse_pppconf ($pppconf, $section, "dial");
+
+    if ($dial =~ /(.*AT[^ \t]*)([ML][0-3])(.* OK .*)/i)
+    {
+      $pre  = $1;
+      $post = $3;
+    }
+    elsif ($dial =~ /(.*AT[^ \t]*)( OK .*)/i)
+    {
+      $pre  = $1;
+      $post = $2;
+    }
+
+    if ($val == 0)
+    {
+      $vol = "M0";
+    }
+    else
+    {
+      $vol = "L$val";
+    }
+
+    $dial = $pre . $vol . $post;
+    &gst_replace_pppconf ($pppconf, $section, "dial", $dial);
+  }
+}
+
+sub gst_network_get_freebsd5_ppp_persist
+{
+  my ($startif, $iface) = @_;
+  my ($val);
+
+  if ($iface =~ /^tun[0-9]+/)
+  {
+    $val = &gst_parse_startif ($startif, "ppp[ \t]+\-(auto|ddial)[ \t]+");
+
+    return 1 if ($val eq "ddial");
+    return 0;
+  }
+
+  return undef;
 }
 
 sub gst_network_pump_get_nodns
@@ -2933,6 +3106,21 @@ sub gst_network_freebsd5_replace_essid
   else
   {
     &gst_replace_sh_re ($file, "ifconfig_$iface", "ssid[ \t]+([^ \t]*)", " ssid $essid");
+  }
+}
+
+sub gst_network_freebsd_create_ppp_startif
+{
+  my ($startif, $iface, $dev, $persist) = @_;
+  my ($section);
+
+  if ($dev =~ /^tun[0-9]+/)
+  {
+    $section = &gst_parse_startif ($startif, "ppp[ \t]+\-[^ \t]+[ \t]+([^ \t]+)");
+    $section = $dev if ($section eq undef);
+
+    return &gst_file_buffer_save ("ppp -ddial $section", $startif) if ($persist eq 1);
+    return &gst_file_buffer_save ("ppp -auto  $section", $startif);
   }
 }
 
@@ -3946,6 +4134,7 @@ sub gst_network_get_interface_parse_table
         RC_CONF         => "/etc/rc.conf",
         RC_CONF_DEFAULT => "/etc/defaults/rc.conf",
         STARTIF         => "/etc/start_if.#iface#",
+        PPPCONF         => "/etc/ppp/ppp.conf",
         IFACE           => "#iface#",
       },
       table =>
@@ -3967,7 +4156,20 @@ sub gst_network_get_interface_parse_table
        [ "gateway",            \&gst_network_get_gateway,            RC_CONF, "defaultrouter", "%address%", "%netmask%" ],
        [ "enabled",            \&gst_network_interface_active,       IFACE, \&gst_network_freebsd5_active_interfaces_get ],
        [ "bootproto",          \&gst_network_parse_bootproto,        RC_CONF, "ifconfig_%dev%" ],
-       # FIXME: missing modem stuff
+       # Modem stuff
+       [ "serial_port",        \&gst_network_parse_pppconf,          [ PPPCONF, STARTIF, IFACE ], "device"   ],
+       [ "serial_speed",       \&gst_network_parse_pppconf,          [ PPPCONF, STARTIF, IFACE ], "speed"    ],
+       [ "mtu",                \&gst_network_parse_pppconf,          [ PPPCONF, STARTIF, IFACE ], "mtu"      ],
+       [ "mru",                \&gst_network_parse_pppconf,          [ PPPCONF, STARTIF, IFACE ], "mru"      ],
+       [ "login",              \&gst_network_parse_pppconf,          [ PPPCONF, STARTIF, IFACE ], "authname" ],
+       [ "password",           \&gst_network_parse_pppconf,          [ PPPCONF, STARTIF, IFACE ], "authkey"  ],
+       [ "update_dns",         \&gst_network_parse_pppconf_bool,     [ PPPCONF, STARTIF, IFACE ], "dns"      ],
+       [ "set_default_gw",     \&gst_network_parse_pppconf_bool,     [ PPPCONF, STARTIF, IFACE ], "default HISADDR" ],
+       [ "external_line",      \&gst_network_parse_pppconf_re,       [ PPPCONF, STARTIF, IFACE ], "phone", "[ \t]+([0-9]+)[wW]" ],
+       [ "phone_number",       \&gst_network_parse_pppconf_re,       [ PPPCONF, STARTIF, IFACE ], "phone", "[wW]?([0-9]+)[ \t]*\$" ],
+       [ "dial_command",       \&gst_network_parse_pppconf_re,       [ PPPCONF, STARTIF, IFACE ], "dial",  "(ATD[TP])" ],
+       [ "volume",             \&gst_network_parse_pppconf_re,       [ PPPCONF, STARTIF, IFACE ], "dial",  "AT.*[ml]([0-3]) OK " ],
+       [ "persist",            \&gst_network_get_freebsd5_ppp_persist, [ STARTIF, IFACE ]],
       ]
     }
 	  );
@@ -4837,6 +5039,7 @@ sub gst_network_get_interface_replace_table
       {
         RC_CONF         => "/etc/rc.conf",
         STARTIF         => "/etc/start_if.#iface#",
+        PPPCONF         => "/etc/ppp/ppp.conf",
         IFACE           => "#iface#",
       },
       table =>
@@ -4847,7 +5050,23 @@ sub gst_network_get_interface_replace_table
        [ "netmask",        \&gst_replace_sh_re,    RC_CONF, "ifconfig_%dev%", "netmask[ \t]+([0-9\.]+)", " netmask %netmask%" ],
        [ "remote_address", \&gst_replace_sh_re,    RC_CONF, "ifconfig_%dev%", "dest_address[ \t]+([0-9\.]+)", " dest_address %remote_address%" ],
        [ "essid",          \&gst_network_freebsd5_replace_essid,     [ RC_CONF, STARTIF, IFACE ]],
-       # FIXME: missing modem stuff
+       # Modem stuff
+       # we need this for putting an empty ifconfig_tunX command in rc.conf
+       [ "phone_number",   \&gst_replace_sh,                         RC_CONF, "ifconfig_%dev%", " " ],
+       [ "file",           \&gst_network_freebsd_create_ppp_startif, [ STARTIF, IFACE ]],
+       [ "persist",        \&gst_network_freebsd_create_ppp_startif, [ STARTIF, IFACE ], "%file%" ],
+       [ "serial_port",    \&gst_network_replace_pppconf,            [ PPPCONF, STARTIF, IFACE ], "device" ],
+       [ "serial_speed",   \&gst_network_replace_pppconf,            [ PPPCONF, STARTIF, IFACE ], "speed"    ],
+       [ "mtu",            \&gst_network_replace_pppconf,            [ PPPCONF, STARTIF, IFACE ], "mtu"      ],
+       [ "mru",            \&gst_network_replace_pppconf,            [ PPPCONF, STARTIF, IFACE ], "mru"      ],
+       [ "login",          \&gst_network_replace_pppconf,            [ PPPCONF, STARTIF, IFACE ], "authname" ],
+       [ "password",       \&gst_network_replace_pppconf,            [ PPPCONF, STARTIF, IFACE ], "authkey"  ],
+       [ "update_dns",     \&gst_network_replace_pppconf_bool,       [ PPPCONF, STARTIF, IFACE ], "dns"      ],
+       [ "set_default_gw", \&gst_network_replace_pppconf_route,      [ PPPCONF, STARTIF, IFACE ], "default HISADDR" ],
+       [ "phone_number",   \&gst_network_replace_pppconf,            [ PPPCONF, STARTIF, IFACE ], "phone"    ],
+       [ "external_line",  \&gst_network_replace_pppconf,            [ PPPCONF, STARTIF, IFACE ], "phone", "%external_line%W%phone_number%" ],
+       [ "dial_command",   \&gst_network_replace_pppconf_dial_command, [ PPPCONF, STARTIF, IFACE ]],
+       [ "volume",         \&gst_network_replace_pppconf_volume,       [ PPPCONF, STARTIF, IFACE ]],
       ]
     }
   );

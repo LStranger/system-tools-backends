@@ -1,5 +1,23 @@
 2004-05-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* network.pl.in (gst_network_autodetect_modem),
+	  (gst_network_freebsd_interface_delete): modified for adding PPP
+	  support for FreeBSD.
+	  (gst_network_parse_pppconf), (gst_network_parse_pppconf_bool),
+	  (gst_network_parse_pppconf_re), (gst_network_replace_pppconf),
+	  (gst_network_replace_pppconf_bool), 
+	  (gst_network_replace_pppconf_route),
+	  (gst_network_replace_pppconf_dial_command),
+	  (gst_network_replace_pppconf_volume),
+	  (gst_network_get_freebsd5_ppp_persist),
+	  (gst_network_freebsd_create_ppp_startif): added.
+	  (gst_network_get_interface_parse_table),
+	  (gst_network_get_interface_replace_table): Added support for
+	  FreeBSD PPP.
+	  Other random small bug fixes
+
+2004-05-11  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* parse.pl.in, replace.pl.in: added parse and replace functions for
 	  FreeBSD's /etc/ppp/ppp.conf
 
