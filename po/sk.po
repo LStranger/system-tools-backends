@@ -3,14 +3,14 @@
 # This file is distributed under the same license as the setup-tools-backends package.
 # Marcel Telka <marcel@telka.sk>, 2004.
 #
-# $Id: sk.po,v 1.1 2004/10/17 09:33:26 marcel Exp $
+# $Id: sk.po,v 1.2 2004/12/18 10:18:35 marcel Exp $
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: setup-tools-backends\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-10-17 11:05+0200\n"
-"PO-Revision-Date: 2004-10-17 11:29+0200\n"
+"POT-Creation-Date: 2004-12-18 10:45+0100\n"
+"PO-Revision-Date: 2004-12-18 10:55+0100\n"
 "Last-Translator: Marcel Telka <marcel@telka.sk>\n"
 "Language-Team: Slovak <sk-i18n@lists.linux.sk>\n"
 "MIME-Version: 1.0\n"
@@ -60,6 +60,8 @@ msgid ""
 "apmd is used for monitoring battery status and logging it via syslog(8). It "
 "can also be used for shutting down the machine when the battery is low."
 msgstr ""
+"apmd je použité pre sledovanie stavu batérie a jeho zaznamenávanie cez syslog(8). "
+"Môže byť tiež použitý pre vypínanie počítača pri nízkom stave batérie."
 
 #: service-list.pl.in:41
 msgid "Runs a command at a given time"
@@ -70,16 +72,16 @@ msgid ""
 "Runs commands scheduled by the at command at the time specified when at was "
 "run, and runs batch commands when the load average is low enough."
 msgstr ""
-"Spustí príkazy naplánované pomocou príkazu at v čase zadanom pri spustení at, "
-"a spustí dávkové príkazy, keď je priemerná záťaž dostatočne nízka."
+"Spustí príkazy naplánované pomocou príkazu at v čase zadanom pri spustení "
+"at, a spustí dávkové príkazy, keď je priemerná záťaž dostatočne nízka."
 
 #: service-list.pl.in:42
 msgid "Audio mixer"
-msgstr ""
+msgstr "Zvukový mixér"
 
 #: service-list.pl.in:42
 msgid "This program adjusts the settings of an audio mixing device"
-msgstr ""
+msgstr "Tento program upraví nastavenia zariadenia zvukového mixéra"
 
 #: service-list.pl.in:43
 msgid "BinFormat Support"
@@ -98,6 +100,8 @@ msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
 msgstr ""
+"Beží na pozadí a kopíruje všetky reťazce odoslané na zariadenie /dev/console "
+"do súboru záznamov"
 
 #: service-list.pl.in:45
 msgid ""
@@ -117,7 +121,7 @@ msgstr ""
 
 #: service-list.pl.in:47
 msgid "CPU frequency monitor"
-msgstr ""
+msgstr "Monitor frekvencie procesora"
 
 #: service-list.pl.in:47
 msgid ""
@@ -147,7 +151,9 @@ msgstr ""
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr "Tlačový systém založený na Internetovol tlačovom protokole (Internet Printing Protocol), verzia 1.1"
+msgstr ""
+"Tlačový systém založený na Internetovol tlačovom protokole (Internet "
+"Printing Protocol), verzia 1.1"
 
 #: service-list.pl.in:52
 msgid ""
@@ -177,7 +183,7 @@ msgstr "Dynamická služba DNS mien z www.dhis.org"
 
 #: service-list.pl.in:56
 msgid "Dict Dictionary Server"
-msgstr ""
+msgstr "Slovníkový server Dict"
 
 #: service-list.pl.in:57
 msgid ""
@@ -205,7 +211,7 @@ msgstr "SMTP server Exim"
 
 #: service-list.pl.in:61
 msgid "file alteration monitor"
-msgstr ""
+msgstr "detektor zmeny súborov"
 
 #: service-list.pl.in:62
 msgid "Firstboot is a druid style program that runs on the first time"
@@ -245,7 +251,7 @@ msgstr ""
 
 #: service-list.pl.in:67
 msgid "console mouse support"
-msgstr ""
+msgstr "podpora konzolovej myši"
 
 #: service-list.pl.in:67
 msgid ""
@@ -287,7 +293,7 @@ msgstr ""
 
 #: service-list.pl.in:72
 msgid "administration tool for IPv4 packet filtering and NAT"
-msgstr ""
+msgstr "administrátorský nástroj pre filtrovanie paketov IPv4 a NAT"
 
 #: service-list.pl.in:72
 msgid ""
@@ -297,7 +303,7 @@ msgstr ""
 
 #: service-list.pl.in:73
 msgid "IrDA stack for Linux"
-msgstr ""
+msgstr "IrDA zásobník pre Linux"
 
 #: service-list.pl.in:74
 msgid "The Internet Key Exchange protocol"
