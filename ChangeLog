@@ -1,3 +1,6 @@
+2004-08-07  Runa Bhattacharjee <runab@redhat.com>
+	* configure.in: Added Bengali(bn) in ALL_LINGUAS.
+
 2004-08-07  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* file.pl.in: (gst_file_get_cmd_path_with_stderr): really return
