@@ -608,7 +608,7 @@ sub x_xml_parse_list
   my $kw = shift;
   my $values = shift;
   my $i = 1;
-  while (defined (my $tmp = xst_xml_get_attribute ($values, 'arg' . $i))) {
+  while (defined (my $tmp = &xst_xml_get_attribute ($values, 'arg' . $i))) {
     push @{$hash->{$kw}}, $tmp;
     $i++;
   }
