@@ -219,88 +219,77 @@ sub xst_boot_del_global
   &xst_buffer_clean ($buff);
   return &xst_buffer_save ($buff, $file);
 }
-  
+
 
 sub xst_boot_conf_set_images
 {
   my ($fn, $key, $images) = @_;
-  my ($image_name, $image_val, $current);
-  my ($i, $a);
+  my %hash, $i;
 
   foreach $i (@$images)
   {
-    $image_name = 'image' if $$i{'image'};
-    $image_name = 'other' if $$i{'other'};
-
-    foreach $a (keys (%$i))
-    {      
-      &xst_boot_conf_replace_image ($fn, $image_name, $$i{$image_name}, $a, $$i{$a});
-    }
+    %hash = %$i;
+    &xst_boot_conf_replace_image ($fn, %hash);
   }
 }
 
 
 sub xst_boot_conf_replace_image
 {
-  my ($file, $image_name, $image_val, $var, $value) = @_;
-  my ($fd, @line, @res);
-  my $buff, $i, $found_flag;
-  my $pre_space, $post_comment, $sec_save;
-  my $line_key, $val;
+  my ($file, %image) = @_;
+  my $buff, $i, $found;
+  my $pre_space, $post_comment;
+  my @line, $key, $op;
 
   $buff = &xst_buffer_load ($file);
-
   &xst_buffer_join_lines ($buff);
-
-  $found_flag = 0;
   
+  $found = 0;
+
+  $name = 'image' if $image{'image'};
+  $name = 'other' if $image{'other'};
+
   foreach $i (@$buff)
   {
+    if ($i =~ /$name[ \t]*=[ \t]*$image{$name}/) # Found the image.
+    {
+      $found++;
+      next;
+    }
+    
+    if ($i =~ /(image|other)/ && $found == 1) # Next image, let's add new stuff.
+    {
+      delete $image{$name};
+      
+      foreach $key (keys %image)
+      {
+        $i = "\t$key=$image{$key}\n" . $i if $image{$key};
+        $i = "\t$key\n" . $i unless $image{$key};
+      }
+    }
+    
+    next if ($found != 1);
+
     $pre_space = $post_comment = "";
     
     chomp $i;
     $pre_space = $1 if $i =~ s/^([ \t]+)//;
     $post_comment = $1 if $i =~ s/([ \t]*[\#;].*)//;
     
-    if ($i ne "")
+    @line = split (/([ \t]*=[ \t]*)/, $i, 2);
+
+    $key = shift @line;
+    $op = shift @line;
+
+    if (exists $image{$key})
     {
-	 if ($i =~ /[ \t]*$image_name[ \t]*=[ \t]*$image_val$/i)
-	 {
-	   $i =~ s/([ \t]*$image_name[ \t]*=[ \t]*$image_val)//i;
-	   $sec_save = $1;
-	   $found_flag = 1;
-	 }
-
-	 if ($found_flag)
-	 {
-	   if ($i =~ /\[[ \t]*[^ \t\]]+[ \t]*\]/)
-	   {
-		$i = "\t$var = $value\n$i";
-		$found_flag = 2;
-	   }
-
-	   if ($found_flag && $i =~ /^$var[ \t]*=/i)
-	   {
-		$i =~ s/^($var[ \t]*=[ \t]*).*/\1$value/i;
-		$found_flag = 2;
-	   }
-	 }
+      $i = $pre_space . $key . $op . $image{$key} . $post_comment . "\n";
+      delete $image{$key};
     }
-
-    if ($found_flag && $sec_save ne "")
+    else
     {
-	 $i = $sec_save . $i;
-	 $sec_save = "";
+      $i = $pre_space . $i . $post_comment . "\n";
     }
-    
-    $i = $pre_space . $i . $post_comment . "\n";
-    last if $found_flag == 2;
-  }
-
-  if (!$found_flag)
-  {
-    push @$buff, "$image_name = $image_val\n";
-    push @$buff, "\t$var = $value\n";
   }
 
   &xst_buffer_clean ($buff);

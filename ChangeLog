@@ -4,6 +4,8 @@
 	(xst_boot_set_global): New fn to add or modify globals (repsects all spaces).
 	(xst_boot_del_global): Nef fn to delete globals (keywords and vars).
 	(xst_boot_replace_from_table): My own version of xst_replace_from_table.
+	(xst_boot_conf_set_images): Rewrote this and
+	(xst_boot_conf_replace_image): this.
 
 2001-02-20  Tambet Ingo  <tambet@ximian.com>
 
