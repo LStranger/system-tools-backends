@@ -830,7 +830,7 @@ sub xml_print
 	  &xst_xml_print ("<group>\n");
 		&xst_xml_enter ();
 		for ($j = 0; $j < ($#groups_prop_array - 1) / 2 - 1; $j++) {
-			&xst_xml_print ("<" . $groups_prop_map{$j} . ">" . $$i[$j] . "</" . $groups_prop_map {$j} . ">\n");
+			&xst_xml_print ("<" . $groups_prop_map{$j} . ">" . xst_xml_quote ($$i[$j]) . "</" . $groups_prop_map {$j} . ">\n");
 		}
 		&xst_xml_print ("<users>\n");
 		&xst_xml_enter ();

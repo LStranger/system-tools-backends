@@ -1,10 +1,13 @@
 2001-02-21  Chema Celorio  <chema@celorio.com>
 
+	* users-conf.in (xml_print): quote the group too.
+
+2001-02-21  Chema Celorio  <chema@celorio.com>
+	
 	* users-conf.in : replace the plaint_to_entities & entities
 	to plain with xst_xml_quote & xst_xml_unquote
 	(xml_print): quote the user data before sending it
 	to the front end.
-	
 
 	* boot-conf.in (quote): remove use xst_xml_quote
 	(unquote): remove use xst_xml_unquote
