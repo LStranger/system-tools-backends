@@ -76,7 +76,7 @@ sub gst_file_get_data_path
 
 # Give a command, and it will put in C locale, some sane PATH values and find
 # the program to run in the path. Redirects stderr to null.
-sub gst_file_get_cmd_path
+sub get_cmd_path
 {
   my ($cmd) = @_;
   my ($tool_name, @argline, $command, $tool_path);
@@ -88,9 +88,23 @@ sub gst_file_get_cmd_path
 
   $command = "$tool_path @argline";
   $command =~ s/\"/\\\"/g;
-  $command = "LC_ALL=C PATH=\$PATH:/sbin:/usr/sbin $command 2> /dev/null";
 
   return $command;
+}
+
+sub gst_file_get_cmd_path
+{
+   my ($cmd) = @_;
+
+   my $command = &get_cmd_path ($cmd);
+   return ("LC_ALL=C PATH=\$PATH:/sbin:/usr/sbin $command 2> /dev/null");
+}
+
+sub gst_file_get_cmd_path_with_stderr
+{
+   my ($cmd) = @_;
+
+   return ("LC_ALL=C PATH=\$PATH:/sbin:/usr/sbin " . &get_cmd_path ($cmd));
 }
 
 
@@ -432,14 +446,20 @@ sub gst_file_open_write_compressed
 
 sub gst_file_run_pipe
 {
-  my ($cmd, $mode_mask) = @_;
+  my ($cmd, $mode_mask, $stderr) = @_;
   my ($command);
   local *PIPE;
 
   $mode_mask = $GST_FILE_READ if $mode_mask eq undef;
 
   &gst_report_enter ();
-  $command = &gst_file_get_cmd_path ($cmd);
+  
+  if ($stderr) {
+     $command = &gst_file_get_cmd_path_with_stderr ($cmd);
+  } else {
+     $command = &gst_file_get_cmd_path ($cmd);
+  }
+  
   if ($command == -1)
   {
     &gst_report ("file_run_pipe_failed", $command);
@@ -464,6 +484,12 @@ sub gst_file_run_pipe_read
   return &gst_file_run_pipe ($cmd, $GST_FILE_READ);
 }
 
+sub gst_file_run_pipe_read_with_stderr
+{
+   my ($cmd) = @_;
+
+   return &gst_file_run_pipe ($cmd, $GST_FILE_READ, 1);
+}
 
 sub gst_file_run_pipe_write
 {
