@@ -263,35 +263,23 @@ sub check_solaris
 sub xst_platform_guess
 {
   my ($tool) = @_;
-  my $dir = "$SCRIPTSDIR";
-  
-  if (! -f "$dir/system.guess")
-  {
-    system ("$dir/guess_system.sh 2> /dev/null > $dir/system.guess");
-  }
+  local *FD;
 
-  if (-f "$dir/system.guess")
-  {
-    open FILE, "$dir/system.guess";
-  }
-  else
-  {
-    open FILE, "$dir/guess_system.sh 2>/dev/null |";
-  }
-
-  chomp ($$tool{"system"} = <FILE>);
-  close FILE;
+  # get the output of 'uname -s', it returns the system we are running
+  *FD = &xst_file_run_pipe_read ("uname -s");
+  $$tool{"system"} = <FD>;
+  chomp ($$tool{"system"});
+  close FD;
 
   # set $xst_dist and $xst_dist_version
   
   my %check = (
     # Red Hat check must run after Mandrake
-    "linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, 
+    "Linux" => [ \&check_lsb,      \&check_debian,   \&check_caldera, \&check_suse, 
                  \&check_mandrake, \&check_linuxppc, \&check_redhat,  \&check_turbolinux,
                  \&check_slackware, \&check_gentoo],
-    # Isn't just "freebsd" enough?
-    "freebsdelf" => [ \&check_freebsd ],
-    "solaris"    => [ \&check_solaris ]
+    "FreeBSD" => [ \&check_freebsd ],
+    "SunOS"    => [ \&check_solaris ]
                );
   my $plat;
 
