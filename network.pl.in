@@ -98,7 +98,7 @@ sub xst_network_active_interfaces_get
 
   $tool_ifconfig = &xst_locate_tool ("ifconfig");
 
-  open IFCONFIG, "/bin/sh -c \"$tool_ifconfig | sed 's/:\? .*//;/^$/D'\" |";
+  open IFCONFIG, "/bin/sh -c \"$tool_ifconfig | sed 's/:\\? .*//;/^\$/D'\" |";
   
   while (<IFCONFIG>)
   {
@@ -147,6 +147,23 @@ sub xst_network_sysconfig_ifaces_get_existing
   return @ret;
 }
 
+sub xst_network_interfaces_get_existing
+{
+  my @ret, @stanzas, $stanza;
+  
+  @stanzas = &xst_parse_interfaces_stanzas ("$xst_prefix/etc/network/interfaces");
+
+  foreach $stanza (@stanzas)
+  {
+    if ($$stanza[1] eq "inet")
+    {
+      push @ret, $$stanza[0];
+    }
+  }
+
+  return @ret;
+}
+
 sub xst_network_interfaces_get
 {
   my (%dist_attrib, %hash, %fn, @ifaces, $iface);
@@ -189,6 +206,11 @@ sub xst_network_conf_get
   return $hash;
 }
 
+sub xst_network_debian_get_file
+{
+  return "$xst_prefix/etc/network/interfaces";
+}
+
 sub xst_network_rh62_get_file
 {
   my $dev = $_[0];
@@ -217,7 +239,8 @@ sub xst_network_get_file
 	  "redhat-6.0" => \&xst_network_rh62_get_file,
 	  "redhat-6.1" => \&xst_network_rh62_get_file,
 	  "redhat-6.2" => \&xst_network_rh62_get_file,
-	  "redhat-7.0" => \&xst_network_rh62_get_file
+	  "redhat-7.0" => \&xst_network_rh62_get_file,
+    "debian-2.2" => \&xst_network_debian_get_file
 	  );
 
   $proc = $dist_map{$xst_dist};
@@ -451,14 +474,53 @@ sub xst_network_get_pap_passwd
   return $$arr[1];
 }
 
-sub xst_network_get_chap_passwd
+sub xst_network_get_ppp_options_re
 {
-  my ($file, $login, $passwd) = @_;
-  my @arr;
+  my ($file, $re) = @_;
+  my $fd, @res;
 
-  return $passwd if ($passwd ne undef);
-  
-  return &xst_network_get_pap_passwd ($file, $login);
+  $fd = &xst_open_read_from_names ("$file");
+  return undef if !$fd;
+
+  while (($_ = &xst_parse_chomp_line_hash_comment ($fd)) != -1)
+  {
+    $_ = $$_;
+
+    @res = /$re/;
+    return $res[0] if $res[0];
+  }
+
+  return undef;
+}
+
+sub xst_network_get_ppp_options_unsup
+{
+  my ($file) = @_;
+  my $fd, $line, $res, $re;
+  my @known_options = ("usepeerdns", "mtu", "mru", "user", "/dev/[^ \t]+", "[0-9]+",
+                       "defaultroute", "debug", "persist", "escape", "crtscts", "connect",
+                       "remotename", "hide-password", "noauth", "noipdefault", "ipparam");
+
+  $res = "";
+  $fd = &xst_open_read_from_names ("$file");
+  return undef if !$fd;
+
+  GET_LINE: while (($line = &xst_parse_chomp_line_hash_comment ($fd)) != -1)
+  {
+    $_ = $$line;
+    next if /^$/;
+
+    foreach $re (@known_options)
+    {
+      next GET_LINE if /^$re/;
+    }
+
+    $res .= "$_ ";
+  }
+
+  chop $res;
+
+  return $res;
 }
 
 sub xst_network_rh62_parse_bootproto
@@ -492,7 +554,7 @@ sub xst_network_rh62_replace_bootproto
 sub xst_network_debian_parse_bootproto
 {
   my ($file, $iface) = @_;
-  my @stanzas, @stanza, $i, $method, $bootproto;
+  my @stanzas, $stanza, $method, $bootproto;
   my %debian_to_proto_name =
       (
        "bootp"    => "bootp",
@@ -526,6 +588,22 @@ sub xst_network_debian_parse_bootproto
   return $bootproto;
 }
 
+sub xst_network_debian_parse_remote_address
+{
+  my ($file, $iface) = @_;
+  my $str, @tuples, $tuple, @res;
+  
+  @tuples = &xst_parse_interfaces_option_tuple ($file, $iface, "up", 1);
+
+  foreach $tuple (@tuples)
+  {
+    @res = $$tuple[1] =~ /[ \t]+pointopoint[ \t]+([^ \t]+)/;
+    return $res[0] if $res[0];
+  }
+
+  return undef;
+}
+
 sub xst_network_ensure_loopback_interface
 {
   my ($interface) = @_;
@@ -535,7 +613,8 @@ sub xst_network_ensure_loopback_interface
 	  "redhat-6.0" => "lo",
 	  "redhat-6.1" => "lo",
 	  "redhat-6.2" => "lo",
-	  "redhat-7.0" => "lo"
+	  "redhat-7.0" => "lo",
+	  "debian-2.2" => "lo"
 	  );
 
   $dev = $dist_map {$xst_dist};
@@ -733,8 +812,8 @@ sub xst_network_get_interfaces_parse_table
            [ mru,                \&xst_parse_sh,      IFCFG, MRU ],
            [ remote_address,     \&xst_parse_sh,      IFCFG, REMIP ],
            [ login,              \&xst_parse_sh,      IFCFG, PAPNAME ],
-           [ password,           \&xst_network_get_pap_passwd, PAP, "%login" ],
-           [ password,           \&xst_network_get_chap_passwd, CHAP, "%login", "%password" ],
+           [ password,           \&xst_network_get_pap_passwd, PAP, "%login%" ],
+           [ password,           \&xst_network_get_pap_passwd, CHAP, "%login%" ],
            [ serial_port,        \&xst_parse_sh,      IFCFG, MODEMPORT ],
            [ serial_speed,       \&xst_parse_sh,      IFCFG, LINESPEED ],
            [ ppp_options,        \&xst_parse_sh,      IFCFG, PPPOPTIONS ],
@@ -744,7 +823,7 @@ sub xst_network_get_interfaces_parse_table
            [ persist,            \&xst_parse_sh_bool, IFCFG, PERSIST ],
            [ serial_escapechars, \&xst_parse_sh_bool, IFCFG, ESCAPECHARS ],
            [ serial_hwctl,       \&xst_parse_sh_bool, IFCFG, HARDFLOWCTL ],
-           [ phone_number,       \&xst_parse_chat,    CHAT,  "^atd[^0-9]*([0-9, -]+)" ],
+           [ phone_number,       \&xst_parse_chat,    CHAT, "^atd[^0-9]*([0-9, -]+)" ],
            [ enabled,            \&xst_network_interface_active, IFACE, \&xst_network_active_interfaces_get ]
            ]
              },
@@ -757,13 +836,14 @@ sub xst_network_get_interfaces_parse_table
 	    {
         INTERFACES  => "/etc/network/interfaces",
         IFACE       => "#iface#",
-        CHAT_DIR    => "/etc/chatscripts",
-        PPP_OPTIONS => "/etc/ppp/peers/#iface#",
+        CHAT        => "/etc/chatscripts/%wvsection%",
+        PPP_OPTIONS => "/etc/ppp/peers/%wvsection%",
         PAP         => "/etc/ppp/pap-secrets",
         CHAP        => "/etc/ppp/chap-secrets" },
 	    table =>
           [
 # not sup  [ user,               \&xst_parse_sh_bool, IFCFG, USERCTL ],
+           [ dev,                \&xst_parse_trivial,                  IFACE ],
            [ bootproto,          \&xst_network_debian_parse_bootproto, [INTERFACES, IFACE]],
            [ auto,               \&xst_parse_interfaces_option_kw_not, [INTERFACES, IFACE], noauto ],
            [ name,               \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], name ],
@@ -772,6 +852,7 @@ sub xst_network_get_interfaces_parse_table
            [ broadcast,          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], broadcast ],
            [ network,            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], network ],
            [ gateway,            \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], gateway ],
+           [ wvsection,          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], provider ],
            [ peerdns,            \&xst_parse_kw,                       PPP_OPTIONS, usepeerdns ],
 # not sup  [ dns1,               \&xst_parse_sh,                       IFCFG,       DNS1 ],
 # not sup  [ dns2,               \&xst_parse_sh,      IFCFG, DNS2 ],
@@ -779,19 +860,17 @@ sub xst_network_get_interfaces_parse_table
            [ mru,                \&xst_parse_split_first_str,          PPP_OPTIONS, mru, "[ \t]+" ],
            [ remote_address,     \&xst_network_debian_parse_remote_address, [INTERFACES, IFACE]],
            [ login,              \&xst_parse_split_first_str,          PPP_OPTIONS, user, "[ \t]+" ],
-           [ password,           \&xst_network_get_pap_passwd,         PAP, "%login" ],
-           [ password,           \&xst_network_get_chap_passwd,        CHAP, "%login", "%password" ],
-           [ serial_port,        \&xst_network_get_ppp_options_port,   PPP_OPTIONS ],
-           [ serial_speed,       \&xst_network_get_ppp_options_speed,  PPP_OPTIONS ],
+           [ password,           \&xst_network_get_pap_passwd,         PAP, "%login%" ],
+           [ password,           \&xst_network_get_pap_passwd,         CHAP, "%login%" ],
+           [ serial_port,        \&xst_network_get_ppp_options_re,     PPP_OPTIONS, "^(/dev/[^ \t]+)" ],
+           [ serial_speed,       \&xst_network_get_ppp_options_re,     PPP_OPTIONS, "^([0-9]+)" ],
            [ ppp_options,        \&xst_network_get_ppp_options_unsup,  PPP_OPTIONS ],
-           [ wvsection,          \&xst_parse_interfaces_option_str,    [INTERFACES, IFACE], provider ],
            [ set_default_gw,     \&xst_parse_kw,                       PPP_OPTIONS, defaultroute ],
            [ debug,              \&xst_parse_kw,                       PPP_OPTIONS, debug ],
            [ persist,            \&xst_parse_kw,                       PPP_OPTIONS, persist ],
            [ serial_escapechars, \&xst_parse_split_first_str,          PPP_OPTIONS, escape, "[ \t]+" ],
            [ serial_hwctl,       \&xst_parse_kw,                       PPP_OPTIONS, crtscts ],
-           [ phone_number,       \&xst_network_debian_parse_chat,      CHAT_DIR, "%wvsection",
-                                                                       "^atd[^0-9]*([0-9, -]+)" ],
+           [ phone_number,       \&xst_parse_chat,                     CHAT, "^atd[^0-9]*([0-9, -]+)" ],
            [ enabled,            \&xst_network_interface_active,       IFACE,
                                                                        \&xst_network_active_interfaces_get ]
            ]
@@ -900,22 +979,22 @@ sub xst_network_get_interface_replace_table
 	  "redhat-6.0" => "redhat-6.2",
 	  "redhat-6.1" => "redhat-6.2",
 	  "redhat-6.2" => "redhat-6.2",
-	  "redhat-7.0" => "redhat-6.2"
-#    "debian-2.2" => "debian-2.2"
+	  "redhat-7.0" => "redhat-6.2",
+    "debian-2.2" => "debian-2.2"
 	  );
 
   my %dist_tables =
 	(
     "redhat-6.2" =>
 	  {
-      iface_set => \&xst_network_rh62_interface_set,
+      iface_set    => \&xst_network_rh62_interface_set,
       iface_delete => \&xst_network_rh62_interface_delete,
-      ifaces_get => \&xst_network_sysconfig_ifaces_get_existing,
+      ifaces_get   => \&xst_network_sysconfig_ifaces_get_existing,
       fn =>
 	    {
-        IFCFG => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
-        CHAT => "/etc/sysconfig/network-scripts/chat-#iface#",
-        IFACE => "#iface#",
+        IFCFG  => "/etc/sysconfig/network-scripts/ifcfg-#iface#",
+        CHAT   => "/etc/sysconfig/network-scripts/chat-#iface#",
+        IFACE  => "#iface#",
         WVDIAL => "/etc/wvdial.conf"
       },
       table =>

@@ -31,20 +31,22 @@ require "___scriptsdir___/debug.pl";
 sub xst_parse_replace_hash_values
 {
   my ($cp, $hash) = @_;
-  my ($j, $replace_key);
+  my ($j, $replace_key, $value);
 
   foreach $j (@$cp)
   {
-    if ($j =~ /^%(.*)/)
+    while ($j =~ /%(.*)%/)
     {
       $replace_key = $1;
       if (exists $$hash{$replace_key}) 
       {
-        $j = $$hash{$replace_key}
+        $value = $$hash{$replace_key};
+        $j =~ s/%$replace_key%/$value/g;
       }
       else
       {
-        &xst_debug_print_line ("Warning: xst_parse_replace_hash_values: hash key $replace_key doesn't exist.");
+        &xst_debug_print_line ("Warning: xst_parse_replace_hash_values: key $replace_key doesn't exist.");
+        last;
       }
     }
   }
@@ -98,6 +100,17 @@ sub xst_parse_from_table
   return \%hash;
 }
 
+# Just return the passed values. If there's just
+# one value, the value. If more, a reference to an
+# array with the values.
+sub xst_parse_trivial
+{
+  my (@res) = @_;
+
+  return $res[0] if $#res == 0;
+  return \@res;
+}
+
 sub xst_parse_chomp_line_std
 {
   my ($fd) = @_;
@@ -110,7 +123,7 @@ sub xst_parse_chomp_line_std
   $line =~ s/^[ \t]+//;
   $line =~ s/[ \t]+$//;
 
-  return $line;
+  return \$line;
 }
 
 sub xst_parse_chomp_line_hash_comment
@@ -120,6 +133,8 @@ sub xst_parse_chomp_line_hash_comment
 
   $line = &xst_parse_chomp_line_std ($fd);
   return -1 if $line == -1;
+
+  $line = $$line;
 
   # This will put escaped hashes out of danger.
   $line =~ s/([\"\'][^\#]*)\#([^\"\']*[\"\'])/\1__hash__\2/g;
@@ -134,13 +149,13 @@ sub xst_parse_chomp_line_hash_comment
   # Bye bye trailing spaces.
   $line =~ s/[ \t]+$//;
   
-  return $line;
+  return \$line;
 }
 
 # Parse a $file, wich is assumed to have a column-based format, with $re matching field separators
 # and one record per line. Search for $key, and return either a scalar with the first ocurrence,
 # or an array with all the found ocurrences.
-sub xst_parse_split
+sub xst_parse_split_ref
 {
   my ($file, $key, $re, $all, $line_read_proc) = @_;
   my ($fd, @line, @res);
@@ -152,6 +167,7 @@ sub xst_parse_split
   
   while (($line = &$proc ($fd)) != -1)
   {
+    $line = $$line;
     next if $line eq "";
     @line = split ($re, $line, 2);
 
@@ -163,13 +179,25 @@ sub xst_parse_split
       else
       {
         close $fd;
-        return $line[0];
+        return \$line[0];
       }
     }
   }
 
   close $fd;
-  return @res if ($all);
+  return \@res if ($all);
+  return -1;
+}
+
+sub xst_parse_split
+{
+  my $res;
+
+  # Don't pass @_ like this anywhere. This is bad practice.
+  $res = &xst_parse_split_ref (@_);
+
+  return $$res if ref $res eq "SCALAR";
+  return @$res if ref $res eq "ARRAY";
   return undef;
 }
 
@@ -224,6 +252,30 @@ sub xst_parse_split_first_array
   return \@ret;
 }
 
+sub xst_parse_split_hash
+{
+  my ($file, $key_re, $value_re) = @_;
+  my ($fd, @line, %res, $key);
+
+  $fd = &xst_open_read_from_names ($file);
+  
+  while (<$fd>)
+  {
+    chomp;
+    s/^[ \t]+//;
+    s/[ \t]+$//;
+    next if (/^$/);
+    @line = split ($key_re, $_, 2);
+
+    $key = shift (@line);
+    $res{$key} = [ split ($value_re, $line[0]) ];
+  }
+
+  close $fd;
+  return undef if (scalar keys (%res) == 0);
+  return \%res;
+}
+
 # For files which are a list of /bin/sh shell variable declarations. (ie GATEWAY=10.10.10.1)
 sub xst_parse_sh
 {
@@ -257,6 +309,22 @@ sub xst_parse_sh_bool
   return (&xst_read_boolean ($ret)? 1: 0);
 }
 
+# Search for $keyword in $file, delimited by $re (default " ") or EOL.
+# If keyword exists, return 1, else 0.
+sub xst_parse_kw
+{
+  my ($file, $keyword, $re, $line_read_proc) = @_;
+  my $res;
+
+  return undef if ! -f $file;
+  
+  $re = " " if $re eq undef;
+  $res = &xst_parse_split_ref ($file, $keyword, $re, 0, $line_read_proc);
+
+  return 0 if $res == -1;
+  return 1;
+}
+
 # A file containing the desired value in its first line. (ie /etc/hostname)
 sub xst_parse_line_first
 {
@@ -279,64 +347,38 @@ sub xst_parse_chat
   my ($fd, $found);
 
   $fd = &xst_open_read_from_names ("$file");
-  if ($fd)
-  {
-    while (<$fd>)
-    {
-      # We'll be emptying $_ as we "scan".
-      chomp;
-      while ($_ ne "")
-      {
-        # If it uses quotes. FIXME: Assuming they surround the whole string.
-        if (/^\'/)
-        {
-          s/\'([^\']*)\' ?//;
-          $found = $1;
-        }
-        else
-        {
-          s/([^ \t]*) ?//;
-          $found = $1;
-        }
+  return undef if !$fd;
 
-        # If it looks like what we're looking for, return what matched the parens.
-        if ($found =~ /$re/i)
-        {
-          close $fd;
-          return $1;
-        }
-      }
-    }
-
-    close $fd;
-  }
-
-  # Oops: not found.
-  return undef;
-}
-
-sub xst_parse_split_hash
-{
-  my ($file, $key_re, $value_re) = @_;
-  my ($fd, @line, %res, $key);
-
-  $fd = &xst_open_read_from_names ($file);
-  
   while (<$fd>)
   {
+    # We'll be emptying $_ as we "scan".
     chomp;
-    s/^[ \t]+//;
-    s/[ \t]+$//;
-    next if (/^$/);
-    @line = split ($key_re, $_, 2);
-
-    $key = shift (@line);
-    $res{$key} = [ split ($value_re, $line[0]) ];
+    while ($_ ne "")
+    {
+      # If it uses quotes. FIXME: Assuming they surround the whole string.
+      if (/^\'/)
+      {
+        s/\'([^\']*)\' ?//;
+        $found = $1;
+      }
+      else
+      {
+        s/([^ \t]*) ?//;
+        $found = $1;
+      }
+      
+      # If it looks like what we're looking for, return what matched the parens.
+      if ($found =~ /$re/i)
+      {
+        close $fd;
+        return $1;
+      }
+    }
   }
-
+  
   close $fd;
-  return undef if (scalar keys (%res) == 0);
-  return \%res;
+  # Oops: not found.
+  return undef;
 }
 
 sub xst_parse_ini_line_clean
@@ -367,18 +409,19 @@ sub xst_parse_ini_line_read
     $l .= &xst_parse_ini_line_clean (scalar <$fd>);
   }
 
-  return $l;
+  return \$l;
 }
 
 sub xst_parse_ini_sections
 {
   my ($file) = @_;
-  my @sections;
+  my @sections, $line;
 
   $fd = &xst_open_read_from_names ($file);
   
-  while (($_ = &xst_parse_ini_line_read ($fd)) != -1)
+  while (($line = &xst_parse_ini_line_read ($fd)) != -1)
   {
+    $_ = $$line;
     next if (/^$/);
     push @sections, $1 if (/\[([^\]]+)\]/i);
   }
@@ -391,14 +434,15 @@ sub xst_parse_ini_sections
 sub xst_parse_ini
 {
   my ($file, $section, $var) = @_;
-  my ($fd, $res);
+  my ($fd, $res, $line);
   my $found_section_flag = 0;
 
   $fd = &xst_open_read_from_names ($file);
   $res = undef;
   
-  while (($_ = &xst_parse_ini_line_read ($fd)) != -1)
+  while (($line = &xst_parse_ini_line_read ($fd)) != -1)
   {
+    $_ = $$line;
     next if (/^$/);
     if (/\[$section\]/i)
     {
@@ -460,17 +504,19 @@ sub xst_parse_interfaces_line_read
     $l .= &xst_parse_interfaces_line_clean (scalar <$fd>);
   }
 
-  return $l;
+  return \$l;
 }
 
 # Read lines until a stanza, a line starting with iface is found.
 # Return ref to an array with the stanza params split.
-sub xst_parse_intefaces_get_next_stanza
+sub xst_parse_interfaces_get_next_stanza
 {
-  my $fd =  $_[0];
+  my $fd = $_[0];
+  my $line;
 
-  while (($_ = &xst_parse_interfaces_line_read ($fd)) != -1)
+  while (($line = &xst_parse_interfaces_line_read ($fd)) != -1)
   {
+    $_ = $$line;
     if (/^iface[ \t]/)
     {
       s/^iface[ \t]+//;
@@ -485,15 +531,17 @@ sub xst_parse_intefaces_get_next_stanza
 # found, and split in a "tuple" of key/value.
 sub xst_parse_interfaces_get_next_option
 {
-  my $fd =  $_[0];
+  my $fd = $_[0];
+  my $line;
 
-  while (($_ = &xst_parse_interfaces_line_read ($fd)) != -1)
+  while (($line = &xst_parse_interfaces_line_read ($fd)) != -1)
   {
+    $_ = $$line;
     next if /^$/;
     
     if (!/^iface[ \t]/)
     {
-      return [ split ("[ \t]+", $_) ];
+      return [ split ("[ \t]+", $_, 2) ];
     }
     else
     {
@@ -527,11 +575,10 @@ sub xst_parse_interfaces_stanzas
 # tuple for option with $key. Return -1 if unexisting.
 sub xst_parse_interfaces_option_tuple
 {
-  my ($file, $iface, $key) = @_;
-  my ($fd, $res);
+  my ($file, $iface, $key, $all) = @_;
+  my ($fd, @res);
 
   $fd = &xst_open_read_from_names ($file);
-  $res = 0;
 
   while (($stanza = &xst_parse_interfaces_get_next_stanza ($fd)) != -1)
   {
@@ -539,13 +586,18 @@ sub xst_parse_interfaces_option_tuple
     {
       while (($tuple = &xst_parse_interfaces_get_next_option ($fd)) != -1)
       {
-        return $tuple if ($$tuple[0] eq $key);
+        if ($$tuple[0] eq $key)
+        {
+          return $tuple if !$all;
+          push @res, $tuple;
+        }
       }
 
-      return -1;
+      return -1 if !$all;
     }
   }
 
+  return @res if $all;
   return -1;
 }
 
@@ -586,7 +638,7 @@ sub xst_parse_interfaces_option_str
   my ($file, $iface, $key) = @_;
   my $tuple;
 
-  $tuple = &xst_parse_interfaces_option_tuple ($file, $iface, $kw);
+  $tuple = &xst_parse_interfaces_option_tuple ($file, $iface, $key);
 
   if ($tuple != -1)
   {

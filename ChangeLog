@@ -1,3 +1,36 @@
+2001-03-16  Arturo Espinosa  <arturo@ximian.com>
+
+	* Network parsing works fully for Debian. Tested on Poiss.
+	* network.pl.in (xst_network_active_interfaces_get): fixed
+	  network discovery command.
+	  (xst_network_interfaces_get_existing): get existing ifaces
+	  for Debian.
+	  (xst_network_debian_get_file): counterpart of a useless
+	  function. :)
+	  (xst_network_get_chap_passwd): deleted. Useless.
+	  (xst_network_get_ppp_options_re): general function to get
+	  options from pppd option files.
+	  (xst_network_get_ppp_options_unsup): get unknown options.
+	  (xst_network_debian_parse_remote_address): cool hack that
+	  allows plip existance under Debian.
+	  Some parse and replace table beautifying.
+	* parse.pl.in (xst_parse_replace_hash_values): more flexible
+	  replacing. New syntax is %has_value%, anywhere on the param.
+	  Check the interface parse table for Debian for an example.
+	  (xst_parse_trivial): Just return the arguments.
+	  Modified return value for all line parsers: the old method
+	  regarded a line containing "-1" as EOF. Now returning
+	  a refference to the string, or -1 if EOF.
+	  (xst_parse_split_ref): returns -1 if key not found.
+	  (xst_parse_split): now calls xst_parse_split_ref, and generates
+	  old behaviour.
+	  (xst_parse_kw): look for a keyword matching $re, reporting
+	  existence.
+	  (xst_parse_chat): minor nesting simplification.
+	  Other minor bugs.
+	* report.pl.in: Perl style change. @array[index] -> $array[index]
+
+	
 2001-03-15  Arturo Espinosa  <arturo@ximian.com>
 
 	* network-conf.in: Added supported platform "debian-2.2".
