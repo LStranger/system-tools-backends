@@ -666,4 +666,41 @@ sub xst_xml_get_state
   return &xst_read_boolean ($$tree[0]->{state});
 }
 
+
+# XML model operations.
+
+sub xst_xml_model_find
+{
+  my ($model, $varpath) = @_;
+  my (@path, $branch);
+
+  $branch = $model;
+  @path   = split /\//, $varpath;
+
+  for $elem (@path)
+  {
+    next if ($elem eq "");
+    my @children = @$branch;
+    shift @children;  # Attributes
+    $branch = undef;
+
+    while (@children)
+    {
+      if (@children [0] eq $elem)
+      {
+        shift @children;
+        $branch = shift @children;
+        last;
+      }
+
+      shift @children;
+      shift @children;
+    }
+
+    last if ($branch == undef);
+  }
+
+  return $branch;
+}
+
 1;

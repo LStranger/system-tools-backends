@@ -1300,38 +1300,10 @@ sub xst_parse_pump_get_iface_kw_not
 sub xst_parse_xml
 {
   my ($file, $varpath, $property) = @_;
-  my ($tree, $branch, @path);
+  my ($model, $branch);
 
-  $branch = $tree = &xst_xml_model_scan ($file);
-  @path = split /\//, $varpath;
-
-  for $elem (@path)
-  {
-#    print $elem . "\n";
-
-    next if ($elem eq "");
-    my @children = @$branch;
-    shift @children;  # Attributes
-    $branch = undef;
-
-    while (@children)
-    {
-#      print "  " . @children [0] . "\n";
-
-      if (@children [0] eq $elem)
-      {
-        shift @children;
-        $branch = shift @children;
-#        print "  -> " . $branch . "\n";
-        last;
-      }
-
-      shift @children;
-      shift @children;
-    }
-
-    last if ($branch == undef);
-  }
+  $model  = &xst_xml_model_scan ($file);
+  $branch = &xst_xml_model_find ($model, $varpath);
 
   if ($branch)
   {
