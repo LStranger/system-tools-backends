@@ -233,7 +233,7 @@ sub xst_network_dialing_set
 
     foreach $j (keys %hash)
     {
-	 $ret = -1 if &xst_replace_ini ($file, $section, $vars{$j}, $hash{$j});
+      $ret = -1 if &xst_replace_ini ($file, $section, $vars{$j}, $hash{$j});
     }
   }
 
