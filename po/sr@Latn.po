@@ -1,5 +1,5 @@
 # Serbian translation of setup-tools-backends
-# Courtesy of Prevod.org team (http://prevod.org/) -- 2003, 2004.
+# Courtesy of Prevod.org team (http://prevod.org/) -- 2003, 2004, 2005.
 #
 # This file is distributed under the same license as the setup-tools-backends package.
 #
@@ -10,8 +10,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gnome-system-tools\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2004-08-07 21:50+0200\n"
-"PO-Revision-Date: 2004-08-07 22:38+0200\n"
+"POT-Creation-Date: 2005-03-02 23:35+0100\n"
+"PO-Revision-Date: 2005-03-02 23:36+0100\n"
 "Last-Translator: Danilo Šegan <danilo@prevod.org>\n"
 "Language-Team: Serbian (sr) <gnom@prevod.org>\n"
 "MIME-Version: 1.0\n"
@@ -28,7 +28,9 @@ msgstr "Rukovaoc ACPI događajima"
 msgid ""
 "Notifies user-space programs of ACPI events: executes arbitrary commands in "
 "response to ACPI events such as power buttons."
-msgstr "Obaveštava korisničke programe o ACPI događajima: izvršava proizvoljne naredbe kao odgovor na ACPI događaje kao što je dugme za gašenje."
+msgstr ""
+"Obaveštava korisničke programe o ACPI događajima: izvršava proizvoljne "
+"naredbe kao odgovor na ACPI događaje kao što je dugme za gašenje."
 
 #: service-list.pl.in:37
 msgid "Advanced Linux Sound Architecture"
@@ -100,7 +102,8 @@ msgstr "Snimanje poruka pri podizanju"
 msgid ""
 "Runs in the background and copies all strings sent to the /dev/console "
 "device to a logfile"
-msgstr "Radi u pozadini i umnožava sve niske poslate na uređaj /dev/console u dnevnik"
+msgstr ""
+"Radi u pozadini i umnožava sve niske poslate na uređaj /dev/console u dnevnik"
 
 # bug: tcp -> TCP
 #: service-list.pl.in:45
@@ -135,7 +138,9 @@ msgid ""
 "cpufreqd is used to monitor the status of the battery and adjust the "
 "frequency of the CPU accordingly in order to preserve battery power while "
 "providing optimal performance"
-msgstr "cpufreqd se koristi za praćenje stanja baterije i prilagođavanje učestanosti procesora radi uštede baterije uz obezbeđivanje najbolje brzine"
+msgstr ""
+"cpufreqd se koristi za praćenje stanja baterije i prilagođavanje učestanosti "
+"procesora radi uštede baterije uz obezbeđivanje najbolje brzine"
 
 #: service-list.pl.in:48 service-list.pl.in:130
 msgid "daemon to execute scheduled commands"
@@ -161,7 +166,8 @@ msgstr "Zajednički sistem za Uniks štampu (CUPS)"
 
 #: service-list.pl.in:50 service-list.pl.in:51
 msgid "Printing system based upon the Internet Printing Protocol, version  1.1"
-msgstr "Sistem za štampu zasnovan na Protokolu za Internet štampu (IPP), izdanje 1.1"
+msgstr ""
+"Sistem za štampu zasnovan na Protokolu za Internet štampu (IPP), izdanje 1.1"
 
 #: service-list.pl.in:52
 msgid ""
@@ -290,7 +296,9 @@ msgstr "Postavi parametre hard diska"
 msgid ""
 "Provides a interface to various hard disk ioctls supported by the stock "
 "Linux ATA/IDE device driver subsystem."
-msgstr "Obezbeđuje spregu ka raznim sistemskim pozivima za hard disk koje podržava uobičajeni Linuksov ATA/IDE podsistem."
+msgstr ""
+"Obezbeđuje spregu ka raznim sistemskim pozivima za hard disk koje podržava "
+"uobičajeni Linuksov ATA/IDE podsistem."
 
 #: service-list.pl.in:69
 msgid "Linux hotplugging support"
@@ -301,7 +309,10 @@ msgid ""
 "hotplug is a program which is used by the kernel to notify user mode "
 "software when some significant (usually hardware-related) events take place. "
 "An example is when a USB or Cardbus device has just been plugged in."
-msgstr "hotplug je program koji koristi jezgro da obavesti korisničke programe kada se dogodi nešto značajno (obično u vezi hardvera). Primer je kada se USB ili Cardbus uređaj uključi."
+msgstr ""
+"hotplug je program koji koristi jezgro da obavesti korisničke programe kada "
+"se dogodi nešto značajno (obično u vezi hardvera). Primer je kada se USB ili "
+"Cardbus uređaj uključi."
 
 #: service-list.pl.in:71
 msgid "internet superserver"
@@ -353,7 +364,10 @@ msgid ""
 "Runs joystick-device-check.  joystick-device-check is a program which "
 "ensures that the /dev/js* device nodes are correct for the kernel version in "
 "use."
-msgstr "Pokreće joystick-device-check.  joystick-device-check je program koji proverava da su čvorovi uređaja /dev/js* ispravni za izdanje jezgra koje se koristi."
+msgstr ""
+"Pokreće joystick-device-check.  joystick-device-check je program koji "
+"proverava da su čvorovi uređaja /dev/js* ispravni za izdanje jezgra koje se "
+"koristi."
 
 #: service-list.pl.in:77
 msgid ""
@@ -410,7 +424,8 @@ msgstr "Napravi uređaje"
 msgid ""
 "Script that will create the devices in /dev used to interface with drivers "
 "in the kernel"
-msgstr "Spis koji će napraviti uređaje u /dev kojima se spreže sa goničima u jezgru"
+msgstr ""
+"Spis koji će napraviti uređaje u /dev kojima se spreže sa goničima u jezgru"
 
 #: service-list.pl.in:85
 msgid "Syslog Replacement"
@@ -505,7 +520,9 @@ msgstr "Osveži vreme sistema preko mreže"
 msgid ""
 "Checks the time from a Network Time Protocol (ntp) server and adjusts the "
 "system time accordingly."
-msgstr "Proverava vreme na serveru putem protokola za mrežno vreme i prilagođava sistemsko vreme."
+msgstr ""
+"Proverava vreme na serveru putem protokola za mrežno vreme i prilagođava "
+"sistemsko vreme."
 
 #: service-list.pl.in:98
 msgid "Network Time Protocol (NTP) server"
@@ -515,7 +532,9 @@ msgstr "Server za protokol mrežnog vremena (NTP)"
 msgid ""
 "Daemon which sets and maintains the system time-of-day in synchronism with "
 "Internet standard time servers"
-msgstr "Uslužni program koji postavlja i održava sistemsko vreme usklađeno sa standardnim serverima vremena na Internetu"
+msgstr ""
+"Uslužni program koji postavlja i održava sistemsko vreme usklađeno sa "
+"standardnim serverima vremena na Internetu"
 
 #: service-list.pl.in:99
 msgid "HTTP caching proxy"
@@ -617,7 +636,8 @@ msgstr "Vinduz SMB/CIFS server datoteka za Uniks"
 msgid ""
 "The Samba software suite is a collection of programs that implements the "
 "Server Message Block protocol for UNIX systems."
-msgstr "Paket Samba je skup programa koji obezbeđuju SMB protokol za Uniks sisteme."
+msgstr ""
+"Paket Samba je skup programa koji obezbeđuju SMB protokol za Uniks sisteme."
 
 #: service-list.pl.in:114
 msgid ""
@@ -819,30 +839,78 @@ msgstr ""
 "osnovu vremena, i mogućnost postavljanja ograničenja na broj servera koji se "
 "mogu pokrenuti, između svega ostalog."
 
-#: service.pl.in:208 service.pl.in:213
+#: service.pl.in:229 service.pl.in:234
 msgid "Halting the system"
 msgstr "Gasim operativni sistem"
 
-#: service.pl.in:209 service.pl.in:215
+#: service.pl.in:230 service.pl.in:236
 msgid "Text mode"
 msgstr "Tekstualni režim"
 
-#: service.pl.in:210 service.pl.in:214 service.pl.in:223
+#: service.pl.in:231 service.pl.in:235 service.pl.in:244
 msgid "Graphical mode"
 msgstr "Grafički režim"
 
-#: service.pl.in:211 service.pl.in:216
+#: service.pl.in:232 service.pl.in:237
 msgid "Rebooting the system"
 msgstr "Resetujem operativni sistem"
 
-#: service.pl.in:218
+#: service.pl.in:239
 msgid "Starts all system neccesary services"
 msgstr "Pokreće sve neophodne sistemske usluge"
 
-#: service.pl.in:219
+#: service.pl.in:240
 msgid "Default runlevel"
 msgstr "Podrazumevani nivo rada"
 
-#: service.pl.in:220
+#: service.pl.in:241
 msgid "Networkless runlevel"
 msgstr "Bezmrežni nivo rada"
+
+#: users-conf.in:179
+msgid "Monitor system logs"
+msgstr "Prati sistemske dnevnike"
+
+#: users-conf.in:180
+msgid "Use audio devices"
+msgstr "Koristi zvučne uređaje"
+
+#: users-conf.in:181
+msgid "Access to CD-ROM drives"
+msgstr "Pristup CD uređajima"
+
+#: users-conf.in:182
+msgid "Access to modem devices"
+msgstr "Pristup modemskim uređajima"
+
+#: users-conf.in:183
+msgid "Connect to Internet through modem devices"
+msgstr "Povezivanje na Internet pomoću modemskih uređaja"
+
+#: users-conf.in:184
+msgid "Send and receive faxes"
+msgstr "Slanje i primanje faksova"
+
+#: users-conf.in:185
+msgid "Access to floppy drives"
+msgstr "Pristup disketnim jedinicama"
+
+#: users-conf.in:186
+msgid "Enable access to external storage devices automatically"
+msgstr "Automatski omogući pristup spoljnim diskovima"
+
+#: users-conf.in:187
+msgid "Access to tape drives"
+msgstr "Pristup trakama"
+
+#: users-conf.in:188
+msgid "Be able to get administrator privileges"
+msgstr "Mogućnost dobijanja administratorskih ovlašćenja"
+
+#: users-conf.in:492
+msgid "Default"
+msgstr "Podrazumevano"
+
+#: users-conf.in:493
+msgid "Default profile"
+msgstr "Podrazumevani profil"
