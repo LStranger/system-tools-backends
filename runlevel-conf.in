@@ -191,6 +191,18 @@ sub xml_parse_single_runlevel
 }
 
 # --- XML printing --- #
+sub xml_print_services
+{
+  my ($h) = @_;
+
+  &gst_xml_print_line ("<services>\n");
+  &gst_xml_enter ();
+
+  &gst_xml_print_hash_hash ($h, "service");
+
+  &gst_xml_leave ();
+  &gst_xml_print_line ("</services>\n");
+}
 
 sub xml_print
 {
@@ -198,7 +210,7 @@ sub xml_print
 
   &gst_xml_print_begin ();
   &gst_xml_print_structure ($$h{"runlevel"}, "runlevel");
-  &gst_xml_print_structure ($$h{"services"}, "services");
+  &xml_print_services ($$h{"services"});
   &gst_xml_print_end ();
 }
 
@@ -209,7 +221,7 @@ sub get
 {
   my %hash;
 
-  $hash{"services"} = &gst_service_sysv_get_services ();
+  $hash{"services"} = &gst_service_get_services ();
   $hash{"runlevel"} = &gst_service_sysv_get_default_runlevel ();
 
   &gst_report_end ();
@@ -223,10 +235,9 @@ sub set
   $hash = xml_parse ();
   &gst_report_end ();
 	
-	
   if ($hash)
   {
-    &gst_service_sysv_set_conf ($hash);
+    &gst_service_set_conf ($hash);
   }
 }
 

@@ -1,3 +1,9 @@
+2003-05-29  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* runlevel-conf.in, service.pl.in: added support for file-rc (ATM in
+	debian), tidied up things to allow several init types, but still much
+	more work is to come about this...
+
 2003-05-24  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* network-conf.in: I am really dumb... I still don't know how, but 

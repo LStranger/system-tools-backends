@@ -48,28 +48,28 @@ sub gst_service_sysv_get_paths
   my %dist_map =
       (
        # gst_dist => [rc.X dirs location, init.d scripts location]
-       "redhat-5.2"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "redhat-6.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "redhat-6.1"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "redhat-6.2"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "redhat-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "redhat-7.1"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "redhat-7.2"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "redhat-7.3"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "redhat-8.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "redhat-5.2"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "redhat-6.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "redhat-6.1"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "redhat-6.2"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "redhat-7.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "redhat-7.1"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "redhat-7.2"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "redhat-7.3"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "redhat-8.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
-       "mandrake-7.1" => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
-       "mandrake-7.2" => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "mandrake-7.1" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
+       "mandrake-7.2" => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
-       "debian-2.2"   => ["/etc", "/etc/init.d", "../init.d"],
-       "debian-woody" => ["/etc", "/etc/init.d", "../init.d"],
-       "debian-sarge" => ["/etc", "/etc/init.d", "../init.d"],
+       "debian-2.2"   => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
+       "debian-woody" => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
+       "debian-sarge" => ["$gst_prefix/etc", "$gst_prefix/etc/init.d", "../init.d"],
 
-       "suse-7.0"     => ["/etc/rc.d", "/etc/rc.d", "../"],
+       "suse-7.0"     => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d", "../"],
 
-       "turbolinux-7.0"   => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"],
+       "turbolinux-7.0"   => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"],
 
-       "pld-1.0"      => ["/etc/rc.d", "/etc/rc.d/init.d", "../init.d"]
+       "pld-1.0"      => ["$gst_prefix/etc/rc.d", "$gst_prefix/etc/rc.d/init.d", "../init.d"]
        );
   my $res;
 
@@ -500,11 +500,11 @@ sub gst_service_sysv_get_service_info
 }
 
 
-# This function gets an ordered array of the available services
+# This function gets an ordered array of the available services from a SysV system
 sub gst_service_sysv_get_services
 {
 	my ($service);
-	my (@arr,@ret);
+	my (@arr,%ret);
 	
 	($rcd_path, $initd_path) = &gst_service_sysv_get_paths ();
 
@@ -514,21 +514,168 @@ sub gst_service_sysv_get_services
 		$hash = &gst_service_sysv_get_service_info ($service);
 		if ($hash ne undef)
 		{
-			my ($i,$sc);
-			my (@aux);
-			push @aux, $hash;
-			$i = 0;
-			$sc = scalar (@arr);
-			while (($i < $sc) and ($arr[$i]{"priority"} <= $$hash{"priority"}))
-			{
-				$i++;
-			}
-			splice (@arr, $i, 0, @aux);
+      $ret{$service} = $hash;
 		}
 	}
 	
-	push @ret, { "service" => \@arr };
-	return \@ret;
+	return \%ret;
+}
+
+# This functions get an ordered array of the available services from a file-rc system
+sub gst_service_filerc_get_runlevels_status
+{
+  my ($start_service, $stop_service, @arr) = @_;
+  my (@ret);
+
+  # we start with the runlevels in which the service starts
+  if ($start_service !~ /-/) {
+    my (@runlevels);
+
+    @runlevels = split /,/, $start_service;
+
+    foreach $runlevel (@runlevels)
+    {
+      push @arr, { "number" => $runlevel,
+                   "action" => "start" };
+    }
+  }
+
+  # now let's go with the runlevels in which the service stops
+  if ($stop_service !~ /-/) {
+    my (@runlevels);
+
+    @runlevels = split /,/, $stop_service;
+
+    foreach $runlevel (@runlevels)
+    {
+      push @arr, { "number" => $runlevel,
+                   "action" => "stop" };
+    }
+  }
+
+  push @ret, {"runlevel" => \@arr};
+  return \@ret;
+}
+
+sub gst_service_filerc_get_service_info
+{
+  my ($line, %ret) = @_;
+  my %hash;
+  my @runlevels;
+
+  if ($line =~ /^([0-9][0-9])[\t ]+([0-9\-S,]+)[\t ]+([0-9\-S,]+)[\t ]+\/etc\/init\.d\/(.*)/)
+  {
+    $priority = $1;
+    $stop_service = $2;
+    $start_service = $3;
+    $script = $4;
+
+    return undef if (&gst_service_list_service_is_forbidden ($script));
+
+    $hash{"script"} = $script;
+
+    $hash{"runlevels"} = &gst_service_filerc_get_runlevels_status ($start_service, $stop_service);
+
+    if ($start_service eq "-")
+    {
+      $hash{"priority"} = 100 - $priority;
+      $priority = 100 - $priority;
+    }
+    else
+    {
+      $hash{"priority"} = $priority;
+    }
+
+    return (\%hash);
+  }
+
+  return undef;
+}
+
+sub gst_service_filerc_get_services
+{
+	my ($script);
+  my %ret;
+	
+  open FILE, "$gst_prefix/etc/runlevel.conf" or return undef;
+  while ($line = <FILE>)
+  {
+    if ($line !~ /^#.*/)
+    {
+      my (%hash);
+      my ($start_service, $stop_service);
+      $hash = &gst_service_filerc_get_service_info ($line);
+
+      if ($hash ne undef)
+      {
+        $script = $$hash{"script"};
+
+        if ($ret{$script} eq undef)
+        {
+          ($name, $description) = &gst_service_list_get_info ($script);
+          $$hash{"name"} = $name unless ($name eq undef);
+          $$hash{"description"} = $description unless ($description eq undef);
+          $$hash{"count"} = 1;
+
+          $ret{$script} = $hash;
+        }
+        else
+        {
+            my (@runlevels);
+
+            # We need to mix the runlevels
+            @runlevels = $$hash{"runlevels"}[0]{"runlevel"};
+            foreach $runlevel (@runlevels)
+            {
+                push @{$ret{$script}{"runlevels"}[0]{"runlevel"}}, $runlevel;
+            }
+            
+            $ret{$script}{"priority"} += $$hash{"priority"};
+
+            $ret{$script}{"count"}++;
+        }
+      }
+    }
+  }
+
+  # we have to return the average priority
+  foreach $i (sort keys %ret)
+  {
+      $ret{$i}{"priority"} = int ($ret{$i}{"priority"} / $ret{$i}{"count"});
+      delete $ret{$i}{"count"};
+  }
+
+  return \%ret;
+}
+
+
+# generic functions to get the available services
+sub gst_get_init_type
+{
+  if (($gst_dist =~ /debian/) && (stat ("$gst_prefix/etc/runlevel.conf")))
+  {
+    return "file-rc";
+  }
+  else
+  {
+    return "sysv";
+  }
+}
+
+sub gst_service_get_services
+{
+  $type = &gst_get_init_type ();
+
+  if ($type eq "sysv")
+  {
+    return &gst_service_sysv_get_services ();
+  }
+  elsif ($type eq "file-rc")
+  {
+    return &gst_service_filerc_get_services ();
+  }
+
+  return undef;
 }
 
 
@@ -570,6 +717,8 @@ sub gst_service_sysv_remove_link
   }
 }
 
+
+# These are the functions for storing the service settings from XML in SysV
 sub gst_service_sysv_set_service
 {
   my ($service) = @_;
@@ -613,14 +762,119 @@ sub gst_service_sysv_set_service
 sub gst_service_sysv_set_services
 {
 	my ($services) = @_;
-	
+
 	foreach $i (@$services)
 	{
 		&gst_service_sysv_set_service($i);
 	}
 }
 
-sub gst_service_sysv_set_conf
+# This is the function for storing the service settings from XML in file-rc
+sub gst_service_filerc_set_services
+{
+  my ($services) = @_;
+  my ($buff, $lineno, $line, $file);
+
+  $file = "$gst_prefix/etc/runlevel.conf";
+
+  $buff = &gst_file_buffer_load ($file);
+  &gst_file_buffer_join_lines ($buff);
+
+  $lineno = 0;
+
+  # We prepare the file for storing the configuration, save the initial comments
+  # and delete the rest
+  do {
+    $lineno++;
+  } while ($$buff[$lineno] =~ /^#.*/);
+
+  for ($i = $lineno; $i < scalar (@$buff); $i++)
+  {
+    $$buff[$i] =~ /.*\/etc\/init\.d\/(.*)/;
+
+    # we need to keep the forbidden services and the services that only start in rcS.d
+    if (!gst_service_list_service_is_forbidden ($1))
+    {
+      delete $$buff[$i];
+    }
+  }
+
+  # Now we append the services
+  foreach $service (@$services)
+  {
+    my (@start, @stop, @arr);
+
+    $arr = $$service{"runlevels"}[0]{"runlevel"};
+
+    # split the runlevels in two arrays
+    foreach $i (@$arr)
+    {
+      if ($$i{"action"} eq "start")
+      {
+        push @start, $$i{"number"};
+      }
+      else
+      {
+        push @stop, $$i{"number"};
+      }
+    }
+
+    if ((scalar (@start) eq 0) && (scalar (@stop) eq 0))
+    {
+      #print a empty line
+      $line = sprintf ("%0.2d",$$service{"priority"}) . "\t";
+      $line .= "-\t-";
+      $line .= "\t\t". "/etc/init.d/" . $$service{"script"} . "\n";
+      push @$buff, $line;
+    }
+    else
+    {      
+      if (scalar (@start) ne 0)
+      {
+        # print the line with the runlevels in which the service starts with priority = $priority
+        $line = sprintf ("%0.2d",$$service{"priority"}) . "\t";
+        $line .= "-" . "\t";
+        $line .= join ",", sort @start;
+        $line .= "\t\t". "/etc/init.d/" . $$service{"script"} . "\n";
+        push @$buff, $line;
+      }
+
+      if (scalar (@stop) ne 0)
+      {
+        # print the line with the runlevels in which the service stops with priority = 100 - $priority
+        $line = sprintf ("%0.2d", 100 - $$service{"priority"}) . "\t";
+        $line .= join ",", sort @stop;
+        $line .= "\t" . "-";
+        $line .= "\t\t". "/etc/init.d/" . $$service{"script"} . "\n";
+        push @$buff, $line;
+      }
+    }
+  }
+
+  @$buff = sort @$buff;
+
+  push @$buff, "\n";
+  &gst_file_buffer_clean ($buff);
+  &gst_file_buffer_save ($buff, $file);
+}
+
+sub gst_service_set_services
+{
+	my ($services) = @_;
+
+  $type = &gst_get_init_type ();
+
+  if ($type eq "sysv")
+  {
+    &gst_service_sysv_set_services ($services);
+  }
+  elsif ($type eq "file-rc")
+  {
+    &gst_service_filerc_set_services ($services);
+  }
+}
+
+sub gst_service_set_conf
 {
   my ($hash) = @_;
   my ($services);
@@ -629,7 +883,7 @@ sub gst_service_sysv_set_conf
   $services = $$hash{"services"}[0]{"service"};
   return unless $services;
   
-  &gst_service_sysv_set_services($services);
+  &gst_service_set_services($services);
 }
 
 # gets the valid parameters for a service
