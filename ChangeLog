@@ -1,3 +1,8 @@
+2004-01-31  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* boot-conf.in, boot.pl.in: added support for choosing the preferred
+	  bootloader if there are several installed
+
 2004-01-31  Žygimantas Beručka  <uid0@tuxfamily.org>
 
 	* configure.in: Added "lt" to ALL_LINGUAS.

@@ -64,7 +64,6 @@ $description =<<"end_of_description;";
        Configures Boot manager (LILO and GRUB at the moment).
 end_of_description;
 
-
 # --- XML parsing ---
 
 # Scan XML from standard input to an internal tree.
@@ -143,10 +142,12 @@ sub xml_print
 
   &gst_xml_print_begin ();
 
-  &gst_xml_print_hash ($$h{"partitions"}, "partitions");
+  &gst_xml_print_structure ($$h{"bootloaders"}, "bootloaders") if ($$h{"bootloaders"} ne undef);
+
+  &gst_xml_print_hash ($$h{"partitions"}, "partitions") if ($$h{"partitions"} ne undef);
   &gst_xml_print_vspace ();
   &gst_xml_print_scalars ($h, @scalars);
-  &gst_xml_print_structure ($$h{"entry"}, "entry");
+  &gst_xml_print_structure ($$h{"entry"}, "entry") if ($$h{"entry"} ne undef);
 
   &gst_xml_print_end ();
 }
@@ -155,13 +156,22 @@ sub xml_print
 # Top-level actions.
 sub get
 {
-  my ($hash);
+  my ($hash, $bootl) = @_;
+  my ($count);
 
   #FIXME: do mount in a more generic way, this is done because /boot may be unmounted
   gst_file_run ("mount /boot");
 
-  $hash = &gst_boot_conf_get ();
-  &gst_boot_fix ($hash);
+  ($count, $hash) = &gst_boot_bootloader_list ();
+
+  if (($bootl ne undef) || ($count == 1))
+  {
+    $bootloader = $bootl;
+    $bootloader = &gst_boot_bootloader_get () if ($bootl eq undef);
+
+    $hash = &gst_boot_conf_get ($bootloader);
+    &gst_boot_fix ($hash);
+  }
   
   &gst_report_end ();
   &xml_print ($hash);
@@ -172,7 +182,6 @@ sub get
 sub set
 {
   my ($hash);
-  my ($bootl);
 
   #FIXME: do mount in a more generic way, this is done because /boot may be unmounted
   gst_file_run ("mount /boot");
@@ -181,16 +190,16 @@ sub set
 
   if ($hash)
   {
+    $bootloader = &gst_boot_bootloader_get () if ($bootloader eq undef);
+      
     &gst_boot_fix ($hash);
     &gst_boot_conf_set ($hash);
 
-    $bootl = &gst_boot_bootloader_get ();
-
-    if ($bootl eq "lilo")
+    if ($bootloader eq "lilo")
     {
       &gst_file_run (&gst_file_locate_tool ("lilo"));
     }
-    elsif ($bootl eq "yaboot")
+    elsif ($bootloader eq "yaboot")
     {
       &gst_file_run (&gst_file_locate_tool ("ybin"));
     }
@@ -249,10 +258,11 @@ sub verify
 # Read general.pl.in:gst_run_directive to know about the format of this hash.
 
 $directives = {
-  "get"    => [ \&get,    [], "" ],
-  "set"    => [ \&set,    [], "" ],
-  "filter" => [ \&filter, [], "" ],
-  "verify" => [ \&verify, [ "type", "value", "xtravalues*" ], "Verifies the values, depending on the type." ]
+  "get"     => [ \&get,    [], "" ],
+  "set"     => [ \&set,    [], "" ],
+  "filter"  => [ \&filter, [], "" ],
+  "getfrom" => [ \&get,    [ "bootloader" ], "Get the configuration from an specified bootloader."],
+  "verify"  => [ \&verify, [ "type", "value", "xtravalues*" ], "Verifies the values, depending on the type." ]
     };
 
 $tool = &gst_init ($name, $version, $description, $directives, @ARGV);

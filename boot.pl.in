@@ -146,6 +146,31 @@ sub gst_boot_fix
 
 # --------------------------------------------------------
 
+sub gst_boot_bootloader_list
+{
+  my (@list);
+
+  if (gst_file_locate_tool ("lilo"))
+  {
+    push @list, { "name" => "LILO",
+                  "exec" => "lilo" };
+  }
+
+  if (gst_file_locate_tool ("grub-install"))
+  {
+    push @list, { "name" => "Grub",
+                  "exec" => "grub" };
+  }
+
+  if (gst_file_locate_tool ("ybin"))
+  {
+    push @list, { "name" => "YaBoot",
+                  "exec" => "yaboot" };
+  }
+
+  return (scalar @list, { "bootloaders" => { "bootloader" => \@list }});
+}
+
 sub gst_boot_bootloader_get
 {
   my ($current_tool, $current_date, $tool, $date);
@@ -234,7 +259,7 @@ sub gst_boot_entries_get
 
 sub gst_boot_conf_get
 {
-  my ($tool) = &gst_boot_bootloader_get ();
+  my ($tool) = @_;
   my $config_file = &gst_boot_grub_get_config_file ();
   my %tool_tables =
   (
