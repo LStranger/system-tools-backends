@@ -23,12 +23,16 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/report.pl";
-require "$SCRIPTSDIR/platform.pl";
-require "$SCRIPTSDIR/gettext.pl";
-require "$SCRIPTSDIR/xml.pl";
+require "$SCRIPTSDIR/report.pl$DOTIN";
+require "$SCRIPTSDIR/platform.pl$DOTIN";
+require "$SCRIPTSDIR/gettext.pl$DOTIN";
+require "$SCRIPTSDIR/xml.pl$DOTIN";
 
 
 # --- Operation modifying variables --- #

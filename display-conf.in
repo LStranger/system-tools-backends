@@ -32,11 +32,15 @@
 
 
 BEGIN {
-  $SCRIPTSDIR = "$SCRIPTSDIR";
-  $SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+  $SCRIPTSDIR = "___scriptsdir___";
+  if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+  {
+      $SCRIPTSDIR = ".";
+      $DOTIN = ".in";
+  }
   
-  require "$SCRIPTSDIR/platform.pl";
-  require "$SCRIPTSDIR/x.pl";
+  require "$SCRIPTSDIR/platform.pl$DOTIN";
+  require "$SCRIPTSDIR/x.pl$DOTIN";
 }
 
 use File::Copy;

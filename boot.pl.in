@@ -23,14 +23,18 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/general.pl";
-require "$SCRIPTSDIR/util.pl";
-require "$SCRIPTSDIR/file.pl";
-require "$SCRIPTSDIR/xml.pl";
-require "$SCRIPTSDIR/parse.pl";
-require "$SCRIPTSDIR/replace.pl";
+require "$SCRIPTSDIR/general.pl$DOTIN";
+require "$SCRIPTSDIR/util.pl$DOTIN";
+require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/xml.pl$DOTIN";
+require "$SCRIPTSDIR/parse.pl$DOTIN";
+require "$SCRIPTSDIR/replace.pl$DOTIN";
 
 my @global_vars = qw (default prompt timeout append root);
 my @common_image_vars = qw (label);

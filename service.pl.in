@@ -23,10 +23,14 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/file.pl";
-require "$SCRIPTSDIR/report.pl";
+require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/report.pl$DOTIN";
 
 
 # --- Service/daemon utilities --- #

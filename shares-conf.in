@@ -40,17 +40,21 @@
 
 
 BEGIN {
-  $SCRIPTSDIR = "$SCRIPTSDIR";
-  $SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+  $SCRIPTSDIR = "___scriptsdir___";
+  if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+  {
+      $SCRIPTSDIR = ".";
+      $DOTIN = ".in";
+  }
   
-  require "$SCRIPTSDIR/general.pl";
-  require "$SCRIPTSDIR/platform.pl";
-  require "$SCRIPTSDIR/util.pl";
-  require "$SCRIPTSDIR/file.pl";
-  require "$SCRIPTSDIR/xml.pl";
-  require "$SCRIPTSDIR/filesys.pl";
-  require "$SCRIPTSDIR/network.pl";
-  require "$SCRIPTSDIR/share.pl";
+  require "$SCRIPTSDIR/general.pl$DOTIN";
+  require "$SCRIPTSDIR/platform.pl$DOTIN";
+  require "$SCRIPTSDIR/util.pl$DOTIN";
+  require "$SCRIPTSDIR/file.pl$DOTIN";
+  require "$SCRIPTSDIR/xml.pl$DOTIN";
+  require "$SCRIPTSDIR/filesys.pl$DOTIN";
+  require "$SCRIPTSDIR/network.pl$DOTIN";
+  require "$SCRIPTSDIR/share.pl$DOTIN";
 }
 
 

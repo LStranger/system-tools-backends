@@ -23,9 +23,13 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/file.pl";
+require "$SCRIPTSDIR/file.pl$DOTIN";
 
 
 # This code is some experimental stuff that may be useful on the future.

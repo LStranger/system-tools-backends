@@ -22,11 +22,15 @@
 # Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307, USA.
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/general.pl";
-require "$SCRIPTSDIR/file.pl";
-require "$SCRIPTSDIR/xml.pl";
+require "$SCRIPTSDIR/general.pl$DOTIN";
+require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/xml.pl$DOTIN";
 
 use Text::ParseWords;
 use File::Copy;

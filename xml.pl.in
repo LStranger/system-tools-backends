@@ -25,11 +25,15 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/util.pl";
-require "$SCRIPTSDIR/general.pl";
-require "$SCRIPTSDIR/debug.pl";
+require "$SCRIPTSDIR/util.pl$DOTIN";
+require "$SCRIPTSDIR/general.pl$DOTIN";
+require "$SCRIPTSDIR/debug.pl$DOTIN";
 
 
 # --- XML print formatting  --- #

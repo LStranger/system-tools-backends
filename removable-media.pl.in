@@ -23,10 +23,14 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/be.pl";
-require "$SCRIPTSDIR/media.pl";
+require "$SCRIPTSDIR/be.pl$DOTIN";
+require "$SCRIPTSDIR/media.pl$DOTIN";
 
 
 # xst_removable_media_get_list

@@ -24,11 +24,15 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/util.pl";
-require "$SCRIPTSDIR/file.pl";
-require "$SCRIPTSDIR/debug.pl";
+require "$SCRIPTSDIR/util.pl$DOTIN";
+require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/debug.pl$DOTIN";
 
 
 # The concept of keyword (kw) here is a key, normaly in its own line, whose

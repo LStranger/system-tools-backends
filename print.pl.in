@@ -23,12 +23,16 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/general.pl";
-require "$SCRIPTSDIR/file.pl";
-require "$SCRIPTSDIR/parse.pl";
-require "$SCRIPTSDIR/replace.pl";
+require "$SCRIPTSDIR/general.pl$DOTIN";
+require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/parse.pl$DOTIN";
+require "$SCRIPTSDIR/replace.pl$DOTIN";
 
 
 sub xst_print_conf_get

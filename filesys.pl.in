@@ -23,11 +23,15 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/file.pl";
-require "$SCRIPTSDIR/parse.pl";
-require "$SCRIPTSDIR/xml.pl";
+require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/parse.pl$DOTIN";
+require "$SCRIPTSDIR/xml.pl$DOTIN";
 
 
 # --- Utilities --- #

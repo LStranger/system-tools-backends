@@ -1,5 +1,9 @@
 Wed Aug 22 22:16:03 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* *{pl,-conf}.in: Oops, forgot about the .in suffix of files
+	that haven't been processed. Put the prefix if the backend is
+	the .in version.
+
 	* *.pl.in: Ah, change had to go here too.
 
 	* *-conf.in: Check for ___scriptsdir___ value. If it is

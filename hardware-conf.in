@@ -51,11 +51,15 @@
 
 
 BEGIN {
-  $SCRIPTSDIR = "$SCRIPTSDIR";
-  $SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+  $SCRIPTSDIR = "___scriptsdir___";
+  if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+  {
+      $SCRIPTSDIR = ".";
+      $DOTIN = ".in";
+  }
   
-  require "$SCRIPTSDIR/general.pl";
-  require "$SCRIPTSDIR/xml.pl";
+  require "$SCRIPTSDIR/general.pl$DOTIN";
+  require "$SCRIPTSDIR/xml.pl$DOTIN";
 }
 
 

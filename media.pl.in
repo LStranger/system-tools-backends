@@ -23,10 +23,14 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/xml.pl";
-require "$SCRIPTSDIR/parse.pl";
+require "$SCRIPTSDIR/xml.pl$DOTIN";
+require "$SCRIPTSDIR/parse.pl$DOTIN";
 
 
 # xst_media_get_ide_device_from_proc

@@ -23,10 +23,14 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/general.pl";
-require "$SCRIPTSDIR/file.pl";
+require "$SCRIPTSDIR/general.pl$DOTIN";
+require "$SCRIPTSDIR/file.pl$DOTIN";
 
 
 %xst_debug_fd_hash = ();

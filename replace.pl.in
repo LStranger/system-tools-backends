@@ -26,11 +26,15 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/util.pl";
-require "$SCRIPTSDIR/file.pl";
-require "$SCRIPTSDIR/parse.pl";
+require "$SCRIPTSDIR/util.pl$DOTIN";
+require "$SCRIPTSDIR/file.pl$DOTIN";
+require "$SCRIPTSDIR/parse.pl$DOTIN";
 
 
 # General rules: all replacing is in-line. Respect unsupported values, comments

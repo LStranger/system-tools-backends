@@ -24,10 +24,14 @@
 
 
 $SCRIPTSDIR = "$SCRIPTSDIR";
-$SCRIPTSDIR = "." if ($SCRIPTSDIR =~ /^___/);
+if ($SCRIPTSDIR =~ /^___scriptsdir__[_]/)
+{
+    $SCRIPTSDIR = ".";
+    $DOTIN = ".in";
+}
 
-require "$SCRIPTSDIR/general.pl";
-require "$SCRIPTSDIR/report.pl";
+require "$SCRIPTSDIR/general.pl$DOTIN";
+require "$SCRIPTSDIR/report.pl$DOTIN";
 
 
 $XST_FILE_READ  = 1;
