@@ -1,5 +1,10 @@
 2001-05-09  Hans Petter Jansson  <hpj@ximian.com>
 
+	* network.pl.in: For redhat-7.0, smb.conf is in /etc/samba/smb.conf. Make
+	  a new pair of parse/replace-tables for this.
+
+2001-05-09  Hans Petter Jansson  <hpj@ximian.com>
+
 	* filesys.pl.in (xst_filesys_info_get_network_host): Implement.
 	  (xst_filesys_info_set_network_host): Implement.
 	  (xst_filesys_info_get_network_path): Implement.
