@@ -461,6 +461,7 @@ sub xst_network_get_interfaces_parse_table
 		 IFACE => "#iface#" },
 	    table =>
 		   [
+        [ name,               \&xst_parse_sh,      IFCFG, NAME ],
 		    [ dev,                \&xst_parse_sh,      IFCFG, DEVICE ],
 		    [ address,            \&xst_parse_sh,      IFCFG, IPADDR ],
 		    [ netmask,            \&xst_parse_sh,      IFCFG, NETMASK ],
@@ -574,7 +575,8 @@ sub xst_network_get_interface_replace_table
 	   WVDIAL => "/etc/wvdial.conf"
       },
       table =>
-      [
+       [
+        [ name,               \&xst_replace_sh,      IFCFG, NAME ],
         [ dev,                \&xst_replace_sh,      IFCFG, DEVICE ],
         [ address,            \&xst_replace_sh,      IFCFG, IPADDR ],
         [ netmask,            \&xst_replace_sh,      IFCFG, NETMASK ],
