@@ -1,3 +1,13 @@
+2001-07-30  Tambet Ingo  <tambet@ximian.com>
+
+	* boot.pl.in (xst_boot_known_var): Deal only with selected list of keywords.
+	(xst_boot_conf_edit_image): Rewrote it. It's now much safer since it doesn't
+	touch anything else than really needed (value part).
+	(xst_boot_conf_set_images): Match images based on key, not name and image location.
+	(xst_boot_set_global): Improved quoting of values with spaces or with '='.
+
+	* boot-conf.in (xml_parse_boot): Removed some unused keywords.
+
 2001-07-28  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_update_display_mode): Chop off additional space.

@@ -233,14 +233,9 @@ sub xst_boot_set_global
   my $lineno = 0;
 
   return 0 unless &xst_boot_known_var ($key, \@global_vars, 0);
-  
-  # quote globals with spaces if neccecary (append=mem=128 param2=122)
-  if ($val =~ /^\S+\s+\S+/ && !($val =~ /^\".+\"/)) {
-    $val = $quote . $val . $quote;
-  }
 
-  # Stupid, but neccecary hack, append lines ALWAYS need to be quoted.
-  $val = $quote . $val . $quote if $key =~ /append/i;
+  $val = "\"$val\"" if ($val =~ /[ \t]/ && (! ($val =~ /^\".+\"$/)));
+  $val = "\"$val\"" if ($val =~ /\=/ && (!($val =~ /^\".+\"$/)));
   
   $buff = &xst_file_buffer_load ($file);
   $found = 0;
