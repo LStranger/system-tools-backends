@@ -155,7 +155,7 @@ sub xml_print_globals
 
   while ($i = shift @tags)
   {
-    $val = &quote ($$h{$i});
+    $val = &xst_xml_quote ($$h{$i});
 
     &xst_xml_print ("<$i>$val</$i>\n") if (exists $$h{$i});
   }
@@ -177,7 +177,7 @@ sub xml_print_images
     
     foreach $i (keys %$entry)
     {
-      $val = &quote ($$entry{$i});
+      $val = &xst_xml_quote ($$entry{$i});
 
       if ($val eq "") { &xst_xml_print ("<$i/>\n"); }
       else { &xst_xml_print ("<$i>$val</$i>\n"); }
