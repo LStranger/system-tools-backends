@@ -1,3 +1,8 @@
+2001-09-19  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* sysv-conf.in -> runlevel-conf.in: Hans Petter said he didn't
+	like the name, and I didn't like it either.
+
 2001-09-19 Tambet Ingo   <tambet@ximian.com>
 
 	* display-conf.in (distro_file): Rewrote to support possible irregular
