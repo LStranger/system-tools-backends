@@ -1,3 +1,8 @@
+2003-03-12  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
+	* network-conf.in: now stores fine both IPv4 and IPv6 
+	  addresses in the /etc/hosts file
+
 2003-03-08  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* Release 0.24.0
