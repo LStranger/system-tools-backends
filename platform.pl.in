@@ -267,7 +267,6 @@ sub xst_platform_ensure_supported
     if ($platform eq $$tool{"platform"})
     {
       &xst_report ("platform_success", $platform);
-      &xst_end ();
       return;
     }
   }
@@ -287,8 +286,6 @@ sub xst_platform_ensure_supported
   {
     &xst_report ("platform_undet");
   }
-
-  &xst_end ();
 }
 
 

@@ -106,18 +106,18 @@ $xst_report_started = 0;
 sub xst_report
 {
   my ($key, @args) = @_;
-  my ($mayor, $minor, $str, $format, $res);
+  my ($major, $minor, $str, $format, $res);
 
   &xst_debug_print_line ("Non-existing report key $key") if !exists $xst_report_message{$key};
 
-  ($mayor, $str) = @{$xst_report_message{$key}};
+  ($major, $str) = @{$xst_report_message{$key}};
 
-  $xst_report_started = 1 if !$xst_report_started && $key eq "begin" && $mayor eq "sys";
+  $xst_report_started = 1 if !$xst_report_started && $key eq "begin" && $major eq "sys";
 
   # Verbose (--verbose) output is human-readable only.
   $format = "$str\n";
   $res = sprintf ($format, @args);
-  print STDERR "$xst_name - ${key}::$res" if $xst_do_verbose || $mayor eq "error";
+  print STDERR "$xst_name - $major::${key}::$res" if $xst_do_verbose || $major eq "error";
   
   if ($key ne "progress")
   {
@@ -127,10 +127,10 @@ sub xst_report
   # Report (--report) output is machine-readable.
   if ($xst_do_report)
   {
-    print STDOUT join ("::", $key, $str, @args) . "\n";
+    print STDOUT join ("::", $major, $key, $str, @args) . "\n";
   }
 
-  &xst_debug_print_indented_string ($xst_report_level, "report $key: $res");
+  &xst_debug_print_indented_string ($xst_report_level, "report $major:$key: $res");
 }
 
 

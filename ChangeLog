@@ -1,3 +1,10 @@
+Thu Aug 16 02:02:18 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* platform.pl.in (xst_platform_ensure_supported): Removed extra
+	xst_end calls.
+
+	* report.pl.in (xst_report): Report major too.
+
 2001-08-16  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* ishare.pl.in (xst_ishare_dhcp_conf_add_interface): Oops:
