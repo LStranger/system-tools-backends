@@ -1,3 +1,8 @@
+2001-08-15  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* boot.pl.in: Removed use strict until we can honour this
+	clause.
+
 2001-08-15  Tambet Ingo  <tambet@ximian.com>
 
 	* x.pl.in (x_probe): Added X probing functions.
@@ -10,7 +15,8 @@
 	reasons.
 	(xst_directive_run): Use this new thing, which now sends
 	the end directive and the end of request string, so frontend
-	doesn't hang.
+	doesn't hang. Renamed from xst_run_directive.
+	(xst_run): Use directive_run.
 
 2001-08-13  Arturo Espinosa Aldama  <arturo@ximian.com>
 

@@ -29,8 +29,6 @@ require "___scriptsdir___/xml.pl";
 require "___scriptsdir___/parse.pl";
 require "___scriptsdir___/replace.pl";
 
-use strict;
-
 my @global_vars = qw (default prompt timeout append root);
 my @common_image_vars = qw (label);
 my @image_vars = (@common_image_vars, qw (image append root));
