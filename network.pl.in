@@ -753,7 +753,7 @@ sub xst_network_suse70_ppp_iface_activate
   {
     &xst_debug_print_string ("\n\nifup ppp iface $name\n\n");
     print STDERR ("\n\nifup ppp iface $name\n\n");
-    return -1 if &xst_file_run ("$wvdial_dod start \"$name\" &");
+    return -1 if &xst_file_run_bg ("$wvdial_dod start \"$name\"");
   }
   else
   {
@@ -1036,7 +1036,7 @@ sub xst_network_rh62_interface_activate_by_dev
     &xst_report ("network_iface_activate", $dev);
     &xst_debug_print_string ("\n\nifup $dev\n\n");
     print STDERR ("\n\nifup $dev\n\n");
-    return -1 if &xst_file_run ("ifup $dev &");
+    return -1 if &xst_file_run_bg ("ifup $dev");
   }
   else
   {
@@ -1093,7 +1093,7 @@ sub xst_network_suse70_interface_activate_by_dev
     &xst_report ("network_iface_deactivate", $hash{"dev"});
     &xst_debug_print_string ("\n\nifup $dev\n\n");
     print STDERR ("\n\nifup $dev\n\n");
-    return -1 if &xst_file_run ("$network start $dev &");
+    return -1 if &xst_file_run_bg ("$network start $dev");
   }
   else
   {

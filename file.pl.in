@@ -506,11 +506,11 @@ sub xst_file_buffer_join_lines
 # redirection is appended, to make the utility perfectly silent. The
 # preprocessed command line is run, and its exit value is returned.
 #
-# Example: "mkswap /dev/hda3" -> '/bin/sh -c "/sbin/mkswap /dev/hda3" >/dev/null 2>/dev/null'.
+# Example: "mkswap /dev/hda3" -> 'PATH=$PATH:/sbin:/usr/sbin /sbin/mkswap /dev/hda3 >/dev/null 2>/dev/null'.
 
 sub xst_file_run
 {
-  my ($cmd) = @_;
+  my ($cmd, $background) = @_;
   my ($command, $tool_name, $tool_path, @argline);
 
   &xst_report_enter ();
@@ -526,14 +526,22 @@ sub xst_file_run
 
   $command = "$tool_path @argline";
   $command =~ s/\"/\\\"/g;
+  $command = "PATH=\$PATH:/sbin:/usr/sbin $command > /dev/null 2> /dev/null";
+  $command .= " &" if $background;
 
-  &xst_report ("file_run", "PATH=\$PATH:/sbin:/usr/sbin $command > /dev/null 2> /dev/null");
+  &xst_report ("file_run", $command);
   &xst_report_leave ();
 
   # As documented in perlfunc, divide by 256.
-  return (system ("PATH=\$PATH:/sbin:/usr/sbin $command > /dev/null 2> /dev/null") / 256);
+  return (system ($command) / 256);
 }
 
+sub xst_file_run_bg
+{
+  my ($cmd) = @_;
+
+  return &xst_file_run ($cmd, 1);
+}
 
 # &xst_file_locate_tool
 #

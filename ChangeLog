@@ -1,11 +1,17 @@
 2001-07-18  Arturo Espinosa Aldama  <arturo@ximian.com>
 
+	* file.pl.in (xst_file_run): Accept a flag arg $background
+	that will run the command on background.
+	(xst_file_run_bg): Wrapper to this.
+
 	* users-conf.in (set): Call write_profiles.
 	(xml_parse): Call xml_parse_profiles.
 	(xml_parse_profiles): Get "profiles" tag contents from read
 	xml document and set it in "profiles" key of data hash.
 	(write_profiles): If $$hash{"profiles"} is not empty,
 	save it to profiles.xml location.
+	(xml_parse_users): Ignore profiles tag.
+	(xml_parse_profiles): Profiles record is a ref to an array.
 
 	* xml.pl.in (xst_xml_scan_recurse): Removed use of global
 	array xst_xml_scan_list.

@@ -725,7 +725,7 @@ sub xml_parse_profiles
 
   if ($$tool{"xml_doc"} =~ /<profiles>(.*)<\/profiles>/ms)
   {
-    $$hash{"profiles"} = $1;
+    $$hash{"profiles"} = [$1];
   }
 }
 
@@ -743,6 +743,7 @@ sub xml_parse_users
 		elsif ($$tree[0] eq "userdb") { &xml_parse_userdb ($$tree[1], $hash); }
 		elsif ($$tree[0] eq "groupdb") { &xml_parse_groupdb ($$tree[1], $hash); }
 		elsif ($$tree[0] eq "shells")  { }
+		elsif ($$tree[0] eq "profiles")  { }
 		else
 		{
 		  &xst_report ("xml_unexp_tag", $$tree[0]);
