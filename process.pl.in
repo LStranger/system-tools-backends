@@ -33,10 +33,14 @@ require "$SCRIPTSDIR/file.pl$DOTIN";
 
 sub gst_process_kill_by_pidfile
 {
-  my ($filename) = @_;
-  my ($pidfile, $buf, $pid);
+  my ($pidfile) = @_;
+  my ($buf, $pid);
 
-  $pidfile = "/var/run/" . $filename;
+  if ($pidfile !~ /^\//)
+  {
+    # add default pidfiles path if it isn't full path
+    $pidfile = "/var/run/" . $pidfile;
+  }
 
   if (&gst_file_exists ($pidfile))
   {

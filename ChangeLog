@@ -1,3 +1,9 @@
+2005-02-28  Carlos Garnacho Parro  <carlosg@gnome.org>
+
+	* network.pl.in: add dhcpcd as an option to dhclient. Fixes #164993
+	* process.pl.in (gst_process_kill_by_pidfile): add the possibility of
+	specifying a full path, defaulting to /var/run
+
 2005-02-25  Carlos Garnacho Parro  <carlosg@gnome.org>
 
 	* share.pl.in: avoid print$ section as well in smb.conf, it has much

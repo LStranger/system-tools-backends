@@ -149,7 +149,7 @@ sub gst_network_config_wireless
 
 sub gst_network_enable_iface
 {
-  my ($hash, $dev, $command_ifconfig, $command_dhclient) = @_;
+  my ($hash, $dev, $command_ifconfig) = @_;
   my ($address, $netmask, $bootproto, $remote_address);
 
   $address        = $$hash{"configuration"}{"address"};
@@ -159,7 +159,14 @@ sub gst_network_enable_iface
 
   if ($bootproto eq "dhcp")
   {
-    $command = "$command_dhclient -e $dev";
+    if (&gst_file_locate_tool ("dhclient"))
+    {
+      $command = "dhclient -pf /var/run/dhclient.$dev.pid -e $dev";
+    }
+    else
+    {
+      $command = "dhcpcd $dev";
+    }
   }
   else
   {
@@ -252,6 +259,7 @@ sub drop_dhcp_connection
 {
   my ($dev) = @_;
   &gst_process_kill_by_pidfile ("dhclient.$dev.pid");
+  &gst_process_kill_by_pidfile ("/etc/dhcpc/dhcpcd-$dev.pid");
 }
 
 sub drop_pppd_connection
@@ -263,13 +271,12 @@ sub drop_pppd_connection
 sub gst_network_enable_iface_with_config
 {
   my ($hash) = @_;
-  my ($command_ifconfig, $command_iwconfig, $command_dhclient);
+  my ($command_ifconfig, $command_iwconfig);
   my ($command_pppd, $command_chat);
   my ($dev, $command, $ret);
 
   $command_ifconfig = "ifconfig";
   $command_iwconfig = "iwconfig";
-  $command_dhclient = "dhclient";
   $command_pppd     = "pppd";
   $command_chat     = gst_file_locate_tool ("chat");
 
@@ -304,7 +311,7 @@ sub gst_network_enable_iface_with_config
     {
       # if it's a wireless interface, put first the essid
       &gst_network_config_wireless ($hash, $dev, $command_iwconfig, $command_ifconfig);
-      $ret = &gst_network_enable_iface ($hash, $dev, $command_ifconfig, $command_dhclient);
+      $ret = &gst_network_enable_iface ($hash, $dev, $command_ifconfig);
     }
   }
 
