@@ -1834,6 +1834,7 @@ sub set_immediate
   # Update exports.
 
   be_service_restart(80, "-D", "samba", "smb", "smbd");
+  be_progress(60);
 
   if ($exportfs_tool eq "")
   {
@@ -1845,7 +1846,11 @@ sub set_immediate
     be_report_info(12, "NFS export tables reloaded");
   }
 
+  be_progress(80);
+
   # Update imports.
+
+  my $num_done = 0;
 
   if (($mount_tool ne "") && ($umount_tool ne ""))
   {
@@ -1870,6 +1875,9 @@ sub set_immediate
       shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
       shift @shares; shift @shares; shift @shares; shift @shares; shift @shares;
       shift @shares;
+      
+      $num_done++;
+      be_progress(80 + (20 / ((($#cf_shares_list + 1) / 11) - $num_done + 1)));
     }
   }
   else
@@ -1883,9 +1891,9 @@ sub set
 {
   xml_parse ();
 
-  write_fstab;
-  write_exports;
-  write_smb_conf;
+  write_fstab; be_progress(10);
+  write_exports; be_progress(20);
+  write_smb_conf; be_progress(30);
 
   if ($be_do_immediate)
   {

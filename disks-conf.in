@@ -745,6 +745,20 @@ sub set_immediate
   $mount_tool = be_locate_tool("mount");
   $umount_tool = be_locate_tool("umount");
 
+  # Count partitions.
+
+  my $i; my $j;
+  my $num_partitions = 0;
+  my $num_done = 0;
+  
+  for ($i = 0; $cf_disks[$i]; $i++)
+  {
+    for ($j = 0; $cf_disks[$i]->{partitions}[$j]; $j++)
+    {
+      $num_partitions++;
+    }
+  }
+
   # Update mount status.
 
   if (($mount_tool ne "") && ($umount_tool ne ""))
@@ -766,6 +780,9 @@ sub set_immediate
           be_report_info(5, "Unmounting " . $cf_disks[$i]->{partitions}[$j]->{device});
           system "$umount_tool " . $cf_disks[$i]->{partitions}[$j]->{device} . " >/dev/null 2>/dev/null";
         }
+	
+	$num_done++;
+        be_progress(10 + (80 / ($num_partitions - $num_done + 1)));
       }
     }
   }
@@ -773,6 +790,8 @@ sub set_immediate
   {
     be_report_error(01, "Could not find mount tools. No mounting done");
   }
+  
+  be_progress(90);
 }
 
 
@@ -780,7 +799,7 @@ sub set
 {
   xml_parse ();
 
-  write_fstab;
+  write_fstab; be_progress(10);
 
   if ($be_do_immediate)
   {

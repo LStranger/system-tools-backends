@@ -320,11 +320,13 @@ sub write_group_passwd
   @parse_users = @users;
   $parse_passwd_last_modified = $passwd_last_modified;
   &read_passwd_shadow;
+  be_progress(10);
 
   %parse_groups_hash = %groups_hash;
   @parse_groups = @groups;
   $parse_group_last_modified = $group_last_modified;
   &read_group;
+  be_progress(20);
 	
 #	if ($passwd_last_modified > $parse_passwd_last_modified) 
 #	{
@@ -352,25 +354,35 @@ sub write_group_passwd
 	  $groups_all{$i} |= 2;
 	}
 	
+	be_progress(25);
+	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  &del_user ($users_hash{$i}) if ($users_all{$i} == 1);
 	}
+	
+	be_progress(35);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
 	  &del_group ($groups_hash{$i}) if ($groups_all{$i} == 1);
 	}
 	
+	be_progress(45);
+	
 	foreach $i (sort (keys (%groups_all)))
 	{
 	  &add_group ($parse_groups_hash{$i}) if ($groups_all{$i} == 2);
 	}
 	
+	be_progress(55);
+	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  &add_user ($parse_users_hash{$i}) if ($users_all{$i} == 2);
 	}
+
+	be_progress(70);
 	
 	foreach $i (sort (keys (%groups_all)))
 	{
@@ -380,6 +392,8 @@ sub write_group_passwd
 		}
 	}
 	
+	be_progress(85);
+	
 	foreach $i (sort (keys (%users_all)))
 	{
 	  if ($users_all{$i} == 3 && &arr_cmp_recurse ($users_hash{$i}, $parse_users_hash{$i}))
@@ -387,6 +401,8 @@ sub write_group_passwd
 		  &change_user ($users_hash{$i}, $parse_users_hash{$i});
 		}
 	}
+	
+	be_progress(95);
 }
 
 sub del_user
