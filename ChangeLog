@@ -1,5 +1,11 @@
 2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
 
+	* time-conf.in: added openntpd as NTP daemon for gentoo, replace
+	ntp-simple and npt-refclock with ntp-server in debian. Closes #153491
+	and #154377 (This one with patch from Vincent Vuntz)
+
+2005-01-21  Carlos Garnacho Parro  <carlosg@gnome.org>
+
 	* network.pl.in: remove "dialing" tags, not needed, no UI for this,
 	and wvdialconf could block under certain circumstances. Closes #123216
 
