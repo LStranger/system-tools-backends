@@ -1,3 +1,7 @@
+2003-12-27  Miloslav Trmac  <mitr@volny.cz>
+
+	* configure.in: Added Czech (cs) to ALL_LINGUAS.
+
 2003-12-26  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
 	* general.pl.in: made the backends to run even when the computer
