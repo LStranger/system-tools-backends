@@ -5,7 +5,7 @@
 #
 # Copyright (C) 2000-2001 Ximian, Inc.
 #
-# Authors: Hans Petter Jansson <hpj@ximian.com>
+# Authors: Chema Celorio <chema@ximian.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU Library General Public License as published
@@ -23,17 +23,6 @@
 
 # Best viewed with 100 columns of width.
 
-# Configuration files affected/used:
-#
-# /usr/share/zoneinfo/zone.tab
-# /etc/ntp.conf
-# /etc/ntp/step-tickers
-# /etc/localtime
-
-# Running programs affected/used:
-#
-# date
-
 
 
 require "___scriptsdir___/general.pl";
@@ -50,7 +39,8 @@ require "___scriptsdir___/replace.pl";
 
 $name = "internetsharing";
 $version = "0.1.0";
-@platforms = ("mandrake-7.2");
+@platforms = ("redhat-7.0",
+              "mandrake-7.2");
 
 $description =<<"end_of_description;";
        Configures your system clock, timezone and time server list.
@@ -186,6 +176,23 @@ sub filter
   &xml_print ($hash);
 }
 
+# ---     ---- #
+sub xst_ishare_rules_get_ipchains
+{
+    my ($file) = @_;
+    my $fd;
+    my $line;
+
+    $fd = &xst_file_open_read_from_names ($file);
+    
+    while (($line = <$fd>))
+    {
+        chomp $line;
+
+        print $_;
+    }
+
+}
 
 # --- Main --- #
 
@@ -228,12 +235,13 @@ sub conf_get_parse_table
 {
   my %dist_map =
   (
-   "mandrake-7.2" => "mandrake-7.2",
+   "redhat-7.0"   => "redhat-7.0",
+   "mandrake-7.2" => "redhat-7.0",
    );
 
   my %dist_tables =
       (
-       "mandrake-7.2" =>
+       "redhat-7.0" =>
        {
          fn =>
          {
@@ -241,7 +249,8 @@ sub conf_get_parse_table
          },
          table =>
              [
-              [ "ip_forwarding_installed", \&xst_service_sysv_installed, "ipchains" ],
+              [ "ip_forwarding_installed", \&xst_service_sysv_installed,   "ipchains" ],
+              [ "rules",                   \&xst_ishare_rules_get_ipchains, IPCHAINS_CONF],
               ]
                 },
        );
@@ -257,12 +266,13 @@ sub conf_get_replace_table
 {
   my %dist_map =
   (
-   "mandrake-7.2" => "mandrake-7.2",
+   "redhat-7.0"   => "redhat-7.0",
+   "mandrake-7.2" => "redhat-7.0",
    );
 
   my %dist_tables =
       (
-       "mandrake-7.2" =>
+       "redhat-7.0" =>
        {
          fn =>
          {

@@ -1,3 +1,7 @@
+2001-05-15  Chema Celorio  <chema@celorio.com>
+
+	* internetsharing-conf.in (xst_ishare_rules_get_ipchains): implement.
+
 2001-05-14  Chema Celorio  <chema@celorio.com>
 
 	* time-conf.in: tested in RH 7.1. Add the platform
