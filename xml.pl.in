@@ -243,7 +243,7 @@ sub xst_xml_scan
 }
 
 
-@xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\\\'', "&quot;", '"', "&amp;", '&' );
+@xst_xml_entities = ( "&lt;", '<', "&gt;", '>', "&apos;", '\'', "&quot;", '"', "&amp;", '&' );
 
 
 sub xst_xml_quote
@@ -309,7 +309,7 @@ sub xst_xml_get_pcdata
     if ($$tree[0] == 0)
     {
       $retval = &xst_xml_unquote ($$tree[1]);
-      &xst_debug_print_line ("*$retval*");
+      &xst_debug_print_line ("xst_xml_get_pcdata: $retval");
       return ($retval);
     }
     

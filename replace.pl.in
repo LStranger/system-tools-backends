@@ -177,7 +177,7 @@ sub xst_replace_sh
 {
   my ($file, $key, $value) = @_;
 
-  $value =~ s/([\"\'\&\$\|\*\?\[\]\{\}\(\)<>\\])/\\\1/g;
+  $value =~ s/([\"\'\`\&\$\|\*\?\[\]\{\}\(\)<>\\])/\\\1/g;
   $value = "\"$value\"" if ($value =~ /[ \t]/);
 
   return &xst_replace_split ($file, $key, "[ \t]*=[ \t]*", $value);

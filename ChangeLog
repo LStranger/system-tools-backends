@@ -1,3 +1,11 @@
+2001-03-12  Arturo Espinsoa  <arturo@ximian.com>
+
+	* network.pl.in: using debug functions for messages.
+	* parse.pl.in: same
+	* replace.pl.in: quote backquote also in replace_sh.
+	* xml.pl.in: &quot; was being transformed into \'. Should
+	  be ' only. Fixed.
+	
 2001-03-12  Hans Petter Jansson  <hpj@ximian.com>
 
 	* xml.pl.in (xst_xml_indent): -> xst_xml_print_indent.

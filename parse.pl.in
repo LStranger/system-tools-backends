@@ -43,7 +43,7 @@ sub xst_parse_replace_hash_values
       }
       else
       {
-        print STDERR "Warning: xst_parse_replace_hash_values: hash key $replace_key doesn't exist.\n";
+        &xst_debug_print_line ("Warning: xst_parse_replace_hash_values: hash key $replace_key doesn't exist.");
       }
     }
   }
