@@ -87,6 +87,7 @@ sub xml_parse_sysv
   while ($elem = shift @$tree)
   {
       if    ($elem eq "runlevel") { push @$runlevel, &xml_parse_runlevel (shift @$tree); }
+      elsif ($elem eq "services") { $$hash{"services"} = &xml_parse_services (shift @$tree); }
       else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
   }
   
@@ -136,6 +137,23 @@ sub xml_parse_service
 }
 
 
+sub xml_parse_services
+{
+  my ($tree) = @_;
+  my ($elem, $services);
+
+  $services = [];
+  shift @$tree;  # Skip attributes.
+
+  while ($elem = shift @$tree)
+  {
+      if ($elem eq "service") { push @$services, &xst_xml_get_pcdata (shift @$tree); }
+      else  { &xst_report ("xml_unexp_tag", $elem); shift @$tree; }
+  }
+
+  return $services;
+}
+
 # --- XML printing --- #
 
 
@@ -145,6 +163,7 @@ sub xml_print
 
   &xst_xml_print_begin ();
   &xst_xml_print_structure ($$h{"runlevel"}, "runlevel");
+  &xst_xml_print_structure ($$h{"services"}, "services");
   &xst_xml_print_end ();
 }
 
@@ -155,6 +174,7 @@ sub get
   my %hash;
 
   $hash{"runlevel"} = &xst_service_sysv_get_tree ();
+  $hash{"services"} = {"service" => &xst_service_sysv_list_available ()};
 
   &xst_report_end ();
   &xml_print (\%hash);

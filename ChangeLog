@@ -1,3 +1,14 @@
+Sun Sep 16 13:30:28 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* configure.in: set filesdir variable too.
+
+Wed Sep 12 21:42:03 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* sysv-conf.in (xml_parse_services): Parse array of available
+	services.
+	(xml_print): Print services array.
+	(get): get available services array.
+
 2001-09-18  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* network.pl.in (xst_network_rh62_parse_bootproto): If the

@@ -13,20 +13,22 @@ AM_PROG_LIBTOOL
 AC_HEADER_STDC
 
 dnl ==============================================================
-dnl Set SCRIPTS_DIR 
+dnl Set SCRIPTS_DIR & FILES_DIR
 dnl ==============================================================
 if test "x${prefix}" = "xNONE"; then
   scriptsdir="${ac_default_prefix}/share/setup-tool-backends/scripts"
+  filesdir="${ac_default_prefix}/share/setup-tool-backends/files"
 else
   scriptsdir="${prefix}/share/setup-tool-backends/scripts"
+  filesdir="${prefix}/share/setup-tool-backends/files"
 fi
 
-
 dnl ==============================================================
-dnl END: Set SCRIPTS_DIR
+dnl END: Set SCRIPTS_DIR & FILES_DIR
 dnl ==============================================================
 
 AC_SUBST(scriptsdir)
+AC_SUBST(filesdir)
 
 AC_OUTPUT([
 Makefile
@@ -39,5 +41,5 @@ echo "
 Configuration (BACKENDS):
 
 	The backends will be installed in : ${scriptsdir}
-	Compiler:		${CC} 
+	The files will be installed in    : ${filesdir}
 "
