@@ -4,6 +4,14 @@
 
 2003-12-28  Carlos Garnacho Parro  <garnacho@tuxerver.net>
 
+	* platform.pl.in: added slackware 9.1 to the platform list
+	* service.pl.in, services-conf.in: added slackware support for
+	  the services-admin tool, removed unused code
+	* users-conf.in: added slackware 9.1 support for users-admin
+	* time-conf.in: added slackware 9.1 support for time-admin
+
+2003-12-28  Carlos Garnacho Parro  <garnacho@tuxerver.net>
+
 	* configure.in: Added Spanish (es) to ALL_LINGUAS
 
 2003-12-27  Miloslav Trmac  <mitr@volny.cz>

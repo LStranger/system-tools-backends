@@ -62,6 +62,7 @@ $PLATFORM_INFO = {
   "slackware-8.0.0" => "Slackware 8.0.0",
   "slackware-8.1"   => "Slackware 8.1",
   "slackware-9.0.0" => "Slackware 9.0.0",
+  "slackware-9.1.0" => "Slackware 9.1.0",
   "freebsd-4"       => "FreeBSD 4",
   "freebsd-5"       => "FreeBSD 5",
   "gentoo"          => "Gentoo Linux",

@@ -157,6 +157,8 @@ sub gst_service_get_verbose_runlevels
      "turbolinux-7.0" => "redhat-5.2",
      "pld-1.0"        => "redhat-5.2",
      "fedora-1"       => "redhat-5.2",
+
+     "slackware-9.1.0" => "slackware-9.1.0"
     );
 
   %runlevels=
@@ -170,7 +172,8 @@ sub gst_service_get_verbose_runlevels
                       "2" => _("Graphical mode"),
                       "3" => _("Text mode"),
                       "6" => _("Rebooting the system")
-                     }
+                     },
+     "slackware-9.1.0" => {"4" => _("Graphical mode") }
     );
 
   $distro = $dist_map{$gst_dist};
@@ -582,7 +585,6 @@ sub gst_service_sysv_get_service_info
 	return \%hash;
 }
 
-
 # This function gets an ordered array of the available services from a SysV system
 sub gst_service_sysv_get_services
 {
@@ -600,7 +602,7 @@ sub gst_service_sysv_get_services
       $ret{$service} = $hash;
 		}
 	}
-	
+
 	return \%ret;
 }
 
@@ -731,6 +733,87 @@ sub gst_service_filerc_get_services
   return \%ret;
 }
 
+# this functions get a list of the services that run on a bsd init
+sub gst_service_bsd_get_service_info
+{
+  my ($service) = @_;
+  my ($script, $name, $description);
+  my (%hash);
+	my (@arr, @rl);
+
+  $script = $service;
+  $script =~ s/^.*\///;
+  $script =~ s/^rc\.//;
+
+  return undef if (! gst_file_exists ($service));
+
+  return undef if (&gst_service_list_service_is_forbidden ($script));
+
+  ($name, $description) = &gst_service_list_get_info ($script);
+
+  $hash {"script"} = $service;
+  $hash{"name"} = $name unless ($name eq undef);
+  $hash{"description"} = $description unless ($description eq undef);
+
+  # we hardcode the fourth runlevel, it's the graphical one
+  if ( -x $service)
+  {
+    push @arr, { "number" => 4,
+                 "action" => "start" };
+  }
+  else
+  {
+      push @arr, { "number" => 4,
+                   "action" => "stop" };
+  }
+
+	push @rl, { "runlevel" => \@arr };
+  
+	$hash{"runlevels"} = \@rl;
+  
+  return \%hash;
+}
+
+sub gst_service_bsd_get_services
+{
+  my (%ret);
+  my ($files) = [ "rc.M", "rc.4" ];
+  my ($file);
+
+  foreach $i (@$files)
+  {
+      $file = "/etc/rc.d/" . $i;
+    $fd = &gst_file_open_read_from_names ($file);
+
+    if (!$fd) {
+      &gst_report ("rc_file_read_failed", $file);
+      return undef;
+    }
+
+    while (<$fd>)
+    {
+      $line = $_;
+
+      if ($line =~ /^if[ \t]+\[[ \t]+\-x[ \t]([0-9a-zA-Z\/\.\-]+) .*\]/)
+      {
+        my (%hash);
+        $service = $1;
+
+        $hash = &gst_service_bsd_get_service_info ($service);
+
+        if ($hash ne undef)
+        {
+          $ret{$service} = $hash;
+        }
+      }
+    }
+
+    gst_file_close ($fd);
+  }
+
+  return \%ret;
+}
+
 
 # generic functions to get the available services
 sub gst_get_init_type
@@ -738,6 +821,10 @@ sub gst_get_init_type
   if (($gst_dist =~ /debian/) && (stat ("$gst_prefix/etc/runlevel.conf")))
   {
     return "file-rc";
+  }
+  elsif ($gst_dist =~ /slackware/)
+  {
+    return "bsd";
   }
   else
   {
@@ -756,6 +843,10 @@ sub gst_service_get_services
   elsif ($type eq "file-rc")
   {
     return &gst_service_filerc_get_services ();
+  }
+  elsif ($type eq "bsd")
+  {
+    return &gst_service_bsd_get_services ();
   }
 
   return undef;
@@ -901,19 +992,6 @@ sub gst_service_filerc_set_services
       {
         push @stop, $$i{"number"};
       }
-
-      # find out if it's the current runlevel, in this case we should start/stop the service by hand
-#      if ($$i{"number"} eq $runlevel)
-#      {
-#        if ($$i{"action"} eq "start")
-#        {
-#          &gst_file_run ("$initd_path/$$service{\"script\"} start >/dev/null 2>/dev/null");
-#        }
-#        else
-#        {
-#          &gst_file_run ("$initd_path/$$service{\"script\"}  stop >/dev/null 2>/dev/null");
-#        }
-#      }
     }
 
     if ((scalar (@start) eq 0) && (scalar (@stop) eq 0))
@@ -955,6 +1033,29 @@ sub gst_service_filerc_set_services
   &gst_file_buffer_save ($buff, $file);
 }
 
+sub gst_service_bsd_set_services
+{
+  my ($services, $runlevel) = @_;
+  my ($script, $runlevels);
+
+	foreach $service (@$services)
+	{
+    $script = $$service{"script"};
+    $runlevels = $$service{"runlevels"}[0]{"runlevel"}[0];
+
+    $action = $$runlevels {"action"};
+
+    if ($action eq "start")
+    {
+      &gst_file_run ("chmod ugo+x $script");
+    }
+    else
+    {
+      &gst_file_run ("chmod ugo-x $script");
+    }
+  }
+}
+
 sub gst_service_set_services
 {
 	my ($services, $runlevel) = @_;
@@ -968,6 +1069,10 @@ sub gst_service_set_services
   elsif ($type eq "file-rc")
   {
     &gst_service_filerc_set_services ($services, $runlevel);
+  }
+  elsif ($type eq "bsd")
+  {
+    &gst_service_bsd_set_services ($services, $runlevel);
   }
 }
 
@@ -983,35 +1088,6 @@ sub gst_service_set_conf
   return unless $runlevel;
 
   &gst_service_set_services($services, $runlevel);
-}
-
-# gets the valid parameters for a service
-sub gst_service_get_service_parameters
-{
-  my ($service_name) = @_;
-  my ($rcd_path, $initd_path, $relative_path) = &gst_service_sysv_get_paths ();
-  my ($service) = "$initd_path/$service_name";
-  my (@arr, @actions, $output, $size);
-
-  # We have to check if the service is executable	
-	return undef unless (-x $service);
-
- 	$output = `$service 2>/dev/null`;
-
-	# if the output doesn't have the 'usage' word in it, then isn't a valid output
-	return undef unless ($output =~ /usage/i);
-	
-	@arr = split / /, $output;
-	$size = scalar (@arr);
-	
-	# if the array has 0 rows, the service has no actions
-	return undef if ($size eq 0);
-	
-	$arr[$size-1] =~ s/[\{\}]//g;
-
-	@actions = split /\|/, $arr[size-1];
-
-  return \@actions;	
 }
 
 # stuff for checking whether service is running

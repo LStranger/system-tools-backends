@@ -66,7 +66,7 @@ $version = "@VERSION@";
               "mandrake-7.1", "mandrake-7.2", "mandrake-9.0", "mandrake-9.1",
               "debian-2.2", "debian-3.0", "debian-sarge",
               "suse-7.0", "turbolinux-7.0",
-              "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0",
+              "slackware-8.0.0", "slackware-8.1", "slackware-9.0.0", "slackware-9.1.0",
               "gentoo", "pld-1.0", "fedora-1");
 
 $description =<<"end_of_description;";
@@ -441,6 +441,7 @@ sub conf_get_parse_table
    "slackware-8.0.0" => "debian-2.2",
    "slackware-8.1"   => "debian-2.2",
    "slackware-9.0.0" => "debian-2.2",
+   "slackware-9.1.0" => "debian-2.2",
 
    "gentoo"          => "redhat-7.0",
 
@@ -598,6 +599,7 @@ sub conf_get_replace_table
    
    "slackware-8.0.0" => "debian-2.2",
    "slackware-9.0.0" => "debian-2.2",
+   "slackware-9.1.0" => "debian-2.2",
 
    "gentoo"          => "redhat-7.0",
 
