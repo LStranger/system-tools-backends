@@ -1,3 +1,7 @@
+2001-08-09  Christian Rose  <menthos@menthos.com>
+
+	* report.pl.in: Fixed a typo.
+
 2001-08-07  Arturo Espinosa Aldama  <arturo@ximian.com>
 
 	* internetsharing-conf.in (xml_parse_dhcp): Support
