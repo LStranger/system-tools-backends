@@ -63,8 +63,13 @@ BEGIN {
 $name = "boot";
 $version = "___version___";
 @platforms = ("redhat-5.2", "redhat-6.0", "redhat-6.1", "redhat-6.2", "redhat-7.0",
-              "redhat-7.1", "mandrake-7.1", "mandrake-7.2", "debian-2.2", "debian-woody", 
-	      "suse-7.0", "turbolinux-7.0");
+              "redhat-7.1", "redhat-7.2",
+
+              "mandrake-7.1", "mandrake-7.2",
+
+              "debian-2.2", "debian-woody",
+              
+              "suse-7.0", "turbolinux-7.0");
 
 $description =<<"end_of_description;";
        Configures Boot manager (Only LILO at the moment).

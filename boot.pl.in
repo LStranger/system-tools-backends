@@ -63,7 +63,7 @@ sub xst_boot_known_var
   return &xst_item_is_in_list ($key, @$list);
 }
 
-sub xst_boot_parse_global_kw
+sub xst_boot_parse_lilo_global_kw
 {
   my ($file, $key) = @_;
   my $fd;
@@ -96,7 +96,7 @@ sub xst_boot_parse_global_kw
 }
 
 
-sub xst_boot_parse_global
+sub xst_boot_parse_lilo_global
 {
   my ($file, $key) = @_;
   my ($fd, $line, $re);
@@ -196,7 +196,7 @@ sub xst_boot_parse_images
 }
 
 
-sub xst_boot_set_global_kw
+sub xst_boot_replace_lilo_global_kw
 {
   my ($file, $key) = @_;
   my ($buff, $i, $found);
@@ -245,7 +245,7 @@ sub xst_boot_set_global_kw
   return &xst_file_buffer_save ($buff, $file);
 }
 
-sub xst_boot_set_global
+sub xst_boot_replace_lilo_global
 {
   my ($file, $key, $val) = @_;
   my ($buff, $i, $found);
@@ -596,11 +596,10 @@ sub xst_boot_conf_set
        "redhat-6.2" => {
          fn => { 'LILO_CONF' => "/etc/lilo.conf"},
          table => [
-                   [ 'prompt',   \&xst_boot_set_global_kw,   'LILO_CONF', 'prompt' ],
-                   [ 'root',     \&xst_boot_set_global,      'LILO_CONF', 'root' ],
-                   [ 'timeout',  \&xst_boot_set_global,      'LILO_CONF', 'timeout' ],
-                   [ 'default',  \&xst_boot_set_global,      'LILO_CONF', 'default' ],
-                   [ 'append',   \&xst_boot_set_global,      'LILO_CONF', 'append' ],
+                   [ 'prompt',   \&xst_boot_replace_lilo_global_kw,   'LILO_CONF', 'prompt' ],
+                   [ 'root',     \&xst_boot_replace_lilo_global,      'LILO_CONF', 'root' ],
+                   [ 'timeout',  \&xst_boot_replace_lilo_global,      'LILO_CONF', 'timeout' ],
+                   [ 'default',  \&xst_boot_replace_lilo_global,      'LILO_CONF', 'default' ],
                    [ 'images',   \&xst_boot_conf_set_images, 'LILO_CONF', 'image' ],
                    ] 
                      }
@@ -628,9 +627,10 @@ sub xst_boot_conf_get
    "redhat-6.2" => "redhat-6.2",
    "redhat-7.0" => "redhat-6.2",
    "redhat-7.1" => "redhat-6.2",
+   "redhat-7.2" => "redhat-7.2",
    
    "mandrake-7.1" => "redhat-6.2",
-   "mandrake-7.2" => "redhat-6.2",
+   "mandrake-7.2" => "redhat-7.2",
    
    "debian-2.2"   => "redhat-6.2",
    "debian-woody" => "redhat-6.2",
@@ -645,12 +645,24 @@ sub xst_boot_conf_get
        "redhat-6.2" => {
          fn => { 'LILO_CONF' => "/etc/lilo.conf" },
          table => [
-                   [ 'prompt',   \&xst_boot_parse_global_kw, 'LILO_CONF', 'prompt' ],
-                   [ 'root',     \&xst_boot_parse_global,    'LILO_CONF', 'root' ],
-                   [ 'timeout',  \&xst_boot_parse_global,    'LILO_CONF', 'timeout' ],
-                   [ 'default',  \&xst_boot_parse_global,    'LILO_CONF', 'default' ],
-                   [ 'append',   \&xst_boot_parse_global,    'LILO_CONF', 'append' ],
-                   [ 'images',   \&xst_boot_parse_images,    'LILO_CONF' ],
+                   [ 'prompt',   \&xst_boot_parse_lilo_global_kw, LILO_CONF, 'prompt' ],
+                   [ 'root',     \&xst_boot_parse_lilo_global,    LILO_CONF, 'root' ],
+                   [ 'timeout',  \&xst_boot_parse_lilo_global,    LILO_CONF, 'timeout' ],
+                   [ 'default',  \&xst_boot_parse_lilo_global,    LILO_CONF, 'default' ],
+                   [ 'images',   \&xst_boot_parse_lilo_images,    LILO_CONF ],
+                   ] 
+                     },
+
+       "redhat-7.2" => {
+         fn => { 'GRUB_CONF' => ["/boot/grub/grub.conf", "/boot/grub/menu.lst", "/etc/grub.conf"],
+                 'GRUB_DEV'  => "/boot/grub/device.map"
+                   },
+         table => [
+                   [ 'prompt',   \&xst_boot_parse_grub_prompt,   GRUB_CONF ],
+                   [ 'root',     \&xst_boot_parse_grub_root,    [GRUB_CONF, GRUB_DEV] ],
+                   [ 'timeout',  \&xst_boot_parse_grub_timeout,  GRUB_CONF ],
+                   [ 'default',  \&xst_boot_parse_grub_default,  GRUB_CONF ],
+                   [ 'images',   \&xst_boot_parse_grub_images,  [GRUB_CONF, GRUB_DEV] ],
                    ] 
                      }
        );

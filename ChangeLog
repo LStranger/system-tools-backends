@@ -1,3 +1,10 @@
+2001-11-16  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* boot-conf.in: Added redhat-7.2 as a supported distro, but this is
+	not finished yet.
+
+	* boot.pl.in: working on Grub support, needed by RedHat and Mandrake.
+
 2001-11-15  Hans Petter Jansson  <hpj@ximian.com>
 
 	* time-conf.in (xst_parse_local_time): Return the right reference.
