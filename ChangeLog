@@ -1,7 +1,12 @@
+2001-03-26  Ryan Boren <rboren@fuzzybelly.org>
+
+	* backends/print-conf.in (xst_printcap_read): Fix spool
+	naming and contents assumptions.
+
 2001-03-22  Michael Meeks  <michael@ximian.com>
 
-	* print-conf.in (xml_print): don't put redundant extra
-	print header and footer in.
+	* backends/print-conf.in (xml_print): don't put redundant
+	extra print header and footer in.
 
 2001-03-21  Ryan Boren <rboren@fuzzybelly.org>
 
