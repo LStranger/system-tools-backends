@@ -1,3 +1,7 @@
+2001-01-17 Tambet Ingo  <tambet@ximian.com>
+
+	* Changelog: fixed my revious wacky entry. 
+
 2001-01-17  Arturo Espinosa <arturo@ximian.com>
 
 	* network-conf.in: print and parse interface tags. Also bring up
@@ -14,10 +18,10 @@
 
 2001-01-16  Tambet Ingo  <tambet@ximian.com>
 
-	* Added debugging support.
-	* Got rid of hardcoded tool locations, made it using be_locate_tool.
-	* Switched hardcoded /proc/meminfo to variable.
-	* Get all sizes in format %.1f to unify with frontend.
+	* memory-conf.in: Added debugging support. Got rid of hardcoded tool
+	  locations, made it using be_locate_tool. Switched hardcoded 
+	  /proc/meminfo to variable. Get all sizes in format %.1f to unify
+	  with frontend.
 
 2001-01-16  Chema Celorio  <chema@celorio.com>
 
