@@ -464,7 +464,7 @@ sub conf_get_parse_table
   my $dist = $dist_map {$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  #FIXME: warn about unsupported platform.
+  &xst_report ("platform_no_table", $xst_dist);
   return undef;
 }
 
@@ -563,7 +563,7 @@ sub conf_get_replace_table
   my $dist = $dist_map {$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  #FIXME: warn about unsupported platform.
+  &xst_report ("platform_no_table", $xst_dist);
   return undef;
 }
 

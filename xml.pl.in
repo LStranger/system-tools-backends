@@ -424,6 +424,7 @@ sub xst_xml_read_stdin
   {
     $doc .= $i;
     $i = <STDIN>;
+    last if $i eq undef;
   }
 
   return $doc;

@@ -557,8 +557,12 @@ sub xst_boot_conf_set
 	  );
 
   my $table = $dist_map{$xst_dist};
-  return undef if !$table
-;
+  if (!$table)
+  {
+      &xst_report ("platform_no_table", $xst_dist);
+      return undef;
+  }
+  
   return &xst_boot_replace_from_table ($ {$dist_tables{$table}}{"fn"},
 						  $ {$dist_tables{$table}}{"table"}, $values_hash);
 
@@ -608,7 +612,11 @@ sub xst_boot_conf_get
     );
   
   my $table = $dist_map{$xst_dist};
-  return undef if !$table;
+  if (!$table)
+  {
+      &xst_report ("platform_no_table", $xst_dist);
+      return undef;
+  }
   
   return &xst_parse_from_table ($ {$dist_tables{$table}}{"fn"},
                                 $ {$dist_tables{$table}}{"table"});

@@ -44,6 +44,17 @@ sub xst_debug_open_output_file
   return $xst_debug_fd_hash{$debug_path};
 }
 
+sub xst_debug_close_all
+{
+    my ($file, @files);
+
+    @files = keys %xst_debug_fd_hash;
+    foreach $file (@files)
+    {
+        close $xst_debug_fd_hash{$file};
+        delete $xst_debug_fd_hash{$file};
+    }
+}
 
 sub xst_debug_print_string_to_file
 {

@@ -1239,7 +1239,7 @@ sub xst_network_interface_set
                                   $values_hash, $old_hash);
   
   # if success saving the settings for the interface, set up immediatly.
-  &$proc ($values_hash, $old_hash, $$values_hash{"enabled"}, 1) if !$res;
+  &$proc ($values_hash, $old_hash, $$values_hash{"enabled"}, 0) if !$res;
 
   &xst_report_leave ();
 
@@ -1357,6 +1357,7 @@ sub xst_network_set_ppp_options_re
     {
       $line = "$value\n";
       $replaced = 1;
+      last;
     }
 
     $line = $pre_space . $line . $post_comment . "\n";
@@ -1400,7 +1401,7 @@ sub xst_network_get_ppp_options_unsup
   GET_LINE: while (($line = &xst_parse_chomp_line_hash_comment ($fd)) != -1)
   {
     $_ = $$line;
-    next if /^$/;
+    next if /^[ \t]*$/;
 
     foreach $re (@known_options)
     {
@@ -1434,7 +1435,6 @@ sub xst_network_set_ppp_options_unsup
   GET_LINE: foreach $line (@$buff)
   {
     $pre_space = $post_comment = "";
-    chomp $line;
     $pre_space = $1 if $line =~ s/^([ \t]+)//;
     $post_comment = $1 if $line =~ s/([ \t]*\#.*)//;
 
@@ -1443,8 +1443,10 @@ sub xst_network_set_ppp_options_unsup
       next GET_LINE if $line =~ /^$re/;
     }
     $line = $pre_space . $post_comment;
+    $line = "" if $line =~ /^[ \t]*$/;
   }
   
+  $value =~ s/[ \t]+([^0-9])/\n\1/g;
   push @$buff, $value . "\n";
   
   &xst_file_buffer_clean ($buff);
@@ -1670,25 +1672,13 @@ sub xst_network_debian_woody_get_auto
 {
   my ($file, $iface) = @_;
 
-  return 1 if &xst_network_debian_woody_get_auto_by_stanza ($file, $iface);
-  
-  # Couldn't get auto param through auto stanzas, revert to potato method.
-  return &xst_parse_interfaces_option_kw ($file, $iface, "noauto");
+  return &xst_network_debian_woody_get_auto_by_stanza ($file, $iface);
 }
 
 sub xst_network_debian_woody_set_auto
 {
   my ($file, $iface, $value) = @_;
-
-  if (&xst_parse_interfaces_option_kw ($file, $iface, "noauto"))
-  {
-    # Potato method. We keep compatible.
-    return &xst_replace_interfaces_option_kw_not ($file, $iface, "noauto", $value);
-  }
-
-  my ($buff, $line_no, $stanza);
-  my ($pre_space, $line, $line_arr);
-  my ($found);
+  my ($buff, $line_no, $found);
 
   $buff = &xst_file_buffer_load ($file);
   &xst_file_buffer_join_lines ($buff);
@@ -1768,7 +1758,8 @@ sub xst_network_ensure_loopback_interface
                  "broadcast" => "127.255.255.255",
                  "network" => "127.0.0.0",
                  "bootproto" => "none",
-                 "enabled" => 1
+                 "enabled" => 1,
+                 "update_dns" => 0
                  );
 
     $$interface{$dev} = \%iface;
@@ -2005,7 +1996,7 @@ sub xst_network_get_parse_table
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  # FIXME: This is a fatal error, and should make us bail.
+  &xst_report ("platform_no_table", $xst_dist);
   return undef;
 }
 
@@ -2209,7 +2200,7 @@ sub xst_network_get_interfaces_parse_table
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  # FIXME: This is a fatal error, and should make us bail.
+  &xst_report ("platform_no_table", $xst_dist);
   return undef;
 }
 
@@ -2384,7 +2375,7 @@ sub xst_network_get_replace_table
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  # FIXME: This is a fatal error, and should make us bail.
+  &xst_report ("platform_no_table", $xst_dist);
   return undef;
 }
 
@@ -2585,7 +2576,7 @@ sub xst_network_get_interface_replace_table
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
-  # FIXME: This is a fatal error, and should make us bail.
+  &xst_report ("platform_no_table", $xst_dist);
   return undef;
 }
 

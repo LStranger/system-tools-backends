@@ -1,3 +1,37 @@
+Sat Jul 14 11:54:50 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* report.pl.in (xst_report): New warning "platform_no_table",
+	used now in all backends when no table for the detected dist
+	is available (shouldn't happen, but typos happen).
+	
+	* network.pl.in (xst_network_debian_woody_set_auto): Removed
+	debian-potato compatibility, because noauto is not compatible
+	with auto stanzas.
+	(xst_network_debian_woody_get_auto): same.
+
+Fri Jul 13 14:58:00 2001  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* general.pl.in (xst_run_directive): Flush debug files after
+	every run directive.
+
+	* debug.pl.in (xst_debug_close_all): Function to make the
+	debug files close (and so, flush).
+
+	* network.pl.in (xst_network_interface_set): Maybe I don't
+	understand myself, but don't force interface activation.
+	(xst_network_ensure_loopback_interface): Add update_dns
+	property to default loopback prefs.
+
+	* xml.pl.in (xst_xml_read_stdin): Last if no more input is
+	available. This fixes the tool waiting for the end of request
+	string when using a file as stdin. (backend --set < in.xml).
+
+	* network.pl.in (xst_network_set_ppp_options_re): if you found
+	the matching line, last.
+	(xst_network_set_ppp_options_unsup): These functions are hacky.
+	Take the unsupported options and format them one by line.
+	Don't chomp lines: this corrupted the file.
+
 2001-07-15  Tambet Ingo  <tambet@ximian.com>
 
 	* boot.pl.in (xst_boot_conf_edit_image): Always quote 'append' lines.

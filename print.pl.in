@@ -172,6 +172,7 @@ sub xst_print_get_printer_parse_table
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
+  &xst_report ("platform_no_table", $xst_dist);
   return undef;
 }
 
@@ -227,6 +228,7 @@ sub xst_print_get_printer_replace_table
   my $dist = $dist_map{$xst_dist};
   return %{$dist_tables{$dist}} if $dist;
 
+  &xst_report ("platform_no_table", $xst_dist);
   return undef;
 }
 

@@ -155,6 +155,7 @@ sub xst_report
      "platform_unsup"           => ["error", _("Your platform [%s] is not supported.")],
      "platform_undet"           => ["error", _("Unable to determine host platform.")],
      "platform_success"         => ["sys",   _("Configuring for platform [%s].")],
+     "platform_no_table"        => ["error", _("No parse/replace table for platform [%s].")],
 
      "xml_unexp_tag"            => ["error", _("Unexpected tag [%s].")],
      "xml_unexp_arg"            => ["error", _("Unexpected argument [%s] to tag [%s].")],

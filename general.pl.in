@@ -498,6 +498,7 @@ sub xst_run_directive
   &$proc ($tool, @args);
 
   &xst_xml_print_request_end ();
+  &xst_debug_close_all ();
 }
 
 sub xst_run
