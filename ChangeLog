@@ -1,3 +1,9 @@
+2001-09-18  Arturo Espinosa Aldama  <arturo@ximian.com>
+
+	* service.pl.in (xst_service_sysv_get_runlevels): added missing
+	supported distros and removed bogus ones. Report an error if
+	distro is not listed.
+
 2001-09-17    <tambet@ximian.com>
 
 	* x.pl.in (x_update_section): Fixed bug which messed up config file

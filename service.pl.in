@@ -79,19 +79,28 @@ sub xst_service_sysv_get_runlevels
 {
   my %dist_map =
       (
+       "redhat-5.2"     => [3, 5],
        "redhat-6.0"     => [3, 5],
        "redhat-6.1"     => [3, 5],
        "redhat-6.2"     => [3, 5],
        "redhat-7.0"     => [3, 5],
-       "turbolinux-7.0" => [3, 5],
-			 "turbolinux-7.1" => [3, 5],
-			 "turbolinux-7.2" => [3, 5],
-       "suse-7.0"       => [3, 5],
-			 "debian-2.2"     => [2, 3],
-			 "debian-woody"   => [2, 3]
-       );
+       "redhat-7.1"     => [3, 5],
 
-  return @{$dist_map{$xst_dist}};
+       "mandrake-7.1"   => [3, 5],
+       "mandrake-7.2"   => [3, 5],
+
+			 "debian-2.2"     => [2, 3],
+			 "debian-woody"   => [2, 3],
+
+       "suse-7.0"       => [3, 5],
+
+       "turbolinux-7.0" => [3, 5]
+       );
+  my $res;
+
+  $res = $dist_map{$xst_dist};
+  &xst_report ("service_sysv_unsupported", $xst_dist) if ($res eq undef);
+  return @$res;
 }
 
 
